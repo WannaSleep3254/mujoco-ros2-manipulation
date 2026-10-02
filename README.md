@@ -15,8 +15,9 @@ GitHub 저장소 이름은 `mujoco-ros2-manipulation`이며 공개 저장소로 
 | 2 | FAIRINO FR10 V6 | 제조사 모델·MoveIt 설정 확인, Python MuJoCo의 URDF 로딩 통과 | 같은 제조사의 다른 크기와 동역학을 설정으로 다룰 수 있는지 검증 |
 | 3 | Universal Robots UR5e | 공식 ROS 2 Humble 설정과 Menagerie 모델 존재 확인 | 관절 이름과 설정이 다른 제조사의 로봇으로 공통 제어·검증 구조 확장 |
 
-현재 실행·검증 스크립트는 FR5용입니다. FR10은 ROS 연동, 구동기, 궤적 실행 및
-정상 종료를 아직 검증하지 않았고 UR5e는 아직 프로젝트에 통합하지 않았습니다.
+모델별 YAML과 공통 변환·실행·검증 스크립트를 분리했습니다. 현재 실행 가능한
+프로필은 FR5입니다. FR10은 ROS 연동, 구동기, 궤적 실행 및 정상 종료를 아직
+검증하지 않았고 UR5e는 아직 프로젝트에 통합하지 않았습니다.
 
 ### FR10 사전 검토 결과
 
@@ -39,9 +40,10 @@ SRDF의 충돌 제외 쌍도 FR5 11개, FR10 14개로 달라 모델별 설정을
 
 ### 구현과 검증의 진행 기준
 
-1. **FR5 기준 유지 및 설정 분리:** 모델 경로, 관절 목록, 초기 자세, 제어기 이름,
-   계획 그룹, 베이스·끝단 프레임, 관절 제한 및 서보 게인을 모델별 설정으로
-   분리합니다. 공통 실행기와 검증기로 바꾼 후 FR5의 기존 검증을 다시 통과시킵니다.
+1. **FR5 기준 유지 및 설정 분리 완료:** 모델 경로, 관절 목록, 초기 자세,
+   제어기 이름, 계획 그룹, 베이스·끝단 프레임, 서보 게인과 검증 목표를
+   모델별 YAML로 분리했습니다. 관절 제한은 선택한 모델의 URDF에서 읽습니다.
+   공통 실행기와 검증기에서 FR5의 기존 동작 및 종료 검증을 다시 통과했습니다.
 2. **FR10 연동:** 제조사 FR10 모델과 MoveIt 패키지를 사용해 ros2_control을
    연결합니다. 모델 로딩 → 상태·TF·시계 → 궤적 실행 → MoveIt 계획·실행 →
    GUI 및 세 종료 경로 순서로 검증합니다. 게인과 목표 자세는 FR10에서 따로 확인합니다.
@@ -58,6 +60,59 @@ SRDF의 충돌 제외 쌍도 FR5 11개, FR10 14개로 달라 모델별 설정을
 FR10을 FR5 다음에 두면 모델 설정 분리를 먼저 검증할 수 있고, UR5e에서
 제조사에 독립적인 구조인지 확인할 수 있습니다. 이는 구현 순서에 대한 판단이며
 세 모델의 공통 실행이 이미 완성됐다는 뜻은 아닙니다.
+
+## 모델별 설정과 공통 실행
+
+| 설정 파일 | 내용 | 실행 상태 |
+|---|---|---|
+| `config/robots/fr5.yaml` | 제조사 모델·메시·SRDF 경로, 관절 순서, 초기 자세, 서보 게인, ROS 이름, 검증 목표 | `enabled: true`, 실행 검증 완료 |
+| `config/robots/fr10.yaml` | 확인한 FR10 모델 경로와 ROS 이름 | `enabled: false`, 게인·목표 자세·ROS 실행 검증 필요 |
+| `config/robots/ur5e.yaml` | 공식 ROS 설정 및 MuJoCo 모델 후보 출처 | `enabled: false`, 모델과 ROS 매핑 준비 필요 |
+| `config/controller_defaults.yaml` | 제어 주기, 위치 명령 인터페이스와 공통 궤적 허용 오차 | 모델의 관절·제어기 이름과 합쳐 YAML 생성 |
+
+사용 가능한 모델을 확인하고 FR5를 실행합니다.
+
+```bash
+cd ~/projects/isaac_sim_setup
+.venv/bin/python prepare_robot.py --list
+.venv/bin/python prepare_robot.py --robot fr5
+bash run_sim.sh robot:=fr5
+```
+
+ROS 패키지와 로컬 런타임은 아래 설치 구성에 따라 준비해야 합니다.
+`prepare_robot.py`는 모델을 `models/<모델명>/`에 생성하고, 제어기 설정은
+`runtime/generated/<모델명>/controllers.yaml`에 생성합니다. 관절 목록과
+제어기 이름을 별도 YAML에 반복해서 적지 않습니다.
+
+프로필의 `home_rad`, `servo.kp`, `servo.kv`와 검증 목표 배열은 `joints`의
+순서와 길이에 맞춰 작성합니다. 변환기는 관절 이름으로 MuJoCo의 초기 자세와
+구동기를 연결합니다. 프로필을 수정한 뒤에는 모델을 다시 생성해야 하며,
+실행기와 검증기는 프로필 해시가 다른 오래된 생성 모델을 사용하지 않습니다.
+
+검증은 ROS 환경을 로드한 뒤 시스템 Python으로 실행합니다.
+
+```bash
+source ./manipulation_env.sh
+python3 verify_robot.py --robot fr5
+python3 verify_robot.py --robot fr5 --gui
+python3 verify_robot.py --robot fr5 --gui --stop-mode window
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+공통 검증기는 선택한 모델의 관절 상태, 제어기 활성화, 직접 궤적 실행,
+MoveIt 계획·실행, 예상 TF, 시뮬레이션 시계와 정상 종료를 확인합니다.
+구조 검사 7개에는 다른 제어기 이름과 관절 수, 관절 순서 변경 시 MuJoCo
+매핑, 잘못된 배열, 미준비 모델과 오래된 생성 모델의 실행 차단을 포함합니다.
+관절 순서 변경 검사는 제조사 소스가 있어야 실행하며, 소스가 없으면 건너뜁니다.
+
+FR10과 UR5e를 선택하면 준비되지 않은 이유를 출력하고 시작을 중단합니다.
+다음 FR10 단계에서는 초기 자세·서보 게인·검증 목표를 확인해 프로필을 채우고,
+해당 MoveIt 패키지를 빌드한 뒤 같은 검증을 수행해야 합니다.
+
+기존 `prepare_fr5.py`, `run_fr5.sh`, `fr5.launch.py`, `fr5_env.sh`,
+`verify_fr5.py`, `build_fr5_runtime.sh`는 호환 진입점으로 유지했습니다.
+공통 환경의 도메인은 `MANIPULATION_ROS_DOMAIN_ID`로 지정할 수 있고,
+`fr5_env.sh`에서는 기존 `FR5_ROS_DOMAIN_ID`도 지원합니다.
 
 ## FAIRINO FR5 시뮬레이션 실행
 
@@ -110,8 +165,9 @@ ros2 topic echo /clock rosgraph_msgs/msg/Clock --once
 
 관련 터미널에서는 `source ./fr5_env.sh`를 적용합니다. FR5는 ROS 도메인 **89**,
 기존 1관절 데모는 **87**, 자동 FR5 검증은 **90**을 사용합니다.
-`fr5_env.sh`는 기존 `dev_ws`, `ws_moveit` 등의 환경 대신 `/opt/ros/humble`과
-이 프로젝트의 패키지를 로드합니다. 셸 초기 설정 파일은 수정하지 않았습니다.
+`fr5_env.sh`는 공통 `manipulation_env.sh`를 통해 기존 `dev_ws`, `ws_moveit`
+등의 환경 대신 `/opt/ros/humble`과 이 프로젝트의 패키지를 로드합니다.
+셸 초기 설정 파일은 수정하지 않았습니다.
 
 GUI 없이 실행하거나 RViz를 제외하려면 다음과 같이 실행합니다.
 
@@ -123,6 +179,7 @@ bash run_fr5.sh moveit:=false rviz:=false
 ### FR5 검증 결과와 현재 제약
 
 2026-10-02에 실제 ROS 노드를 별도 프로세스로 실행하여 확인했습니다.
+모델별 설정 분리 후에도 아래 세 실행 모드를 다시 검증했습니다.
 
 - MuJoCo FR5 모델 로딩, 6개 관절 상태, 두 제어기 활성화: 통과.
 - FollowJointTrajectory 명령에 따른 실제 MuJoCo 관절 동작: 통과.
@@ -162,8 +219,8 @@ Git에 포함하는 검증 요약은 [docs/fr5_shutdown_validation.json](docs/fr
 | 구분 | 원인 및 근거 | 적용한 해결 |
 |---|---|---|
 | MuJoCo GUI | OpenGL/GLFW 자원을 만든 렌더링 스레드가 끝난 뒤, 다른 스레드에서 UI 자원을 해제했습니다. `libGLdispatch`에서 충돌했고 소스의 해제 순서를 확인했습니다. | `RenderLoop` 종료 직후 같은 렌더링 스레드에서 `platform_ui.reset()`으로 자원을 해제하도록 `mujoco_ros2_control` 0.1.2를 수정했습니다. |
-| MoveIt / RViz | `rclcpp::CallbackGroup` 및 궤적 실행 관리자의 종료 스택에서 충돌했습니다. MoveIt 플러그인의 코드가 남은 ROS 객체보다 먼저 해제되는 수명 문제로 판단했습니다. 플러그인 해제를 지연한 비교 실행에서 충돌이 사라졌습니다. | `libmoveit_*` 플러그인에 `RTLD_NODELETE`를 적용해 코드가 프로세스 종료까지 유지되게 했습니다. FR5의 `move_group`과 RViz에만 적용하는 임시 우회 처리이며, 정확히 어느 플러그인에서 시작되는지는 특정하지 못했습니다. |
-| 실행 전체의 정리 | 주 창이나 핵심 노드 하나가 종료돼도 다른 FR5 프로세스가 계속 남을 수 있었습니다. | 핵심 노드의 종료를 launch가 감지해 나머지도 종료하도록 했습니다. 검증기는 launch 부모에 SIGINT를 한 번 보내 중복 종료 신호를 피합니다. |
+| MoveIt / RViz | `rclcpp::CallbackGroup` 및 궤적 실행 관리자의 종료 스택에서 충돌했습니다. MoveIt 플러그인의 코드가 남은 ROS 객체보다 먼저 해제되는 수명 문제로 판단했습니다. 플러그인 해제를 지연한 비교 실행에서 충돌이 사라졌습니다. | `libmoveit_*` 플러그인에 `RTLD_NODELETE`를 적용해 코드가 프로세스 종료까지 유지되게 했습니다. 공통 launch의 `move_group`과 RViz에만 적용하는 임시 우회 처리이며, 정확히 어느 플러그인에서 시작되는지는 특정하지 못했습니다. |
+| 실행 전체의 정리 | 주 창이나 핵심 노드 하나가 종료돼도 다른 시뮬레이션 프로세스가 계속 남을 수 있었습니다. | 핵심 노드의 종료를 launch가 감지해 나머지도 종료하도록 했습니다. 검증기는 launch 부모에 SIGINT를 한 번 보내 중복 종료 신호를 피합니다. |
 
 MuJoCo 창 닫기 검증은 아래 서비스로 `exitrequest`를 설정하여 창 닫기 버튼과
 같은 `RenderLoop` 종료 경로를 실행했습니다. 실제 마우스 클릭으로 검증한 것은
@@ -187,21 +244,23 @@ FR5의 식별된 모터 모델은 아닙니다. 충돌 형상은 제조사 STL�
 근사입니다. 그리퍼, 조립 부품, 외부 장애물 및 실제 로봇 연결은 포함하지
 않았습니다. MuJoCo의 바닥은 아직 MoveIt 계획 장면에 등록하지 않았습니다.
 
-### FR5 파일과 설치 구성
+### 공통 파일과 설치 구성
 
 | 파일 | 역할 |
 |---|---|
-| `run_fr5.sh` / `fr5_env.sh` | 실행 및 ROS 환경 설정 |
-| `fr5.launch.py` | MuJoCo, ros2_control, MoveIt, RViz 실행 |
+| `robot_config.py` / `config/robots/*.yaml` | 모델 설정 로딩·검사와 제어기 설정 생성 |
+| `run_sim.sh` / `manipulation_env.sh` | 모델 선택 실행 및 공통 ROS 환경 설정 |
+| `manipulation.launch.py` | MuJoCo, ros2_control, MoveIt, RViz 공통 실행 |
 | `models/fr5/fr5.xml` | 6축 MuJoCo 모델과 위치 서보 |
 | `models/fr5/fr5.ros2_control.urdf` | ROS 로봇 모델과 MuJoCo 하드웨어 인터페이스 |
-| `config/fr5_controllers.yaml` | 관절 상태 및 궤적 제어기 설정 |
-| `prepare_fr5.py` / `models/fr5/source.json` | 변환 코드, 출처 및 모델 설정 기록 |
-| `verify_fr5.py` | ROS 궤적 명령과 MoveIt 계획·실행 검증 |
-| `build_fr5_runtime.sh` | 로컬 종료 수정 재빌드 |
-| `native/fr5_plugin_lifetime.c` | MoveIt 플러그인 수명 우회 처리 |
+| `config/controller_defaults.yaml` | 모델들에 공통인 관절 궤적 제어 설정 |
+| `prepare_robot.py` / `models/fr5/source.json` | 공통 변환 코드, 출처 및 모델 설정 기록 |
+| `verify_robot.py` | 모델별 ROS 궤적 명령과 MoveIt 계획·실행 검증 |
+| `tests/test_robot_profiles.py` | 설정 선택, 재생성 요구와 관절 매핑 회귀 검사 |
+| `build_runtime.sh` | 공통 로컬 종료 수정 재빌드 |
+| `native/moveit_plugin_lifetime.c` | MoveIt 플러그인 수명 우회 처리 |
 | `patches/mujoco_ros2_control-0.1.2-shutdown.patch` | MuJoCo UI 종료 순서 수정, 창 닫기 서비스 및 로컬 빌드 설정 |
-| `requirements.txt` | Python 데모와 모델 변환의 버전 고정 의존성 |
+| `requirements.txt` | Python 데모, 모델 변환과 YAML 로딩 의존성 |
 
 원본은 [FAIR-INNOVATION/frcobot_ros2](https://github.com/FAIR-INNOVATION/frcobot_ros2)의
 커밋 `fcf0c7f0d60d949d8a9a4238f929a44d07f60379`입니다.
@@ -226,27 +285,28 @@ FR5 모델을 다시 변환하고 선택한 ROS 패키지를 재빌드하려면:
 
 ```bash
 cd ~/projects/isaac_sim_setup
-.venv/bin/python prepare_fr5.py
-source ./fr5_env.sh
+.venv/bin/python prepare_robot.py --robot fr5
+source ./manipulation_env.sh
 colcon --log-base ros_ws/log build \
   --base-paths external/frcobot_ros2/fairino_description \
                external/frcobot_ros2/fairino5_v6_moveit2_config \
   --build-base ros_ws/build --install-base ros_ws/install \
   --packages-select fairino_description fairino5_v6_moveit2_config \
   --cmake-args -DBUILD_TESTING=OFF
-bash build_fr5_runtime.sh
+bash build_runtime.sh
 ```
 
-`build_fr5_runtime.sh`는 캐시한 deb와 소스를 사용해 재빌드하며, 소스가 없으면
+`build_runtime.sh`는 캐시한 deb와 소스를 사용해 재빌드하며, 소스가 없으면
 위 태그를 복제합니다. 버전이 다르거나 패치를 적용할 수 없으면 기존 소스를
 덮어쓰지 않고 중단합니다.
 
 ### Git에 포함하는 파일과 다른 PC에서의 준비
 
 소스, 제어 설정, 검증 스크립트와 종료 수정 패치를 Git에 포함합니다.
-`.venv`, `external`, `runtime`, `ros_ws`와 생성된 FR5 XML/URDF는 제외합니다.
+`.venv`, `external`, `runtime`, `ros_ws`와 생성된 모델 XML/URDF는 제외합니다.
 따라서 제조사 STL, 다운로드한 deb, 빌드 결과와 로컬 실행 로그는 저장소에
-포함되지 않습니다. `prepare_fr5.py`가 FR5 모델을 해당 PC의 경로에 맞게 생성합니다.
+포함되지 않습니다. `prepare_robot.py --robot fr5`가 FR5 모델을 해당 PC의 경로에
+맞게 생성합니다. YAML 로딩은 현재 ROS 환경의 PyYAML 5.4.1에서 검증했습니다.
 
 다른 PC에서는 Ubuntu 22.04 / ROS 2 Humble, MoveIt 2, ros2_control,
 ros2_controllers, Cyclone DDS, colcon 및 C++ 빌드 도구가 먼저 필요합니다.
@@ -270,8 +330,8 @@ cd ../..
 ```
 
 이어서 위의 모델 변환과 제조사 두 패키지의 빌드를 실행하고,
-`bash build_fr5_runtime.sh`로 종료 수정을 빌드합니다. 제조사 패키지를 처음
-빌드할 때는 아직 로컬 설치가 없으므로 `source ./fr5_env.sh` 대신
+`bash build_runtime.sh`로 종료 수정을 빌드합니다. 제조사 패키지를 처음
+빌드할 때는 아직 로컬 설치가 없으므로 `source ./manipulation_env.sh` 대신
 `source /opt/ros/humble/setup.bash`를 사용합니다. 고정한 deb 버전을 apt에서
 구할 수 없다면 다른 버전 조합은 다시 검증해야 합니다.
 

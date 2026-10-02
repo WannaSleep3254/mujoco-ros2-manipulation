@@ -1,0 +1,28 @@
+schema_version: 1
+id: fr10
+label: FAIRINO FR10 V6
+enabled: false
+status: reviewed
+pending_reason: FR10의 초기 자세·서보 게인과 ROS 실행 검증이 필요합니다.
+source:
+  repository_url: https://github.com/FAIR-INNOVATION/frcobot_ros2
+  repository_path: external/frcobot_ros2
+  commit: fcf0c7f0d60d949d8a9a4238f929a44d07f60379
+  format: urdf
+  urdf: external/frcobot_ros2/fairino_description/urdf/fairino10_v6.urdf
+  mesh_directory: external/frcobot_ros2/fairino_description/meshes/fairino10_v6
+  mesh_packages:
+    fairino_description: external/frcobot_ros2/fairino_description
+  srdf: external/frcobot_ros2/fairino10_v6_moveit2_config/config/fairino10_v6_robot.srdf
+ros:
+  robot_name: fairino10_v6_robot
+  system_name: FR10MuJoCo
+  moveit_package: fairino10_v6_moveit2_config
+  planning_group: fairino10_v6_group
+  trajectory_controller: fairino10_controller
+  state_controller: joint_state_broadcaster
+  world_frame: world
+  base_frame: base_link
+  tip_frame: wrist3_link
+  tf_child_frames: [shoulder_link, upperarm_link, forearm_link, wrist1_link, wrist2_link, wrist3_link]
+joints: [j1, j2, j3, j4, j5, j6]

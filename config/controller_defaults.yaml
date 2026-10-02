@@ -1,0 +1,15 @@
+# Shared controller behavior; model-specific names and joints come from the profile.
+update_rate: 100
+trajectory_controller:
+  command_interfaces: [position]
+  state_interfaces: [position, velocity]
+  state_publish_rate: 50.0
+  action_monitor_rate: 20.0
+  allow_partial_joints_goal: false
+  allow_nonzero_velocity_at_trajectory_end: false
+  constraints:
+    stopped_velocity_tolerance: 0.1
+    goal_time: 5.0
+  joint_tolerances:
+    trajectory: 0.1
+    goal: 0.025

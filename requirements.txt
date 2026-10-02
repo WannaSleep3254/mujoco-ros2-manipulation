@@ -1,3 +1,5 @@
-# Tested Python environment for the single-joint demo and FR5 model conversion.
+# Tested Python environment for the single-joint demo and robot model conversion.
 mujoco==3.14.0
 numpy==1.26.4
+# ROS Humble provides PyYAML 5.4.1; keep that system-site package usable.
+PyYAML>=5.4,<7

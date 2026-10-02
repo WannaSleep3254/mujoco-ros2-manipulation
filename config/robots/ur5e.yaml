@@ -1,0 +1,9 @@
+schema_version: 1
+id: ur5e
+label: Universal Robots UR5e
+enabled: false
+status: planned
+pending_reason: UR5e 모델·ROS 프레임·구동기 매핑과 실행 설정을 준비해야 합니다.
+source:
+  repository_url: https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/tree/humble
+  mujoco_model_url: https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e

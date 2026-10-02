@@ -1,0 +1,47 @@
+schema_version: 1
+id: fr5
+label: FAIRINO FR5 V6
+enabled: true
+status: validated
+source:
+  repository_url: https://github.com/FAIR-INNOVATION/frcobot_ros2
+  repository_path: external/frcobot_ros2
+  commit: fcf0c7f0d60d949d8a9a4238f929a44d07f60379
+  format: urdf
+  urdf: external/frcobot_ros2/fairino_description/urdf/fairino5_v6.urdf
+  mesh_directory: external/frcobot_ros2/fairino_description/meshes/fairino5_v6
+  mesh_packages:
+    fairino_description: external/frcobot_ros2/fairino_description
+  srdf: external/frcobot_ros2/fairino5_v6_moveit2_config/config/fairino5_v6_robot.srdf
+ros:
+  robot_name: fairino5_v6_robot
+  system_name: FR5MuJoCo
+  moveit_package: fairino5_v6_moveit2_config
+  planning_group: fairino5_v6_group
+  trajectory_controller: fairino5_controller
+  state_controller: joint_state_broadcaster
+  world_frame: world
+  base_frame: base_link
+  tip_frame: wrist3_link
+  tf_child_frames: [shoulder_link, upperarm_link, forearm_link, wrist1_link, wrist2_link, wrist3_link]
+joints: [j1, j2, j3, j4, j5, j6]
+home_rad: [0.0, -1.2, 1.2, -1.5, -1.5, 0.0]
+# Demonstration gains, not identified manufacturer motor parameters.
+servo:
+  kp: [2000.0, 4000.0, 3000.0, 800.0, 600.0, 400.0]
+  kv: [80.0, 120.0, 100.0, 20.0, 15.0, 10.0]
+  joint_damping: 1.0
+  joint_armature: 0.05
+physics:
+  timestep: 0.002
+  integrator: implicitfast
+  sim_speed_factor: 1.0
+verification:
+  direct_target_rad: [0.2, -1.2, 1.2, -1.5, -1.5, 0.0]
+  moveit_target_rad: [-0.2, -1.1, 1.1, -1.4, -1.5, 0.1]
+  trajectory_duration_sec: 3.0
+  tracking_tolerance_rad: 0.01
+  settle_messages: 10
+  goal_constraint_tolerance_rad: 0.003
+  velocity_scaling: 0.1
+  acceleration_scaling: 0.1

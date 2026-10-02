@@ -4,9 +4,9 @@ external/
 runtime/
 ros_ws/
 
-# Generated FR5 files contain paths for the machine that builds them.
-models/fr5/fr5.xml
-models/fr5/fr5.ros2_control.urdf
+# Generated models contain paths for the machine that builds them.
+models/*/*.xml
+models/*/*.urdf
 
 # Local credentials and editor settings.
 .env

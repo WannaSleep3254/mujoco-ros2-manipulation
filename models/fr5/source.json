@@ -1,7 +1,9 @@
 {
   "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2",
   "source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
-  "robot": "FR5 V6",
+  "robot": "FAIRINO FR5 V6",
+  "robot_id": "fr5",
+  "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
   "joints": [
     "j1",
     "j2",
@@ -11,12 +13,12 @@
     "j6"
   ],
   "home_rad": [
-    0,
+    0.0,
     -1.2,
     1.2,
     -1.5,
     -1.5,
-    0
+    0.0
   ],
   "joint_limits": {
     "j1": {
@@ -57,22 +59,22 @@
     }
   },
   "demo_kp": [
-    2000,
-    4000,
-    3000,
-    800,
-    600,
-    400
+    2000.0,
+    4000.0,
+    3000.0,
+    800.0,
+    600.0,
+    400.0
   ],
   "demo_kv": [
-    80,
-    120,
-    100,
-    20,
-    15,
-    10
+    80.0,
+    120.0,
+    100.0,
+    20.0,
+    15.0,
+    10.0
   ],
-  "demo_joint_damping": 1,
+  "demo_joint_damping": 1.0,
   "demo_joint_armature": 0.05,
   "mujoco_python_version": "3.14.0",
   "initial_pose_error_rad": [

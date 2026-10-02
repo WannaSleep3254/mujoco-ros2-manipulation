@@ -14,7 +14,7 @@
   "window_close_method": "Trigger service requests exitrequest; follows the RenderLoop window-close path",
   "cases": {
     "headless": {
-      "validated_utc": "2026-10-02T05:53:06.021977+00:00",
+      "validated_utc": "2026-10-02T09:30:42.518203+00:00",
       "gui": false,
       "stop_mode": "interrupt",
       "motion_checks_passed": true,
@@ -25,10 +25,10 @@
       "shutdown_timed_out": false,
       "moveit_trajectory_points": 49,
       "clock_monotonic": true,
-      "max_tracking_error_rad": 0.00361442628134645
+      "max_tracking_error_rad": 0.0036145294158482777
     },
     "gui": {
-      "validated_utc": "2026-10-02T05:53:16.281286+00:00",
+      "validated_utc": "2026-10-02T09:30:53.907329+00:00",
       "gui": true,
       "stop_mode": "interrupt",
       "motion_checks_passed": true,
@@ -41,10 +41,10 @@
       "clock_monotonic": true,
       "mujoco_gpu_process_seen": true,
       "rviz_gpu_process_seen": true,
-      "max_tracking_error_rad": 0.0036144600151997164
+      "max_tracking_error_rad": 0.003614454499635933
     },
     "gui_window": {
-      "validated_utc": "2026-10-02T05:53:26.647498+00:00",
+      "validated_utc": "2026-10-02T09:31:04.698027+00:00",
       "gui": true,
       "stop_mode": "window",
       "motion_checks_passed": true,
@@ -57,7 +57,14 @@
       "clock_monotonic": true,
       "mujoco_gpu_process_seen": true,
       "rviz_gpu_process_seen": true,
-      "max_tracking_error_rad": 0.00361449809140324
+      "max_tracking_error_rad": 0.0036144863167208996
     }
+  },
+  "verification_stage": "model profile separation regression",
+  "robot_id": "fr5",
+  "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+  "profile_tests": {
+    "passed": 7,
+    "skipped": 0
   }
 }

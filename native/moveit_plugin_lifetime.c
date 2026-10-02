@@ -1,5 +1,5 @@
 /* Keep MoveIt plugin code mapped until its ROS callbacks have been destroyed.
- * Scoped to FR5 child processes via LD_PRELOAD; other dlopen calls are unchanged.
+ * Scoped to MoveIt / RViz child processes via LD_PRELOAD; other dlopen calls are unchanged.
  * The operating system releases these mappings when each process exits.
  */
 #define _GNU_SOURCE
