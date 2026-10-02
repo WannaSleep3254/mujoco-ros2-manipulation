@@ -1,4 +1,63 @@
-# MuJoCo / ROS 2 validation
+# mujoco-ros2-manipulation
+
+MuJoCo, ROS 2 Humble, ros2_control 및 MoveIt 2를 연결하는 로봇팔 시뮬레이션
+프로젝트입니다. 포트폴리오에서 모델 변환, 경로 계획과 실행, 상태 기반 완료
+확인, 오류 분석 및 재현 가능한 검증을 보여주는 것을 목표로 합니다.
+
+GitHub 저장소 이름은 `mujoco-ros2-manipulation`이며 공개 저장소로 업로드합니다.
+원격 주소는 `https://github.com/WannaSleep3254/mujoco-ros2-manipulation.git`입니다.
+
+## 모델 확장 순서: FR5 → FR10 → UR5e
+
+| 순서 | 모델 | 현재 상태 | 단계의 목적 |
+|---|---|---|---|
+| 1 | FAIRINO FR5 V6 | ROS 궤적 제어, MoveIt 계획·실행, GUI 및 종료 검증 완료 | 기준 동작을 확보하고 장애물 회피·그리퍼 작업 예제로 발전 |
+| 2 | FAIRINO FR10 V6 | 제조사 모델·MoveIt 설정 확인, Python MuJoCo의 URDF 로딩 통과 | 같은 제조사의 다른 크기와 동역학을 설정으로 다룰 수 있는지 검증 |
+| 3 | Universal Robots UR5e | 공식 ROS 2 Humble 설정과 Menagerie 모델 존재 확인 | 관절 이름과 설정이 다른 제조사의 로봇으로 공통 제어·검증 구조 확장 |
+
+현재 실행·검증 스크립트는 FR5용입니다. FR10은 ROS 연동, 구동기, 궤적 실행 및
+정상 종료를 아직 검증하지 않았고 UR5e는 아직 프로젝트에 통합하지 않았습니다.
+
+### FR10 사전 검토 결과
+
+고정한 제조사 커밋에 `fairino_description/urdf/fairino10_v6.urdf`, STL 7개와
+`fairino10_v6_moveit2_config`가 있습니다. FR5와 같은 `j1`~`j6`의 6축 구조이며,
+계획 그룹은 `fairino10_v6_group`, MoveIt 컨트롤러는 `fairino10_controller`입니다.
+[제조사 ROS 2 저장소](https://github.com/FAIR-INNOVATION/frcobot_ros2)를 기준으로 검토했습니다.
+
+2026-10-02에 Python MuJoCo 3.14.0으로 FR10 URDF와 실제 STL을 메모리에서
+로딩했습니다. `nq=6`, `nv=6`, `nmesh=7`로 컴파일을 통과했습니다. 이 검사는
+모델 로딩 확인이며 ROS 런타임 MuJoCo 3.12.0에서의 실행 검증과는 별개입니다.
+
+URDF에 기록된 링크 질량 합은 FR5 약 22.53 kg, FR10 약 39.73 kg이며 주요
+링크의 관절 간 거리는 FR5의 0.425/0.39501 m에서 FR10의 0.7/0.586 m로
+달라집니다. 이 값은 URDF 모델의 값으로, 실물 계측 결과가 아닙니다.
+같은 초기 자세와 서보 게인을 그대로 사용하기 전에 중력에 따른 처짐,
+토크 포화, 추종 오차 및 접촉 안정성을 확인해야 합니다. 두 모델의 URDF에
+기록된 토크 제한은 같으므로 실물 모터 사양을 검증한 값으로 취급하지 않습니다.
+SRDF의 충돌 제외 쌍도 FR5 11개, FR10 14개로 달라 모델별 설정을 사용합니다.
+
+### 구현과 검증의 진행 기준
+
+1. **FR5 기준 유지 및 설정 분리:** 모델 경로, 관절 목록, 초기 자세, 제어기 이름,
+   계획 그룹, 베이스·끝단 프레임, 관절 제한 및 서보 게인을 모델별 설정으로
+   분리합니다. 공통 실행기와 검증기로 바꾼 후 FR5의 기존 검증을 다시 통과시킵니다.
+2. **FR10 연동:** 제조사 FR10 모델과 MoveIt 패키지를 사용해 ros2_control을
+   연결합니다. 모델 로딩 → 상태·TF·시계 → 궤적 실행 → MoveIt 계획·실행 →
+   GUI 및 세 종료 경로 순서로 검증합니다. 게인과 목표 자세는 FR10에서 따로 확인합니다.
+3. **UR5e 연동:** [공식 Humble 드라이버의 MoveIt 설정](https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/tree/humble)과
+   [Menagerie UR5e 모델](https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e)을
+   후보로 사용합니다. ROS 관절 순서와 MuJoCo 관절·구동기 이름, 좌표계,
+   초기 자세 및 제한을 맞춥니다. 실제 로봇 드라이버 대신 MuJoCo 하드웨어
+   인터페이스를 사용하고 공통 검증을 통과시킵니다.
+4. **작업 예제와 비교:** 모델별 바닥·장애물을 MuJoCo와 MoveIt에 일치시키고,
+   공통 작업 공간에서 같은 작업 목표를 실행합니다. 계획 시간, 실행 성공률,
+   최대 관절 오차와 종료 결과를 표와 영상으로 기록합니다. 그리퍼를 추가하면
+   집기·이동·놓기 작업으로 확장합니다. 접촉을 포함한 조립은 별도 후속 단계입니다.
+
+FR10을 FR5 다음에 두면 모델 설정 분리를 먼저 검증할 수 있고, UR5e에서
+제조사에 독립적인 구조인지 확인할 수 있습니다. 이는 구현 순서에 대한 판단이며
+세 모델의 공통 실행이 이미 완성됐다는 뜻은 아닙니다.
 
 ## FAIRINO FR5 시뮬레이션 실행
 
@@ -156,6 +215,7 @@ FR5의 식별된 모터 모델은 아닙니다. 충돌 형상은 제조사 STL�
 `libglfw3-dev`, `ros-humble-ros2-control-cmake`를 `runtime/root`에 추출했습니다.
 MuJoCo 연동 소스는 [ros-controls/mujoco_ros2_control](https://github.com/ros-controls/mujoco_ros2_control)의
 태그 `0.1.2`, 커밋 `178b1c39e5010185116bc89b4e94cbb25b825f61`에 패치를 적용했습니다.
+이 패치의 상류 소스 라이선스는 [Apache-2.0](patches/Apache-2.0.txt)입니다.
 시스템 MoveIt 2 버전은 2.5.10입니다.
 **이 ROS 런타임의 물리 엔진은 MuJoCo 3.12.0**이며,
 기존 `.venv`의 Python MuJoCo 3.14.0과 별개입니다.
