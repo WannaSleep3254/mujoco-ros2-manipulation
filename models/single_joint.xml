@@ -1,0 +1,14 @@
+<mujoco model="single_joint_validation">
+  <option timestep="0.002"/>
+
+  <worldbody>
+    <body name="arm_link">
+      <joint name="joint1" type="hinge" axis="0 0 1" damping="1"/>
+      <geom type="capsule" fromto="0 0 0 0.3 0 0" size="0.025" mass="1"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="joint1_servo" joint="joint1" kp="30" kv="3"/>
+  </actuator>
+</mujoco>

@@ -1,0 +1,120 @@
+diff --git a/mujoco_ros2_control/CMakeLists.txt b/mujoco_ros2_control/CMakeLists.txt
+index b8b0dda..9e9730a 100644
+--- a/mujoco_ros2_control/CMakeLists.txt
++++ b/mujoco_ros2_control/CMakeLists.txt
+@@ -23,6 +23,7 @@ find_package(realtime_tools REQUIRED)
+ find_package(rosgraph_msgs REQUIRED)
+ find_package(sensor_msgs REQUIRED)
+ find_package(std_msgs REQUIRED)
++find_package(std_srvs REQUIRED)
+ find_package(mujoco_ros2_control_msgs REQUIRED)
+ find_package(mujoco_ros2_control_plugins REQUIRED)
+ find_package(Threads REQUIRED)
+@@ -58,6 +59,10 @@ set(MUJOCO_INSTALL_SIMULATE_DIR "${MUJOCO_SIMULATE_DIR}")
+ 
+ # Fetch lodepng dependency, if not available
+ find_package(lodepng QUIET)
++if(TARGET lodepng::lodepng AND NOT TARGET lodepng)
++  add_library(lodepng INTERFACE)
++  target_link_libraries(lodepng INTERFACE lodepng::lodepng)
++endif()
+ if(NOT TARGET lodepng)
+   include(FetchContent)
+   if(NOT DEFINED MUJOCO_DEP_VERSION_lodepng)
+@@ -101,7 +106,7 @@ set(MUJOCO_SILENCE_COMPILER_WARNINGS
+ # compile the application from source. For the conda installed version, we can link directly
+ # against the package. We create a `mujoco_simulate` library in both cases.
+ find_library(mujoco_simulate_lib
+-  NAMES simulate
++  NAMES mujoco_simulate simulate
+   PATHS "${MUJOCO_ROOT}/lib"
+   NO_DEFAULT_PATH
+ )
+@@ -197,6 +202,7 @@ PRIVATE
+   glfw
+   ${CMAKE_DL_LIBS}
+   ${std_msgs_TARGETS}
++  ${std_srvs_TARGETS}
+ )
+ 
+ # Note: the transmissions_interface must NOT be statically linked against the library, only headers
+@@ -279,6 +285,7 @@ ament_export_dependencies(
+   realtime_tools
+   rosgraph_msgs
+   sensor_msgs
++  std_srvs
+   geometry_msgs
+   nav_msgs
+   mujoco_ros2_control_msgs
+diff --git a/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp b/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
+index 68e5881..e497f18 100644
+--- a/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
++++ b/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
+@@ -47,6 +47,7 @@
+ #include <mujoco_ros2_control_msgs/srv/step_simulation.hpp>
+ #include <mujoco_ros2_control_plugins/mujoco_ros2_control_plugins_base.hpp>
+ #include <sensor_msgs/msg/joint_state.hpp>
++#include <std_srvs/srv/trigger.hpp>
+ 
+ namespace mujoco_ros2_control
+ {
+@@ -526,6 +527,8 @@ private:
+   // True when running without a display (no GLFW window)
+   bool headless_{ false };
+ 
++  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr close_window_service_;
++
+   // Primary simulate object
+   std::unique_ptr<mujoco::Simulate> sim_;
+ 
+diff --git a/mujoco_ros2_control/package.xml b/mujoco_ros2_control/package.xml
+index c71461d..9ab9f7c 100644
+--- a/mujoco_ros2_control/package.xml
++++ b/mujoco_ros2_control/package.xml
+@@ -38,6 +38,7 @@
+   <depend>rosgraph_msgs</depend>
+   <depend>sensor_msgs</depend>
+   <depend>std_msgs</depend>
++  <depend>std_srvs</depend>
+   <!-- NOTE: Ensure to update this as humble, jazzy, and kilted go end of life. -->
+   <depend condition="$ROS_DISTRO != humble and $ROS_DISTRO != jazzy and $ROS_DISTRO != kilted">tinyxml2</depend>
+   <depend condition="$ROS_DISTRO == humble or $ROS_DISTRO == jazzy or $ROS_DISTRO == kilted">tinyxml2_vendor</depend>
+diff --git a/mujoco_ros2_control/src/mujoco_simulation.cpp b/mujoco_ros2_control/src/mujoco_simulation.cpp
+index ef23ea9..f0afcb1 100644
+--- a/mujoco_ros2_control/src/mujoco_simulation.cpp
++++ b/mujoco_ros2_control/src/mujoco_simulation.cpp
+@@ -631,6 +631,11 @@ bool MujocoSimulation::initialize(rclcpp::Node::SharedPtr node, const std::strin
+       {
+         RCLCPP_INFO(get_logger(), "MuJoCo rendering window closed; shut down its ROS context.");
+       }
++
++      // The GLFW adapter owns the OpenGL context created by this thread. Free
++      // its rendering resources while that context is still current, before
++      // the UI thread exits. Keep Simulate itself alive for physics shutdown.
++      sim_->platform_ui.reset();
+     });
+   }
+ 
+@@ -693,6 +698,22 @@ bool MujocoSimulation::initialize(rclcpp::Node::SharedPtr node, const std::strin
+       qos_services, step_simulation_cb_group_);
+   RCLCPP_INFO(get_logger(), "Created step_simulation service at: %s/step_simulation", node_->get_fully_qualified_name());
+ 
++  close_window_service_ = node_->create_service<std_srvs::srv::Trigger>(
++      "~/close_window",
++      [this](const std_srvs::srv::Trigger::Request::SharedPtr,
++             std_srvs::srv::Trigger::Response::SharedPtr response) {
++        if (headless_ || !sim_)
++        {
++          response->success = false;
++          response->message = "No rendering window is active.";
++          return;
++        }
++        // Follow the same RenderLoop exit path as the window close button.
++        sim_->exitrequest.store(1);
++        response->success = true;
++        response->message = "Rendering window close requested.";
++      }, qos_services);
++
+   set_free_joint_state_service_ = node_->create_service<mujoco_ros2_control_msgs::srv::SetFreeJointState>(
+       "~/set_free_joint_state",
+       std::bind(&MujocoSimulation::set_free_joint_state_callback, this, std::placeholders::_1, std::placeholders::_2),

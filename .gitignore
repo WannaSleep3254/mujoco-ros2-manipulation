@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+external/
+runtime/
+ros_ws/
+
+# Generated FR5 files contain paths for the machine that builds them.
+models/fr5/fr5.xml
+models/fr5/fr5.ros2_control.urdf
+
+# Local credentials and editor settings.
+.env
+.env.*
+!.env.example
+.vscode/
+.codex/
+.agents/
+.aws/
+*.log
+*.pyc

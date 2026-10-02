@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# Unified patches have space-prefixed blank context lines; preserve them.
+*.patch -whitespace

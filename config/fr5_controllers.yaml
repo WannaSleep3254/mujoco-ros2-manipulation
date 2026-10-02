@@ -1,0 +1,26 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    fairino5_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+fairino5_controller:
+  ros__parameters:
+    joints: [j1, j2, j3, j4, j5, j6]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity]
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    allow_nonzero_velocity_at_trajectory_end: false
+    constraints:
+      stopped_velocity_tolerance: 0.1
+      goal_time: 5.0
+      j1: {trajectory: 0.1, goal: 0.025}
+      j2: {trajectory: 0.1, goal: 0.025}
+      j3: {trajectory: 0.1, goal: 0.025}
+      j4: {trajectory: 0.1, goal: 0.025}
+      j5: {trajectory: 0.1, goal: 0.025}
+      j6: {trajectory: 0.1, goal: 0.025}

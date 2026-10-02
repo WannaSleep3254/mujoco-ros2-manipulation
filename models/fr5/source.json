@@ -1,0 +1,89 @@
+{
+  "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2",
+  "source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
+  "robot": "FR5 V6",
+  "joints": [
+    "j1",
+    "j2",
+    "j3",
+    "j4",
+    "j5",
+    "j6"
+  ],
+  "home_rad": [
+    0,
+    -1.2,
+    1.2,
+    -1.5,
+    -1.5,
+    0
+  ],
+  "joint_limits": {
+    "j1": {
+      "lower": -3.0543,
+      "upper": 3.0543,
+      "effort": 150.0,
+      "velocity": 3.15
+    },
+    "j2": {
+      "lower": -4.6251,
+      "upper": 1.4835,
+      "effort": 150.0,
+      "velocity": 3.15
+    },
+    "j3": {
+      "lower": -2.8274,
+      "upper": 2.8274,
+      "effort": 150.0,
+      "velocity": 3.15
+    },
+    "j4": {
+      "lower": -4.6251,
+      "upper": 1.4835,
+      "effort": 28.0,
+      "velocity": 3.2
+    },
+    "j5": {
+      "lower": -3.0543,
+      "upper": 3.0543,
+      "effort": 28.0,
+      "velocity": 3.2
+    },
+    "j6": {
+      "lower": -3.0543,
+      "upper": 3.0543,
+      "effort": 28.0,
+      "velocity": 3.2
+    }
+  },
+  "demo_kp": [
+    2000,
+    4000,
+    3000,
+    800,
+    600,
+    400
+  ],
+  "demo_kv": [
+    80,
+    120,
+    100,
+    20,
+    15,
+    10
+  ],
+  "demo_joint_damping": 1,
+  "demo_joint_armature": 0.05,
+  "mujoco_python_version": "3.14.0",
+  "initial_pose_error_rad": [
+    2.1282639141989283e-19,
+    0.0031490183789439907,
+    0.003614517374347148,
+    0.0007730662615645922,
+    8.306995533668982e-06,
+    -1.146917963070349e-06
+  ],
+  "contacts_at_settled_home": 0,
+  "collision_geometry": "MuJoCo convex hulls of manufacturer STL meshes",
+  "gripper": "not included"
+}
