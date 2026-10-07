@@ -3,3 +3,5 @@ mujoco==3.14.0
 numpy==1.26.4
 # ROS Humble provides PyYAML 5.4.1; keep that system-site package usable.
 PyYAML>=5.4,<7
+# Convert the official UR COLLADA visuals while retaining their scene transforms.
+pycollada==0.9.3

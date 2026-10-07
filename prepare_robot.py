@@ -2,6 +2,7 @@
 
 import argparse
 from copy import deepcopy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -81,6 +82,33 @@ def prepare(profile):
         if not mesh_path.is_relative_to(package_root) or not mesh_path.is_file():
             raise ValueError(f'Missing or invalid mesh: {filename}')
         mesh.set('filename', str(mesh_path))
+    visual_assets = []
+    if settings['source'].get('mujoco_visuals') == 'dae':
+        from collada_visuals import export_dae_visuals
+        cache = {}
+        visual_directory = profile.root / 'runtime' / 'generated' / profile.id / 'visual_meshes'
+        for link in imported.findall('link'):
+            for visual in list(link.findall('visual')):
+                mesh = visual.find('geometry/mesh')
+                if mesh is None or Path(mesh.get('filename')).suffix.lower() != '.dae':
+                    continue
+                source_mesh = Path(mesh.get('filename'))
+                if source_mesh not in cache:
+                    relative = str(source_mesh.relative_to(profile.root))
+                    prefix = source_mesh.stem + '_' + hashlib.sha256(relative.encode()).hexdigest()[:8]
+                    cache[source_mesh] = export_dae_visuals(source_mesh, visual_directory, prefix)
+                    visual_assets.append({'source': relative,
+                        'triangles': sum(part.triangles for part in cache[source_mesh]),
+                        'colors_rgba': [part.rgba for part in cache[source_mesh]]})
+                link.remove(visual)
+                for part in cache[source_mesh]:
+                    replacement = deepcopy(visual)
+                    replacement.find('geometry/mesh').set('filename', str(part.path))
+                    for material in replacement.findall('material'):
+                        replacement.remove(material)
+                    material = ET.SubElement(replacement, 'material', {'name': part.path.stem})
+                    ET.SubElement(material, 'color', {'rgba': ' '.join(map(str, part.rgba))})
+                    link.append(replacement)
     ET.SubElement(ET.SubElement(imported, 'mujoco'), 'compiler', {
         'strippath': 'false', 'discardvisual': 'false', 'fusestatic': 'false'})
     model = mujoco.MjModel.from_xml_string(ET.tostring(imported, encoding='unicode'))
@@ -171,6 +199,7 @@ def prepare(profile):
         'contacts_at_settled_home': data.ncon,
         'collision_geometry': 'MuJoCo convex hulls of manufacturer STL meshes',
         'mujoco_visual_geometry': settings['source'].get('mujoco_visuals', 'original'),
+        'converted_visual_assets': visual_assets,
         'tip_frame': profile.ros['tip_frame'],
         'gripper': 'not included',
     }

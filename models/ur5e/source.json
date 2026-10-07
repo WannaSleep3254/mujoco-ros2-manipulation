@@ -3,7 +3,7 @@
   "source_commit": "65fa221f6d9e1904b30b6a05ae39cb24a0c40fac",
   "robot": "Universal Robots UR5e",
   "robot_id": "ur5e",
-  "robot_profile_sha256": "cb7278c4cd0bdad5d86249b1a511711f6c42b5b26fab3e8d0f6aa7e249c83d51",
+  "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
   "joints": [
     "shoulder_pan_joint",
     "shoulder_lift_joint",
@@ -87,7 +87,171 @@
   ],
   "contacts_at_settled_home": 0,
   "collision_geometry": "MuJoCo convex hulls of manufacturer STL meshes",
-  "mujoco_visual_geometry": "collision",
+  "mujoco_visual_geometry": "dae",
+  "converted_visual_assets": [
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/base.dae",
+      "triangles": 4838,
+      "colors_rgba": [
+        [
+          0.2784314,
+          0.2784314,
+          0.2784314,
+          1.0
+        ],
+        [
+          0.03310248,
+          0.03310248,
+          0.03310248,
+          1.0
+        ]
+      ]
+    },
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/shoulder.dae",
+      "triangles": 23290,
+      "colors_rgba": [
+        [
+          0.2784314,
+          0.2784314,
+          0.2784314,
+          1.0
+        ],
+        [
+          0.03310248,
+          0.03310248,
+          0.03310248,
+          1.0
+        ],
+        [
+          0.4901961,
+          0.6784314,
+          0.8,
+          1.0
+        ]
+      ]
+    },
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/upperarm.dae",
+      "triangles": 40124,
+      "colors_rgba": [
+        [
+          0.4901961,
+          0.6784314,
+          0.8,
+          1.0
+        ],
+        [
+          0.2784314,
+          0.2784314,
+          0.2784314,
+          1.0
+        ],
+        [
+          0.03310248,
+          0.03310248,
+          0.03310248,
+          1.0
+        ],
+        [
+          0.8203922,
+          0.8203922,
+          0.8203922,
+          1.0
+        ]
+      ]
+    },
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/forearm.dae",
+      "triangles": 15058,
+      "colors_rgba": [
+        [
+          0.2784314,
+          0.2784314,
+          0.2784314,
+          1.0
+        ],
+        [
+          0.03310248,
+          0.03310248,
+          0.03310248,
+          1.0
+        ],
+        [
+          0.8203922,
+          0.8203922,
+          0.8203922,
+          1.0
+        ],
+        [
+          0.4901961,
+          0.6784314,
+          0.8,
+          1.0
+        ]
+      ]
+    },
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/wrist1.dae",
+      "triangles": 17288,
+      "colors_rgba": [
+        [
+          0.2784314,
+          0.2784314,
+          0.2784314,
+          1.0
+        ],
+        [
+          0.4901961,
+          0.6784314,
+          0.8,
+          1.0
+        ],
+        [
+          0.03310248,
+          0.03310248,
+          0.03310248,
+          1.0
+        ]
+      ]
+    },
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/wrist2.dae",
+      "triangles": 20280,
+      "colors_rgba": [
+        [
+          0.2784314,
+          0.2784314,
+          0.2784314,
+          1.0
+        ],
+        [
+          0.4901961,
+          0.6784314,
+          0.8,
+          1.0
+        ],
+        [
+          0.03310248,
+          0.03310248,
+          0.03310248,
+          1.0
+        ]
+      ]
+    },
+    {
+      "source": "external/ur_description/meshes/ur5e/visual/wrist3.dae",
+      "triangles": 911,
+      "colors_rgba": [
+        [
+          0.8203922,
+          0.8203922,
+          0.8203922,
+          1.0
+        ]
+      ]
+    }
+  ],
   "tip_frame": "tool0",
   "gripper": "not included"
 }

@@ -6,14 +6,15 @@
     "mujoco_ros_version": "3.12.0",
     "mujoco_python_version": "3.14.0",
     "gpu": "NVIDIA GeForce GTX 1050 Ti",
-    "nvidia_driver": "580.178.04"
+    "nvidia_driver": "580.178.04",
+    "pycollada_version": "0.9.3"
   },
   "robot": "Universal Robots UR5e",
   "robot_id": "ur5e",
-  "robot_profile_sha256": "cb7278c4cd0bdad5d86249b1a511711f6c42b5b26fab3e8d0f6aa7e249c83d51",
+  "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
   "manufacturer_source_commit": "65fa221f6d9e1904b30b6a05ae39cb24a0c40fac",
   "mujoco_ros2_control_source_commit": "178b1c39e5010185116bc89b4e94cbb25b825f61",
-  "verification_stage": "FR10 and UR5e integration, with FR5 regression",
+  "verification_stage": "UR5e original visual geometry correction and ROS integration regression",
   "window_close_method": "Trigger service requests exitrequest; follows the RenderLoop window-close path",
   "tip_frame": "tool0",
   "urdf_mjcf_forward_kinematics": {
@@ -29,46 +30,13 @@
     "passed": true
   },
   "profile_tests": {
-    "passed": 8,
+    "passed": 11,
     "skipped": 0
   },
   "cases": {
     "headless": {
-      "validated_utc": "2026-10-06T09:00:43.050655+00:00",
+      "validated_utc": "2026-10-07T06:52:11.243542+00:00",
       "gui": false,
-      "stop_mode": "interrupt",
-      "motion_checks_passed": true,
-      "shutdown_clean": true,
-      "launch_return_code": 0,
-      "process_group_gone": true,
-      "shutdown_failures": [],
-      "shutdown_timed_out": false,
-      "moveit_trajectory_points": 42,
-      "clock_monotonic": true,
-      "controllers": {
-        "ur5e_controller": "active",
-        "joint_state_broadcaster": "active"
-      },
-      "tf_child_frames": [
-        "base",
-        "base_link",
-        "base_link_inertia",
-        "flange",
-        "forearm_link",
-        "ft_frame",
-        "shoulder_link",
-        "tool0",
-        "upper_arm_link",
-        "wrist_1_link",
-        "wrist_2_link",
-        "wrist_3_link"
-      ],
-      "ros_domain_id": 91,
-      "max_tracking_error_rad": 0.00405202079697653
-    },
-    "gui": {
-      "validated_utc": "2026-10-06T09:00:52.371346+00:00",
-      "gui": true,
       "stop_mode": "interrupt",
       "motion_checks_passed": true,
       "shutdown_clean": true,
@@ -78,8 +46,6 @@
       "shutdown_timed_out": false,
       "moveit_trajectory_points": 41,
       "clock_monotonic": true,
-      "mujoco_gpu_process_seen": true,
-      "rviz_gpu_process_seen": true,
       "controllers": {
         "ur5e_controller": "active",
         "joint_state_broadcaster": "active"
@@ -99,12 +65,12 @@
         "wrist_3_link"
       ],
       "ros_domain_id": 91,
-      "max_tracking_error_rad": 0.004052014173031138
+      "max_tracking_error_rad": 0.004052032207464862
     },
-    "gui_window": {
-      "validated_utc": "2026-10-06T09:01:01.952578+00:00",
+    "gui": {
+      "validated_utc": "2026-10-07T06:52:21.054752+00:00",
       "gui": true,
-      "stop_mode": "window",
+      "stop_mode": "interrupt",
       "motion_checks_passed": true,
       "shutdown_clean": true,
       "launch_return_code": 0,
@@ -134,7 +100,60 @@
         "wrist_3_link"
       ],
       "ros_domain_id": 91,
-      "max_tracking_error_rad": 0.00405205008939058
+      "max_tracking_error_rad": 0.0040520178658964845
+    },
+    "gui_window": {
+      "validated_utc": "2026-10-07T06:52:30.961197+00:00",
+      "gui": true,
+      "stop_mode": "window",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "launch_return_code": 0,
+      "process_group_gone": true,
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "moveit_trajectory_points": 41,
+      "clock_monotonic": true,
+      "mujoco_gpu_process_seen": true,
+      "rviz_gpu_process_seen": true,
+      "controllers": {
+        "ur5e_controller": "active",
+        "joint_state_broadcaster": "active"
+      },
+      "tf_child_frames": [
+        "base",
+        "base_link",
+        "base_link_inertia",
+        "flange",
+        "forearm_link",
+        "ft_frame",
+        "shoulder_link",
+        "tool0",
+        "upper_arm_link",
+        "wrist_1_link",
+        "wrist_2_link",
+        "wrist_3_link"
+      ],
+      "ros_domain_id": 91,
+      "max_tracking_error_rad": 0.004052030287303943
     }
+  },
+  "visual_geometry_validation": {
+    "source": "Original manufacturer COLLADA visual scenes converted to per-color OBJ",
+    "source_dae_assets": 7,
+    "visual_mesh_parts": 20,
+    "source_triangles": 121789,
+    "scene_transforms_units_colors_and_normals_test_passed": true,
+    "links_checked_at_each_pose": 7,
+    "poses_checked": 3,
+    "world_bounds_absolute_tolerance_m": 1e-06,
+    "world_bounds_test_passed": true,
+    "physics_regression": {
+      "body_transforms_mass_inertia_damping_armature_actuator_parameters_preserved": true,
+      "mass_matrix_and_gravity_bias_preserved_at_two_poses": true,
+      "parameter_absolute_tolerance": 1e-10,
+      "collision_vertices_faces_transforms_and_parameters_preserved": true
+    },
+    "render": "docs/images/ur5e_mujoco_visual.png"
   }
 }

@@ -12,6 +12,8 @@ GitHub 저장소 이름은 `mujoco-ros2-manipulation`이며 공개 저장소로 
 세 모델을 공통 실행기에서 선택할 수 있습니다. 2026-10-06에 실제 ROS 노드로
 직접 궤적 명령, MoveIt 계획·실행, 상태·TF·시계, MuJoCo/RViz GUI 및 종료를
 검증했습니다. 기존 FR5의 동작과 종료도 다시 통과했습니다.
+UR5e는 2026-10-07에 원본 시각 모델을 적용한 뒤 같은 실행·종료 검증을
+다시 통과했습니다.
 
 | 모델 ID | 계획 그룹 | 궤적 제어기 | 계획 끝단 프레임 |
 |---|---|---|---|
@@ -41,9 +43,15 @@ UR5e의 `wrist_3_link → flange → tool0` 고정 변환을 보존하고 `/tf_s
 FR5/FR10의 계획 끝단은 기존 `wrist3_link`이며 별도의 `flange`/`tool0`/TCP를
 새로 정의하지 않았습니다.
 
-MuJoCo에서는 UR5e의 공식 충돌 STL로 표시하고, RViz에서는 원본 DAE 시각
-모델을 사용합니다. 물리 충돌 형상은 세 모델 모두 STL의 convex hull 근사입니다.
+MuJoCo에서는 UR5e의 원본 DAE 시각 모델을 OBJ로 변환해 표시합니다.
+DAE의 장면 변환·단위·표면 법선·재질별 색상을 보존하며, RViz는 원본 DAE를
+사용합니다. 이전에는 단순화된 충돌 STL을 외형 표시에도 사용해 링크가 판처럼
+보이고 관절 커버 색상이 사라졌습니다. 시각 모델 교체 후 원본과 각 링크의
+배치를 세 자세에서 비교하고, 질량·관성·구동기·충돌 형상의 보존을 확인했습니다.
+물리 충돌 형상은 세 모델 모두 STL의 convex hull 근사입니다.
 UR5e의 예제 가속도 제한 1 rad/s²와 서보 게인은 실물 UR 제어기의 설정이 아닙니다.
+
+![원본 시각 모델을 적용한 MuJoCo UR5e](docs/images/ur5e_mujoco_visual.png)
 
 다음 단계는 바닥·장애물을 MuJoCo와 MoveIt에 일치시킨 작업 장면, 그리퍼와
 집기·이동·놓기 예제, 공통 작업 목표의 비교 표·영상입니다. 접촉 조립과
@@ -84,6 +92,11 @@ bash run_sim.sh robot:=ur5e
 .venv/bin/python prepare_robot.py --robot ur5e
 ```
 
+UR5e의 DAE 변환에는 `pycollada==0.9.3`이 필요하며 `requirements.txt`에
+포함되어 있습니다. 변환된 OBJ는 `runtime/generated/ur5e/visual_meshes/`에
+생성합니다. 실행 중인 시뮬레이션에는 재생성 결과가 자동 적용되지 않으므로
+기존 실행을 Ctrl+C로 종료한 뒤 `bash run_sim.sh robot:=ur5e`로 다시 실행합니다.
+
 프로필의 `home_rad`, `servo.kp`, `servo.kv`와 검증 목표 배열은 `joints`의
 순서와 길이에 맞춰 작성합니다. 변환기는 관절 이름으로 MuJoCo의 초기 자세와
 구동기를 연결합니다. 프로필을 수정한 뒤에는 모델을 다시 생성해야 하며,
@@ -105,9 +118,10 @@ python3 verify_robot.py --robot fr5 --domain 92
 
 공통 검증기는 선택한 모델의 관절 상태, 제어기 활성화, 직접 궤적 실행,
 MoveIt 계획·실행, 예상 TF, 시뮬레이션 시계와 정상 종료를 확인합니다.
-구조·변환 검사 8개에는 다른 제어기 이름과 관절 수, 관절 순서 변경 시 MuJoCo
+구조·변환 검사 11개에는 다른 제어기 이름과 관절 수, 관절 순서 변경 시 MuJoCo
 매핑, 잘못된 배열, 미준비 모델과 오래된 생성 모델의 실행 차단, 세 모델의 끝단
-순기구학 일치를 포함합니다. 변환 검사는 제조사 소스·생성 모델이 필요하며
+순기구학 일치를 포함합니다. UR5e 시각 모델의 단위·배치·색상·법선 및
+물리 모델 보존도 검사합니다. 변환 검사는 제조사 소스·생성 모델이 필요하며
 자료가 없으면 해당 검사를 건너뜁니다.
 
 | 모델 | 검증한 궤적 종료 후 최대 관절 오차 | headless / GUI 궤적 실행 | Ctrl+C / 창 닫기 종료 |
@@ -269,8 +283,10 @@ FR5의 식별된 모터 모델은 아닙니다. 충돌 형상은 제조사 STL�
 | `models/fr5/fr5.ros2_control.urdf` | ROS 로봇 모델과 MuJoCo 하드웨어 인터페이스 |
 | `config/controller_defaults.yaml` | 모델들에 공통인 관절 궤적 제어 설정 |
 | `prepare_robot.py` / `models/fr5/source.json` | 공통 변환 코드, 출처 및 모델 설정 기록 |
+| `collada_visuals.py` | UR 원본 DAE 시각 모델을 재질별 OBJ로 변환 |
 | `verify_robot.py` | 모델별 ROS 궤적 명령과 MoveIt 계획·실행 검증 |
 | `tests/test_robot_profiles.py` | 설정 선택, 재생성 요구와 관절 매핑 회귀 검사 |
+| `tests/test_collada_visuals.py` | DAE 장면·색상·법선, 로봇 자세별 메시 배치와 물리 모델 보존 검사 |
 | `build_robot_packages.sh` | 고정한 제조사 소스 확인·다운로드, 모델별 ROS 패키지 빌드 및 모델 생성 |
 | `packages/ur5e_moveit_config` | UR5e 공식 Xacro 연결, `tool0` 계획 체인, KDL 및 RViz 설정 |
 | `build_runtime.sh` | 공통 로컬 종료 수정 재빌드 |

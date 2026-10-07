@@ -113,8 +113,8 @@ def validate_profile(data):
             raise ValueError('Unsupported physics integrator')
         if data['source']['format'] not in ['urdf', 'xacro']:
             raise ValueError('The current converter supports URDF and Xacro sources')
-        if data['source'].get('mujoco_visuals', 'original') not in ['original', 'collision']:
-            raise ValueError('source.mujoco_visuals must be original or collision')
+        if data['source'].get('mujoco_visuals', 'original') not in ['original', 'collision', 'dae']:
+            raise ValueError('source.mujoco_visuals must be original, collision or dae')
         for name in ['robot_name', 'system_name', 'moveit_package', 'planning_group',
                      'trajectory_controller', 'state_controller', 'world_frame',
                      'base_frame', 'tip_frame']:

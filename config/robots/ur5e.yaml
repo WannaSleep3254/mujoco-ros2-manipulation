@@ -9,7 +9,7 @@ source:
   commit: 65fa221f6d9e1904b30b6a05ae39cb24a0c40fac
   format: xacro
   urdf: packages/ur5e_moveit_config/config/ur5e.urdf.xacro
-  mujoco_visuals: collision
+  mujoco_visuals: dae
   mesh_packages:
     ur_description: external/ur_description
   srdf: packages/ur5e_moveit_config/config/ur5e.srdf
