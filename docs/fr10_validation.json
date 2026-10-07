@@ -8,9 +8,9 @@
     "gpu": "NVIDIA GeForce GTX 1050 Ti",
     "nvidia_driver": "580.178.04"
   },
-  "robot": "FAIRINO FR5 V6",
-  "robot_id": "fr5",
-  "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+  "robot": "FAIRINO FR10 V6",
+  "robot_id": "fr10",
+  "robot_profile_sha256": "02cb60aa46b97a581f3af472769305b9c11712fea947c4ea33a33ff4ed8d0b62",
   "manufacturer_source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
   "mujoco_ros2_control_source_commit": "178b1c39e5010185116bc89b4e94cbb25b825f61",
   "verification_stage": "FR10 and UR5e integration, with FR5 regression",
@@ -21,7 +21,7 @@
     "frames_checked": [
       "wrist3_link"
     ],
-    "max_position_component_error_m": 1.6337212968564607e-07,
+    "max_position_component_error_m": 3.02008282576649e-07,
     "max_rotation_matrix_element_error": 7.171149931720078e-07,
     "absolute_tolerance": 1e-06,
     "passed": true
@@ -32,7 +32,7 @@
   },
   "cases": {
     "headless": {
-      "validated_utc": "2026-10-06T08:43:22.162660+00:00",
+      "validated_utc": "2026-10-06T08:42:27.963568+00:00",
       "gui": false,
       "stop_mode": "interrupt",
       "motion_checks_passed": true,
@@ -41,11 +41,11 @@
       "process_group_gone": true,
       "shutdown_failures": [],
       "shutdown_timed_out": false,
-      "moveit_trajectory_points": 49,
+      "moveit_trajectory_points": 17,
       "clock_monotonic": true,
       "controllers": {
         "joint_state_broadcaster": "active",
-        "fairino5_controller": "active"
+        "fairino10_controller": "active"
       },
       "tf_child_frames": [
         "base_link",
@@ -56,11 +56,11 @@
         "wrist2_link",
         "wrist3_link"
       ],
-      "ros_domain_id": 92,
-      "max_tracking_error_rad": 0.0036144264833071205
+      "ros_domain_id": 90,
+      "max_tracking_error_rad": 0.001441290435236775
     },
     "gui": {
-      "validated_utc": "2026-10-06T08:43:32.652234+00:00",
+      "validated_utc": "2026-10-06T08:42:35.305000+00:00",
       "gui": true,
       "stop_mode": "interrupt",
       "motion_checks_passed": true,
@@ -69,12 +69,12 @@
       "process_group_gone": true,
       "shutdown_failures": [],
       "shutdown_timed_out": false,
-      "moveit_trajectory_points": 49,
+      "moveit_trajectory_points": 17,
       "clock_monotonic": true,
       "mujoco_gpu_process_seen": true,
       "rviz_gpu_process_seen": true,
       "controllers": {
-        "fairino5_controller": "active",
+        "fairino10_controller": "active",
         "joint_state_broadcaster": "active"
       },
       "tf_child_frames": [
@@ -86,11 +86,11 @@
         "wrist2_link",
         "wrist3_link"
       ],
-      "ros_domain_id": 92,
-      "max_tracking_error_rad": 0.003614447716883795
+      "ros_domain_id": 90,
+      "max_tracking_error_rad": 0.0014411875848698852
     },
     "gui_window": {
-      "validated_utc": "2026-10-06T08:43:43.275183+00:00",
+      "validated_utc": "2026-10-06T08:42:42.633539+00:00",
       "gui": true,
       "stop_mode": "window",
       "motion_checks_passed": true,
@@ -99,13 +99,13 @@
       "process_group_gone": true,
       "shutdown_failures": [],
       "shutdown_timed_out": false,
-      "moveit_trajectory_points": 49,
+      "moveit_trajectory_points": 17,
       "clock_monotonic": true,
       "mujoco_gpu_process_seen": true,
       "rviz_gpu_process_seen": true,
       "controllers": {
-        "joint_state_broadcaster": "active",
-        "fairino5_controller": "active"
+        "fairino10_controller": "active",
+        "joint_state_broadcaster": "active"
       },
       "tf_child_frames": [
         "base_link",
@@ -116,8 +116,8 @@
         "wrist2_link",
         "wrist3_link"
       ],
-      "ros_domain_id": 92,
-      "max_tracking_error_rad": 0.003614472139435776
+      "ros_domain_id": 90,
+      "max_tracking_error_rad": 0.0014411521490431678
     }
   }
 }

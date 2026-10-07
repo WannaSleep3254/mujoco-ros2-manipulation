@@ -1,0 +1,6 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: ur5e_moveit_config
+    relative_path: config/ur5e.urdf.xacro
+  srdf:
+    relative_path: config/ur5e.srdf

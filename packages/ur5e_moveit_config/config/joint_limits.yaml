@@ -1,0 +1,11 @@
+# 공식 모델의 속도 제한을 사용합니다. 1 rad/s²는 보수적인 예제 설정이며
+# 제조사가 보증한 실제 로봇의 최대 가속도 값이 아닙니다.
+default_velocity_scaling_factor: 0.1
+default_acceleration_scaling_factor: 0.1
+joint_limits:
+  shoulder_pan_joint: {has_velocity_limits: true, max_velocity: 3.141592653589793, has_acceleration_limits: true, max_acceleration: 1.0}
+  shoulder_lift_joint: {has_velocity_limits: true, max_velocity: 3.141592653589793, has_acceleration_limits: true, max_acceleration: 1.0}
+  elbow_joint: {has_velocity_limits: true, max_velocity: 3.141592653589793, has_acceleration_limits: true, max_acceleration: 1.0}
+  wrist_1_joint: {has_velocity_limits: true, max_velocity: 3.141592653589793, has_acceleration_limits: true, max_acceleration: 1.0}
+  wrist_2_joint: {has_velocity_limits: true, max_velocity: 3.141592653589793, has_acceleration_limits: true, max_acceleration: 1.0}
+  wrist_3_joint: {has_velocity_limits: true, max_velocity: 3.141592653589793, has_acceleration_limits: true, max_acceleration: 1.0}

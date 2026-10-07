@@ -1,0 +1,11 @@
+UR5e MoveIt simulation configuration
+
+The chain and disabled collision pairs in config/ur5e.srdf are adapted from:
+UniversalRobots/Universal_Robots_ROS2_Driver (humble), ur_moveit_config,
+srdf/ur_macro.srdf.xacro, licensed under Apache-2.0.
+https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/blob/humble/ur_moveit_config/srdf/ur_macro.srdf.xacro
+
+The robot geometry, inertias, nominal kinematics and joint limits are loaded
+from UniversalRobots/Universal_Robots_ROS2_Description (ur_description,
+BSD-3-Clause). Those upstream assets are downloaded separately and are not
+redistributed in this repository.

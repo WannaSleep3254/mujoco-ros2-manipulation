@@ -1,9 +1,9 @@
 {
   "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2",
   "source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
-  "robot": "FAIRINO FR5 V6",
-  "robot_id": "fr5",
-  "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+  "robot": "FAIRINO FR10 V6",
+  "robot_id": "fr10",
+  "robot_profile_sha256": "02cb60aa46b97a581f3af472769305b9c11712fea947c4ea33a33ff4ed8d0b62",
   "joints": [
     "j1",
     "j2",
@@ -59,31 +59,31 @@
     }
   },
   "demo_kp": [
-    2000.0,
     4000.0,
-    3000.0,
-    800.0,
-    600.0,
-    400.0
+    14000.0,
+    10000.0,
+    1600.0,
+    1000.0,
+    700.0
   ],
   "demo_kv": [
-    80.0,
-    120.0,
-    100.0,
-    20.0,
-    15.0,
-    10.0
+    140.0,
+    320.0,
+    250.0,
+    40.0,
+    25.0,
+    18.0
   ],
   "demo_joint_damping": 1.0,
   "demo_joint_armature": 0.05,
   "mujoco_python_version": "3.14.0",
   "initial_pose_error_rad": [
-    2.1282639141989283e-19,
-    0.0031490183789439907,
-    0.003614517374347148,
-    0.0007730662615645922,
-    8.306995533668982e-06,
-    -1.146917963070349e-06
+    -9.042769336787522e-20,
+    -3.8654902306145544e-05,
+    0.0014415622124934746,
+    0.0003998628876051846,
+    3.674537494946506e-06,
+    -7.353405505784115e-07
   ],
   "contacts_at_settled_home": 0,
   "collision_geometry": "MuJoCo convex hulls of manufacturer STL meshes",

@@ -111,8 +111,10 @@ def validate_profile(data):
             _number(data['physics'][name], 'physics.' + name, positive=True)
         if data['physics']['integrator'] not in ['Euler', 'RK4', 'implicit', 'implicitfast']:
             raise ValueError('Unsupported physics integrator')
-        if data['source']['format'] != 'urdf':
-            raise ValueError('The current converter supports URDF sources')
+        if data['source']['format'] not in ['urdf', 'xacro']:
+            raise ValueError('The current converter supports URDF and Xacro sources')
+        if data['source'].get('mujoco_visuals', 'original') not in ['original', 'collision']:
+            raise ValueError('source.mujoco_visuals must be original or collision')
         for name in ['robot_name', 'system_name', 'moveit_package', 'planning_group',
                      'trajectory_controller', 'state_controller', 'world_frame',
                      'base_frame', 'tip_frame']:
@@ -120,7 +122,7 @@ def validate_profile(data):
                 raise ValueError('ros.' + name + ' must be nonempty')
         frames = data['ros']['tf_child_frames']
         if not isinstance(frames, list) or not frames or any(not isinstance(f, str) for f in frames):
-            raise ValueError('ros.tf_child_frames must list expected moving frames')
+            raise ValueError('ros.tf_child_frames must list expected robot frames')
         for name in ['trajectory_duration_sec', 'tracking_tolerance_rad',
                      'goal_constraint_tolerance_rad']:
             _number(data['verification'][name], 'verification.' + name, positive=True)
@@ -176,6 +178,25 @@ def write_controller_config(profile):
     output = profile.root / 'runtime' / 'generated' / profile.id / 'controllers.yaml'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(yaml.safe_dump(controller_config(profile), sort_keys=False))
+    return output
+
+
+def moveit_controller_config(profile):
+    name = profile.ros['trajectory_controller']
+    return {
+        'moveit_controller_manager': 'moveit_simple_controller_manager/MoveItSimpleControllerManager',
+        'moveit_simple_controller_manager': {
+            'controller_names': [name],
+            name: {'type': 'FollowJointTrajectory', 'action_ns': 'follow_joint_trajectory',
+                   'default': True, 'joints': list(profile.joints)},
+        },
+    }
+
+
+def write_moveit_controller_config(profile):
+    output = profile.root / 'runtime' / 'generated' / profile.id / 'moveit_controllers.yaml'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(yaml.safe_dump(moveit_controller_config(profile), sort_keys=False))
     return output
 
 

@@ -16,7 +16,8 @@ from moveit_configs_utils import MoveItConfigsBuilder
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from robot_config import check_generated_model, list_profiles, load_profile, write_controller_config
+from robot_config import (check_generated_model, list_profiles, load_profile,
+                          write_controller_config, write_moveit_controller_config)
 
 
 def stop_when_core_exits(event, context):
@@ -49,11 +50,6 @@ def launch_nodes(context):
     nodes = [simulation,
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              output='screen', parameters=[robot_description, {'use_sim_time': True}]),
-        Node(package='tf2_ros', executable='static_transform_publisher',
-             name='world_to_base',
-             arguments=['--x', '0', '--y', '0', '--z', '0',
-                        '--roll', '0', '--pitch', '0', '--yaw', '0',
-                        '--frame-id', ros['world_frame'], '--child-frame-id', ros['base_frame']]),
         Node(package='controller_manager', executable='spawner',
              arguments=[ros['state_controller'], '-c', '/controller_manager',
                         '--controller-manager-timeout', '30'], output='screen'),
@@ -61,10 +57,18 @@ def launch_nodes(context):
              arguments=[ros['trajectory_controller'], '-c', '/controller_manager',
                         '--controller-manager-timeout', '30'], output='screen'),
     ]
+    # RSP already publishes world joints present in the source URDF.
+    if robot.find(f"link[@name='{ros['world_frame']}']") is None:
+        nodes.append(Node(package='tf2_ros', executable='static_transform_publisher',
+             name='world_to_base',
+             arguments=['--x', '0', '--y', '0', '--z', '0',
+                        '--roll', '0', '--pitch', '0', '--yaw', '0',
+                        '--frame-id', ros['world_frame'], '--child-frame-id', ros['base_frame']]))
     if moveit or rviz:
         config = (MoveItConfigsBuilder(ros['robot_name'],
                                       package_name=ros['moveit_package'])
                   .robot_description(file_path=str(model_path))
+                  .trajectory_execution(file_path=str(write_moveit_controller_config(profile)))
                   .planning_pipelines(pipelines=['ompl'])
                   .to_moveit_configs())
         config.robot_description.update(robot_description)

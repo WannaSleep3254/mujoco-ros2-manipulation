@@ -1,9 +1,8 @@
 schema_version: 1
 id: fr10
 label: FAIRINO FR10 V6
-enabled: false
-status: reviewed
-pending_reason: FR10의 초기 자세·서보 게인과 ROS 실행 검증이 필요합니다.
+enabled: true
+status: validated
 source:
   repository_url: https://github.com/FAIR-INNOVATION/frcobot_ros2
   repository_path: external/frcobot_ros2
@@ -26,3 +25,23 @@ ros:
   tip_frame: wrist3_link
   tf_child_frames: [shoulder_link, upperarm_link, forearm_link, wrist1_link, wrist2_link, wrist3_link]
 joints: [j1, j2, j3, j4, j5, j6]
+home_rad: [0.0, -1.2, 1.2, -1.5, -1.5, 0.0]
+# FR10에서 별도로 검증한 시뮬레이션 예제용 게인입니다.
+servo:
+  kp: [4000.0, 14000.0, 10000.0, 1600.0, 1000.0, 700.0]
+  kv: [140.0, 320.0, 250.0, 40.0, 25.0, 18.0]
+  joint_damping: 1.0
+  joint_armature: 0.05
+physics:
+  timestep: 0.002
+  integrator: implicitfast
+  sim_speed_factor: 1.0
+verification:
+  direct_target_rad: [0.2, -1.2, 1.2, -1.5, -1.5, 0.0]
+  moveit_target_rad: [-0.2, -1.1, 1.1, -1.4, -1.5, 0.1]
+  trajectory_duration_sec: 3.0
+  tracking_tolerance_rad: 0.01
+  settle_messages: 10
+  goal_constraint_tolerance_rad: 0.003
+  velocity_scaling: 0.1
+  acceleration_scaling: 0.1

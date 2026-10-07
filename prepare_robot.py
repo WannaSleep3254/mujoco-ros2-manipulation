@@ -1,6 +1,7 @@
 """Prepare a configured URDF robot for MuJoCo and ros2_control."""
 
 import argparse
+from copy import deepcopy
 import json
 import os
 from pathlib import Path
@@ -30,7 +31,16 @@ def prepare(profile):
         ['git', '-C', str(repository), 'rev-parse', 'HEAD'], text=True).strip()
     if revision != settings['source']['commit']:
         raise ValueError(f'{profile.id}: source revision does not match the profile')
-    robot = ET.parse(source).getroot()
+    if settings['source']['format'] == 'xacro':
+        # Load the local ROS overlay only in the Xacro child process.
+        rendered = subprocess.check_output([
+            'bash', '-c', 'source "$1"\nexec xacro "$2"', 'prepare_robot',
+            str(profile.root / 'manipulation_env.sh'), str(source)], text=True)
+        robot = ET.fromstring(rendered)
+    else:
+        robot = ET.parse(source).getroot()
+    if robot.find('ros2_control') is not None:
+        raise ValueError(f'{profile.id}: source must not load a physical hardware driver')
     # Correct the source exporter's typo in a copy used by both simulators.
     for origin in robot.findall('.//collision/origins'):
         origin.tag = 'origin'
@@ -51,6 +61,16 @@ def prepare(profile):
                 raise ValueError(f'{profile.id}: {key} for {name} is outside the URDF limits')
 
     imported = ET.fromstring(ET.tostring(robot))
+    if settings['source'].get('mujoco_visuals') == 'collision':
+        # MuJoCo cannot import the official UR DAE visuals. Use the manufacturer's
+        # collision STL for display; retain the original visuals in the ROS URDF.
+        for link in imported.findall('link'):
+            for visual in link.findall('visual'):
+                link.remove(visual)
+            for collision in link.findall('collision'):
+                visual = deepcopy(collision)
+                visual.tag = 'visual'
+                link.append(visual)
     for mesh in imported.findall('.//mesh'):
         filename = mesh.get('filename')
         if not filename.startswith('package://'):
@@ -68,10 +88,10 @@ def prepare(profile):
     mujoco.mj_saveLastXML(str(scene_path), model)
     scene = ET.parse(scene_path).getroot()
     scene.set('model', profile.ros['robot_name'])
-    scene.find('compiler').set('meshdir', os.path.relpath(
-        profile.source_path('mesh_directory'), output))
+    scene.find('compiler').set('meshdir', '.')
     for mesh in scene.findall('./asset/mesh'):
-        mesh.set('file', Path(mesh.get('file')).name)
+        # Keep subdirectories: UR collision and visual meshes have equal stems.
+        mesh.set('file', os.path.relpath(mesh.get('file'), output))
     option = scene.find('option')
     if option is None:
         option = ET.SubElement(scene, 'option')
@@ -150,6 +170,8 @@ def prepare(profile):
         'initial_pose_error_rad': (actual - home).tolist(),
         'contacts_at_settled_home': data.ncon,
         'collision_geometry': 'MuJoCo convex hulls of manufacturer STL meshes',
+        'mujoco_visual_geometry': settings['source'].get('mujoco_visuals', 'original'),
+        'tip_frame': profile.ros['tip_frame'],
         'gripper': 'not included',
     }
     (output / 'source.json').write_text(json.dumps(report, indent=2) + '\n')

@@ -1,0 +1,93 @@
+{
+  "source_repository": "https://github.com/UniversalRobots/Universal_Robots_ROS2_Description",
+  "source_commit": "65fa221f6d9e1904b30b6a05ae39cb24a0c40fac",
+  "robot": "Universal Robots UR5e",
+  "robot_id": "ur5e",
+  "robot_profile_sha256": "cb7278c4cd0bdad5d86249b1a511711f6c42b5b26fab3e8d0f6aa7e249c83d51",
+  "joints": [
+    "shoulder_pan_joint",
+    "shoulder_lift_joint",
+    "elbow_joint",
+    "wrist_1_joint",
+    "wrist_2_joint",
+    "wrist_3_joint"
+  ],
+  "home_rad": [
+    0.0,
+    -1.5708,
+    1.5708,
+    -1.5708,
+    -1.5708,
+    0.0
+  ],
+  "joint_limits": {
+    "shoulder_pan_joint": {
+      "lower": -6.283185307179586,
+      "upper": 6.283185307179586,
+      "effort": 150.0,
+      "velocity": 3.141592653589793
+    },
+    "shoulder_lift_joint": {
+      "lower": -6.283185307179586,
+      "upper": 6.283185307179586,
+      "effort": 150.0,
+      "velocity": 3.141592653589793
+    },
+    "elbow_joint": {
+      "lower": -3.141592653589793,
+      "upper": 3.141592653589793,
+      "effort": 150.0,
+      "velocity": 3.141592653589793
+    },
+    "wrist_1_joint": {
+      "lower": -6.283185307179586,
+      "upper": 6.283185307179586,
+      "effort": 28.0,
+      "velocity": 3.141592653589793
+    },
+    "wrist_2_joint": {
+      "lower": -6.283185307179586,
+      "upper": 6.283185307179586,
+      "effort": 28.0,
+      "velocity": 3.141592653589793
+    },
+    "wrist_3_joint": {
+      "lower": -6.283185307179586,
+      "upper": 6.283185307179586,
+      "effort": 28.0,
+      "velocity": 3.141592653589793
+    }
+  },
+  "demo_kp": [
+    2500.0,
+    7000.0,
+    5000.0,
+    1000.0,
+    700.0,
+    500.0
+  ],
+  "demo_kv": [
+    100.0,
+    180.0,
+    140.0,
+    30.0,
+    20.0,
+    15.0
+  ],
+  "demo_joint_damping": 1.0,
+  "demo_joint_armature": 0.05,
+  "mujoco_python_version": "3.14.0",
+  "initial_pose_error_rad": [
+    -3.35073111870935e-19,
+    0.0029112799485973007,
+    0.004051765088771031,
+    0.0018201198019551779,
+    2.9406437285217635e-09,
+    -1.8014202701976978e-22
+  ],
+  "contacts_at_settled_home": 0,
+  "collision_geometry": "MuJoCo convex hulls of manufacturer STL meshes",
+  "mujoco_visual_geometry": "collision",
+  "tip_frame": "tool0",
+  "gripper": "not included"
+}

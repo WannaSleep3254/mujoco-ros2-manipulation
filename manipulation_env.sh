@@ -8,5 +8,7 @@ task_manipulation_env_runtime="${task_manipulation_env_root}/runtime/root/opt/ro
 export AMENT_PREFIX_PATH="${task_manipulation_env_runtime}:${AMENT_PREFIX_PATH:-}"
 export LD_LIBRARY_PATH="${task_manipulation_env_runtime}/lib:${task_manipulation_env_runtime}/opt/mujoco_vendor/lib:${task_manipulation_env_root}/runtime/root/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-}"
 export PYTHONPATH="${task_manipulation_env_runtime}/local/lib/python3.10/dist-packages:${PYTHONPATH:-}"
-source "${task_manipulation_env_root}/ros_ws/install/local_setup.bash"
+if [[ -f "${task_manipulation_env_root}/ros_ws/install/local_setup.bash" ]]; then
+  source "${task_manipulation_env_root}/ros_ws/install/local_setup.bash"
+fi
 unset task_manipulation_env_root task_manipulation_env_runtime

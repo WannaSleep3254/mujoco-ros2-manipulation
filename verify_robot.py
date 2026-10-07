@@ -13,7 +13,7 @@ import time
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from action_msgs.msg import GoalStatus
 from control_msgs.action import FollowJointTrajectory
 from controller_manager_msgs.srv import ListControllers
@@ -45,6 +45,9 @@ class Verification(Node):
                                  qos_profile_sensor_data)
         self.create_subscription(Clock, '/clock', self.clock, qos_profile_sensor_data)
         self.create_subscription(TFMessage, '/tf', self.tf, qos_profile_sensor_data)
+        self.create_subscription(TFMessage, '/tf_static', self.tf,
+            QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE,
+                       durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
     def joints(self, message):
         values = dict(zip(message.name, message.position))
