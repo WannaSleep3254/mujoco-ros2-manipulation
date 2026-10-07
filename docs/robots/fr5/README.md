@@ -46,7 +46,7 @@
 
 ## 실행과 모델 변경
 
-설치와 최초 빌드는 [공통 설치 안내](../../../README.md#git에-포함하는-파일과-다른-pc에서의-준비)를
+설치와 최초 빌드는 [공통 설치 안내](../../setup.md)를
 따릅니다. 아래 명령은 저장소 루트에서 실행합니다.
 
 ```bash
@@ -75,6 +75,31 @@ bash run_sim.sh robot:=fr5
 모델 재생성 결과는 실행 중인 창에 자동 반영되지 않습니다. 다른 모델로 바꾸려면
 현재 launch를 Ctrl+C로 종료하고 원하는 `robot:=` 값으로 다시 실행합니다.
 공통 실행 도메인은 89입니다. `use_sim_time`은 시간 기준이며 모델 선택 옵션은 아닙니다.
+
+## ROS 2 궤적 직접 제어
+
+FR5 실행 중 다른 터미널에서 공통 환경을 적용하고 궤적을 전송합니다.
+아래 목표는 초기 자세에서 `j1`을 0.2 rad까지 3초에 걸쳐 이동하는 예제입니다.
+
+```bash
+source ./manipulation_env.sh
+ros2 action send_goal /fairino5_controller/follow_joint_trajectory \
+  control_msgs/action/FollowJointTrajectory \
+  '{trajectory: {joint_names: [j1, j2, j3, j4, j5, j6],
+    points: [{positions: [0.2, -1.2, 1.2, -1.5, -1.5, 0.0],
+      velocities: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      time_from_start: {sec: 3}}]}}'
+```
+
+이 명령은 MoveIt 충돌 경로 계획을 거치지 않는 제어기 직접 검증입니다.
+FR5는 초기 1관절 데모의 `/mujoco/target_position` 토픽을 사용하지 않습니다.
+완료 판정과 상태 확인 방법은 [검증 안내](../../verification.md)에 있습니다.
+
+```bash
+ros2 control list_controllers
+ros2 topic echo /joint_states sensor_msgs/msg/JointState --once
+ros2 topic echo /clock rosgraph_msgs/msg/Clock --once
+```
 
 ## 실제 GUI 스크린샷
 
@@ -130,5 +155,6 @@ python3 verify_robot.py --robot fr5 --domain 92 --gui --stop-mode window
 - [제조사 소스](https://github.com/FAIR-INNOVATION/frcobot_ros2/tree/fcf0c7f0d60d949d8a9a4238f929a44d07f60379) — 고정 커밋 `fcf0c7f0d60d949d8a9a4238f929a44d07f60379`.
 - [모델 생성·출처 기록](../../../models/fr5/source.json).
 - [프로필](../../../config/robots/fr5.yaml) 및 [공통 제어 설정](../../../config/controller_defaults.yaml).
+- [공통 검증 안내](../../verification.md)와 [종료 오류 분석](../../troubleshooting.md).
 - [전체 검증 요약](../../fr5_shutdown_validation.json)과 [이번 GUI 촬영 검증](gui_capture_validation.json).
 - [이미지 목록·해시·촬영 정보](assets.json) 및 [자료 재생성 방법](../capture.md).

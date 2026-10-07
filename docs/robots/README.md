@@ -1,6 +1,6 @@
 # 모델별 문서와 시각 자료
 
-[프로젝트 README](../../README.md) · [자료 재생성 방법](capture.md)
+[프로젝트 README](../../README.md) · [설치와 빌드](../setup.md) · [검증 안내](../verification.md) · [자료 재생성 방법](capture.md)
 
 FR5 → FR10 → UR5e 순서로 모델 변환과 ROS 2 제어 연동을 확장했습니다.
 각 모델 페이지에 실행 명령, 프로필·관절 순서, 끝단 좌표계, 검증 결과와 스크린샷을 모았습니다.

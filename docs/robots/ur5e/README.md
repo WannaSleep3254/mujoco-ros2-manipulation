@@ -44,9 +44,23 @@ Universal Robots 공식 Humble Description의 Xacro를 사용합니다. 원본 D
 물리 계산 간격은 0.002초, ros2_control 갱신은 100 Hz, 관절 상태 발행 설정은
 50 Hz입니다. 위치 명령을 서보 토크로 변환하므로 중력·관성·토크 포화의 영향을 받습니다.
 
+## 시각 모델 변환과 수정 기록
+
+초기 MuJoCo 변환에서는 단순화된 충돌 STL을 외형 표시에도 사용해 링크가 판처럼 보이고
+관절 커버 색상이 사라졌습니다. 현재는 원본 DAE의 장면 변환·단위·표면 법선·재질별 색상을
+보존해 OBJ로 변환하며, RViz는 원본 DAE를 사용합니다.
+[수정 후 확인 이미지](../../images/ur5e_mujoco_visual.png)는 기존 비교 시점 자료로 보존합니다.
+
+[프로필](../../../config/robots/ur5e.yaml)의 `source.mujoco_visuals` 값은 `dae`입니다.
+[collada_visuals.py](../../../collada_visuals.py)는 pycollada 0.9.3을 사용하며,
+변환한 OBJ는 `runtime/generated/ur5e/visual_meshes/`에 생성합니다.
+각 링크의 배치를 세 자세에서 원본과 비교하고 질량·관성·구동기·충돌 형상의 보존을 검사했습니다.
+물리 충돌 STL은 시각 모델 교체와 별도로 유지했습니다.
+예제 가속도 제한 1 rad/s²와 서보 게인은 실제 UR 제어기의 설정이 아닙니다.
+
 ## 실행과 모델 변경
 
-설치와 최초 빌드는 [공통 설치 안내](../../../README.md#git에-포함하는-파일과-다른-pc에서의-준비)를
+설치와 최초 빌드는 [공통 설치 안내](../../setup.md)를
 따릅니다. 아래 명령은 저장소 루트에서 실행합니다.
 
 ```bash
@@ -128,7 +142,9 @@ python3 verify_robot.py --robot ur5e --domain 91 --gui --stop-mode window
 ## 출처와 자료
 
 - [제조사 소스](https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/tree/65fa221f6d9e1904b30b6a05ae39cb24a0c40fac) — 고정 커밋 `65fa221f6d9e1904b30b6a05ae39cb24a0c40fac`.
+- [공식 MoveIt SRDF](https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/blob/humble/ur_moveit_config/srdf/ur_macro.srdf.xacro) — 시뮬레이션 계획 체인과 충돌 제외 쌍 구성의 기준.
 - [모델 생성·출처 기록](../../../models/ur5e/source.json).
 - [프로필](../../../config/robots/ur5e.yaml) 및 [공통 제어 설정](../../../config/controller_defaults.yaml).
+- [공통 검증 안내](../../verification.md)와 [종료 오류 분석](../../troubleshooting.md).
 - [전체 검증 요약](../../ur5e_validation.json)과 [이번 GUI 촬영 검증](gui_capture_validation.json).
 - [이미지 목록·해시·촬영 정보](assets.json) 및 [자료 재생성 방법](../capture.md).
