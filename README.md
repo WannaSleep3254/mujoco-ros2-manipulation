@@ -21,6 +21,21 @@ UR5e는 2026-10-07에 원본 시각 모델을 적용한 뒤 같은 실행·종�
 | `fr10` | `fairino10_v6_group` | `fairino10_controller` | `wrist3_link` |
 | `ur5e` | `ur5e_manipulator` | `ur5e_controller` | `tool0` |
 
+### 모델별 문서와 스크린샷
+
+[모델 자료 목록](docs/robots/README.md)에 실행·설정·좌표계·검증 기록과 이미지를
+정리했습니다. 각 모델에는 초기 자세 렌더, 실제 MuJoCo GUI와 RViz 스크린샷,
+촬영한 실행의 검증 JSON 및 이미지 해시가 있습니다.
+
+| FR5 | FR10 | UR5e |
+|---|---|---|
+| [![FR5](docs/robots/fr5/images/home.png)](docs/robots/fr5/README.md) | [![FR10](docs/robots/fr10/images/home.png)](docs/robots/fr10/README.md) | [![UR5e](docs/robots/ur5e/images/home.png)](docs/robots/ur5e/README.md) |
+| [FR5 실행·설정·검증](docs/robots/fr5/README.md) | [FR10 실행·설정·검증](docs/robots/fr10/README.md) | [UR5e 실행·설정·검증](docs/robots/ur5e/README.md) |
+
+미리보기는 모델마다 카메라를 맞춘 기준 렌더입니다. 실제 크기나 성능 비교를 위한
+동일 조건 벤치마크는 아니며, GUI 사진과 생성 조건은 각 모델 페이지에 기록했습니다.
+자료를 갱신하려면 [촬영·재생성 방법](docs/robots/capture.md)을 참고합니다.
+
 ### 모델 출처와 좌표계
 
 FR5와 FR10은 [FAIRINO 공식 ROS 2 저장소](https://github.com/FAIR-INNOVATION/frcobot_ros2)의
@@ -285,6 +300,7 @@ FR5의 식별된 모터 모델은 아닙니다. 충돌 형상은 제조사 STL�
 | `prepare_robot.py` / `models/fr5/source.json` | 공통 변환 코드, 출처 및 모델 설정 기록 |
 | `collada_visuals.py` | UR 원본 DAE 시각 모델을 재질별 OBJ로 변환 |
 | `verify_robot.py` | 모델별 ROS 궤적 명령과 MoveIt 계획·실행 검증 |
+| `capture_robot_images.py` / `docs/robots` | 모델별 기준 렌더·실제 GUI 촬영과 문서·이미지·검증 자료 |
 | `tests/test_robot_profiles.py` | 설정 선택, 재생성 요구와 관절 매핑 회귀 검사 |
 | `tests/test_collada_visuals.py` | DAE 장면·색상·법선, 로봇 자세별 메시 배치와 물리 모델 보존 검사 |
 | `build_robot_packages.sh` | 고정한 제조사 소스 확인·다운로드, 모델별 ROS 패키지 빌드 및 모델 생성 |

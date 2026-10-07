@@ -1,0 +1,41 @@
+{
+  "captured_utc": "2026-10-07T07:43:32.678690+00:00",
+  "robot_id": "ur5e",
+  "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
+  "kind": "MuJoCo EGL offscreen reference rendering",
+  "mujoco_python_version": "3.14.0",
+  "file": "docs/robots/ur5e/images/home.png",
+  "size_px": [
+    1000,
+    750
+  ],
+  "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213",
+  "joint_names": [
+    "shoulder_pan_joint",
+    "shoulder_lift_joint",
+    "elbow_joint",
+    "wrist_1_joint",
+    "wrist_2_joint",
+    "wrist_3_joint"
+  ],
+  "joint_positions_rad": [
+    0.0,
+    -1.5708,
+    1.5708,
+    -1.5708,
+    -1.5708,
+    0.0
+  ],
+  "pose": "Configured home keyframe; no physics settling or ROS nodes",
+  "shadows_enabled": false,
+  "camera": {
+    "lookat_m": [
+      0.23020820496843938,
+      0.06715204381201967,
+      0.3235457983841228
+    ],
+    "distance_m": 1.6827666677341049,
+    "azimuth_deg": 135.0,
+    "elevation_deg": -25.0
+  }
+}

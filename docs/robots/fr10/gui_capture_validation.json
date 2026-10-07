@@ -1,0 +1,104 @@
+{
+  "validated_utc": "2026-10-07T10:03:20.300454+00:00",
+  "robot": "FAIRINO FR10 V6",
+  "robot_id": "fr10",
+  "robot_profile_sha256": "02cb60aa46b97a581f3af472769305b9c11712fea947c4ea33a33ff4ed8d0b62",
+  "joints": [
+    "j1",
+    "j2",
+    "j3",
+    "j4",
+    "j5",
+    "j6"
+  ],
+  "controllers": {
+    "fairino10_controller": "active",
+    "joint_state_broadcaster": "active"
+  },
+  "direct_tracking_error_rad": [
+    -2.0877831627963417e-06,
+    -4.090223614450217e-05,
+    0.0014412927435032419,
+    0.0003998132791727116,
+    3.6983983784377727e-06,
+    -7.346058780887368e-07
+  ],
+  "moveit_trajectory_points": 17,
+  "moveit_tracking_error_rad": [
+    0.00010545883494023078,
+    -0.00031454601998581744,
+    0.0014362767599420678,
+    0.00039483193266343086,
+    2.934383761088455e-06,
+    -1.4627749548024038e-06
+  ],
+  "final_joint_positions_rad": [
+    -0.19918320010762136,
+    -1.099147097913764,
+    1.100253030061246,
+    -1.3987606600722748,
+    -1.5004131491304635,
+    0.09934417621963836
+  ],
+  "joint_state_messages": 500,
+  "clock_messages": 2494,
+  "clock_start_sec": 0.002,
+  "clock_end_sec": 5.069999999,
+  "clock_monotonic": true,
+  "clock_publisher_qos": [
+    {
+      "reliability": "RELIABLE",
+      "durability": "VOLATILE"
+    }
+  ],
+  "tf_child_frames": [
+    "base_link",
+    "forearm_link",
+    "shoulder_link",
+    "upperarm_link",
+    "wrist1_link",
+    "wrist2_link",
+    "wrist3_link"
+  ],
+  "mujoco_gpu_process_seen": true,
+  "rviz_gpu_process_seen": true,
+  "screenshots": {
+    "captured_utc": "2026-10-07T10:03:23.550699+00:00",
+    "robot_id": "fr10",
+    "robot_profile_sha256": "02cb60aa46b97a581f3af472769305b9c11712fea947c4ea33a33ff4ed8d0b62",
+    "pose": "After verified MoveIt trajectory execution",
+    "images": [
+      {
+        "file": "docs/robots/fr10/images/mujoco_gui.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "ros2_control_node",
+        "kind": "X11 client-window screenshot",
+        "sha256": "3cd9173705737a9f3bce485790e4f04cfe26de6b23206351ea65e1e28f9d07bd",
+        "camera_wheel_up_steps": 0
+      },
+      {
+        "file": "docs/robots/fr10/images/rviz.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "rviz2",
+        "kind": "X11 client-window screenshot",
+        "sha256": "5c4dd90309850a308bbc5a3c9c6a7e79191978ee224e294a367727bb8ac3b08b",
+        "camera_wheel_up_steps": 0
+      }
+    ]
+  },
+  "gui": true,
+  "ros_domain_id": 90,
+  "motion_checks_passed": true,
+  "stop_mode": "interrupt",
+  "shutdown_failures": [],
+  "shutdown_timed_out": false,
+  "launch_return_code": 0,
+  "process_group_gone": true,
+  "shutdown_clean": true
+}

@@ -5,3 +5,5 @@ numpy==1.26.4
 PyYAML>=5.4,<7
 # Convert the official UR COLLADA visuals while retaining their scene transforms.
 pycollada==0.9.3
+# Encode reference renders and actual X11 window captures as PNG.
+Pillow>=9

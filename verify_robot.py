@@ -220,11 +220,14 @@ def main(default_robot='fr5'):
     parser.add_argument('--robot', default=default_robot)
     parser.add_argument('--gui', action='store_true', help='also open MuJoCo and RViz')
     parser.add_argument('--domain', type=int, default=90)
+    parser.add_argument('--screenshot-dir', help='capture this run\'s MuJoCo and RViz X11 windows')
     parser.add_argument('--stop-mode', choices=['interrupt', 'window'], default='interrupt',
                         help='stop via SIGINT or the MuJoCo rendering-window close path')
     args = parser.parse_args()
     if args.stop_mode == 'window' and not args.gui:
         parser.error('--stop-mode window requires --gui')
+    if args.screenshot_dir and not args.gui:
+        parser.error('--screenshot-dir requires --gui')
     try:
         profile = load_profile(args.robot)
         check_generated_model(profile)
@@ -261,6 +264,9 @@ def main(default_robot='fr5'):
                 (output / f'{profile.id}_gui_nvidia_smi.txt').write_text(gpu.stdout + gpu.stderr)
                 report['mujoco_gpu_process_seen'] = 'ros2_control_node' in gpu.stdout
                 report['rviz_gpu_process_seen'] = '/rviz2' in gpu.stdout
+                if args.screenshot_dir:
+                    from capture_robot_images import capture_gui_windows
+                    report['screenshots'] = capture_gui_windows(profile, process.pid, args.screenshot_dir)
             report['gui'] = args.gui
             report['ros_domain_id'] = args.domain
             report['motion_checks_passed'] = True

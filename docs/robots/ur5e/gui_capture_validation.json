@@ -1,0 +1,109 @@
+{
+  "validated_utc": "2026-10-07T10:03:33.353509+00:00",
+  "robot": "Universal Robots UR5e",
+  "robot_id": "ur5e",
+  "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
+  "joints": [
+    "shoulder_pan_joint",
+    "shoulder_lift_joint",
+    "elbow_joint",
+    "wrist_1_joint",
+    "wrist_2_joint",
+    "wrist_3_joint"
+  ],
+  "controllers": {
+    "joint_state_broadcaster": "active",
+    "ur5e_controller": "active"
+  },
+  "direct_tracking_error_rad": [
+    1.2084546513468908e-07,
+    0.0029114011975803766,
+    0.004052030312297061,
+    0.001820301280633041,
+    3.4100545276416483e-07,
+    -4.958330302156565e-09
+  ],
+  "moveit_trajectory_points": 41,
+  "moveit_tracking_error_rad": [
+    -3.0286169910020977e-06,
+    0.003613859393906349,
+    0.004042866812244972,
+    0.0017737517413491943,
+    -9.600260377773395e-07,
+    -5.561145278859536e-07
+  ],
+  "final_joint_positions_rad": [
+    -0.19716858947019292,
+    -1.447520353097196,
+    1.4521269411613875,
+    -1.495609145176523,
+    -1.570609268728,
+    0.10007022385957882
+  ],
+  "joint_state_messages": 738,
+  "clock_messages": 3675,
+  "clock_start_sec": 0.002,
+  "clock_end_sec": 7.477999999,
+  "clock_monotonic": true,
+  "clock_publisher_qos": [
+    {
+      "reliability": "RELIABLE",
+      "durability": "VOLATILE"
+    }
+  ],
+  "tf_child_frames": [
+    "base",
+    "base_link",
+    "base_link_inertia",
+    "flange",
+    "forearm_link",
+    "ft_frame",
+    "shoulder_link",
+    "tool0",
+    "upper_arm_link",
+    "wrist_1_link",
+    "wrist_2_link",
+    "wrist_3_link"
+  ],
+  "mujoco_gpu_process_seen": true,
+  "rviz_gpu_process_seen": true,
+  "screenshots": {
+    "captured_utc": "2026-10-07T10:03:36.574788+00:00",
+    "robot_id": "ur5e",
+    "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
+    "pose": "After verified MoveIt trajectory execution",
+    "images": [
+      {
+        "file": "docs/robots/ur5e/images/mujoco_gui.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "ros2_control_node",
+        "kind": "X11 client-window screenshot",
+        "sha256": "001934def36286658ea048c4964da35ec6c5498f58955d442e126dd47f9aafcc",
+        "camera_wheel_up_steps": 0
+      },
+      {
+        "file": "docs/robots/ur5e/images/rviz.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "rviz2",
+        "kind": "X11 client-window screenshot",
+        "sha256": "ce4eee2b2143506bd2f3829efc200e7d4e053508a650fb2411a573cf33f79d80",
+        "camera_wheel_up_steps": 0
+      }
+    ]
+  },
+  "gui": true,
+  "ros_domain_id": 91,
+  "motion_checks_passed": true,
+  "stop_mode": "interrupt",
+  "shutdown_failures": [],
+  "shutdown_timed_out": false,
+  "launch_return_code": 0,
+  "process_group_gone": true,
+  "shutdown_clean": true
+}

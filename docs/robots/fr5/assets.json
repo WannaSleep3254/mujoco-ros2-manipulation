@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "robot_id": "fr5",
+  "robot": "FAIRINO FR5 V6",
+  "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+  "images": [
+    {
+      "captured_utc": "2026-10-07T07:43:32.249227+00:00",
+      "robot_id": "fr5",
+      "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+      "kind": "MuJoCo EGL offscreen reference rendering",
+      "mujoco_python_version": "3.14.0",
+      "file": "images/home.png",
+      "size_px": [
+        1000,
+        750
+      ],
+      "sha256": "2928dce0fb8e73a2ea29be5b540f3f8e54ff5b3295cec714d1883fa4cd0ffc73",
+      "joint_names": [
+        "j1",
+        "j2",
+        "j3",
+        "j4",
+        "j5",
+        "j6"
+      ],
+      "joint_positions_rad": [
+        0.0,
+        -1.2,
+        1.2,
+        -1.5,
+        -1.5,
+        0.0
+      ],
+      "pose": "Configured home keyframe; no physics settling or ROS nodes",
+      "shadows_enabled": false,
+      "camera": {
+        "lookat_m": [
+          -0.30973185027229866,
+          -0.06444678304053228,
+          0.30305820433420877
+        ],
+        "distance_m": 1.8313507196356476,
+        "azimuth_deg": 135.0,
+        "elevation_deg": -25.0
+      },
+      "provenance": "reference_image.json",
+      "bytes": 42146
+    },
+    {
+      "file": "images/mujoco_gui.png",
+      "size_px": [
+        1850,
+        950
+      ],
+      "application": "ros2_control_node",
+      "kind": "X11 client-window screenshot",
+      "sha256": "689a3ad1879d85651c3de795d4278e920c34f4871f7da58fe37356c279a7735d",
+      "camera_wheel_up_steps": 8,
+      "captured_utc": "2026-10-07T09:04:55.305863+00:00",
+      "pose": "After verified MoveIt trajectory execution",
+      "provenance": "gui_capture_validation.json",
+      "bytes": 60082
+    },
+    {
+      "file": "images/rviz.png",
+      "size_px": [
+        1850,
+        950
+      ],
+      "application": "rviz2",
+      "kind": "X11 client-window screenshot",
+      "sha256": "9b8abeeb261a041b765b0f5a22e213d6258e27cdc0017ce20974c378cbe1098c",
+      "camera_wheel_up_steps": 0,
+      "captured_utc": "2026-10-07T09:04:55.305863+00:00",
+      "pose": "After verified MoveIt trajectory execution",
+      "provenance": "gui_capture_validation.json",
+      "bytes": 242745
+    }
+  ],
+  "manufacturer_source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2",
+  "manufacturer_source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
+  "capture_script_sha256": "f4522ab7388c5eef62eab5c61dabada8d3df86fcdb5cc27efb06d1069be53069",
+  "verification_report": "gui_capture_validation.json"
+}
