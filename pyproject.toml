@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64,<80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mujoco-ros2-manipulation"
+version = "0.2.0"
+description = "MuJoCo and ROS 2 manipulator simulation workspace tools"
+requires-python = ">=3.10"
+# Compatibility constraints remain in requirements.txt (Dependabot watches it).
+dynamic = ["dependencies"]
+
+[project.scripts]
+manipulation-prepare = "mujoco_ros2_manipulation.model_build.prepare:main"
+manipulation-verify = "mujoco_ros2_manipulation.verification.ros_checks:main"
+manipulation-images = "mujoco_ros2_manipulation.verification.images:main"
+manipulation-build = "mujoco_ros2_manipulation.build:main"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+where = ["src"]

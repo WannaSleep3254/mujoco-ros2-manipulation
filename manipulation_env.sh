@@ -11,4 +11,6 @@ export PYTHONPATH="${task_manipulation_env_runtime}/local/lib/python3.10/dist-pa
 if [[ -f "${task_manipulation_env_root}/ros_ws/install/local_setup.bash" ]]; then
   source "${task_manipulation_env_root}/ros_ws/install/local_setup.bash"
 fi
+export MUJOCO_ROS2_WORKSPACE="${task_manipulation_env_root}"
+export PYTHONPATH="${task_manipulation_env_root}/src:${PYTHONPATH:-}"
 unset task_manipulation_env_root task_manipulation_env_runtime

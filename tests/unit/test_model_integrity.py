@@ -8,8 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from model_integrity import GENERATOR_FILES, ensure_inputs_unchanged, input_snapshot, make_integrity
-from robot_config import RobotProfile, check_generated_model, load_profile
+from mujoco_ros2_manipulation.model_build.integrity import GENERATOR_FILES, ensure_inputs_unchanged, input_snapshot, make_integrity
+from mujoco_ros2_manipulation.profiles import RobotProfile, check_generated_model, load_profile
 
 
 class IntegrityTests(unittest.TestCase):
@@ -55,7 +55,7 @@ class IntegrityTests(unittest.TestCase):
     def test_inputs_changed_after_read_are_rejected_before_publication(self):
         snapshot = input_snapshot(self.profile)
         ensure_inputs_unchanged(self.profile, snapshot)
-        (self.root / 'prepare_robot.py').write_text('changed after input read')
+        (self.root / GENERATOR_FILES[0]).write_text('changed after input read')
         with self.assertRaisesRegex(ValueError, 'inputs changed during generation'):
             ensure_inputs_unchanged(self.profile, snapshot)
 
@@ -73,7 +73,7 @@ class IntegrityTests(unittest.TestCase):
             check_generated_model(self.profile)
 
     def test_generator_and_configuration_changes_are_rejected(self):
-        for name in ('prepare_robot.py', 'model_integrity.py', 'requirements.txt',
+        for name in (GENERATOR_FILES[0], GENERATOR_FILES[3], 'requirements.txt',
                      'config/controller_defaults.yaml'):
             with self.subTest(input=name):
                 path = self.root / name
@@ -118,7 +118,7 @@ class IntegrityTests(unittest.TestCase):
             check_generated_model(self.profile)
 
     def test_failed_staged_generation_preserves_previous_outputs(self):
-        from prepare_robot import prepare
+        from mujoco_ros2_manipulation.model_build.prepare import prepare
         before = {p.relative_to(self.profile.output): p.read_bytes()
                   for p in self.profile.output.rglob('*') if p.is_file()}
 
@@ -126,7 +126,7 @@ class IntegrityTests(unittest.TestCase):
             staged.scene_path.write_text('partially generated')
             raise ValueError('injected compilation failure')
 
-        with patch('prepare_robot._prepare', side_effect=fail):
+        with patch('mujoco_ros2_manipulation.model_build.prepare._prepare', side_effect=fail):
             with self.assertRaisesRegex(ValueError, 'compilation failure'):
                 prepare(self.profile)
         after = {p.relative_to(self.profile.output): p.read_bytes()
@@ -135,7 +135,7 @@ class IntegrityTests(unittest.TestCase):
         check_generated_model(self.profile)
 
     def test_interrupted_publication_cannot_pass_integrity_check(self):
-        from prepare_robot import prepare
+        from mujoco_ros2_manipulation.model_build.prepare import prepare
         import os
         replace = os.replace
 
@@ -147,20 +147,20 @@ class IntegrityTests(unittest.TestCase):
         def build(staged, destination):
             return self.write_build(staged, 'new-build')
 
-        with patch('prepare_robot._prepare', side_effect=build), patch('prepare_robot.os.replace', side_effect=publish):
+        with patch('mujoco_ros2_manipulation.model_build.prepare._prepare', side_effect=build), patch('mujoco_ros2_manipulation.model_build.prepare.os.replace', side_effect=publish):
             with self.assertRaisesRegex(OSError, 'publication failure'):
                 prepare(self.profile)
         with self.assertRaisesRegex(ValueError, 'generated output changed'):
             check_generated_model(self.profile)
 
     def test_regeneration_recovers_from_damaged_metadata(self):
-        from prepare_robot import prepare
+        from mujoco_ros2_manipulation.model_build.prepare import prepare
         path = self.profile.output / 'source.json'
         for contents in ('{invalid', '[]', '{"integrity": null}',
                          '{"integrity": {"outputs": []}}'):
             with self.subTest(metadata=contents):
                 path.write_text(contents)
-                with patch('prepare_robot._prepare', side_effect=lambda staged, destination: self.write_build(staged)), \
-                     patch('prepare_robot.write_controller_config'), patch('builtins.print'):
+                with patch('mujoco_ros2_manipulation.model_build.prepare._prepare', side_effect=lambda staged, destination: self.write_build(staged)), \
+                     patch('mujoco_ros2_manipulation.model_build.prepare.write_controller_config'), patch('builtins.print'):
                     prepare(self.profile)
                 check_generated_model(self.profile)

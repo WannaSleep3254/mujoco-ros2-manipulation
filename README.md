@@ -139,22 +139,38 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [초기 1관절 데모](docs/single_joint_demo.md) | Python 브리지, ROS 토픽 제어, rqt 및 초기 검증 기록 |
 | [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md) | 작업장면 설정 분리, 고정 베이스, FR5·UR5e 공동 제어와 단계별 완료 기준 |
 
+## 패키지·빌드·작업장면
+
+정식 구현은 `src/mujoco_ros2_manipulation`에 있고 루트 명령은 호환성을 유지합니다.
+제조사/런타임 소스와 deb 잠금은 `config/build.yaml`, 로봇 설정은 `config/robots`,
+설치 자세·고정 형상은 `config/scenes`에서 관리합니다.
+
+```bash
+python3 build_workspace.py --dry-run --robots fr5
+.venv/bin/python prepare_robot.py --robot fr5 --scene pedestal
+bash run_sim.sh robot:=fr5 scene:=pedestal
+```
+
+기본 바닥과 40cm 받침대 장면을 제공합니다. 같은 형상을 MuJoCo·ROS·MoveIt이 공유합니다.
+[구조 설명](docs/architecture.md)에 설치형 CLI, 출력 경로, CI와 지원 범위를 정리했습니다.
+[개발 검사](CONTRIBUTING.md) · [GitHub Actions](.github/workflows/ci.yml)
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
 서보 게인과 모터 감쇠는 예제 설정이며, 충돌 형상은 제조사 STL의 convex hull 근사입니다.
-MuJoCo의 바닥은 아직 MoveIt 계획 장면에 등록하지 않았습니다.
+바닥·고정 받침대는 합성 URDF를 통해 MuJoCo와 MoveIt의 충돌 모델에 함께 반영합니다.
 
 | 순서 | 다음 작업 |
 |---|---|
-| 1 | 작업장면 설정 분리, 고정 베이스 + FR5, 바닥·장애물의 MuJoCo·MoveIt 일치 |
+| 완료 | 단일 로봇 작업장면 분리, 고정 받침대·공유 충돌 형상, 패키지 구조·CI·빌드 명세 통합 |
 | 2 | FR5·UR5e 공동 배치, 팔별 궤적 제어와 공동 충돌 회피 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |
 
 [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md)에 변경할 파일, 설정 초안, 검증 기준과 구현 순서를 정리했습니다.
-고정 베이스와 다중 로봇 기능은 아직 구현 전입니다.
+고정 받침대의 단일 로봇 장면을 지원합니다. CAD 메시 입력·다중 로봇 제어는 후속 작업입니다.
 
 실제 로봇 연결은 아직 검증하지 않았습니다.
 제조사 모델과 연동 패키지의 고정 커밋·라이선스는 [출처 안내](docs/setup.md#소스-버전과-출처)에 기록했습니다.

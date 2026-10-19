@@ -111,7 +111,7 @@ RViz OpenGL 4.6, MotionPlanning 연결도 확인했습니다.
 ## 구조와 변환 검사
 
 ```bash
-.venv/bin/python -m unittest discover -s tests -v
+PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -t . -v
 ```
 
 2026-10-19 검증 보고서·생성물 검사 보강 후 **34개 통과·건너뜀 0개**를 확인했습니다.
@@ -129,7 +129,20 @@ GUI 경로는 모의 검사이며 실제 데스크톱 GUI 재실행과 구분합
 신규 회귀 검사는 입력·출력 변경, 제조사 소스 변경, 잘못된 명세, 단계별 생성 실패와 게시 중단을 검사합니다.
 검증 이력 검사는 ROS 연결을 모의하여 실패·중단·정리 오류·동시 실행의 최신 결과·촬영 수집 거부를 재현합니다.
 이는 실제 ROS·GUI 통합 검사와 구분합니다.
-코드는 [무결성 검사](../tests/test_model_integrity.py), [실행 이력 검사](../tests/test_verification_reports.py), [프로필 검사](../tests/test_robot_profiles.py)와 [시각 모델 검사](../tests/test_collada_visuals.py)에 있습니다.
+코드는 [무결성 검사](../tests/unit/test_model_integrity.py), [실행 이력 검사](../tests/unit/test_verification_reports.py), [프로필 검사](../tests/unit/test_robot_profiles.py)와 [시각 모델 검사](../tests/model/test_ur5e_visuals.py)에 있습니다.
 
 기존 `verify_fr5.py`는 FR5 호환 진입점입니다. 신규 모델은 공통 검증기를 사용합니다.
 [초기 1관절 브리지 검증](single_joint_demo.md)은 별도 데모와 ROS 도메인을 사용합니다.
+
+## 구조 개편 후 검사
+
+단위 검사는 `tests/unit`, 제조사 모델 검사는 `tests/model`, 실제 ROS 절차는
+[tests/integration](../tests/integration/README.md)로 분리했습니다. 전체 검사는 위의
+`PYTHONPATH=src ... discover -s tests -t .`로 실행합니다.
+`verify_robot.py --scene pedestal`은 기본 모델 검증을 덮어쓰지 않고 장면별 보고서를 생성합니다.
+실제 MoveIt의 robot_description 충돌 링크와 장면의 고정 TF도 확인합니다.
+검증 조합과 CI 실행 경계는 [구조 설명](architecture.md#ci와-검증-경계)에 있습니다.
+
+2026-10-19 구조 개편 후에는 **44개 통과·실패 0개·건너뜀 0개**,
+세 모델 기본 장면과 FR5 받침대 장면의 실제 ROS 연동·충돌 모델·TF·종료를 확인했습니다.
+[구조 개편 검증 기록](structure_validation.json)에 코드 해시·실행 ID와 미실행 항목을 보관합니다.

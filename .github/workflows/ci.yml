@@ -1,0 +1,88 @@
+name: Verification
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  python:
+    name: Python package and unit tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
+          cache: pip
+      - run: python -m pip install -r requirements.txt build
+      - run: python -m build
+      - run: python -m pip install --no-deps dist/*.whl
+      - run: python scripts/check_repository.py
+      - run: python -m unittest discover -s tests/unit -t . -v
+      - name: Installed package works outside checkout
+        run: |
+          cd /tmp
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare --list
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --robots fr5
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: python-distributions
+          path: dist/
+  ros:
+    name: ROS Humble (${{ matrix.robot }}, ${{ matrix.scene }})
+    runs-on: ubuntu-22.04
+    container: ros:humble-ros-base-jammy
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {robot: fr5, scene: default}
+          - {robot: fr10, scene: default}
+          - {robot: ur5e, scene: default}
+          - {robot: fr5, scene: pedestal}
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: ROS build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential git python3-pip python3-venv \
+            python3-colcon-common-extensions libglfw3-dev libfmt-dev libeigen3-dev libtinyxml2-dev \
+            ros-humble-moveit ros-humble-ros2-control ros-humble-ros2-controllers \
+            ros-humble-control-toolbox ros-humble-backward-ros ros-humble-xacro \
+            ros-humble-rmw-cyclonedds-cpp ros-humble-ros2-control-cmake
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/python -m pip install -r requirements.txt
+      - name: Build locked runtime and selected model
+        run: python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}'
+      - name: Model regression checks
+        if: matrix.scene == 'default'
+        run: PYTHONPATH=src .venv/bin/python -m unittest discover -s tests/model -t . -v
+      - name: Actual ROS / MoveIt headless verification
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_robot.py --robot '${{ matrix.robot }}' --scene '${{ matrix.scene }}' --domain 94
+      - name: Preserve reports on success or failure
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: ros-${{ matrix.robot }}-${{ matrix.scene }}
+          path: |
+            runtime/validation/
+            ros_ws/log/
+            models/**/source.json
+          if-no-files-found: warn
+          retention-days: 14

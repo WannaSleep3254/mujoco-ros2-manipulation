@@ -10,8 +10,8 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-from verification_reports import VerificationReport, atomic_json
-from verification_runner import run_verification, stop_process
+from mujoco_ros2_manipulation.verification.reports import VerificationReport, atomic_json
+from mujoco_ros2_manipulation.verification.runner import run_verification, stop_process
 
 
 class ReportTests(unittest.TestCase):
@@ -58,17 +58,19 @@ class LifecycleTests(unittest.TestCase):
         self.process.poll.return_value = None
 
     def run_case(self, *, preflight=None, spawn=None):
-        with patch('verification_runner.load_profile', return_value=self.profile), \
-             patch('verification_runner.check_generated_model', side_effect=preflight), \
-             patch('verification_runner.subprocess.Popen', side_effect=spawn, return_value=self.process), \
-             patch('verification_runner.stop_process', return_value=False), \
-             patch('verification_runner.group_gone', return_value=True), \
+        with patch('mujoco_ros2_manipulation.verification.runner.load_profile', return_value=self.profile), \
+             patch('mujoco_ros2_manipulation.verification.runner.check_generated_model', side_effect=preflight), \
+             patch('mujoco_ros2_manipulation.verification.runner.subprocess.Popen', side_effect=spawn, return_value=self.process), \
+             patch('mujoco_ros2_manipulation.verification.runner.stop_process', return_value=False), \
+             patch('mujoco_ros2_manipulation.verification.runner.group_gone', return_value=True), \
              patch.dict(os.environ), patch('builtins.print'):
             code = run_verification(self.args, self.root, self.ros,
                                     lambda profile, progress: self.node,
                                     SimpleNamespace(Request=lambda: object()))
         mode = ('gui' if self.args.gui else 'headless') + ('_window' if self.args.stop_mode == 'window' else '')
-        latest = self.root / 'runtime/validation' / f'fr5_{mode}.json'
+        scene = getattr(self.args, 'scene', 'default')
+        report_id = 'fr5' if scene == 'default' else f'fr5_{scene}'
+        latest = self.root / 'runtime/validation' / f'{report_id}_{mode}.json'
         return code, json.loads(latest.read_text())
 
     def test_failed_new_run_replaces_old_success_and_preserves_history(self):
@@ -101,6 +103,16 @@ class LifecycleTests(unittest.TestCase):
         backup, = (latest.parent / 'runs').glob('legacy-*/result.json')
         self.assertEqual(json.loads(backup.read_text()), previous)
 
+    def test_scene_runs_preserve_independent_latest_results(self):
+        _, original = self.run_case()
+        self.args.scene = 'pedestal'
+        code, raised = self.run_case()
+        self.assertEqual(code, 0)
+        self.assertEqual(raised['scene_id'], 'pedestal')
+        path = self.root / 'runtime/validation/fr5_headless.json'
+        self.assertEqual(json.loads(path.read_text())['run_id'], original['run_id'])
+        self.assertNotEqual(original['run_id'], raised['run_id'])
+
     def test_spawn_failure_is_reported(self):
         code, report = self.run_case(spawn=OSError('cannot spawn launch'))
         self.assertEqual(code, 1)
@@ -130,7 +142,7 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(report['error']['type'], 'ShutdownError')
 
     def test_failed_report_cannot_be_collected_even_with_old_success_flags(self):
-        import capture_robot_images
+        from mujoco_ros2_manipulation.verification import images as capture_robot_images
         latest = self.root / 'runtime/validation/fr5_gui.json'
         latest.parent.mkdir(parents=True)
         latest.write_text(json.dumps({'status': 'failed', 'motion_checks_passed': True,
@@ -144,8 +156,8 @@ class LifecycleTests(unittest.TestCase):
         process.poll.return_value = None
         process.wait.side_effect = [subprocess.TimeoutExpired('launch', 12),
                                     subprocess.TimeoutExpired('launch', 5), -9]
-        with patch('verification_runner.os.killpg') as kill, \
-             patch('verification_runner.group_gone', return_value=True):
+        with patch('mujoco_ros2_manipulation.verification.runner.os.killpg') as kill, \
+             patch('mujoco_ros2_manipulation.verification.runner.group_gone', return_value=True):
             self.assertTrue(stop_process(process))
         self.assertEqual([call.args[1] for call in kill.call_args_list], [signal.SIGTERM, signal.SIGKILL])
 
@@ -159,7 +171,7 @@ class LifecycleTests(unittest.TestCase):
             kwargs['stdout'].flush()
             return self.process
 
-        with patch('verification_runner.subprocess.run', return_value=SimpleNamespace(
+        with patch('mujoco_ros2_manipulation.verification.runner.subprocess.run', return_value=SimpleNamespace(
                 stdout='ros2_control_node /rviz2', stderr='')):
             code, report = self.run_case(spawn=spawn)
         self.assertEqual(code, 0)
@@ -177,7 +189,7 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(report['shutdown_clean'])
 
     def test_capture_rejects_a_different_model_build(self):
-        import capture_robot_images
+        from mujoco_ros2_manipulation.verification import images as capture_robot_images
         latest = self.root / 'runtime/validation/fr5_gui.json'
         latest.parent.mkdir(parents=True)
         latest.write_text(json.dumps({'status': 'passed', 'model_manifest_sha256': 'old-build'}))

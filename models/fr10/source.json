@@ -1,9 +1,11 @@
 {
-  "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2",
+  "scene_id": "default",
+  "scene_sha256": "7d40b3520bfc3fd316a8320b1d32c1b28fcdf2caaefa5f0f82bbd9e6cea0fa39",
+  "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2.git",
   "source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
   "robot": "FAIRINO FR10 V6",
   "robot_id": "fr10",
-  "robot_profile_sha256": "02cb60aa46b97a581f3af472769305b9c11712fea947c4ea33a33ff4ed8d0b62",
+  "robot_profile_sha256": "71d32da2f2b1e822ce409a137ad735162dd87b4ea6cd3fb825a68469594f848a",
   "joints": [
     "j1",
     "j2",
@@ -96,8 +98,9 @@
     "inputs": {
       "manufacturer_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
       "files": {
-        "collada_visuals.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
+        "config/build.yaml": "dce182a49b2aed5887be198cf0f2b781ccd0a402412ae2ebd0f33d6bd1395dbf",
         "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+        "config/scenes/default.yaml": "b3d5046749a7e4489f30f4143a44ed585d5e11fb3e2efc0ec9d0521e0aca570f",
         "external/frcobot_ros2/fairino10_v6_moveit2_config/config/fairino10_v6_robot.srdf": "c9b8fbfb21f494f5e874ba8a64c91825beb301661bd0a62d38e8f017646d9a26",
         "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/base_link.STL": "5495b37ced3f2d69b7be183131572b905e94f0dc808cf3ff0c815325394d6048",
         "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/forearm_link.STL": "3838496dc6c14e56d143f167040f20c7369a298c2a66ea907c9193e1910ae9c6",
@@ -107,15 +110,19 @@
         "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/wrist2_link.STL": "e91b1def10f057493425a148f1e15031c9f2858d4573b8a06c399a6be3ced20f",
         "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/wrist3_link.STL": "f1d3f981e79299ace78993af7f9016077b4a85c65281f9b7e99470d8c4942482",
         "external/frcobot_ros2/fairino_description/urdf/fairino10_v6.urdf": "07bf55aa15b26f65ffcb6f85eed094826469e2309c9a70bfa8b6e00390e9d448",
-        "model_integrity.py": "907e80bc0690dbde9be058f1a2683e1c5ebe597060861399bdda3703b9386b5a",
-        "prepare_robot.py": "55b817ec3aa5bfc2c1b134c126d6625584ffb25230fbb13800e49b869609f658",
         "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",
-        "robot_config.py": "4d6e835996ac3897626b5a337481bac90ae93ffe47a085570af34fff09c167bf"
+        "src/mujoco_ros2_manipulation/build.py": "646bc9ed8d544e0917aa8e557b586381fd07e664cb0f59e2703f32e6ff346d2a",
+        "src/mujoco_ros2_manipulation/model_build/collada.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
+        "src/mujoco_ros2_manipulation/model_build/integrity.py": "23d6f8cfe4366ba3865a0c82401a52303f863b6409451e8c81c03501f5684f89",
+        "src/mujoco_ros2_manipulation/model_build/prepare.py": "7ed4f9cfdaa65adb3088ab875bc2128ae98ec963b967b49630a9036035cb1173",
+        "src/mujoco_ros2_manipulation/paths.py": "191d9ff85d65cb2b50413666019a4258955fbfd42f94809d858ca5b81c9b8511",
+        "src/mujoco_ros2_manipulation/profiles.py": "090751865d8aa3ef88374610dbc0ffb6733a5f97367963feb13042df54f873a2",
+        "src/mujoco_ros2_manipulation/scenes.py": "70dbce78c7c758f6b588ff6fdbe0f242c9970cf1a0c7cb01e37a4a301bb0175f"
       }
     },
     "outputs": {
-      "fr10.xml": "e4be6892f0a9d8c0f6c8fd2d45227b6763a3cd79adc6d812622058ed6609fc6a",
-      "fr10.ros2_control.urdf": "9cdcb1db553d7a4573b1d049fc4f7b0ca6b8ec9bc8b2adeb41c8aa0577cbd95a"
+      "fr10.xml": "e98cff3b8e6bfc2ae73ff658bb1196591578d41fc9d74a9008399e55c7cb330a",
+      "fr10.ros2_control.urdf": "dfa6d3e806d441858f3a12a25ec5300a549e22a7dde7c304309958b464a275e7"
     }
   },
   "generator_environment": {

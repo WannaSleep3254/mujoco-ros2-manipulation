@@ -19,3 +19,9 @@ models/*/visual_meshes/
 .aws/
 *.log
 *.pyc
+
+# Python packaging outputs and scene-specific generated assets.
+*.egg-info/
+build/
+dist/
+models/scenes/

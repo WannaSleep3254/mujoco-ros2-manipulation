@@ -1,9 +1,11 @@
 {
-  "source_repository": "https://github.com/UniversalRobots/Universal_Robots_ROS2_Description",
+  "scene_id": "default",
+  "scene_sha256": "7d40b3520bfc3fd316a8320b1d32c1b28fcdf2caaefa5f0f82bbd9e6cea0fa39",
+  "source_repository": "https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git",
   "source_commit": "65fa221f6d9e1904b30b6a05ae39cb24a0c40fac",
   "robot": "Universal Robots UR5e",
   "robot_id": "ur5e",
-  "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
+  "robot_profile_sha256": "005a2fdb9e1a04d2c7ec99341abbb004db3c05cdef03d53305dec9caa13590c1",
   "joints": [
     "shoulder_pan_joint",
     "shoulder_lift_joint",
@@ -259,8 +261,9 @@
     "inputs": {
       "manufacturer_commit": "65fa221f6d9e1904b30b6a05ae39cb24a0c40fac",
       "files": {
-        "collada_visuals.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
+        "config/build.yaml": "dce182a49b2aed5887be198cf0f2b781ccd0a402412ae2ebd0f33d6bd1395dbf",
         "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+        "config/scenes/default.yaml": "b3d5046749a7e4489f30f4143a44ed585d5e11fb3e2efc0ec9d0521e0aca570f",
         "external/ur_description/meshes/ur5e/collision/base.stl": "9a145e0d46f2130afdf2a2e8825a00a929870c4c3d6d8e4d1adc5f04db3aac1b",
         "external/ur_description/meshes/ur5e/collision/forearm.stl": "2e7423cab807c34160ec4f770daee5e747d70e777eb01b7beeace2b8c5751816",
         "external/ur_description/meshes/ur5e/collision/shoulder.stl": "ceb92532177daa77682f5fbd628e01c2137d168f949a7a706ce1dabe9f002387",
@@ -275,13 +278,10 @@
         "external/ur_description/meshes/ur5e/visual/wrist1.dae": "a07a3d96d2540f9be12e4a07bcb8577d9f1e36005920c396a407804343a3b588",
         "external/ur_description/meshes/ur5e/visual/wrist2.dae": "982fa42933c6f81629882ad7975e9ba5dac5d474a6b56694e233708376cf840e",
         "external/ur_description/meshes/ur5e/visual/wrist3.dae": "7a7664ac4adcd53b0870fe6a2b8b975693d846dd4d07a5f44194c7d16f4890ba",
-        "manipulation_env.sh": "f34221b9131a2b5a247dbb72a9514beba4e65904c6720eb0de79476f91841403",
-        "model_integrity.py": "907e80bc0690dbde9be058f1a2683e1c5ebe597060861399bdda3703b9386b5a",
+        "manipulation_env.sh": "02966374c4661960be81853b30d0fe83319064641a50f11e04d8ad78390e5bf4",
         "packages/ur5e_moveit_config/config/ur5e.srdf": "e0495479bd4aac2f3d576f6565000d98c210368a256ab18f603e14a03d47cc84",
         "packages/ur5e_moveit_config/config/ur5e.urdf.xacro": "9295f3aab28b85aad1cad2cf2e97d5deba36172d4d43d481a0ef5cc0400f9c4d",
-        "prepare_robot.py": "55b817ec3aa5bfc2c1b134c126d6625584ffb25230fbb13800e49b869609f658",
         "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",
-        "robot_config.py": "4d6e835996ac3897626b5a337481bac90ae93ffe47a085570af34fff09c167bf",
         "ros2_env.sh": "104adcecf17d293cfbacb0ea37ca643ee36267f54df23007f99b028a14fb8ea9",
         "ros_ws/install/ur_description/share/ur_description/config/ur5e/default_kinematics.yaml": "4ffc6086bb0118a5a8e4a3576ef41de878de946710799ea4835789063fa9c0bc",
         "ros_ws/install/ur_description/share/ur_description/config/ur5e/joint_limits.yaml": "1e908454a0fb073761a0c675f708eb003ca7d5333a9e0863ef87fe40d9abb3c7",
@@ -289,12 +289,19 @@
         "ros_ws/install/ur_description/share/ur_description/config/ur5e/visual_parameters.yaml": "ef59d6cd6744014c54301e051208c3bf4f667291940598b22eb4a8ba3436f699",
         "ros_ws/install/ur_description/share/ur_description/urdf/inc/ur_common.xacro": "6f01bf71dc8073b5cd7458c12ed39d87eb99ffec7d6bb31d534d96f83c534304",
         "ros_ws/install/ur_description/share/ur_description/urdf/inc/ur_transmissions.xacro": "85096b2102ef26cb11313956e9ba737f3fae63a0b702108f8cf3253de1cdadf3",
-        "ros_ws/install/ur_description/share/ur_description/urdf/ur_macro.xacro": "e5ef4dd07523e5832fd34ca564e882a3980a95845ee4af3f3690e418d6c3ce98"
+        "ros_ws/install/ur_description/share/ur_description/urdf/ur_macro.xacro": "e5ef4dd07523e5832fd34ca564e882a3980a95845ee4af3f3690e418d6c3ce98",
+        "src/mujoco_ros2_manipulation/build.py": "646bc9ed8d544e0917aa8e557b586381fd07e664cb0f59e2703f32e6ff346d2a",
+        "src/mujoco_ros2_manipulation/model_build/collada.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
+        "src/mujoco_ros2_manipulation/model_build/integrity.py": "23d6f8cfe4366ba3865a0c82401a52303f863b6409451e8c81c03501f5684f89",
+        "src/mujoco_ros2_manipulation/model_build/prepare.py": "7ed4f9cfdaa65adb3088ab875bc2128ae98ec963b967b49630a9036035cb1173",
+        "src/mujoco_ros2_manipulation/paths.py": "191d9ff85d65cb2b50413666019a4258955fbfd42f94809d858ca5b81c9b8511",
+        "src/mujoco_ros2_manipulation/profiles.py": "090751865d8aa3ef88374610dbc0ffb6733a5f97367963feb13042df54f873a2",
+        "src/mujoco_ros2_manipulation/scenes.py": "70dbce78c7c758f6b588ff6fdbe0f242c9970cf1a0c7cb01e37a4a301bb0175f"
       }
     },
     "outputs": {
-      "ur5e.xml": "df988b623a91ed4f4dd930dd1796dee24ec15de39bc68a0a853d70251d7c5b03",
-      "ur5e.ros2_control.urdf": "fad6b3b7c5b054f25449aa1c6f4deb5146ad8fe5ccb3916e35680e92643183f4",
+      "ur5e.xml": "30cbaefe8670fe103804172f29d1262ebb480bfaab155e1c1c09ed353b03da7c",
+      "ur5e.ros2_control.urdf": "787f8101b1aa799a007fe8d1f2943f3f189ee04c87644cd498eaa845e0b78b22",
       "visual_meshes/base_01bfc311_0.obj": "a22eb7ba8c0746e5fcfe52b9a6cfe41553ce663ca0f0658383271039c3c2bb3e",
       "visual_meshes/base_01bfc311_1.obj": "84238c0f79ffca4e57da371fa2e47d98abc8fdc04509ffcdddec4656b4f2d1ee",
       "visual_meshes/forearm_871d47b0_0.obj": "d42474d8fc3ac34603d76ab9c391bdbebb33dd25d78d8104c5e7ec060d8aeb1c",
