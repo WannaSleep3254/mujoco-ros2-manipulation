@@ -278,7 +278,7 @@
         "external/ur_description/meshes/ur5e/visual/wrist1.dae": "a07a3d96d2540f9be12e4a07bcb8577d9f1e36005920c396a407804343a3b588",
         "external/ur_description/meshes/ur5e/visual/wrist2.dae": "982fa42933c6f81629882ad7975e9ba5dac5d474a6b56694e233708376cf840e",
         "external/ur_description/meshes/ur5e/visual/wrist3.dae": "7a7664ac4adcd53b0870fe6a2b8b975693d846dd4d07a5f44194c7d16f4890ba",
-        "manipulation_env.sh": "02966374c4661960be81853b30d0fe83319064641a50f11e04d8ad78390e5bf4",
+        "manipulation_env.sh": "b570ffb025e37def8e5d831c98d41239559f1e5307ebf084454b694646832502",
         "packages/ur5e_moveit_config/config/ur5e.srdf": "e0495479bd4aac2f3d576f6565000d98c210368a256ab18f603e14a03d47cc84",
         "packages/ur5e_moveit_config/config/ur5e.urdf.xacro": "9295f3aab28b85aad1cad2cf2e97d5deba36172d4d43d481a0ef5cc0400f9c4d",
         "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",

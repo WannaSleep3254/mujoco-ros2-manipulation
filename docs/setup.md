@@ -132,6 +132,8 @@ ROS 시스템 Python과 생성용 가상환경은 다르므로 실행 시 두 �
 `manipulation_env.sh`는 기존 다른 워크스페이스의 환경 대신 `/opt/ros/humble`과
 프로젝트의 로컬 런타임·빌드 패키지를 로드합니다. 셸 초기 설정 파일은 수정하지 않습니다.
 공통 도메인은 `MANIPULATION_ROS_DOMAIN_ID`로 지정하며 기본값은 89입니다.
+미들웨어 기본값은 `rmw_cyclonedds_cpp`이며 `MANIPULATION_RMW_IMPLEMENTATION`으로 변경할 수 있습니다.
+모든 참여 터미널에서 같은 환경을 source합니다.
 
 FR5의 기존 `prepare_fr5.py`, `run_fr5.sh`, `fr5.launch.py`, `fr5_env.sh`,
 `verify_fr5.py`, `build_fr5_runtime.sh`는 호환 진입점으로 유지합니다.

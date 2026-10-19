@@ -77,7 +77,12 @@ jobs:
       - name: Actual ROS / MoveIt headless verification
         run: |
           source ./manipulation_env.sh
-          python3 verify_robot.py --robot '${{ matrix.robot }}' --scene '${{ matrix.scene }}' --domain 94
+          # Repeat UR5e without retries: any failed run fails the job and keeps its report.
+          count=1
+          if [[ '${{ matrix.robot }}' == 'ur5e' ]]; then count=3; fi
+          for ((run=1; run<=count; run++)); do
+            python3 verify_robot.py --robot '${{ matrix.robot }}' --scene '${{ matrix.scene }}' --domain "$((93 + run))"
+          done
       - name: Preserve reports on success or failure
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

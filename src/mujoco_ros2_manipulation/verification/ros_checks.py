@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
+from rclpy.utilities import get_rmw_implementation_identifier
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from action_msgs.msg import GoalStatus
 from control_msgs.action import FollowJointTrajectory
@@ -219,6 +220,7 @@ class Verification(Node):
         missing_frames = set(self.profile.ros['tf_child_frames']) - self.transforms
         assert not missing_frames, f'Missing robot transforms: {sorted(missing_frames)}'
         return {
+            'rmw_implementation': get_rmw_implementation_identifier(),
             'workcell_collision_links': workcell_links,
             'workcell_geometry_matches': True,
             'validated_utc': datetime.now(timezone.utc).isoformat(),

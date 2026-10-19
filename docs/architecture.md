@@ -40,6 +40,10 @@ editable 설치 없이 같은 코드를 사용합니다. 기존 `prepare_robot.p
 `run_sim.sh`, FR5 명령과 단일 관절 명령은 계속 동작합니다.
 
 패키지 설치만으로 ROS Python 바인딩·MoveIt·네이티브 런타임이 설치되지는 않습니다.
+`manipulation_env.sh`는 로컬 검증과 같은 Cyclone DDS를 기본으로 선택합니다.
+별도 검증 환경은 `MANIPULATION_RMW_IMPLEMENTATION`으로 변경할 수 있으며 검증 보고서에는
+실제 `rmw_implementation`을 기록합니다. 호스트의 암묵적인 DDS 선택을 상속하지 않습니다.
+
 `requirements.txt`의 MuJoCo·NumPy 버전과 Dependabot 정책은 유지합니다.
 
 ## 빌드 정의의 단일 출처
@@ -114,6 +118,7 @@ PR과 main push에서 다음 작업을 실행합니다. 권한은 contents:read�
 | 산출물 | 배포 패키지, 성공/실패의 ROS 보고서와 colcon 로그 보존 |
 
 ROS 작업은 공식 `ros:humble-ros-base-jammy` 컨테이너에서 실행합니다.
+UR5e는 CI에서 3회 연속 실행하며 한 번이라도 실패하면 해당 작업이 실패합니다.
 GUI/GPU 성능·실물 로봇·장면별 모든 충돌 상황은 자동 검증 범위가 아닙니다.
 로컬 통과와 GitHub 실행 결과는 구분해 보고합니다. 기존 GUI 자료는 이전 버전의 보관 기록입니다.
 
