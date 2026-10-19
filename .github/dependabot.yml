@@ -9,7 +9,7 @@ updates:
       time: "09:00"
       timezone: "Asia/Seoul"
     open-pull-requests-limit: 5
-    versioning-strategy: "increase"
+    versioning-strategy: "increase-if-necessary"
     groups:
       python-helpers:
         applies-to: "version-updates"
@@ -24,21 +24,9 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
-      # 검증 기준 조합은 보안 업데이트 외에는 수동으로 갱신합니다.
-      # versions 범위 차단은 사용하지 않아 보안 수정 버전을 막지 않습니다.
+      # 현재 버전이 없는 범위형 요구사항에도 적용되도록 이름으로 제외합니다.
+      # versions 범위는 지정하지 않아 보안 전용 실행의 수정 경로는 유지합니다.
       - dependency-name: "mujoco"
-        update-types:
-          - "version-update:semver-major"
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
       - dependency-name: "numpy"
-        update-types:
-          - "version-update:semver-major"
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
-      # PyYAML의 하한을 올리면 ROS의 시스템 패키지 5.4.1을 제외할 수 있습니다.
+      # ROS 시스템 PyYAML 5.4.1을 허용하는 하한을 유지합니다.
       - dependency-name: "pyyaml"
-        update-types:
-          - "version-update:semver-major"
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
