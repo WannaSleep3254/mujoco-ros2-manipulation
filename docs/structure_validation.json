@@ -2,8 +2,8 @@
   "schema_version": 1,
   "base_commit": "8de21a988cbdae8541b235606cf955fb71366340",
   "validation_code_sha256": {
-    ".github/workflows/ci.yml": "69ebb3719dd8887547b3fc24d54d9f8fe52c607bdef75097f0f7faaa68b9891c",
-    "config/build.yaml": "dce182a49b2aed5887be198cf0f2b781ccd0a402412ae2ebd0f33d6bd1395dbf",
+    ".github/workflows/ci.yml": "2d7b5863a62a442e17d78e0ed57d57c435414ae59e5dfe71bed75ea13beb392f",
+    "config/build.yaml": "bf95fd2bac463c2b2c59f62963168fe01b841fedccb48b2286c7efbf5de582f4",
     "config/scenes/default.yaml": "b3d5046749a7e4489f30f4143a44ed585d5e11fb3e2efc0ec9d0521e0aca570f",
     "config/scenes/pedestal.yaml": "dc9f01187e0a3a4d3425134f85a6a42dbe1a5512b4b8a6794dcbfcb3889546a0",
     "pyproject.toml": "895842f4a1a968baedbe641f5720345eff5b0fcb45924e0effa9d11f786e85a1",
@@ -52,29 +52,29 @@
   "ros_integration": [
     {
       "schema_version": 2,
-      "run_id": "20261019T082142.347191Z-fe1bfecf",
+      "run_id": "20261019T083425.050290Z-d6f7b89f",
       "robot_id": "fr5",
       "ros_domain_id": 94,
       "status": "passed",
       "stage": "complete",
-      "started_utc": "2026-10-19T08:21:42.347307+00:00",
-      "completed_utc": "2026-10-19T08:21:51.444628+00:00",
+      "started_utc": "2026-10-19T08:34:25.050378+00:00",
+      "completed_utc": "2026-10-19T08:34:34.206239+00:00",
       "motion_checks_passed": true,
       "shutdown_clean": true,
       "error": null,
       "cleanup_errors": [],
-      "log_path": "runtime/validation/runs/20261019T082142.347191Z-fe1bfecf/launch.log",
+      "log_path": "runtime/validation/runs/20261019T083425.050290Z-d6f7b89f/launch.log",
       "scene_id": "default",
       "robot": "FAIRINO FR5 V6",
       "robot_profile_sha256": "532a7eb981880b06c0ef0c1b8e918bddaffe2fe28d3f8da96d20438172141acb",
-      "model_manifest_sha256": "188a30b9648024adc4dddaef1c5f280ff629d46d45c894a6f754b1b5411e7f70",
+      "model_manifest_sha256": "0d451f63b7659a09350e6b7e8902ecfbcea148d3df32b2ded845ce9f3616d2d2",
       "gui": false,
       "stop_mode": "interrupt",
       "workcell_collision_links": [
         "workcell_floor"
       ],
       "workcell_geometry_matches": true,
-      "validated_utc": "2026-10-19T08:21:51.064427+00:00",
+      "validated_utc": "2026-10-19T08:34:33.820976+00:00",
       "joints": [
         "j1",
         "j2",
@@ -84,38 +84,38 @@
         "j6"
       ],
       "controllers": {
-        "fairino5_controller": "active",
-        "joint_state_broadcaster": "active"
+        "joint_state_broadcaster": "active",
+        "fairino5_controller": "active"
       },
       "direct_tracking_error_rad": [
-        2.792722338634812e-06,
-        0.0031488800656536142,
-        0.0036144426605233537,
-        0.0007730488002850588,
-        8.307488268632923e-06,
-        -1.1467069280900503e-06
+        2.789213415205216e-06,
+        0.0031488425291015254,
+        0.0036144255778300938,
+        0.0007730451028020724,
+        8.307466681234388e-06,
+        -1.146682778951726e-06
       ],
       "moveit_trajectory_points": 49,
       "moveit_tracking_error_rad": [
-        -7.559861594980122e-06,
-        0.0032553975835218907,
-        0.003613370790764181,
-        0.0007668363646817777,
-        7.811399913570938e-06,
-        -1.9348291666193562e-06
+        -1.0422318256486651e-06,
+        0.003254232965454129,
+        0.003612924286388486,
+        0.0007672746474807202,
+        7.774080822198215e-06,
+        -1.8685183291178298e-06
       ],
       "final_joint_positions_rad": [
-        -0.1995838690605743,
-        -1.097976485569332,
-        1.1024124470061283,
-        -1.3965228007352697,
-        -1.4986567516030826,
-        0.10170745619712539
+        -0.20206435048477867,
+        -1.0990723325530554,
+        1.101210791381766,
+        -1.3980305420402483,
+        -1.4988772793680225,
+        0.09852477127101376
       ],
-      "joint_state_messages": 809,
-      "clock_messages": 4131,
+      "joint_state_messages": 816,
+      "clock_messages": 4160,
       "clock_start_sec": 0.002,
-      "clock_end_sec": 8.265999999,
+      "clock_end_sec": 8.323999999,
       "clock_monotonic": true,
       "clock_publisher_qos": [
         {
@@ -141,29 +141,29 @@
     },
     {
       "schema_version": 2,
-      "run_id": "20261019T082146.440461Z-fb854655",
+      "run_id": "20261019T083429.875126Z-cd7c8238",
       "robot_id": "fr10",
       "ros_domain_id": 95,
       "status": "passed",
       "stage": "complete",
-      "started_utc": "2026-10-19T08:21:46.440548+00:00",
-      "completed_utc": "2026-10-19T08:21:52.414758+00:00",
+      "started_utc": "2026-10-19T08:34:29.875220+00:00",
+      "completed_utc": "2026-10-19T08:34:35.791083+00:00",
       "motion_checks_passed": true,
       "shutdown_clean": true,
       "error": null,
       "cleanup_errors": [],
-      "log_path": "runtime/validation/runs/20261019T082146.440461Z-fb854655/launch.log",
+      "log_path": "runtime/validation/runs/20261019T083429.875126Z-cd7c8238/launch.log",
       "scene_id": "default",
       "robot": "FAIRINO FR10 V6",
       "robot_profile_sha256": "71d32da2f2b1e822ce409a137ad735162dd87b4ea6cd3fb825a68469594f848a",
-      "model_manifest_sha256": "82fe3060976a4059fb650dc34349c0141a225a139ed891fd7f659106078e1742",
+      "model_manifest_sha256": "805d7b12e17a7a3f9835704ea58788085cae6e7c50156653ee8d0f228e65d698",
       "gui": false,
       "stop_mode": "interrupt",
       "workcell_collision_links": [
         "workcell_floor"
       ],
       "workcell_geometry_matches": true,
-      "validated_utc": "2026-10-19T08:21:52.027449+00:00",
+      "validated_utc": "2026-10-19T08:34:35.407092+00:00",
       "joints": [
         "j1",
         "j2",
@@ -173,38 +173,38 @@
         "j6"
       ],
       "controllers": {
-        "fairino10_controller": "active",
-        "joint_state_broadcaster": "active"
+        "joint_state_broadcaster": "active",
+        "fairino10_controller": "active"
       },
       "direct_tracking_error_rad": [
-        -5.5822721777842865e-06,
-        -4.1465772292026415e-05,
-        0.0014411849127755616,
-        0.0003997923992533625,
-        3.705106730311769e-06,
-        -7.343289514003123e-07
+        -5.581151815065022e-06,
+        -4.1469994334741855e-05,
+        0.0014411837493084612,
+        0.0003997921215295186,
+        3.705097446182748e-06,
+        -7.343260926133007e-07
       ],
       "moveit_trajectory_points": 17,
       "moveit_tracking_error_rad": [
-        7.332528085135515e-05,
-        -0.00031545215467887466,
-        0.0014343334637210159,
-        0.0003943665589467571,
-        3.0145851837026783e-06,
-        -1.554705226378128e-06
+        -0.00029133434529024504,
+        -0.0003504928131030649,
+        0.0014345768930414948,
+        0.0003923539589936187,
+        3.829483636197395e-06,
+        -3.3772041189567004e-06
       ],
       "final_joint_positions_rad": [
-        -0.2015794002927778,
-        -1.1019591336813286,
-        1.1022203064854816,
-        -1.3977622774068004,
-        -1.498639041262964,
-        0.09706187521989872
+        -0.20100239835009517,
+        -1.0984866888089482,
+        1.0995209991250212,
+        -1.4016204208125513,
+        -1.5007408461261127,
+        0.09857416652579724
       ],
-      "joint_state_messages": 495,
-      "clock_messages": 2555,
+      "joint_state_messages": 492,
+      "clock_messages": 2526,
       "clock_start_sec": 0.002,
-      "clock_end_sec": 5.115999999,
+      "clock_end_sec": 5.055999999,
       "clock_monotonic": true,
       "clock_publisher_qos": [
         {
@@ -230,29 +230,29 @@
     },
     {
       "schema_version": 2,
-      "run_id": "20261019T082149.432472Z-125c39aa",
+      "run_id": "20261019T083433.181503Z-44b7932f",
       "robot_id": "ur5e",
       "ros_domain_id": 96,
       "status": "passed",
       "stage": "complete",
-      "started_utc": "2026-10-19T08:21:49.432559+00:00",
-      "completed_utc": "2026-10-19T08:21:57.835311+00:00",
+      "started_utc": "2026-10-19T08:34:33.181598+00:00",
+      "completed_utc": "2026-10-19T08:34:41.564401+00:00",
       "motion_checks_passed": true,
       "shutdown_clean": true,
       "error": null,
       "cleanup_errors": [],
-      "log_path": "runtime/validation/runs/20261019T082149.432472Z-125c39aa/launch.log",
+      "log_path": "runtime/validation/runs/20261019T083433.181503Z-44b7932f/launch.log",
       "scene_id": "default",
       "robot": "Universal Robots UR5e",
       "robot_profile_sha256": "005a2fdb9e1a04d2c7ec99341abbb004db3c05cdef03d53305dec9caa13590c1",
-      "model_manifest_sha256": "36f60200595ff4901f1fa96919d1096f90d0809c76646a86cbc780b02dba31e8",
+      "model_manifest_sha256": "58b9151e69c703952d6bc1653297694d6ba64641af2cebfb223e42481568c82b",
       "gui": false,
       "stop_mode": "interrupt",
       "workcell_collision_links": [
         "workcell_floor"
       ],
       "workcell_geometry_matches": true,
-      "validated_utc": "2026-10-19T08:21:57.451226+00:00",
+      "validated_utc": "2026-10-19T08:34:41.185478+00:00",
       "joints": [
         "shoulder_pan_joint",
         "shoulder_lift_joint",
@@ -275,20 +275,20 @@
       ],
       "moveit_trajectory_points": 42,
       "moveit_tracking_error_rad": [
-        -7.990044306183108e-07,
-        0.003603346739266211,
-        0.0040425647680810695,
-        0.0017748901648537707,
-        -7.136934616625012e-07,
-        -1.5343976064730036e-07
+        -1.2288144385919075e-06,
+        0.003602629314156891,
+        0.004043102958279476,
+        0.001777293502658539,
+        1.3890253089954285e-06,
+        -2.0974010703223023e-07
       ],
       "final_joint_positions_rad": [
-        -0.200236671364377,
-        -1.4491744511673932,
-        1.453192329284472,
-        -1.4959800217267967,
-        -1.5701378038495029,
-        0.09954949890571789
+        -0.2019924593427746,
+        -1.4493700953037676,
+        1.4513341652499911,
+        -1.497484824003812,
+        -1.5728897693665986,
+        0.09906492147201197
       ],
       "joint_state_messages": 736,
       "clock_messages": 3745,
@@ -325,22 +325,22 @@
     },
     {
       "schema_version": 2,
-      "run_id": "20261019T082153.324728Z-768023ef",
+      "run_id": "20261019T083437.988954Z-b72b5dda",
       "robot_id": "fr5",
       "ros_domain_id": 97,
       "status": "passed",
       "stage": "complete",
-      "started_utc": "2026-10-19T08:21:53.324818+00:00",
-      "completed_utc": "2026-10-19T08:22:02.441884+00:00",
+      "started_utc": "2026-10-19T08:34:37.989046+00:00",
+      "completed_utc": "2026-10-19T08:34:47.161631+00:00",
       "motion_checks_passed": true,
       "shutdown_clean": true,
       "error": null,
       "cleanup_errors": [],
-      "log_path": "runtime/validation/runs/20261019T082153.324728Z-768023ef/launch.log",
+      "log_path": "runtime/validation/runs/20261019T083437.988954Z-b72b5dda/launch.log",
       "scene_id": "pedestal",
       "robot": "FAIRINO FR5 V6",
       "robot_profile_sha256": "532a7eb981880b06c0ef0c1b8e918bddaffe2fe28d3f8da96d20438172141acb",
-      "model_manifest_sha256": "5e2f728bdc44307a38f10474bfe5ddab3e02191e69e15f1773245161463c295d",
+      "model_manifest_sha256": "b38fd80a32942132fa3b1681ed9f3dc4da07ff2946fbe19303b95b6b39e8070a",
       "gui": false,
       "stop_mode": "interrupt",
       "workcell_collision_links": [
@@ -348,7 +348,7 @@
         "workcell_pedestal"
       ],
       "workcell_geometry_matches": true,
-      "validated_utc": "2026-10-19T08:22:02.070694+00:00",
+      "validated_utc": "2026-10-19T08:34:46.782492+00:00",
       "joints": [
         "j1",
         "j2",
@@ -362,34 +362,34 @@
         "joint_state_broadcaster": "active"
       },
       "direct_tracking_error_rad": [
-        2.792722338634812e-06,
-        0.0031488800656536142,
-        0.0036144426605233537,
-        0.0007730488002850588,
-        8.307488268632923e-06,
-        -1.1467069280900675e-06
+        2.7925740258838427e-06,
+        0.0031488766205658436,
+        0.003614441353572806,
+        0.0007730484455836795,
+        8.307486647485263e-06,
+        -1.1467048985520632e-06
       ],
       "moveit_trajectory_points": 49,
       "moveit_tracking_error_rad": [
-        -9.0888053699556e-06,
-        0.0032558346566819996,
-        0.003613461018552311,
-        0.0007667098329375843,
-        7.90330694289132e-06,
-        -1.971073163395398e-06
+        -9.983436802529777e-07,
+        0.003259267122911247,
+        0.0036127027791996724,
+        0.0007668930934847662,
+        7.586931457970181e-06,
+        -1.8728514724480894e-06
       ],
       "final_joint_positions_rad": [
-        -0.20056733459137002,
-        -1.0976253260542563,
-        1.106290451216058,
-        -1.399526738503019,
-        -1.4972617135516253,
-        0.10155149372183374
+        -0.20198866626561082,
+        -1.0941622742773427,
+        1.1022271352160795,
+        -1.3999257016572995,
+        -1.502007843562288,
+        0.09895092157557969
       ],
-      "joint_state_messages": 810,
-      "clock_messages": 4135,
+      "joint_state_messages": 814,
+      "clock_messages": 4161,
       "clock_start_sec": 0.002,
-      "clock_end_sec": 8.275999999,
+      "clock_end_sec": 8.325999999,
       "clock_monotonic": true,
       "clock_publisher_qos": [
         {
@@ -444,5 +444,39 @@
     "Actual robot hardware",
     "iljin source copy synchronization"
   ],
-  "github_actions": "See PR checks; local tests are separate from hosted CI"
+  "github_actions": {
+    "code_commit": "6fb8d1ce80533bc39615f01734426ac205fdea0a",
+    "run_id": 39223334121,
+    "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39223334121",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "Python package and unit tests"
+      },
+      {
+        "conclusion": "success",
+        "name": "ROS Humble (fr5, default)"
+      },
+      {
+        "conclusion": "success",
+        "name": "ROS Humble (fr5, pedestal)"
+      },
+      {
+        "conclusion": "success",
+        "name": "ROS Humble (fr10, default)"
+      },
+      {
+        "conclusion": "success",
+        "name": "ROS Humble (ur5e, default)"
+      }
+    ],
+    "initial_failure_fixed": "Source-built mujoco_ros2_control no longer requires its obsolete precompiled deb; six required deb pins and Python requirements are unchanged."
+  },
+  "installed_wheel_unit_tests": {
+    "passed": 40,
+    "failed": 0,
+    "skipped": 0,
+    "environment": "isolated temporary venv without ROS"
+  }
 }
