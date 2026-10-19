@@ -60,11 +60,6 @@ runtime:
     architecture: amd64
     file: ros-humble-mujoco-ros2-control-plugins_0.1.2-1jammy.20260907.225305_amd64.deb
     sha256: 12124c8561704104ce5c6aa4fbb539b6ed33b4bf43a43289f3ec3ba32e10c921
-  - package: ros-humble-mujoco-ros2-control
-    version: 0.1.2-1jammy.20260908.125234
-    architecture: amd64
-    file: ros-humble-mujoco-ros2-control_0.1.2-1jammy.20260908.125234_amd64.deb
-    sha256: e48805aa5f5831855c4ea1912a8d4cd196450ca463142e82ef301899539f4372
   - package: ros-humble-mujoco-vendor
     version: 0.1.1-1jammy.20260907.141308
     architecture: amd64

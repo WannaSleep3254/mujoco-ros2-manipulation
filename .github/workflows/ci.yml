@@ -67,7 +67,10 @@ jobs:
           python3 -m venv --system-site-packages .venv
           .venv/bin/python -m pip install -r requirements.txt
       - name: Build locked runtime and selected model
-        run: python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}'
+        run: |
+          mkdir -p runtime/validation
+          set -o pipefail
+          python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
       - name: Model regression checks
         if: matrix.scene == 'default'
         run: PYTHONPATH=src .venv/bin/python -m unittest discover -s tests/model -t . -v
