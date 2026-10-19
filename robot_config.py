@@ -10,6 +10,8 @@ import re
 
 import yaml
 
+from model_integrity import check_model_integrity, read_metadata
+
 
 ROOT = Path(__file__).resolve().parent
 
@@ -204,6 +206,8 @@ def check_generated_model(profile):
     for path in [profile.scene_path, profile.urdf_path, profile.output / 'source.json']:
         if not path.is_file():
             raise ValueError(f'Missing {path.name}; run .venv/bin/python prepare_robot.py --robot {profile.id}')
-    metadata = json.loads((profile.output / 'source.json').read_text())
+    metadata = read_metadata(profile.output / 'source.json')
     if metadata.get('robot_profile_sha256') != profile.fingerprint:
         raise ValueError(f'{profile.id} profile changed; run .venv/bin/python prepare_robot.py --robot {profile.id}')
+
+    check_model_integrity(profile, metadata)

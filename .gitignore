@@ -7,6 +7,7 @@ ros_ws/
 # Generated models contain paths for the machine that builds them.
 models/*/*.xml
 models/*/*.urdf
+models/*/visual_meshes/
 
 # Local credentials and editor settings.
 .env

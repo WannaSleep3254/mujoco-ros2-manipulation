@@ -61,11 +61,22 @@ MuJoCo의 `exitrequest`를 설정합니다. GUI 닫기 버튼과 같은 `RenderL
 GUI 모드의 `nvidia-smi` 결과는 관측 정보로 저장하며 GPU 프로세스 관측 여부 자체가
 검증 통과를 결정하는 조건은 아닙니다. GPU는 렌더링 확인에 사용합니다.
 
-로컬 결과는 `runtime/validation/<모델>_<headless|gui|gui_window>.json`과
-같은 이름의 `.log`에 저장됩니다. GUI GPU 기록은 `<모델>_gui_nvidia_smi.txt`입니다.
+각 실행은 `runtime/validation/runs/<run_id>/result.json`과 `launch.log`를 보존합니다.
+GUI GPU 관측은 해당 실행 디렉터리의 `nvidia_smi.txt`에 저장합니다.
+기존 `runtime/validation/<모델>_<headless|gui|gui_window>.json`은 가장 최근에 시작한 실행의 결과 사본이고,
+같은 이름의 `.log`는 해당 실행 로그를 가리키는 링크입니다. 실행 시작 시 `running`으로 갱신하므로 이전 성공을 최신 결과로 오인하지 않습니다.
+뒤늦게 끝난 이전 실행은 더 최신 실행의 결과를 덮어쓰지 않습니다. 기존 형식의 최신 결과는 첫 실행 전 `runs/legacy-*/`에 보존합니다.
+
+사전 생성물 검사·노드 초기화·동작·GUI·종료 실패도 JSON에 남깁니다. 인자 구문 오류처럼 실행 이력이 시작되기 전의 CLI 오류는 제외합니다.
+상태는 `running`, `passed`, `failed`, `interrupted`로 구분합니다. 강제 종료나 전원 차단으로 마무리하지 못한 실행은 `running`으로 남으며 성공으로 판정하지 않습니다.
 
 | JSON 필드 | 의미 |
 |---|---|
+| `schema_version` / `run_id` / `status` | 결과 형식 버전 2, 고유 실행 ID, 실행 상태 |
+| `stage` / `failure_stage` | 현재 단계와 실패가 발생한 단계 |
+| `error` / `cleanup_errors` | 최초 오류의 타입·메시지와 정리 중 추가 오류 |
+| `started_utc` / `completed_utc` | 실행 시작·완료 시각 |
+| `model_manifest_sha256` | 검증한 모델 무결성 명세의 해시 |
 | `motion_checks_passed` | 궤적·MoveIt·상태·TF·시계 검사 통과 |
 | `direct_tracking_error_rad` / `moveit_tracking_error_rad` | 상태 확인을 마친 시점의 관절별 오차 |
 | `shutdown_clean` | 종료 검사 통과 |
@@ -74,7 +85,10 @@ GUI 모드의 `nvidia-smi` 결과는 관측 정보로 저장하며 GPU 프로세
 | `shutdown_failures` / `shutdown_timed_out` | 종료 중 비정상 노드와 시간 초과 |
 | `robot_profile_sha256` | 검증에 사용한 프로필의 해시 |
 
-동작 검사 완료 후 종료 검사에서 오류가 나면 동작 결과를 보존하고 검증기 종료 코드 1을 반환합니다.
+성공은 종료 코드 0, 사전 검사·동작·정리 실패는 1, 사용자 중단은 130을 반환합니다.
+동작 검사 완료 후 종료 검사에서 오류가 나면 동작 결과를 보존하되 전체 상태를 `failed`로 기록합니다.
+정리 오류가 발생해도 최초 실패 원인을 덮어쓰지 않습니다. SIGINT로 끝나지 않으면 SIGTERM·SIGKILL로 단계적으로 정리하며 강제 정리는 정상 종료로 판정하지 않습니다.
+촬영 자료 수집기는 최신 상태가 `passed`이고 모델 명세까지 일치하는 결과만 사용합니다. 기존 형식의 로컬 촬영 결과는 재검증해야 합니다.
 종료 오류의 원인과 로컬 수정은 [문제 해결](troubleshooting.md)에 정리했습니다.
 
 ## 보관한 실행 기록
@@ -100,7 +114,11 @@ RViz OpenGL 4.6, MotionPlanning 연결도 확인했습니다.
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-11개 검사는 다음을 포함하며, 2026-10-07 실행에서 11개 통과·건너뜀 0개를 확인했습니다.
+2026-10-19 검증 보고서·생성물 검사 보강 후 **34개 통과·건너뜀 0개**를 확인했습니다.
+FR5·FR10·UR5e의 실제 headless ROS·MoveIt 실행과 정상 종료, 잘못된 모델 요청의 실패 JSON도 확인했습니다.
+GUI 경로는 모의 검사이며 실제 데스크톱 GUI 재실행과 구분합니다. [검증 결과](validation_hardening.json)에 실행 ID·모델 명세·검사 코드 해시를 보관했습니다.
+
+기존 11개 검사(2026-10-07 모두 통과)는 다음을 포함합니다.
 
 - 프로필 선택, 관절 수·이름 변경, 잘못된 배열과 미준비·오래된 모델의 실행 차단.
 - 관절 순서를 변경해도 유지되는 MuJoCo 이름 매핑과 세 모델의 끝단 순기구학 일치.
@@ -108,7 +126,10 @@ RViz OpenGL 4.6, MotionPlanning 연결도 확인했습니다.
 
 변환 검사에는 제조사 소스와 생성 모델이 필요합니다. 해당 자료가 없으면 관련 검사를
 건너뛰므로 결과의 건너뜀 개수도 확인합니다.
-코드는 [프로필 검사](../tests/test_robot_profiles.py)와 [시각 모델 검사](../tests/test_collada_visuals.py)에 있습니다.
+신규 회귀 검사는 입력·출력 변경, 제조사 소스 변경, 잘못된 명세, 단계별 생성 실패와 게시 중단을 검사합니다.
+검증 이력 검사는 ROS 연결을 모의하여 실패·중단·정리 오류·동시 실행의 최신 결과·촬영 수집 거부를 재현합니다.
+이는 실제 ROS·GUI 통합 검사와 구분합니다.
+코드는 [무결성 검사](../tests/test_model_integrity.py), [실행 이력 검사](../tests/test_verification_reports.py), [프로필 검사](../tests/test_robot_profiles.py)와 [시각 모델 검사](../tests/test_collada_visuals.py)에 있습니다.
 
 기존 `verify_fr5.py`는 FR5 호환 진입점입니다. 신규 모델은 공통 검증기를 사용합니다.
 [초기 1관절 브리지 검증](single_joint_demo.md)은 별도 데모와 ROS 도메인을 사용합니다.

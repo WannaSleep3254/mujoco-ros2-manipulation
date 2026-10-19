@@ -88,6 +88,42 @@
   "contacts_at_settled_home": 0,
   "collision_geometry": "MuJoCo convex hulls of manufacturer STL meshes",
   "mujoco_visual_geometry": "original",
+  "converted_visual_assets": [],
   "tip_frame": "wrist3_link",
-  "gripper": "not included"
+  "gripper": "not included",
+  "integrity": {
+    "schema_version": 1,
+    "inputs": {
+      "manufacturer_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
+      "files": {
+        "collada_visuals.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
+        "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+        "external/frcobot_ros2/fairino10_v6_moveit2_config/config/fairino10_v6_robot.srdf": "c9b8fbfb21f494f5e874ba8a64c91825beb301661bd0a62d38e8f017646d9a26",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/base_link.STL": "5495b37ced3f2d69b7be183131572b905e94f0dc808cf3ff0c815325394d6048",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/forearm_link.STL": "3838496dc6c14e56d143f167040f20c7369a298c2a66ea907c9193e1910ae9c6",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/shoulder_link.STL": "7e2a4738d2302fd01637714cfd41e71eba3ba364d0f757ebeeb22c112a206920",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/upperarm_link.STL": "846f3fa629c7687630e2b155359184db246ca6233be113c1fe6ba4a95dd0bce0",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/wrist1_link.STL": "7c81219afa9f37529b0235ca8393ae237d9cc37ef2a2d8ed7d3fbdde9e22dd06",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/wrist2_link.STL": "e91b1def10f057493425a148f1e15031c9f2858d4573b8a06c399a6be3ced20f",
+        "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/wrist3_link.STL": "f1d3f981e79299ace78993af7f9016077b4a85c65281f9b7e99470d8c4942482",
+        "external/frcobot_ros2/fairino_description/urdf/fairino10_v6.urdf": "07bf55aa15b26f65ffcb6f85eed094826469e2309c9a70bfa8b6e00390e9d448",
+        "model_integrity.py": "907e80bc0690dbde9be058f1a2683e1c5ebe597060861399bdda3703b9386b5a",
+        "prepare_robot.py": "55b817ec3aa5bfc2c1b134c126d6625584ffb25230fbb13800e49b869609f658",
+        "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",
+        "robot_config.py": "4d6e835996ac3897626b5a337481bac90ae93ffe47a085570af34fff09c167bf"
+      }
+    },
+    "outputs": {
+      "fr10.xml": "e4be6892f0a9d8c0f6c8fd2d45227b6763a3cd79adc6d812622058ed6609fc6a",
+      "fr10.ros2_control.urdf": "9cdcb1db553d7a4573b1d049fc4f7b0ca6b8ec9bc8b2adeb41c8aa0577cbd95a"
+    }
+  },
+  "generator_environment": {
+    "python_version": "3.10.12",
+    "packages": {
+      "mujoco": "3.14.0",
+      "numpy": "1.26.4",
+      "PyYAML": "5.4.1"
+    }
+  }
 }

@@ -2,6 +2,10 @@
 
 import argparse
 from copy import deepcopy
+from dataclasses import dataclass
+import importlib.metadata
+import platform
+import tempfile
 import hashlib
 import json
 import os
@@ -12,7 +16,9 @@ import xml.etree.ElementTree as ET
 import mujoco
 import numpy as np
 
-from robot_config import list_profiles, load_profile, write_controller_config
+from robot_config import (RobotProfile, check_generated_model, list_profiles, load_profile,
+                          write_controller_config)
+from model_integrity import ensure_inputs_unchanged, input_snapshot, make_integrity, read_metadata
 
 
 def write_xml(root, destination):
@@ -20,7 +26,7 @@ def write_xml(root, destination):
     ET.ElementTree(root).write(destination, encoding='utf-8', xml_declaration=True)
 
 
-def prepare(profile):
+def _prepare(profile, destination):
     output = profile.output
     joint_names = profile.joints
     home = profile.home
@@ -32,8 +38,16 @@ def prepare(profile):
         ['git', '-C', str(repository), 'rev-parse', 'HEAD'], text=True).strip()
     if revision != settings['source']['commit']:
         raise ValueError(f'{profile.id}: source revision does not match the profile')
+    dependencies = {source, profile.source_path('srdf')}
+    source_inputs = input_snapshot(profile, dependencies)
     if settings['source']['format'] == 'xacro':
         # Load the local ROS overlay only in the Xacro child process.
+        included = subprocess.check_output([
+            'bash', '-c', 'source "$1"\nexec xacro --deps "$2"', 'prepare_robot',
+            str(profile.root / 'manipulation_env.sh'), str(source)], text=True)
+        dependencies.update(Path(name).resolve() for name in included.split())
+        ensure_inputs_unchanged(profile, source_inputs)
+        source_inputs = input_snapshot(profile, dependencies)
         rendered = subprocess.check_output([
             'bash', '-c', 'source "$1"\nexec xacro "$2"', 'prepare_robot',
             str(profile.root / 'manipulation_env.sh'), str(source)], text=True)
@@ -81,12 +95,15 @@ def prepare(profile):
         mesh_path = (package_root / relative).resolve()
         if not mesh_path.is_relative_to(package_root) or not mesh_path.is_file():
             raise ValueError(f'Missing or invalid mesh: {filename}')
+        dependencies.add(mesh_path)
         mesh.set('filename', str(mesh_path))
+    ensure_inputs_unchanged(profile, source_inputs)
+    inputs = input_snapshot(profile, dependencies)
     visual_assets = []
     if settings['source'].get('mujoco_visuals') == 'dae':
         from collada_visuals import export_dae_visuals
         cache = {}
-        visual_directory = profile.root / 'runtime' / 'generated' / profile.id / 'visual_meshes'
+        visual_directory = profile.output / 'visual_meshes'
         for link in imported.findall('link'):
             for visual in list(link.findall('visual')):
                 mesh = visual.find('geometry/mesh')
@@ -164,7 +181,7 @@ def prepare(profile):
     hardware = ET.SubElement(control, 'hardware')
     ET.SubElement(hardware, 'plugin').text = 'mujoco_ros2_control/MujocoSystemInterface'
     for name, value in {
-        'mujoco_model': str(scene_path), 'initial_keyframe': 'home',
+        'mujoco_model': str(destination.scene_path), 'initial_keyframe': 'home',
         'headless': 'false', 'sim_speed_factor': str(settings['physics']['sim_speed_factor']),
     }.items():
         ET.SubElement(hardware, 'param', {'name': name}).text = value
@@ -176,14 +193,14 @@ def prepare(profile):
         ET.SubElement(joint, 'state_interface', {'name': 'velocity'})
         ET.SubElement(joint, 'state_interface', {'name': 'effort'})
     write_xml(robot, profile.urdf_path)
-    write_controller_config(profile)
 
     compiled = mujoco.MjModel.from_xml_path(str(scene_path))
     data = mujoco.MjData(compiled)
     mujoco.mj_resetDataKeyframe(compiled, data, 0)
     for _ in range(2000):
         mujoco.mj_step(compiled, data)
-    assert np.isfinite(data.qpos).all()
+    if not np.isfinite(data.qpos).all():
+        raise ValueError('Generated model produced nonfinite joint positions')
     actual = np.array([data.joint(name).qpos[0] for name in joint_names])
     report = {
         'source_repository': settings['source']['repository_url'],
@@ -203,7 +220,56 @@ def prepare(profile):
         'tip_frame': profile.ros['tip_frame'],
         'gripper': 'not included',
     }
+    integrity = make_integrity(profile, dependencies, output)
+    if integrity['inputs'] != inputs:
+        raise ValueError('Model inputs changed during generation; retry after saving inputs')
+    report['integrity'] = integrity
+    report['generator_environment'] = {
+        'python_version': platform.python_version(),
+        'packages': {name: importlib.metadata.version(name)
+                     for name in ['mujoco', 'numpy', 'PyYAML'] +
+                     (['pycollada'] if settings['source'].get('mujoco_visuals') == 'dae' else [])}}
     (output / 'source.json').write_text(json.dumps(report, indent=2) + '\n')
+    return report
+
+
+@dataclass(frozen=True)
+class StagedProfile(RobotProfile):
+    directory: Path
+
+    @property
+    def output(self):
+        return self.directory
+
+
+def prepare(profile):
+    # Compile and settle a complete candidate before replacing any live output.
+    profile.output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=f'.{profile.id}-build-', dir=profile.output.parent) as temporary:
+        staged = StagedProfile(profile.root, profile.data, Path(temporary))
+        report = _prepare(staged, profile)
+        profile.output.mkdir(parents=True, exist_ok=True)
+        metadata = profile.output / 'source.json'
+        old_outputs = {}
+        if metadata.is_file():
+            try:
+                previous = read_metadata(metadata).get('integrity')
+                if isinstance(previous, dict) and isinstance(previous.get('outputs'), dict):
+                    old_outputs = previous['outputs']
+            except ValueError:
+                pass  # Regeneration must also recover from damaged metadata.
+        for name in report['integrity']['outputs']:
+            target = profile.output / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(staged.output / name, target)
+        for name in set(old_outputs) - set(report['integrity']['outputs']):
+            target = (profile.output / name).resolve()
+            if name.startswith('visual_meshes/') and target.is_relative_to(profile.output.resolve()):
+                target.unlink(missing_ok=True)
+        # A mixed/incomplete publication cannot match the previously committed hashes.
+        os.replace(staged.output / 'source.json', metadata)
+    check_generated_model(profile)
+    write_controller_config(profile)
     print(json.dumps(report, indent=2))
 
 

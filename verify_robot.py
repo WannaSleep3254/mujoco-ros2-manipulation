@@ -2,12 +2,8 @@
 
 import argparse
 from datetime import datetime, timezone
-import json
 import math
-import os
 import re
-import signal
-import subprocess
 import time
 
 import rclpy
@@ -26,11 +22,13 @@ from std_srvs.srv import Trigger
 from tf2_msgs.msg import TFMessage
 from trajectory_msgs.msg import JointTrajectoryPoint
 
-from robot_config import ROOT, check_generated_model, load_profile
+from robot_config import ROOT
+from verification_runner import run_verification
 
 class Verification(Node):
-    def __init__(self, profile):
+    def __init__(self, profile, progress=None):
         super().__init__(f'{profile.id}_verification')
+        self.progress = progress or (lambda stage: None)
         self.profile = profile
         self.joint_names = profile.joints
         self.settings = profile.data['verification']
@@ -110,6 +108,7 @@ class Verification(Node):
         return [actual - desired for actual, desired in zip(self.positions, target)]
 
     def run(self):
+        self.progress('state_discovery')
         self.until(lambda: self.positions is not None and self.clock_count > 10,
                    30, 'configured joint states and simulation clock')
         controllers = self.create_client(ListControllers, '/controller_manager/list_controllers')
@@ -128,6 +127,7 @@ class Verification(Node):
             raise RuntimeError(f'Controllers did not activate: {active}')
         print(f'PASS: {len(self.joint_names)} joint states, clock and both active controllers', flush=True)
 
+        self.progress('direct_trajectory')
         trajectory_client = ActionClient(self, FollowJointTrajectory,
             f'/{self.profile.ros["trajectory_controller"]}/follow_joint_trajectory')
         self.until(trajectory_client.server_is_ready, 20, 'trajectory action server')
@@ -149,6 +149,7 @@ class Verification(Node):
         direct_error = self.settle(target)
         print('PASS: ros2_control trajectory -> MuJoCo movement', flush=True)
 
+        self.progress('moveit_planning')
         planner = self.create_client(GetMotionPlan, '/plan_kinematic_path')
         self.until(planner.service_is_ready, 30, 'MoveIt planning service')
         request = GetMotionPlan.Request()
@@ -179,6 +180,7 @@ class Verification(Node):
         assert len(points) > 1, 'MoveIt returned an empty trajectory'
         print(f'PASS: MoveIt OMPL planning ({len(points)} trajectory points)', flush=True)
 
+        self.progress('moveit_execution')
         execution = ActionClient(self, ExecuteTrajectory, '/execute_trajectory')
         self.until(execution.server_is_ready, 20, 'MoveIt execution action server')
         execution_goal = ExecuteTrajectory.Goal()
@@ -190,6 +192,7 @@ class Verification(Node):
         moveit_error = self.settle([planned_target[name] for name in self.joint_names])
         print('PASS: MoveIt execution -> ros2_control -> MuJoCo movement', flush=True)
 
+        self.progress('tf_clock_checks')
         assert not self.clock_backwards, 'Simulation clock moved backwards'
         assert self.clock_last > self.clock_first
         missing_frames = set(self.profile.ros['tf_child_frames']) - self.transforms
@@ -228,95 +231,9 @@ def main(default_robot='fr5'):
         parser.error('--stop-mode window requires --gui')
     if args.screenshot_dir and not args.gui:
         parser.error('--screenshot-dir requires --gui')
-    try:
-        profile = load_profile(args.robot)
-        check_generated_model(profile)
-    except ValueError as error:
-        parser.error(str(error))
-    os.environ['ROS_DOMAIN_ID'] = str(args.domain)
-    os.environ['MANIPULATION_ROS_DOMAIN_ID'] = str(args.domain)
-    output = ROOT / 'runtime' / 'validation'
-    output.mkdir(parents=True, exist_ok=True)
-    mode = 'gui' if args.gui else 'headless'
-    if args.stop_mode == 'window':
-        mode += '_window'
-    log_path = output / f'{profile.id}_{mode}.log'
-    report_path = output / f'{profile.id}_{mode}.json'
-    process = None
-    node = None
-    report = None
-    try:
-        with log_path.open('w') as log:
-            process = subprocess.Popen(
-                ['bash', str(ROOT / 'run_sim.sh'), f'robot:={profile.id}', f'gui:={str(args.gui).lower()}',
-                 f'rviz:={str(args.gui).lower()}', 'moveit:=true'],
-                cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-            rclpy.init()
-            node = Verification(profile)
-            report = node.run()
-            assert process.poll() is None, 'Launch process exited unexpectedly'
-            launch_log = log_path.read_text()
-            assert 'process has died' not in launch_log, 'A launch node failed; see the log'
-            if args.gui:
-                assert (f'Ready to take commands for planning group {profile.ros["planning_group"]}.'
-                        in launch_log), 'RViz MoveIt panel is not ready'
-                gpu = subprocess.run(['nvidia-smi'], capture_output=True, text=True, timeout=5)
-                (output / f'{profile.id}_gui_nvidia_smi.txt').write_text(gpu.stdout + gpu.stderr)
-                report['mujoco_gpu_process_seen'] = 'ros2_control_node' in gpu.stdout
-                report['rviz_gpu_process_seen'] = '/rviz2' in gpu.stdout
-                if args.screenshot_dir:
-                    from capture_robot_images import capture_gui_windows
-                    report['screenshots'] = capture_gui_windows(profile, process.pid, args.screenshot_dir)
-            report['gui'] = args.gui
-            report['ros_domain_id'] = args.domain
-            report['motion_checks_passed'] = True
-            report['stop_mode'] = args.stop_mode
-            if args.stop_mode == 'window':
-                closer = node.create_client(Trigger, '/mujoco_ros2_control_node/close_window')
-                node.until(closer.service_is_ready, 5, 'window close service')
-                closed = node.result(closer.call_async(Trigger.Request()), 5, 'window close request')
-                assert closed.success, closed.message
-                process.wait(timeout=15)
-                print(f'PASS: window close also stopped the {profile.id} launch', flush=True)
-    finally:
-        if node is not None:
-            node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
-        if process is not None and process.poll() is None:
-            # Let ros2 launch signal each child once; signaling the entire group
-            # here would deliver a second SIGINT while RViz is cleaning up.
-            process.send_signal(signal.SIGINT)
-            try:
-                process.wait(timeout=12)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGTERM)
-                process.wait(timeout=5)
-    if report is not None:
-        shutdown_log = log_path.read_text()
-        report['shutdown_failures'] = [
-            {'node': node_name, 'exit_code': int(code)}
-            for node_name, code in re.findall(
-                r'\[ERROR\] \[([^\]]+)\]: process has died \[pid \d+, exit code (-?\d+)',
-                shutdown_log) if int(code) != 0]
-        report['shutdown_timed_out'] = 'failed to terminate' in shutdown_log
-        report['launch_return_code'] = process.returncode
-        try:
-            os.killpg(process.pid, 0)
-            report['process_group_gone'] = False
-        except ProcessLookupError:
-            report['process_group_gone'] = True
-        report['shutdown_clean'] = not (report['shutdown_failures'] or
-                                       report['shutdown_timed_out'] or
-                                       process.returncode != 0 or
-                                       not report['process_group_gone'])
-        report_path.write_text(json.dumps(report, indent=2) + '\n')
-        print(json.dumps(report, indent=2), flush=True)
-        print(f'Launch log: {log_path}', flush=True)
-        if not report['shutdown_clean']:
-            print('WARN: motion checks passed, but shutdown failed; see shutdown_failures.',
-                  flush=True)
-        return 0 if report['shutdown_clean'] else 1
+    if not re.fullmatch(r'[a-z][a-z0-9_]*', args.robot):
+        parser.error('Invalid robot id')
+    return run_verification(args, ROOT, rclpy, Verification, Trigger)
 
 
 if __name__ == '__main__':

@@ -82,7 +82,10 @@ class ProfileTests(unittest.TestCase):
             profile.urdf_path.touch()
             (profile.output / 'source.json').write_text(json.dumps({
                 'robot_profile_sha256': profile.fingerprint}))
-            check_generated_model(profile)
+            # This test covers the profile gate; complete manifests are tested separately.
+            with patch('robot_config.check_model_integrity') as integrity:
+                check_generated_model(profile)
+                integrity.assert_called_once()
             profile.data['servo']['kp'][0] += 1
             with self.assertRaisesRegex(ValueError, 'profile changed'):
                 check_generated_model(profile)

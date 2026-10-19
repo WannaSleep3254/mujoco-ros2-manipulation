@@ -13,6 +13,7 @@ import subprocess
 import time
 
 from robot_config import ROOT, check_generated_model, list_profiles, load_profile
+from model_integrity import file_sha256
 
 
 class XButtonEvent(ctypes.Structure):
@@ -261,6 +262,11 @@ def collect_assets(profile):
 
     directory = ROOT / 'docs' / 'robots' / profile.id
     report = json.loads((ROOT / 'runtime' / 'validation' / f'{profile.id}_gui.json').read_text())
+    if report.get('status') != 'passed':
+        raise ValueError(f'{profile.id}: latest verification did not pass; rerun verification')
+    check_generated_model(profile)
+    if report.get('model_manifest_sha256') != file_sha256(profile.output / 'source.json'):
+        raise ValueError(f'{profile.id}: model changed since verification; rerun verification')
     if not all(report.get(key) is True for key in ['motion_checks_passed', 'shutdown_clean', 'process_group_gone']):
         raise ValueError(f'{profile.id}: capture verification did not pass')
     if report.get('launch_return_code') != 0 or report['robot_profile_sha256'] != profile.fingerprint:
