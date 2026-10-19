@@ -26,10 +26,14 @@ pip 패키지 이름은 Dependabot의 정규화된 소문자 이름으로 지정
 | pycollada | `pycollada==0.9.3` | minor·patch를 `python-helpers` PR로 그룹화 | DAE 변환 회귀 검사 후 검토 |
 | Pillow | `Pillow>=9` | minor·patch를 같은 그룹으로 처리 | 렌더·화면 캡처 PNG 처리 검증 후 검토 |
 
-전체 패키지의 일반 major 업데이트는 제외합니다. 새 패키지가 추가되면 해당 패키지의 호환성·그룹 정책도 검토합니다.
-그룹의 `update-types`는 `minor`·`patch`, 제외 규칙은 `version-update:semver-*` 형식을 사용합니다.
-`versioning-strategy: increase`로 보조 패키지 요구사항 변경을 PR로 제안하되, 검토자가 Python 3.10 지원을 확인한 후 수동 병합합니다.
-허용할 minor·patch 릴리스가 없으면 주간 검사가 성공해도 PR이 생기지 않을 수 있습니다.
+현재 버전을 판별할 수 있는 의존성의 일반 major 업데이트는 제외합니다. 새 패키지가 추가되면 호환성·그룹 정책도 검토합니다.
+그룹의 `update-types`는 `minor`·`patch`, major 제외 규칙은 `version-update:semver-major` 형식을 사용합니다.
+범위형 요구사항은 현재 버전이 없을 수 있어 SemVer 유형 제한만으로 보호할 수 없습니다.
+MuJoCo·NumPy·PyYAML은 이름으로 일반 업데이트에서 제외하여 이 경우에도 기준 조합을 유지합니다.
+`versioning-strategy: increase-if-necessary`는 이미 허용하는 릴리스에 맞춰 요구사항 하한을 올리지 않습니다.
+예를 들어 `Pillow>=9`가 최신 릴리스를 이미 허용하면 하한을 변경하는 PR을 만들지 않습니다.
+이 정책은 열린 범위가 허용하는 설치 버전까지 고정하지 않습니다. 재설치·후보 버전 검증은 별도 환경에서 수행합니다.
+허용할 업데이트나 변경할 요구사항이 없으면 주간 검사가 성공해도 PR이 생기지 않을 수 있습니다.
 
 ### MuJoCo·NumPy·ROS 호환성
 
@@ -39,10 +43,22 @@ pip MuJoCo 업데이트가 C++ 라이브러리·ROS vendor를 함께 갱신하�
 NumPy 2.0에는 C ABI 변경이 있으므로 NumPy 1.x 대상으로 빌드된 확장과의 호환성은 별도 검증 대상입니다.
 [NumPy 2.0 마이그레이션 안내](https://numpy.org/doc/stable/numpy_2_0_migration_guide.html)
 
-보안 업데이트는 위 일반 버전 정책과 구분합니다. `ignore`에는 `versions` 범위나 무조건 제외 규칙을 사용하지 않고 `update-types`만 지정했습니다.
-Dependabot의 보안 전용 실행은 이 업데이트 유형 제한을 적용하지 않으므로, 보안 수정 PR의 생성 경로는 유지합니다.
+보안 업데이트는 위 일반 버전 정책과 구분합니다. 핵심 세 패키지의 `ignore`는 이름만 지정하고, `versions` 차단 범위를 지정하지 않습니다.
+상류 `IgnoreCondition.ignored_versions` 구현은 보안 전용 실행에서 명시적인 `versions` 목록만 반환합니다.
+이름만 지정한 규칙은 일반 실행에서 모든 버전을 제외하지만 보안 전용 실행에는 빈 차단 목록을 반환하므로 보안 수정 경로는 유지합니다.
 이는 모든 취약점이 자동 수정된다는 보장은 아닙니다. 보안 PR이 MuJoCo·NumPy·PyYAML의 기준 버전을 변경하면 같은 호환성 검증 후 수동 검토합니다.
 [Dependabot 제외 규칙 구현](https://github.com/dependabot/dependabot-core/blob/main/common/lib/dependabot/config/ignore_condition.rb)
+
+## 첫 실행에서 확인한 범위형 요구사항 예외
+
+2026-10-19 PR #1 병합 후 [첫 버전 업데이트 실행](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39192333188)은 성공했으나,
+`Checking if pyyaml  needs updating`처럼 범위형 패키지의 현재 버전이 비어 있었습니다.
+이 상태에서는 SemVer 제외 조건이 빈 목록으로 계산되어 PyYAML·Pillow의 하한 상승 PR #2·#3이 생성되었습니다.
+두 PR은 보안 업데이트가 아닌 일반 버전 업데이트이며, 패키지 버전 변경 없이 설정을 보완합니다.
+
+보완 내용은 핵심 패키지의 이름 기준 제외와 `increase-if-necessary` 전략입니다.
+검증은 YAML 구조뿐 아니라 실제 실행 로그에서 PyYAML 제외, 기존 범위 하한 유지, 그룹 처리 결과를 확인해야 합니다.
+[현재 버전이 없는 경우의 상류 테스트](https://github.com/dependabot/dependabot-core/blob/main/common/spec/dependabot/config/ignore_condition_spec.rb)
 
 ## 변경 시 검증
 
