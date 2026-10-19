@@ -33,6 +33,9 @@ def main():
                     failures.append(f'{path.relative_to(ROOT)}: missing link {target}')
     load_manifest()
     build_plan()
+    from mujoco_ros2_manipulation.workcells.config import load_workcell
+    for path in (ROOT / 'config/workcells').glob('*.yaml'):
+        load_workcell(path.stem)
     profiles = list_profiles()
     for path in (ROOT / 'config/scenes').glob('*.yaml'):
         load_scene(path.stem, ROOT)

@@ -113,6 +113,19 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(json.loads(path.read_text())['run_id'], original['run_id'])
         self.assertNotEqual(original['run_id'], raised['run_id'])
 
+    def test_workcell_adapter_preserves_preflight_failure_and_report_namespace(self):
+        with patch('builtins.print'):
+            code=run_verification(self.args,self.root,self.ros,lambda *args,**kwargs:None,None,
+                profile_loader=lambda *args,**kwargs:self.profile,
+                validator=Mock(side_effect=ValueError('stale workcell inputs')),
+                report_prefix='workcell_')
+        self.assertEqual(code,1)
+        report=json.loads((self.root/'runtime/validation/workcell_fr5_headless.json').read_text())
+        self.assertEqual(report['failure_stage'],'preflight')
+        self.assertEqual(report['error']['message'],'stale workcell inputs')
+        self.assertFalse(report['launch_started'])
+        self.assertFalse((self.root/'runtime/validation/fr5_headless.json').exists())
+
     def test_spawn_failure_is_reported(self):
         code, report = self.run_case(spawn=OSError('cannot spawn launch'))
         self.assertEqual(code, 1)

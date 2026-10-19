@@ -15,11 +15,13 @@ src/mujoco_ros2_manipulation/
   build.py                       소스·deb 검증·빌드 순서
   model_build/                    변환·DAE·생성물 무결성
   verification/                   ROS 검사·수명주기·보고서·이미지
+  workcells/                      두 로봇 합성·제어 설정·공동 검증
   examples/single_joint/          직접 토픽 브리지 예제
 config/
   build.yaml                     제조사/런타임 커밋·패키지 경로·deb 잠금
   robots/                        로봇의 관절·게인·ROS 이름·소스 참조
-  scenes/                        로봇 설치 자세·고정 물체
+  scenes/                        단일 로봇 설치 자세·고정 물체
+  workcells/                     여러 로봇 인스턴스·공통 물리 조건
 launch/manipulation.launch.py     ROS launch 어댑터
 scripts/check_repository.py       구문·문서 링크·설정 검사
 packages/ur5e_moveit_config/       ament/MoveIt 패키지
@@ -77,7 +79,8 @@ editable 설치 없이 같은 코드를 사용합니다. 기존 `prepare_robot.p
 - `pedestal`: 0.3×0.3×0.4m 받침대, 로봇 설치 z=0.4m.
 
 같은 장면을 FR5·FR10·UR5e와 조합할 수 있습니다. box/cylinder 고정 형상을 지원합니다.
-mesh/CAD·동적 물체·레일·여러 로봇·그리퍼·양팔 계획은 아직 지원하지 않습니다.
+이 단일 로봇 장면 형식은 그대로 유지합니다. 두 로봇은 별도 [공동 작업장면](workcells.md) 형식을 사용합니다.
+mesh/CAD·동적 물체·레일·그리퍼는 아직 지원하지 않습니다.
 
 장면 합성기는 제조사 URDF 내부의 변환을 보존하면서 world 고정 관절을 추가합니다.
 원본에 world 루트가 있으면 `workcell_source_root`로 이름을 바꾸고 새 world 아래 설치 자세를 적용합니다.
@@ -114,7 +117,7 @@ PR과 main push에서 다음 작업을 실행합니다. 권한은 contents:read�
 | 작업 | 검사 |
 |---|---|
 | Python | wheel·sdist 빌드, 설치한 CLI를 저장소 밖에서 호출, 단위 검사, 구문·문서 링크·설정 |
-| ROS Humble | FR5·FR10·UR5e default 및 FR5 pedestal, 잠긴 런타임 빌드, 선택 모델 빌드, 실제 궤적·MoveIt·TF·시계·종료 |
+| ROS Humble | FR5·FR10·UR5e default 및 FR5 pedestal 및 FR5·UR5e 공동 장면, 잠긴 런타임 빌드, 선택 모델 빌드, 실제 궤적·MoveIt·TF·시계·종료 |
 | 산출물 | 배포 패키지, 성공/실패의 ROS 보고서와 colcon 로그 보존 |
 
 ROS 작업은 공식 `ros:humble-ros-base-jammy` 컨테이너에서 실행합니다.
@@ -122,5 +125,5 @@ UR5e는 CI에서 3회 연속 실행하며 한 번이라도 실패하면 해당 �
 GUI/GPU 성능·실물 로봇·장면별 모든 충돌 상황은 자동 검증 범위가 아닙니다.
 로컬 통과와 GitHub 실행 결과는 구분해 보고합니다. 기존 GUI 자료는 이전 버전의 보관 기록입니다.
 
-다음 구조 확장은 로봇 인스턴스별 이름 접두사, 합성 SRDF·다중 제어기와 공통 물리 장면입니다.
-이 개편만으로 다중 로봇 제어가 구현된 것은 아닙니다. [기존 확장 계획](plans/base_and_multi_robot.md)을 참고합니다.
+후속 구현으로 로봇 인스턴스별 이름 접두사, 합성 SRDF·팔별 제어기와 공통 물리 장면을 추가했습니다.
+[공동 작업장면](workcells.md)과 [확장 계획](plans/base_and_multi_robot.md)에 검증한 범위와 남은 항목을 구분했습니다.

@@ -155,6 +155,19 @@ bash run_sim.sh robot:=fr5 scene:=pedestal
 [구조 설명](docs/architecture.md)에 설치형 CLI, 출력 경로, CI와 지원 범위를 정리했습니다.
 [개발 검사](CONTRIBUTING.md) · [GitHub Actions](.github/workflows/ci.yml)
 
+## 두 로봇 공동 실행
+
+```bash
+python3 build_workspace.py --component models --workcell fr5_ur5e
+bash run_scene.sh workcell:=fr5_ur5e
+# 독립 자동 검증
+source ./manipulation_env.sh
+python3 verify_scene.py --workcell fr5_ur5e --domain 93
+```
+
+물리 엔진·시계·전체 상태 하나와 팔별 궤적 제어기 두 개를 사용합니다.
+[공동 작업장면 안내](docs/workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
@@ -164,13 +177,13 @@ bash run_sim.sh robot:=fr5 scene:=pedestal
 | 순서 | 다음 작업 |
 |---|---|
 | 완료 | 단일 로봇 작업장면 분리, 고정 받침대·공유 충돌 형상, 패키지 구조·CI·빌드 명세 통합 |
-| 2 | FR5·UR5e 공동 배치, 팔별 궤적 제어와 공동 충돌 회피 |
+| 구현 | FR5·UR5e 공동 배치, 팔별 제어·계획, 관절 공간 공동 계획과 충돌 목표 거부 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |
 
 [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md)에 변경할 파일, 설정 초안, 검증 기준과 구현 순서를 정리했습니다.
-고정 받침대의 단일 로봇 장면을 지원합니다. CAD 메시 입력·다중 로봇 제어는 후속 작업입니다.
+고정 받침대와 FR5·UR5e 공동 장면을 지원합니다. CAD 메시 입력·연속 접촉 감시·성능 평가는 후속 작업입니다.
 
 실제 로봇 연결은 아직 검증하지 않았습니다.
 제조사 모델과 연동 패키지의 고정 커밋·라이선스는 [출처 안내](docs/setup.md#소스-버전과-출처)에 기록했습니다.

@@ -16,6 +16,9 @@ manipulation-verify = "mujoco_ros2_manipulation.verification.ros_checks:main"
 manipulation-images = "mujoco_ros2_manipulation.verification.images:main"
 manipulation-build = "mujoco_ros2_manipulation.build:main"
 
+manipulation-prepare-workcell = "mujoco_ros2_manipulation.workcells.prepare:main"
+manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 

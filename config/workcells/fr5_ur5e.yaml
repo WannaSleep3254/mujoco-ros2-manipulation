@@ -1,0 +1,102 @@
+schema_version: 1
+id: fr5_ur5e
+label: FR5 + UR5e 공동 작업장면
+physics:
+  timestep: 0.002
+  integrator: implicitfast
+  sim_speed_factor: 1.0
+objects:
+- name: floor
+  shape: box
+  size:
+  - 4
+  - 4
+  - 0.2
+  xyz:
+  - 0
+  - 0
+  - -0.105
+  rpy:
+  - 0
+  - 0
+  - 0
+  rgba:
+  - 0.25
+  - 0.28
+  - 0.3
+  - 1
+- name: left_pedestal
+  shape: box
+  size:
+  - 0.3
+  - 0.3
+  - 0.4
+  xyz:
+  - -0.65
+  - 0
+  - 0.2
+  rpy:
+  - 0
+  - 0
+  - 0
+  rgba:
+  - 0.3
+  - 0.35
+  - 0.4
+  - 1
+- name: right_pedestal
+  shape: box
+  size:
+  - 0.3
+  - 0.3
+  - 0.4
+  xyz:
+  - 0.65
+  - 0
+  - 0.2
+  rpy:
+  - 0
+  - 0
+  - 0
+  rgba:
+  - 0.3
+  - 0.35
+  - 0.4
+  - 1
+robots:
+- instance: left
+  model: fr5
+  xyz:
+  - -0.65
+  - 0
+  - 0.4
+  rpy:
+  - 0
+  - 0
+  - 3.141592653589793
+  verification:
+    plan_target_rad:
+    - 0.1
+    - -1.1
+    - 1.1
+    - -1.4
+    - -1.5
+    - 0.1
+- instance: right
+  model: ur5e
+  xyz:
+  - 0.65
+  - 0
+  - 0.4
+  rpy:
+  - 0
+  - 0
+  - 3.141592653589793
+  verification:
+    plan_target_rad:
+    - 0.1
+    - -1.45
+    - 1.45
+    - -1.5
+    - -1.5708
+    - 0.1

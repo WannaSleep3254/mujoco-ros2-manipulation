@@ -162,6 +162,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--component', choices=['all', 'runtime', 'models'], default='all')
     parser.add_argument('--robots', nargs='+')
+    parser.add_argument('--workcell', help='build all models required by a shared workcell')
     parser.add_argument('--scene', default='default')
     parser.add_argument('--dry-run', action='store_true', help='validate and show the build plan without writes/network')
     parser.add_argument('--fetch-only', action='store_true')
@@ -169,7 +170,16 @@ def main():
     args = parser.parse_args()
     try:
         manifest = load_manifest()
+        cell = None
+        if args.workcell:
+            if args.robots or args.scene != 'default' or args.component == 'runtime':
+                raise ValueError('--workcell requires all/models and cannot be combined with --robots or --scene')
+            from mujoco_ros2_manipulation.workcells.config import load_workcell
+            cell = load_workcell(args.workcell)
+            args.robots = sorted({inst.profile.id for inst in cell.instances})
         plan = build_plan(args.robots)
+        if cell is not None:
+            plan['workcell'] = cell.id
         from mujoco_ros2_manipulation.scenes import load_scene
         load_scene(args.scene, ROOT)
         if args.component == 'runtime':
@@ -214,6 +224,8 @@ def main():
             python = ROOT / '.venv/bin/python'
             for name in plan['robots']:
                 run([python, ROOT / 'prepare_robot.py', '--robot', name, '--scene', args.scene], cwd=ROOT)
+            if cell is not None:
+                run([python, ROOT / 'prepare_workcell.py', '--workcell', cell.id], cwd=ROOT)
     except (ValueError, KeyError, OSError, subprocess.SubprocessError) as error:
         parser.exit(1, f'Build failed: {error}\n')
     return 0

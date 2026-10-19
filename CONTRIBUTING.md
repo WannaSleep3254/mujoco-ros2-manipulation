@@ -20,3 +20,7 @@ python -m build
 PR에는 변경 동작, 호환성 영향, 실행한 검사와 생략한 검사를 구분합니다.
 실행 중인 모델은 종료하고 생성합니다. `external`, `runtime`, `ros_ws`, `.venv`와
 자격 증명을 커밋하지 않습니다. 소스 사본 동기화는 원본 변경과 별도 작업입니다.
+
+공동 장면은 `config/workcells`와 `src/mujoco_ros2_manipulation/workcells`에서 관리합니다.
+`python3 build_workspace.py --component models --workcell fr5_ur5e` 후 전체 모델 검사를 실행하고,
+`source ./manipulation_env.sh` 후 `python3 verify_scene.py --domain 93`으로 실제 공동 제어를 확인합니다.

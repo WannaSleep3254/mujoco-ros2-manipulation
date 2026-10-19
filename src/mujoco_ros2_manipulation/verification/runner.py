@@ -45,13 +45,14 @@ def stop_process(process):
     return forced
 
 
-def run_verification(args, root, ros, factory, trigger_type):
+def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=None,
+                     validator=None, command_builder=None, report_prefix=""):
     mode = 'gui' if args.gui else 'headless'
     if args.stop_mode == 'window':
         mode += '_window'
     scene_id = getattr(args, 'scene', 'default')
     report_id = args.robot if scene_id == 'default' else f'{args.robot}_{scene_id}'
-    report = VerificationReport(root, report_id, mode, args.domain)
+    report = VerificationReport(root, report_prefix + report_id, mode, args.domain)
     process = node = None
     failed = False
     interrupted = False
@@ -60,16 +61,16 @@ def run_verification(args, root, ros, factory, trigger_type):
     os.environ['ROS_DOMAIN_ID'] = str(args.domain)
     os.environ['MANIPULATION_ROS_DOMAIN_ID'] = str(args.domain)
     try:
-        profile = load_profile(args.robot, root=root, scene=scene_id)
-        check_generated_model(profile)
+        profile = (profile_loader or load_profile)(args.robot, root=root, scene=scene_id)
+        (validator or check_generated_model)(profile)
         report.update(scene_id=scene_id, robot=profile.label, robot_profile_sha256=profile.fingerprint,
                       model_manifest_sha256=file_sha256(profile.output / 'source.json'),
                       gui=args.gui, stop_mode=args.stop_mode)
         report.stage('launch')
         with report.log_path.open('w') as log:
-            process = subprocess.Popen(
-                ['bash', str(root / 'run_sim.sh'), f'robot:={profile.id}', f'scene:={scene_id}',
-                 f'gui:={str(args.gui).lower()}', f'rviz:={str(args.gui).lower()}', 'moveit:=true'],
+            command = command_builder(profile, args) if command_builder else ['bash', str(root / 'run_sim.sh'), f'robot:={profile.id}', f'scene:={scene_id}',
+                 f'gui:={str(args.gui).lower()}', f'rviz:={str(args.gui).lower()}', 'moveit:=true']
+            process = subprocess.Popen(command,
                 cwd=root, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         report.stage('ros_initialization')
         ros.init()

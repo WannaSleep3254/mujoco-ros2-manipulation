@@ -1,0 +1,927 @@
+{
+  "schema_version": 1,
+  "base_commit": "3f58145bf38917434986947c7d254a4de1a2decf",
+  "code_sha256": {
+    ".github/workflows/ci.yml": "083098b41d3eb43b63cbd1b7a4a5c7e67228e342a04384f13f32a57b4908a647",
+    "config/workcells/fr5_ur5e.yaml": "21b9364152bf05560c7c08e2b862665f4d78ca4303d4ae7ef80652f6f414583f",
+    "prepare_workcell.py": "a5cad504c6550a101d2b0cdcce5f000d8506670fda5c8bf21dfe629bae314918",
+    "pyproject.toml": "cbaa7a5474aef91f7532cd25ed91fc22e1580235a6e94097a5d43184da576f7d",
+    "run_scene.sh": "9490e123ec262ddf3f7ded8b32ac5141533fa505a6a37208dbc2df8f07502c26",
+    "src/mujoco_ros2_manipulation/build.py": "debabdcddf1cf000cab9f892f1b53fd0561b808dbab1aa27f66deb78bd3dfbaa",
+    "src/mujoco_ros2_manipulation/verification/runner.py": "9749b479499623974307e5cf7b145cd2906e001edd1089bb40e39e53a4262c9c",
+    "src/mujoco_ros2_manipulation/workcells/__init__.py": "275b8e9a2319e6b96852c8007c16ab9a9546ff3a2cc176c8a1f1486753cfb36a",
+    "src/mujoco_ros2_manipulation/workcells/config.py": "18ba02dbc47b5ca6620abc008326c891e23eb99438c97b5c65eaf347d4e1f87f",
+    "src/mujoco_ros2_manipulation/workcells/integrity.py": "1b0bc61bfb52297630640d1226639c4a63c62109decd828fc35ae2996ca25890",
+    "src/mujoco_ros2_manipulation/workcells/launch.py": "a800da72b30d7e3d6ae4e4063b64c90d68691cf5252c02551bd204b0c24f6c61",
+    "src/mujoco_ros2_manipulation/workcells/prepare.py": "2143c50a866bb743773411fd7c65d5eccb6ebbb20bb8a4cb80a4603dcc4259e5",
+    "src/mujoco_ros2_manipulation/workcells/trajectory.py": "3a4af394bf35ca28cbe8150d5d624fe4a600f93123e02eff094b0138f3caa261",
+    "src/mujoco_ros2_manipulation/workcells/verify.py": "108f8b7f255c1ca4ff5d1ae9214fe7ea8ab3bc766db5a2b969743aae38f56d51",
+    "tests/model/test_workcells.py": "76ce4b7d15f7420e818cf05e6be3b3f93691156cd56de15b550554bcd0e4e188",
+    "tests/unit/test_workcells.py": "bbc1c2f4a817586b8fffedd2f2689dee7297a3dd25e3cf52374588add8a8e7b0",
+    "verify_scene.py": "a08b3ffe52dd0d7ae3db888e1cb16241fce2e5a8f2abef4a7237fb0d5eb1d36c"
+  },
+  "tests": {
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0
+  },
+  "workcell_model": {
+    "schema_version": 1,
+    "workcell_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+    "joints": [
+      "left_j1",
+      "left_j2",
+      "left_j3",
+      "left_j4",
+      "left_j5",
+      "left_j6",
+      "right_shoulder_pan_joint",
+      "right_shoulder_lift_joint",
+      "right_elbow_joint",
+      "right_wrist_1_joint",
+      "right_wrist_2_joint",
+      "right_wrist_3_joint"
+    ],
+    "home_rad": [
+      0.0,
+      -1.2,
+      1.2,
+      -1.5,
+      -1.5,
+      0.0,
+      0.0,
+      -1.5708,
+      1.5708,
+      -1.5708,
+      -1.5708,
+      0.0
+    ],
+    "joint_limits": {
+      "left_j1": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j2": {
+        "lower": -4.6251,
+        "upper": 1.4835,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j3": {
+        "lower": -2.8274,
+        "upper": 2.8274,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j4": {
+        "lower": -4.6251,
+        "upper": 1.4835,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "left_j5": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "left_j6": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "right_shoulder_pan_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_shoulder_lift_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_elbow_joint": {
+        "lower": -3.141592653589793,
+        "upper": 3.141592653589793,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_1_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_2_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_3_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      }
+    },
+    "contacts_at_home": [],
+    "home_error_rad": [
+      7.533625707092892e-20,
+      0.0031490183789439907,
+      0.003614517374347148,
+      0.0007730662615645922,
+      8.306995533668982e-06,
+      -1.146917963070277e-06,
+      -1.4800150425531685e-19,
+      0.0029112799485973007,
+      0.004051765088771031,
+      0.0018201198019551779,
+      2.9406437285217635e-09,
+      1.0001754775025122e-21
+    ],
+    "inputs": {
+      "config/workcells/fr5_ur5e.yaml": "21b9364152bf05560c7c08e2b862665f4d78ca4303d4ae7ef80652f6f414583f",
+      "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+      "src/mujoco_ros2_manipulation/workcells/config.py": "18ba02dbc47b5ca6620abc008326c891e23eb99438c97b5c65eaf347d4e1f87f",
+      "src/mujoco_ros2_manipulation/workcells/prepare.py": "2143c50a866bb743773411fd7c65d5eccb6ebbb20bb8a4cb80a4603dcc4259e5",
+      "src/mujoco_ros2_manipulation/workcells/integrity.py": "1b0bc61bfb52297630640d1226639c4a63c62109decd828fc35ae2996ca25890",
+      "packages/ur5e_moveit_config/config/moveit.rviz": "90e241fc136b307bf37e8d48d25a1da03973a354828cd0409c3ccd96617b8912",
+      "models/fr5/source.json": "7fe52b8888ce51517bec729460ad822c227fd24092c81f474c30297fb41c925c",
+      "models/fr5/fr5.xml": "62bf211b01ab1c61708a9e3eef6ced0be2b4cec3692d94b6ddc52abaa27d2060",
+      "models/fr5/fr5.ros2_control.urdf": "18ca958687fad03a6b4a696639c9e8bd8eca3d26df114ca72eb784a05704a69c",
+      "models/ur5e/source.json": "773e15253d6ab140b73e33f135760198f67d1fc5a10a4275bf3cbe17ba6e0716",
+      "models/ur5e/ur5e.xml": "30cbaefe8670fe103804172f29d1262ebb480bfaab155e1c1c09ed353b03da7c",
+      "models/ur5e/ur5e.ros2_control.urdf": "787f8101b1aa799a007fe8d1f2943f3f189ee04c87644cd498eaa845e0b78b22"
+    },
+    "outputs": {
+      "cell.xml": "acda9ec4cde30de1d2400abb112055ae7a935dfcb134e4020f418352077454d5",
+      "cell.urdf": "4f5712578bd2a4a648ba7819a45bdc132fa280e487ec46ca7085f7e24a244662",
+      "cell.srdf": "7a8d9181b2e535d9f96c422f0e49848b2196462ffe6e2ec697cbb5a9fcf6d6af",
+      "controllers.yaml": "7285476bd1a1e3853e90ac7511c667aca5eff3aed579ebdd5ee488cf147817f7",
+      "moveit.yaml": "5036e130bc50ea6b6426e997c988c11a80bdf5f907e9416d7da17fa219b71471",
+      "moveit.rviz": "2666e25f91f94db3dc512ff5313ca88305384d76a5981c74e25d380215b0be3d"
+    }
+  },
+  "shared_world_runs": [
+    {
+      "schema_version": 2,
+      "run_id": "20261019T091718.721218Z-df863875",
+      "robot_id": "workcell_fr5_ur5e",
+      "ros_domain_id": 93,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T09:17:18.721328+00:00",
+      "completed_utc": "2026-10-19T09:17:36.741130+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T091718.721218Z-df863875/launch.log",
+      "scene_id": "default",
+      "robot": "FR5 + UR5e 공동 작업장면",
+      "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "model_manifest_sha256": "a1c21052ce1c1f5a09d6f1c672260c9ec1ffb87794826401e70b3d50dbe35e18",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "workcell_id": "fr5_ur5e",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "joints": [
+        "left_j1",
+        "left_j2",
+        "left_j3",
+        "left_j4",
+        "left_j5",
+        "left_j6",
+        "right_shoulder_pan_joint",
+        "right_shoulder_lift_joint",
+        "right_elbow_joint",
+        "right_wrist_1_joint",
+        "right_wrist_2_joint",
+        "right_wrist_3_joint"
+      ],
+      "controllers": [
+        "joint_state_broadcaster",
+        "left_controller",
+        "right_controller"
+      ],
+      "clock_publishers": 1,
+      "joint_state_publishers": 1,
+      "isolated_arms": [
+        {
+          "instance": "left",
+          "other_arm_drift_rad": 4.808849542648954e-05,
+          "tracking_error_rad": [
+            8.909676542726008e-05,
+            0.003159888245587439,
+            0.003617082806172789,
+            0.0007735318951873627,
+            7.749885921226607e-06,
+            -1.19326940653704e-06,
+            4.808849542648954e-05,
+            -3.545487537781611e-05,
+            -2.0532995787192476e-05,
+            -1.2845218050117069e-05,
+            2.6015646110710833e-06,
+            -3.454930036918074e-08
+          ]
+        },
+        {
+          "instance": "right",
+          "other_arm_drift_rad": 8.90967654273156e-05,
+          "tracking_error_rad": [
+            -8.90967654273156e-05,
+            -1.086986664522449e-05,
+            -2.5654318254186848e-06,
+            -4.6563362232632244e-07,
+            5.571096126644193e-07,
+            4.6351443466697824e-08,
+            2.3067348000893606e-06,
+            0.0029069960362231306,
+            0.0040528193452769035,
+            0.001821478692271672,
+            5.553340957531461e-06,
+            -7.76708228674731e-08
+          ]
+        }
+      ],
+      "arm_plans": [
+        {
+          "instance": "left",
+          "trajectory_points": 22,
+          "collision_samples": 51
+        },
+        {
+          "instance": "right",
+          "trajectory_points": 24,
+          "collision_samples": 56
+        }
+      ],
+      "joint_plan_points": 24,
+      "joint_plan_collision_samples": 56,
+      "collision_samples_total": 347,
+      "interpolation_max_step_rad": 0.025,
+      "interpolation_max_dt_sec": 0.05,
+      "common_start_sec": 12.102,
+      "future_goal_acceptance_margins_sec": [
+        0.7480000000000011,
+        0.48600000000000243
+      ],
+      "observed_start_sec": {
+        "left": 12.174,
+        "right": 12.174
+      },
+      "observed_start_skew_sec": 0.0,
+      "observed_start_tolerance_sec": 0.1,
+      "collision_probe_rad": {
+        "left_j1": -0.2,
+        "left_j2": -1.1,
+        "left_j3": 1.1,
+        "left_j4": -1.4,
+        "left_j5": -1.5,
+        "left_j6": 0.1,
+        "right_shoulder_pan_joint": -0.2,
+        "right_shoulder_lift_joint": -1.45,
+        "right_elbow_joint": 1.45,
+        "right_wrist_1_joint": -1.5,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.1
+      },
+      "cross_arm_contacts": [
+        [
+          "left_wrist2_link",
+          "right_wrist_2_link"
+        ],
+        [
+          "right_wrist_3_link",
+          "left_wrist2_link"
+        ]
+      ],
+      "collision_goal_rejected": true,
+      "peer_rejection_cancels_other_arm": true,
+      "active_cancellation_stops_both_arms": true,
+      "movement_before_active_cancel_rad": {
+        "left": 0.007762664123455026,
+        "right": 0.008095123901505213
+      },
+      "tf_child_frames": [
+        "left_base_link",
+        "left_forearm_link",
+        "left_shoulder_link",
+        "left_upperarm_link",
+        "left_world",
+        "left_wrist1_link",
+        "left_wrist2_link",
+        "left_wrist3_link",
+        "right_base",
+        "right_base_link",
+        "right_base_link_inertia",
+        "right_flange",
+        "right_forearm_link",
+        "right_ft_frame",
+        "right_shoulder_link",
+        "right_tool0",
+        "right_upper_arm_link",
+        "right_workcell_source_root",
+        "right_world",
+        "right_wrist_1_link",
+        "right_wrist_2_link",
+        "right_wrist_3_link",
+        "workcell_floor",
+        "workcell_left_pedestal",
+        "workcell_right_pedestal"
+      ],
+      "final_joint_positions_rad": [
+        0.20675078583422923,
+        -1.1949040285472268,
+        1.2074170828394608,
+        -1.4977772350575194,
+        -1.5025324746414173,
+        -0.00012963314467734002,
+        0.2070472536483278,
+        -1.565337475007145,
+        1.5765762488444703,
+        -1.5685103774816804,
+        -1.568355550027437,
+        -0.0003394839595957014
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    },
+    {
+      "schema_version": 2,
+      "run_id": "20261019T091737.003747Z-3e2b013c",
+      "robot_id": "workcell_fr5_ur5e",
+      "ros_domain_id": 98,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T09:17:37.003841+00:00",
+      "completed_utc": "2026-10-19T09:17:54.970932+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T091737.003747Z-3e2b013c/launch.log",
+      "scene_id": "default",
+      "robot": "FR5 + UR5e 공동 작업장면",
+      "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "model_manifest_sha256": "a1c21052ce1c1f5a09d6f1c672260c9ec1ffb87794826401e70b3d50dbe35e18",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "workcell_id": "fr5_ur5e",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "joints": [
+        "left_j1",
+        "left_j2",
+        "left_j3",
+        "left_j4",
+        "left_j5",
+        "left_j6",
+        "right_shoulder_pan_joint",
+        "right_shoulder_lift_joint",
+        "right_elbow_joint",
+        "right_wrist_1_joint",
+        "right_wrist_2_joint",
+        "right_wrist_3_joint"
+      ],
+      "controllers": [
+        "joint_state_broadcaster",
+        "left_controller",
+        "right_controller"
+      ],
+      "clock_publishers": 1,
+      "joint_state_publishers": 1,
+      "isolated_arms": [
+        {
+          "instance": "left",
+          "other_arm_drift_rad": 2.784684488568148e-05,
+          "tracking_error_rad": [
+            8.909676542726008e-05,
+            0.003159888245587439,
+            0.003617082806173011,
+            0.0007735318951873627,
+            7.749885921226607e-06,
+            -1.1932694065370776e-06,
+            2.784684488568148e-05,
+            1.9123527446041066e-06,
+            -2.179642977218066e-08,
+            -2.640658041785926e-06,
+            1.3952898230140676e-06,
+            -1.96400663950888e-08
+          ]
+        },
+        {
+          "instance": "right",
+          "other_arm_drift_rad": 8.90967654273156e-05,
+          "tracking_error_rad": [
+            -8.90967654273156e-05,
+            -1.086986664522449e-05,
+            -2.5654318256407294e-06,
+            -4.6563362232632244e-07,
+            5.571096126644193e-07,
+            4.635144346673234e-08,
+            2.3067348000893606e-06,
+            0.0029069960362231306,
+            0.0040528193452769035,
+            0.001821478692271672,
+            5.553340957309416e-06,
+            -7.767082286746608e-08
+          ]
+        }
+      ],
+      "arm_plans": [
+        {
+          "instance": "left",
+          "trajectory_points": 22,
+          "collision_samples": 51
+        },
+        {
+          "instance": "right",
+          "trajectory_points": 24,
+          "collision_samples": 56
+        }
+      ],
+      "joint_plan_points": 23,
+      "joint_plan_collision_samples": 54,
+      "collision_samples_total": 345,
+      "interpolation_max_step_rad": 0.025,
+      "interpolation_max_dt_sec": 0.05,
+      "common_start_sec": 12.104,
+      "future_goal_acceptance_margins_sec": [
+        0.75,
+        0.48600000000000065
+      ],
+      "observed_start_sec": {
+        "right": 12.174,
+        "left": 12.184
+      },
+      "observed_start_skew_sec": 0.009999999999999787,
+      "observed_start_tolerance_sec": 0.1,
+      "collision_probe_rad": {
+        "left_j1": -0.2,
+        "left_j2": -1.1,
+        "left_j3": 1.1,
+        "left_j4": -1.4,
+        "left_j5": -1.5,
+        "left_j6": 0.1,
+        "right_shoulder_pan_joint": -0.2,
+        "right_shoulder_lift_joint": -1.45,
+        "right_elbow_joint": 1.45,
+        "right_wrist_1_joint": -1.5,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.1
+      },
+      "cross_arm_contacts": [
+        [
+          "left_wrist2_link",
+          "right_wrist_2_link"
+        ],
+        [
+          "right_wrist_3_link",
+          "left_wrist2_link"
+        ]
+      ],
+      "collision_goal_rejected": true,
+      "peer_rejection_cancels_other_arm": true,
+      "active_cancellation_stops_both_arms": true,
+      "movement_before_active_cancel_rad": {
+        "left": 0.007762854485651449,
+        "right": 0.008095521670657857
+      },
+      "tf_child_frames": [
+        "left_base_link",
+        "left_forearm_link",
+        "left_shoulder_link",
+        "left_upperarm_link",
+        "left_world",
+        "left_wrist1_link",
+        "left_wrist2_link",
+        "left_wrist3_link",
+        "right_base",
+        "right_base_link",
+        "right_base_link_inertia",
+        "right_flange",
+        "right_forearm_link",
+        "right_ft_frame",
+        "right_shoulder_link",
+        "right_tool0",
+        "right_upper_arm_link",
+        "right_workcell_source_root",
+        "right_world",
+        "right_wrist_1_link",
+        "right_wrist_2_link",
+        "right_wrist_3_link",
+        "workcell_floor",
+        "workcell_left_pedestal",
+        "workcell_right_pedestal"
+      ],
+      "final_joint_positions_rad": [
+        0.2065564624799926,
+        -1.1945226216936295,
+        1.2052571439588127,
+        -1.4976951029938734,
+        -1.4991273143393269,
+        0.001711273000496821,
+        0.20891039781840937,
+        -1.5638221880170375,
+        1.5760361518148092,
+        -1.5642557208527548,
+        -1.571527425789328,
+        -0.0016869688900945953
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    }
+  ],
+  "single_robot_regressions": [
+    {
+      "schema_version": 2,
+      "run_id": "20261019T091310.592607Z-6b44100d",
+      "robot_id": "fr5",
+      "ros_domain_id": 94,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T09:13:10.592698+00:00",
+      "completed_utc": "2026-10-19T09:13:19.698562+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T091310.592607Z-6b44100d/launch.log",
+      "scene_id": "default",
+      "robot": "FAIRINO FR5 V6",
+      "robot_profile_sha256": "532a7eb981880b06c0ef0c1b8e918bddaffe2fe28d3f8da96d20438172141acb",
+      "model_manifest_sha256": "7fe52b8888ce51517bec729460ad822c227fd24092c81f474c30297fb41c925c",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "workcell_collision_links": [
+        "workcell_floor"
+      ],
+      "workcell_geometry_matches": true,
+      "validated_utc": "2026-10-19T09:13:19.311435+00:00",
+      "joints": [
+        "j1",
+        "j2",
+        "j3",
+        "j4",
+        "j5",
+        "j6"
+      ],
+      "controllers": {
+        "joint_state_broadcaster": "active",
+        "fairino5_controller": "active"
+      },
+      "direct_tracking_error_rad": [
+        2.789292780969177e-06,
+        0.0031488450388093003,
+        0.003614426538048443,
+        0.0007730453598844278,
+        8.30746785451808e-06,
+        -1.1466842637059193e-06
+      ],
+      "moveit_trajectory_points": 49,
+      "moveit_tracking_error_rad": [
+        -8.755093061529884e-06,
+        0.0032552359893847083,
+        0.003613532769879857,
+        0.0007670702834741139,
+        7.904702198135993e-06,
+        -1.9400244033462855e-06
+      ],
+      "final_joint_positions_rad": [
+        -0.2003663897482615,
+        -1.098237027342159,
+        1.105843348178933,
+        -1.4022162443759723,
+        -1.4972781140991893,
+        0.10151701102001458
+      ],
+      "joint_state_messages": 811,
+      "clock_messages": 4130,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 8.263999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base_link",
+        "forearm_link",
+        "shoulder_link",
+        "upperarm_link",
+        "workcell_floor",
+        "wrist1_link",
+        "wrist2_link",
+        "wrist3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    },
+    {
+      "schema_version": 2,
+      "run_id": "20261019T091314.949548Z-32aba762",
+      "robot_id": "fr10",
+      "ros_domain_id": 95,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T09:13:14.949640+00:00",
+      "completed_utc": "2026-10-19T09:13:20.879230+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T091314.949548Z-32aba762/launch.log",
+      "scene_id": "default",
+      "robot": "FAIRINO FR10 V6",
+      "robot_profile_sha256": "71d32da2f2b1e822ce409a137ad735162dd87b4ea6cd3fb825a68469594f848a",
+      "model_manifest_sha256": "ae8cb3f7406f9e4ac676e175e45db7f1115d5047fca85e6f1453334e079f77b7",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "workcell_collision_links": [
+        "workcell_floor"
+      ],
+      "workcell_geometry_matches": true,
+      "validated_utc": "2026-10-19T09:13:20.491911+00:00",
+      "joints": [
+        "j1",
+        "j2",
+        "j3",
+        "j4",
+        "j5",
+        "j6"
+      ],
+      "controllers": {
+        "fairino10_controller": "active",
+        "joint_state_broadcaster": "active"
+      },
+      "direct_tracking_error_rad": [
+        -5.581660194764471e-06,
+        -4.146414116745767e-05,
+        0.0014411853386795404,
+        0.00039979247869692536,
+        3.7051066372750796e-06,
+        -7.343297292278699e-07
+      ],
+      "moveit_trajectory_points": 17,
+      "moveit_tracking_error_rad": [
+        -0.0003175525051161421,
+        -0.0003481388932826679,
+        0.0014354794780750968,
+        0.00039174925823348694,
+        3.905235574030996e-06,
+        -3.656234185606122e-06
+      ],
+      "final_joint_positions_rad": [
+        -0.2018047404224604,
+        -1.0989301325755927,
+        1.103893543315216,
+        -1.3979866837672086,
+        -1.5013695361681576,
+        0.09881701526738383
+      ],
+      "joint_state_messages": 490,
+      "clock_messages": 2525,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 5.055999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base_link",
+        "forearm_link",
+        "shoulder_link",
+        "upperarm_link",
+        "workcell_floor",
+        "wrist1_link",
+        "wrist2_link",
+        "wrist3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    },
+    {
+      "schema_version": 2,
+      "run_id": "20261019T091318.330993Z-43ca1017",
+      "robot_id": "ur5e",
+      "ros_domain_id": 96,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T09:13:18.331084+00:00",
+      "completed_utc": "2026-10-19T09:13:26.738353+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T091318.330993Z-43ca1017/launch.log",
+      "scene_id": "default",
+      "robot": "Universal Robots UR5e",
+      "robot_profile_sha256": "005a2fdb9e1a04d2c7ec99341abbb004db3c05cdef03d53305dec9caa13590c1",
+      "model_manifest_sha256": "773e15253d6ab140b73e33f135760198f67d1fc5a10a4275bf3cbe17ba6e0716",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "workcell_collision_links": [
+        "workcell_floor"
+      ],
+      "workcell_geometry_matches": true,
+      "validated_utc": "2026-10-19T09:13:26.351070+00:00",
+      "joints": [
+        "shoulder_pan_joint",
+        "shoulder_lift_joint",
+        "elbow_joint",
+        "wrist_1_joint",
+        "wrist_2_joint",
+        "wrist_3_joint"
+      ],
+      "controllers": {
+        "joint_state_broadcaster": "active",
+        "ur5e_controller": "active"
+      },
+      "direct_tracking_error_rad": [
+        1.0103716913123506e-07,
+        0.0029114352772503516,
+        0.0040520201621714325,
+        0.0018202894744421272,
+        2.942124979199434e-07,
+        -4.304064387289232e-09
+      ],
+      "moveit_trajectory_points": 41,
+      "moveit_tracking_error_rad": [
+        -4.952994824281021e-07,
+        0.0036209751506057763,
+        0.004042157991089201,
+        0.0017734363869545966,
+        1.441604093876947e-06,
+        -1.1294600366085206e-07
+      ],
+      "final_joint_positions_rad": [
+        -0.1985848908622467,
+        -1.446114436265202,
+        1.4549047760770173,
+        -1.4985819990244913,
+        -1.5727473002146843,
+        0.0987666689768918
+      ],
+      "joint_state_messages": 737,
+      "clock_messages": 3746,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 7.495999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base",
+        "base_link",
+        "base_link_inertia",
+        "flange",
+        "forearm_link",
+        "ft_frame",
+        "shoulder_link",
+        "tool0",
+        "upper_arm_link",
+        "workcell_floor",
+        "workcell_source_root",
+        "wrist_1_link",
+        "wrist_2_link",
+        "wrist_3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    },
+    {
+      "schema_version": 2,
+      "run_id": "20261019T091321.627275Z-6491e04f",
+      "robot_id": "fr5",
+      "ros_domain_id": 97,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T09:13:21.627355+00:00",
+      "completed_utc": "2026-10-19T09:13:30.793782+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T091321.627275Z-6491e04f/launch.log",
+      "scene_id": "pedestal",
+      "robot": "FAIRINO FR5 V6",
+      "robot_profile_sha256": "532a7eb981880b06c0ef0c1b8e918bddaffe2fe28d3f8da96d20438172141acb",
+      "model_manifest_sha256": "5b3a937c678ba7869609597eac275b01105e0cb41ec9c4eb742f399d2546c5f8",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "workcell_collision_links": [
+        "workcell_floor",
+        "workcell_pedestal"
+      ],
+      "workcell_geometry_matches": true,
+      "validated_utc": "2026-10-19T09:13:30.409825+00:00",
+      "joints": [
+        "j1",
+        "j2",
+        "j3",
+        "j4",
+        "j5",
+        "j6"
+      ],
+      "controllers": {
+        "fairino5_controller": "active",
+        "joint_state_broadcaster": "active"
+      },
+      "direct_tracking_error_rad": [
+        2.792722338634812e-06,
+        0.0031488800656536142,
+        0.0036144426605233537,
+        0.0007730488002850588,
+        8.307488268632923e-06,
+        -1.1467069280900675e-06
+      ],
+      "moveit_trajectory_points": 49,
+      "moveit_tracking_error_rad": [
+        -1.5915684423439824e-06,
+        0.003255193097960518,
+        0.0036127537413412902,
+        0.0007668497079182934,
+        7.57358749692294e-06,
+        -1.8758812463520735e-06
+      ],
+      "final_joint_positions_rad": [
+        -0.20280971462382216,
+        -1.0979924964467285,
+        1.1050411631938915,
+        -1.3984825119584667,
+        -1.5023411760640766,
+        0.09839550944869306
+      ],
+      "joint_state_messages": 815,
+      "clock_messages": 4159,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 8.323999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base_link",
+        "forearm_link",
+        "shoulder_link",
+        "upperarm_link",
+        "workcell_floor",
+        "workcell_pedestal",
+        "wrist1_link",
+        "wrist2_link",
+        "wrist3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    }
+  ],
+  "ci_results": "See the final workcell PR checks; hosted results are separate from local runs",
+  "not_run": [
+    "Desktop GUI/GPU screenshots and performance benchmark",
+    "Actual robot hardware",
+    "Every-physics-step contact monitoring",
+    "Clock-stall/process-crash fault injection",
+    "Dedicated independently-colliding-versus-joint-detour scenario",
+    "CAD/concave supports",
+    "iljin source copy synchronization"
+  ]
+}
