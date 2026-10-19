@@ -1,0 +1,44 @@
+# 일반 버전 업데이트만 제한하며 보안 설정과 자동 병합 설정은 변경하지 않습니다.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    versioning-strategy: "increase"
+    groups:
+      python-helpers:
+        applies-to: "version-updates"
+        patterns:
+          - "pycollada"
+          - "pillow"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # major 변경은 Python 3.10 / ROS Humble 호환성을 별도 검증합니다.
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+      # 검증 기준 조합은 보안 업데이트 외에는 수동으로 갱신합니다.
+      # versions 범위 차단은 사용하지 않아 보안 수정 버전을 막지 않습니다.
+      - dependency-name: "mujoco"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      - dependency-name: "numpy"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      # PyYAML의 하한을 올리면 ROS의 시스템 패키지 5.4.1을 제외할 수 있습니다.
+      - dependency-name: "pyyaml"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
