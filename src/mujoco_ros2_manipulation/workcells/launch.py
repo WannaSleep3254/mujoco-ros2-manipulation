@@ -75,10 +75,15 @@ def nodes(context):
             fixture
         )
     description = {"robot_description": ET.tostring(robot, encoding="unicode")}
+    guard = cell.root / "runtime/native/moveit_plugin_lifetime.so"
+    if not guard.is_file():
+        raise RuntimeError("Build runtime before launching the workcell")
     simulation = Node(
         package="mujoco_ros2_control",
         executable="ros2_control_node",
         additional_env={
+            "LD_PRELOAD": str(guard),
+            "MANIPULATION_PIN_CONTROL_PLUGINS": "1",
             "MANIPULATION_CONTACT_STOP": "1",
             "MANIPULATION_CLOCK_TEST_MODE": clock_test,
             "MANIPULATION_ENABLE_CONTACT_TEST": "1" if contact_test else "0",
@@ -129,9 +134,6 @@ def nodes(context):
             ]
 
     config.update(description)
-    guard = cell.root / "runtime/native/moveit_plugin_lifetime.so"
-    if not guard.is_file():
-        raise RuntimeError("Build runtime before launching the workcell")
     movegroup = Node(
         package="moveit_ros_move_group",
         executable="move_group",

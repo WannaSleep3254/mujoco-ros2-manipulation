@@ -248,6 +248,12 @@ def main():
             native.mkdir(parents=True, exist_ok=True)
             run(['gcc', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror', '-o', native / 'moveit_plugin_lifetime.so',
                  ROOT / 'native/moveit_plugin_lifetime.c', '-ldl', '-pthread'])
+            vendor = ROOT / 'runtime/root/opt/ros/humble/opt/mujoco_vendor'
+            run(['g++', '-std=c++17', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
+                 '-DMANIPULATION_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/path_distance.cpp').read_bytes()).hexdigest() + '"',
+                 '-I' + str(vendor / 'include'), ROOT / 'native/path_distance.cpp',
+                 vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
+                 '-o', native / 'path_distance.so'])
             definition = manifest['packages'][runtime['package']]
             colcon(ROOT, [dict(name=runtime['package'], path=str(local_path(source, definition['path'])))], True)
         if args.component in ('all', 'models'):

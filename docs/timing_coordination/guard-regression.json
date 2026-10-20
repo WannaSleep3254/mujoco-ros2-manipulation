@@ -1,0 +1,42 @@
+{
+  "lifetime_guard_source_sha256": "acc0e2c2313433bfd7acebc47b9060f30719a00a2b037fcca87e32babae91603",
+  "lifetime_guard_binary_sha256": "d3c192cf24467d35cc24762179ec29d3fe2bbdfed060e16bacc75b0b6f514501",
+  "runs": [
+    {
+      "run_id": "20261020T101512.875841Z-c86f3672",
+      "report_sha256": "4a34f369904c6097203b12efa4646b7b34151d9c8e345908ded4f46b3bca4e6e",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    {
+      "run_id": "20261020T101517.394008Z-126a9d8a",
+      "report_sha256": "7b06fdf81d4f1f6e1fa916b18eac668e6407a67409aa9f77b6d4f3d61159f7ca",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    {
+      "run_id": "20261020T101521.845891Z-78103ed7",
+      "report_sha256": "68fca27706f62748b73367c75c159d7e24e2eb3dc6cd93ffd565f49cbbc28bce",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    {
+      "run_id": "20261020T101526.258240Z-58ef1465",
+      "report_sha256": "6a6ff2258cd5927f0e0bb2ef551d580044c6952c7bdba7e7c3e15fcbbdc0526c",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    {
+      "run_id": "20261020T101530.710713Z-e6153714",
+      "report_sha256": "6053901e6a54e135d865170ebc66c553151829e3bb13435d34944550ce39b94a",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    {
+      "run_id": "20261020T101535.184063Z-1c004249",
+      "report_sha256": "14edb29ee1ed47c2c67898b30669a38f2f44e6349d797457aca789eb355e260e",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    }
+  ]
+}

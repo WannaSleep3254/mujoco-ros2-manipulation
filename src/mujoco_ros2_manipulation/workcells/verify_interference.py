@@ -28,6 +28,12 @@ from mujoco_ros2_manipulation.workcells.interference import (
     stretch,
     sampled_parallel,
 )
+from mujoco_ros2_manipulation.workcells.distance import DistanceEvaluator
+from mujoco_ros2_manipulation.workcells.plan_selection import (
+    MAX_PLAN_CANDIDATES,
+    select_clearance_plan,
+)
+from mujoco_ros2_manipulation.workcells.timing import load_policy
 from mujoco_ros2_manipulation.workcells.trajectory import partitions
 from mujoco_ros2_manipulation.workcells.verify import WorkcellVerification, require
 
@@ -78,11 +84,52 @@ class InterferenceVerification(WorkcellVerification):
         return path
 
     def planned(self, group, target, start):
-        answer = self.plan(group, target, start)
-        require(
-            answer.error_code.val == MoveItErrorCodes.SUCCESS, "MoveIt failed: " + group
+        # The comparison policy applies to the crossing motion, not its setup path.
+        if group != "both_arms" or target != self.case["goal_rad"]:
+            answer = self.plan(group, target, start)
+            require(
+                answer.error_code.val == MoveItErrorCodes.SUCCESS,
+                "MoveIt failed: " + group,
+            )
+            return self.anchored(answer.trajectory.joint_trajectory)
+        policy_path, policy = load_policy(self.cell)
+        require(policy["case"] == self.case["id"], "Planning policy/case mismatch")
+        selection = dict(
+            group=group,
+            start_rad=dict(start),
+            target_rad=target,
+            max_candidates=MAX_PLAN_CANDIDATES,
+            policy=policy,
+            policy_sha256=file_sha256(policy_path),
+            candidates=[],
         )
-        return self.anchored(answer.trajectory.joint_trajectory)
+        self.evidence.setdefault("planning_selection", []).append(selection)
+
+        def propose():
+            answer = self.plan(group, target, start)
+            code = answer.error_code.val
+            trajectory = (
+                self.anchored(answer.trajectory.joint_trajectory)
+                if code == MoveItErrorCodes.SUCCESS
+                else None
+            )
+            return code, trajectory
+
+        def save(candidates):
+            selection["candidates"] = candidates
+            self.save_evidence("clearance_candidate_selection")
+
+        with DistanceEvaluator(self.cell) as evaluator:
+            selection["evaluator"] = evaluator.metadata()
+            return select_clearance_plan(
+                propose,
+                start,
+                self.cell,
+                evaluator,
+                policy,
+                lambda curve: self.assess([curve], start),
+                save,
+            )
 
     def assess(self, curves, initial, *, complete=True):
         samples = sampled_parallel(
@@ -233,6 +280,7 @@ class InterferenceVerification(WorkcellVerification):
                 self.validity_of(self.case[key]).valid,
                 "Case endpoint is colliding: " + key,
             )
+
     def run(self):
         self.discover()
         self.progress("move_to_common_start")
