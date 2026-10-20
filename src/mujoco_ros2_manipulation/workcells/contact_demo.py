@@ -7,15 +7,15 @@ OBSTACLE_GEOM = "demo_obstacle_geom"
 OBSTACLE_XYZ = (-0.45, 0.72, 0.5)
 OBSTACLE_SIZE = (0.16, 0.16, 1.0)
 OBSTACLE_RGBA = (1.0, 0.15, 0.02, 1.0)
-FIRST_JOINT_OFFSETS = (1.2, -1.2)
-DURATION_SEC = 2.5
+FIRST_JOINT_OFFSETS = (2.0, -2.0)
+DURATION_SEC = 4.0
 
 
 def numbers(values):
     return " ".join(str(v) for v in values)
 
 
-def contact_demo_model(cell, directory):
+def contact_demo_model(cell, directory, *, obstacle=True):
     """Add a fixed post before startup; never add a mocap or injection fixture."""
     directory = Path(directory).resolve()
     if cell.id != "fr5_ur5e":
@@ -26,20 +26,24 @@ def contact_demo_model(cell, directory):
     model = tree.getroot()
     if model.find(".//body[@name='demo_obstacle']") is not None:
         raise ValueError("Reserved obstacle already exists")
-    body = ET.SubElement(
-        model.find("worldbody"), "body", name=OBSTACLE_BODY, pos=numbers(OBSTACLE_XYZ)
-    )
-    ET.SubElement(
-        body,
-        "geom",
-        name=OBSTACLE_GEOM,
-        type="box",
-        size=numbers(v / 2 for v in OBSTACLE_SIZE),
-        rgba=numbers(OBSTACLE_RGBA),
-        group="0",
-        contype="1",
-        conaffinity="1",
-    )
+    if obstacle:
+        body = ET.SubElement(
+            model.find("worldbody"),
+            "body",
+            name=OBSTACLE_BODY,
+            pos=numbers(OBSTACLE_XYZ),
+        )
+        ET.SubElement(
+            body,
+            "geom",
+            name=OBSTACLE_GEOM,
+            type="box",
+            size=numbers(v / 2 for v in OBSTACLE_SIZE),
+            rgba=numbers(OBSTACLE_RGBA),
+            group="0",
+            contype="1",
+            conaffinity="1",
+        )
     statistic = model.find("statistic")
     if statistic is None:
         statistic = ET.SubElement(model, "statistic")

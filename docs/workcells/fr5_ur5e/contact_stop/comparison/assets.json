@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "base_commit": "d515e41d736f3b42ecdd4f0fbf6991ab8c3a2ba1",
+  "collected_utc": "2026-10-20T05:42:00.231877+00:00",
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/workcells/contact_demo.py": "3aac23de2b9b2f7b21277d56a2107e0c176fa5c76ad0711bf77dc60dc74e8aa6",
+    "src/mujoco_ros2_manipulation/workcells/contact_comparison.py": "52b43dc6d05773cf2a7783f4d4ed91dc011eebe3a5ed8bd1eac02abae7d52546",
+    "src/mujoco_ros2_manipulation/workcells/verify_contact_demo.py": "67922ea325a8e31ad7074528b8de7f85637e4d4e9fe0f7185f944b13971ac4a5",
+    "src/mujoco_ros2_manipulation/workcells/record_contact_demo.py": "6b0a598fe590ac9675a8875b8c226c6a53e043b25ec9ff15c26d4214a6330ef9",
+    "src/mujoco_ros2_manipulation/workcells/launch.py": "9a8833ffd0de3c7145434d1173b34ac039dd524bfb54e7e93a2ce4ddc9fa1834",
+    "src/mujoco_ros2_manipulation/workcells/contact_guard.py": "75b501a50929dccfafddde3ecbbf6a589639c60eee058a7212c5a43aeee64b95",
+    "scripts/compare_contact_demo.py": "f0451246b1f138a22845ff32d74625a1210bab6116068b7b9d108c7205089c04",
+    "native/step_monitor.hpp": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+    ".github/workflows/ci.yml": "5031ab7be82274ef9b1e15587e186311fa5df89f6439687e0ba0e26c272184be"
+  },
+  "evidence_scope": "Two independently recorded simulations, same complete ROS command and enabled stop interlock. Obstacle removed only in control. Original recordings are retained. Composite resizes and aligns at scheduled motion start, adds labels; no speed change or final-frame padding.",
+  "unit_model_tests": {
+    "total": 82,
+    "failures": 0,
+    "skipped": 0,
+    "log_sha256": "bf0d47b54165a82c1fca3e533b48c2b35250dc7fe14722924cc64f91a2d4b54f"
+  },
+  "artifacts": [
+    {
+      "file": "comparison.json",
+      "bytes": 1541,
+      "sha256": "00c5afa9fa6a0f04b04e9b2337d58468820650b8ec8a130a234f9c9b5ed68cec"
+    },
+    {
+      "file": "comparison.mp4",
+      "bytes": 1022645,
+      "sha256": "138f432f2d642db6f019280a4fedc81570084ece9689b3d5f5b5c2ce8965b701"
+    },
+    {
+      "file": "contact_headless_validation.json",
+      "bytes": 117432,
+      "sha256": "0d11df71e4c24c35850abe2987c0b1d2dee5452bff046901e55f3331e7ef55bb"
+    },
+    {
+      "file": "contact_physics.json",
+      "bytes": 1645,
+      "sha256": "e248d46f36f885412675164d8c9351b0c76eb70db9402cd6c9f0ae5b5ee46738"
+    },
+    {
+      "file": "contact_source.mp4",
+      "bytes": 491932,
+      "sha256": "5b277fa3acf4f010cf3d350996c348af464418112b5070c9d0e843d55d72c802"
+    },
+    {
+      "file": "contact_validation.json",
+      "bytes": 121162,
+      "sha256": "b71892a0b9a67d8961f8de20a35f44bb7dc650093ebc783dab2aebb623d70dd2"
+    },
+    {
+      "file": "control_headless_validation.json",
+      "bytes": 132676,
+      "sha256": "4603ffdb09e122b0091c2d5148e320cd7b42dbb7a4c89b2e69ab28a0807a02c9"
+    },
+    {
+      "file": "control_physics.json",
+      "bytes": 1085,
+      "sha256": "a354f3d1355c35ac805bd175675285b4e683d9ae0d30aa40a3494a096717df42"
+    },
+    {
+      "file": "control_source.mp4",
+      "bytes": 1007804,
+      "sha256": "0270ffe1b149b604e71cb1bd3cca7628cd6234a2bffa43e91112ab63ebea82c3"
+    },
+    {
+      "file": "control_validation.json",
+      "bytes": 135343,
+      "sha256": "e6e8b568ce7499049bff42c18068e4e9568a50d0666658a97bc437b7eaa2cfac"
+    },
+    {
+      "file": "headless_comparison.json",
+      "bytes": 730,
+      "sha256": "5be1baad5a40a8d29385dfab2538cbd575fbd7115b5b0c1c3f7aa00210953db0"
+    },
+    {
+      "file": "interrupted.png",
+      "bytes": 769555,
+      "sha256": "ca756d30b52af6d67985fe10453775577b82195d1d0c42e716feb9ccfa6fe931"
+    },
+    {
+      "file": "outbound.png",
+      "bytes": 772004,
+      "sha256": "ae86ca0385007cadecdff4109dc3d45d1b120dc3465e44207c94fc54f8befb17"
+    },
+    {
+      "file": "previous_ci.json",
+      "bytes": 2644,
+      "sha256": "fc3e64b72e39aed53c9e6b68a476c38592e7e075ad09b34bb55b5af3dff8a66c"
+    },
+    {
+      "file": "returned.png",
+      "bytes": 731949,
+      "sha256": "3a4f97be2d3b09334889a4be0bb9b4667471553e19f2130266a2986381dd745a"
+    },
+    {
+      "file": "start.png",
+      "bytes": 756334,
+      "sha256": "ef1466011285a0105beaea4d283055ce430b429c7d6771e460587342e7a4d87e"
+    }
+  ]
+}

@@ -38,6 +38,11 @@ def nodes(context):
     contact_demo = (
         LaunchConfiguration("contact_demo").perform(context).lower() == "true"
     )
+    control = (
+        LaunchConfiguration("contact_demo_control").perform(context).lower() == "true"
+    )
+    if control and not contact_demo:
+        raise ValueError("Control requires contact_demo")
     if contact_test and contact_demo:
         raise ValueError("Select either injected contact test or fixed-obstacle demo")
     gui = LaunchConfiguration("gui").perform(context).lower() == "true"
@@ -48,10 +53,12 @@ def nodes(context):
     ).lower()
     if contact_test or contact_demo:
         path = Path(os.environ["MANIPULATION_DIAGNOSTICS_PATH"])
-        fixture = (contact_demo_model if contact_demo else contact_test_model)(
-            cell, path.parent
+        fixture = (
+            contact_demo_model(cell, path.parent, obstacle=not control)
+            if contact_demo
+            else contact_test_model(cell, path.parent)
         )
-        if contact_demo:
+        if contact_demo and not control:
             add_demo_urdf(robot)
         robot.find("ros2_control/hardware/param[@name='mujoco_model']").text = str(
             fixture
@@ -147,6 +154,7 @@ def generate_launch_description():
             DeclareLaunchArgument("rviz", default_value="true"),
             DeclareLaunchArgument("contact_test", default_value="false"),
             DeclareLaunchArgument("contact_demo", default_value="false"),
+            DeclareLaunchArgument("contact_demo_control", default_value="false"),
             OpaqueFunction(function=nodes),
         ]
     )

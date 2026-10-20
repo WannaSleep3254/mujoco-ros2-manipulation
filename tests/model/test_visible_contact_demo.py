@@ -53,3 +53,25 @@ class VisibleApproachGeometryTests(unittest.TestCase):
             self.assertIsNotNone(first_contact)
             self.assertGreater(first_contact, 0.7)
             self.assertLess(first_contact, 1.1)
+
+    def test_no_obstacle_control_covers_the_entire_outbound_and_return_path(self):
+        cell = load_workcell()
+        if not (cell.output / "cell.xml").is_file():
+            self.skipTest("Shared workcell not generated")
+        (ROOT / "runtime/validation/runs").mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=ROOT / "runtime/validation/runs") as tmp:
+            model = mujoco.MjModel.from_xml_path(
+                str(contact_demo_model(cell, Path(tmp), obstacle=False))
+            )
+            self.assertEqual(
+                mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, OBSTACLE_BODY), -1
+            )
+            state = mujoco.MjData(model)
+            mujoco.mj_resetDataKeyframe(model, state, 0)
+            home = state.qpos.copy()
+            for angle in np.r_[np.linspace(0, 2, 101), np.linspace(2, 0, 101)]:
+                state.qpos[:] = home
+                state.qpos[0] += angle
+                state.qpos[6] -= angle
+                mujoco.mj_forward(model, state)
+                self.assertEqual(state.ncon, 0)

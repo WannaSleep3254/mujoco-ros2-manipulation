@@ -170,28 +170,27 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 물리 엔진·시계·전체 상태 하나와 팔별 궤적 제어기 두 개를 사용합니다.
 [공동 작업장면 안내](docs/workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
 
-### 고정 장애물에 접근·접촉한 뒤 양팔 자동 정지
+### 충돌 때문에 멈췄는지 확인하는 대조 시연
 
-[![FR5 손목이 붉은 고정 기둥에 닿은 뒤 양팔이 정지한 실제 화면](docs/workcells/fr5_ur5e/contact_stop/visible_approach/contact.png)](docs/workcells/fr5_ur5e/contact_stop/visible_approach/approach-contact-stop.mp4)
+[![왼쪽은 접촉으로 양팔 정지, 오른쪽 무장애물 대조군은 같은 명령을 계속 실행](docs/workcells/fr5_ur5e/contact_stop/comparison/outbound.png)](docs/workcells/fr5_ur5e/contact_stop/comparison/comparison.mp4)
 
-[시연 영상 (MP4, 약 7초)](docs/workcells/fr5_ur5e/contact_stop/visible_approach/approach-contact-stop.mp4) ·
-[접근·접촉 화면과 검증 근거](docs/contact_stop.md#고정-장애물-접촉-시연)
+[나란히 비교 영상 (MP4, 11초)](docs/workcells/fr5_ur5e/contact_stop/comparison/comparison.mp4) ·
+[재현 명령·검증 근거·CI 결과](docs/contact_comparison.md)
 
-붉은 기둥은 시작부터 고정되어 있습니다. 양팔이 각각 약 56° 회전하고, **FR5 손목이 기둥 표면에 닿으면
-접촉하지 않은 UR5e까지 함께 정지**합니다. 관측 최고 속도는 약 0.50/0.47rad/s입니다.
-기록된 관절 상태로 재계산한 손목 경로 길이는 약 0.65/0.50m입니다.
-접촉 후 양팔 목표 자동 취소·제어기 비활성화, 관절 변화 0rad·추가 적분 0회를 확인했습니다.
+**동일한 8초 왕복 명령을 두 독립 실행에 적용**했습니다. 왼쪽은 약 2.01초에 기둥과 접촉해 양팔이 멈추고,
+오른쪽은 장애물이 없어 남은 약 6초의 이동·복귀를 끝까지 수행합니다.
+접촉 실행은 양팔 `CANCELED`, 대조군은 양팔 `SUCCEEDED`입니다. 명령 해시가 같고,
+양팔 자동 정지 기능은 두 실행 모두 켜져 있습니다.
 
 ```bash
 source ./manipulation_env.sh
 python3 verify_contact_demo.py --gui
-# 실제 MuJoCo 창을 녹화: 매번 새 runtime 하위 경로 사용
-python3 verify_contact_demo.py --gui --record-dir runtime/demos/my-contact-demo
+python3 verify_contact_demo.py --gui --control
 ```
 
-시뮬레이션의 정지 검증을 위해 의도적으로 접촉하는 직접 궤적입니다.
-MoveIt의 충돌 회피 계획과 구분하며, 시험 물체 순간 배치·접촉 주입 서비스는 사용하지 않습니다.
-이전의 시각적 접촉이 없던 주입 기록은 [과거 자료](docs/contact_stop.md#시연-영상-2026-10-20)로 보존합니다.
+첫 관절 목표는 ±2rad(약 115°)까지 4초 이동 후 4초 복귀입니다.
+접촉 시점에 약 6초의 명령이 남아 있으므로 목표 도달과 접촉 정지를 구분할 수 있습니다.
+기본 실행은 양팔 동시 정지를 유지합니다. 이전 단독 영상은 [과거 시연 기록](docs/contact_stop.md#고정-장애물-접촉-시연)에 보존합니다.
 
 ## 구현 범위와 다음 작업
 

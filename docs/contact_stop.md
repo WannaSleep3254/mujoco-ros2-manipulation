@@ -84,6 +84,8 @@ CI는 정상 공동 동작 두 회와 접촉 정지의 일반/일시정지 두 �
 
 ## 고정 장애물 접촉 시연
 
+이 절은 2차 시연 커밋 `d515e41`의 과거 기록입니다. 최신 실행은 [동일 명령의 장애물/무장애물 비교](contact_comparison.md)이며, 현재 CLI는 8초 왕복 명령을 사용합니다.
+
 [영상 재생·다운로드 (MP4, 약 7.08초)](workcells/fr5_ur5e/contact_stop/visible_approach/approach-contact-stop.mp4)
 
 | 초기 간격 | 이동·접근 | 접촉 후 자동 정지 |

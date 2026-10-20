@@ -78,8 +78,8 @@ def show_mujoco(windows):
 
 
 class RecordedContactDemo(VisibleContactDemo):
-    def __init__(self, cell, progress, directory):
-        super().__init__(cell, progress)
+    def __init__(self, cell, progress, directory, control=False):
+        super().__init__(cell, progress, control=control)
         self.directory = Path(directory).resolve()
         if not self.directory.is_relative_to(ROOT / "runtime"):
             raise ValueError(
@@ -131,6 +131,7 @@ class RecordedContactDemo(VisibleContactDemo):
         self.record_thread = threading.Thread(
             target=self.record, name="contact-demo-recording"
         )
+        self.record_metadata["video_start_clock_sec"] = self.clock_last
         self.record_thread.start()
         until = time.monotonic() + 1
         self.until(lambda: time.monotonic() >= until, 3, "initial recorded scene")
