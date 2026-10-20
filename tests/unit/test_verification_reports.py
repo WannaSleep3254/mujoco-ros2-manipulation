@@ -208,6 +208,20 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue((Path(report['log_path']).parent / 'nvidia_smi.txt').is_file())
         self.node.create_client.assert_called_once()
 
+    def test_fast_motion_waits_for_delayed_rviz_readiness(self):
+        self.args.gui = True
+        def become_ready(predicate, *_):
+            path = self.root / 'runtime/validation/fr5_gui.log'
+            with path.open('a') as stream:
+                stream.write('Ready to take commands for planning group arm.')
+            self.assertTrue(predicate())
+        self.node.until.side_effect = become_ready
+        with patch('mujoco_ros2_manipulation.verification.runner.subprocess.run',
+                   return_value=SimpleNamespace(stdout='ros2_control_node /rviz2', stderr='')):
+            code, report = self.run_case()
+        self.assertEqual(code, 0)
+        self.assertEqual(report['status'], 'passed')
+
     def test_gui_failure_still_records_motion_and_cleanup(self):
         self.args.gui = True
         code, report = self.run_case()  # No RViz-ready log is supplied.

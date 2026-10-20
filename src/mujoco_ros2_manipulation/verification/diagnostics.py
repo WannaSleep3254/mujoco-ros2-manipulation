@@ -18,7 +18,7 @@ def diagnostic_environment(report, args):
     )
 
 
-def check_physics(data, *, run_id, source_sha256, timestep):
+def check_step_coverage(data, *, run_id, source_sha256, timestep):
     """Any detected contact fails the free-space workcell test, including inactive contacts."""
 
     def require(condition, message):
@@ -69,13 +69,46 @@ def check_physics(data, *, run_id, source_sha256, timestep):
                 finite(timing.get(key)) and timing[key] >= 0,
                 "Invalid step timing: " + name,
             )
-    require(
+    return data
+
+
+def check_physics(data, *, run_id, source_sha256, timestep, require_interlock=False):
+    check_step_coverage(
+        data, run_id=run_id, source_sha256=source_sha256, timestep=timestep
+    )
+    if require_interlock and (
+        data.get("stop_enabled") is not True or data.get("stop_latched") is not False
+    ):
+        raise ValueError("Native contact stop interlock is not ready")
+    if not (
         data.get("contacts") == 0
         and data.get("contact_steps") == 0
         and data.get("active_contacts") == 0
-        and data.get("pairs") == [],
-        "Unexpected MuJoCo contacts during free-space execution",
+        and data.get("pairs") == []
+    ):
+        raise ValueError("Unexpected MuJoCo contacts during free-space execution")
+    return data
+
+
+def check_stop_physics(data, *, run_id, source_sha256, timestep):
+    check_step_coverage(
+        data, run_id=run_id, source_sha256=source_sha256, timestep=timestep
     )
+    if not (
+        data.get("stop_enabled") is True
+        and data.get("stop_latched") is True
+        and data.get("contact_steps") == 1
+        and data.get("contacts", 0) > 0
+        and data.get("active_contacts", 0) > 0
+        and data.get("stop_step") == data["steps"]
+        and data.get("hold_ticks", 0) >= 10
+        and data.get("hold_time_sec", 0) > data.get("stop_time_sec", 0)
+        and data.get("stop_time_sec") == data["last_state_time_sec"]
+        and len(data.get("stopped_qpos", [])) > 0
+        and all(math.isfinite(v) for v in data["stopped_qpos"])
+        and sum(p["occurrences"] for p in data.get("pairs", [])) == data["contacts"]
+    ):
+        raise ValueError("Contact did not produce a complete latched stop")
     return data
 
 
@@ -84,12 +117,21 @@ def finalize_physics(report, cell, args):
     data = json.loads(path.read_text())
     # Keep contact pairs and timing evidence even when the zero-contact policy fails.
     report.update(physics=data, physics_report_sha256=file_sha256(path))
-    check_physics(
+    stop_test = getattr(args, "contact_stop_test", False)
+    validator = check_stop_physics if stop_test else check_physics
+    options = {} if stop_test else {"require_interlock": True}
+    validator(
         data,
         run_id=report.run_id,
         source_sha256=file_sha256(cell.root / "native/step_monitor.hpp"),
         timestep=cell.data["physics"]["timestep"],
+        **options,
     )
+    if stop_test:
+        fixture = report.directory / "contact_test.xml"
+        if not fixture.is_file():
+            raise ValueError("Contact test fixture missing")
+        report.update(contact_test_model_sha256=file_sha256(fixture))
     report.update(physics_checks_passed=True)
 
 

@@ -21,3 +21,8 @@ GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 
 전체 물리 스텝 수와 일치하지 않거나 접촉이 발견되면 검증이 실패합니다.
 CI는 5초 준비 후 기본 10초 성능 구간과 20회 양팔 계획을 포함합니다.
 로컬 60초·GPU GUI 검증 절차는 [공동 장면 진단](../../docs/workcell_diagnostics.md)을 참고합니다.
+
+접촉 자동 정지 시험은 `python3 verify_contact_stop.py --domain 111`과
+`python3 verify_contact_stop.py --domain 112 --paused-contact`입니다.
+검증기가 직접 목표를 취소하지 않고 네이티브 정지·감시 노드의 취소/비활성화를 관찰합니다.
+주입 서비스는 시험용 launch에만 있으며, 일반 검증은 해당 서비스가 노출되지 않는지도 확인합니다.

@@ -18,9 +18,9 @@ int main(int argc, char** argv) {
       mj_makeData(model.get()), mj_deleteData);
   const std::string mode = argv[2];
   if (model->nkey) mj_resetDataKeyframe(model.get(), data.get(), 0);
-  uint64_t count = 24;
-  if (mode == "workcell_contact") {
-    count = 1;
+  uint64_t count = 24, integrated = 0;
+  if (mode == "workcell_contact" || mode == "stop_workcell_contact") {
+    count = mode == "workcell_contact" ? 1 : 24;
     // Pinned single-model targets collide when combined in this workcell.
     // Workcell coordinates are supplied by a simple joint/value file.
     std::ifstream pose(std::string(argv[1]) + ".pose");
@@ -35,13 +35,31 @@ int main(int argc, char** argv) {
   }
   manipulation::StepMonitor monitor;
   for (uint64_t j = 0; j < count; ++j) {
-    if (mode == "transient") {
+    if (mode == "transient" || mode == "stop_transient") {
       // No mj_forward between the edits and step: detection must occur inside
       // mj_step.
       data->qpos[2] = j == 11 ? 0.05 : 1.0;
       std::fill_n(data->qvel, model->nv, 0.0);
     }
-    monitor.step(model.get(), data.get());
+    const bool was_latched = monitor.latched();
+    std::vector<mjtNum> before(data->qpos, data->qpos + model->nq);
+    if (was_latched) {
+      data->qpos[0] += 10;
+      std::fill_n(data->qvel, model->nv, 100.0);
+      std::fill_n(data->ctrl, model->nu, 999.0);
+      data->time =
+          0;  // A reset/control edit must not release or move a latched world.
+    }
+    if (monitor.step(model.get(), data.get())) ++integrated;
+    if (was_latched && mode == "stop_workcell_contact" &&
+        !std::equal(before.begin(), before.end(), data->qpos))
+      return 6;
+    if (monitor.latched() && std::any_of(data->qvel, data->qvel + model->nv,
+                                         [](double v) { return v != 0; }))
+      return 7;
   }
-  monitor.finish(count);
+  if (monitor.latched() && std::any_of(data->ctrl, data->ctrl + model->nu,
+                                       [](double v) { return v != 0; }))
+    return 8;
+  monitor.finish(integrated);
 }

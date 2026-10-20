@@ -20,6 +20,8 @@ from moveit_msgs.srv import GetMotionPlan, GetStateValidity
 from moveit_msgs.msg import Constraints, JointConstraint, MoveItErrorCodes
 from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
+from std_msgs.msg import String
+from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from mujoco_ros2_manipulation.paths import ROOT
 from mujoco_ros2_manipulation.verification.diagnostics import (
@@ -70,8 +72,40 @@ class WorkcellVerification(Verification):
         }
         self.handles = []
         self.acceptance_margins = []
+        self.contact_guard = None
+        self.create_subscription(
+            String,
+            "/workcell/contact_stop",
+            self.guard_event,
+            QoSProfile(
+                depth=1,
+                reliability=ReliabilityPolicy.RELIABLE,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            ),
+        )
         self.validity = self.create_client(GetStateValidity, "/check_state_validity")
         self.planner = self.create_client(GetMotionPlan, "/plan_kinematic_path")
+
+    def guard_event(self, message):
+        self.contact_guard = json.loads(message.data)
+
+    def ready_guard(self):
+        self.until(
+            lambda: self.contact_guard and self.contact_guard["phase"] == "ready",
+            15,
+            "contact guard ready",
+        )
+        health = self.create_client(
+            Trigger, "/mujoco_ros2_control_node/contact_stop_status"
+        )
+        self.until(health.service_is_ready, 5, "native contact interlock")
+        status = self.result(
+            health.call_async(Trigger.Request()), 5, "native contact status"
+        )
+        require(
+            status.success and status.message == "ready",
+            "Native contact stop not enabled or already latched",
+        )
 
     def joints(self, message):
         super().joints(message)
@@ -289,6 +323,14 @@ class WorkcellVerification(Verification):
         require(
             len(self.get_publishers_info_by_topic("/joint_states")) == 1,
             "Expected a single combined state publisher",
+        )
+        self.ready_guard()
+        require(
+            not any(
+                name.endswith("/inject_test_contact")
+                for name, _ in self.get_service_names_and_types()
+            ),
+            "Contact injection service must not be exposed in normal launch",
         )
         self.settle(self.cell.home)
         isolated = []
@@ -583,6 +625,7 @@ class WorkcellVerification(Verification):
             "planning_performance": planning_performance,
             "planning_wall_timings": self.planning_timings,
             "workcell_id": self.cell.id,
+            "contact_guard": self.contact_guard,
             "rmw_implementation": get_rmw_implementation_identifier(),
             "joints": self.joint_names,
             "controllers": expected,

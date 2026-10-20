@@ -25,7 +25,7 @@ config/
 launch/manipulation.launch.py     ROS launch 어댑터
 scripts/check_repository.py       구문·문서 링크·설정 검사
 packages/ur5e_moveit_config/       ament/MoveIt 패키지
-native/ + patches/               네이티브 종료 처리·물리 스텝 접촉/시간 계측
+native/ + patches/               네이티브 종료 처리·물리 스텝 접촉/시간 계측·접촉 정지
 examples/single_joint/            예제 안내
 tests/unit/                     ROS 없이 실행하는 검사
 tests/model/                    제조사 모델이 필요한 회귀 검사
@@ -127,3 +127,5 @@ GUI/GPU 성능·실물 로봇·장면별 모든 충돌 상황은 자동 검증 �
 
 후속 구현으로 로봇 인스턴스별 이름 접두사, 합성 SRDF·팔별 제어기와 공통 물리 장면을 추가했습니다.
 [공동 작업장면](workcells.md)과 [확장 계획](plans/base_and_multi_robot.md)에 검증한 범위와 남은 항목을 구분했습니다.
+
+공동 장면의 접촉 인터록은 네이티브 물리 고정과 별도 ROS 감시 노드의 양팔 제어기 비활성화를 결합합니다. [동작·복구·검증](contact_stop.md)을 참고합니다.

@@ -61,6 +61,7 @@ class NativeMonitorTests(unittest.TestCase):
                 os.environ,
                 MANIPULATION_DIAGNOSTICS_PATH=str(output),
                 MANIPULATION_DIAGNOSTICS_RUN_ID='probe"\\id',
+                MANIPULATION_CONTACT_STOP="1" if mode.startswith("stop_") else "0",
             ),
         )
         return json.loads(output.read_text())
@@ -132,3 +133,41 @@ class NativeMonitorTests(unittest.TestCase):
             check_physics(
                 data, run_id="workcell_probe", source_sha256=self.digest, timestep=0.002
             )
+
+    def test_latched_contact_stop_blocks_all_later_physics_steps(self):
+        from mujoco_ros2_manipulation.verification.diagnostics import check_stop_physics
+
+        data = self.run_probe("stop_transient")
+        check_stop_physics(
+            data, run_id='probe"\\id', source_sha256=self.digest, timestep=0.002
+        )
+        self.assertEqual(data["steps"], 12)
+        self.assertEqual(data["engine_steps"], 12)
+        self.assertEqual(data["hold_ticks"], 12)
+        self.assertEqual(data["stop_step"], 12)
+        self.assertAlmostEqual(data["hold_time_sec"], 0.048)
+
+    def test_native_guard_freezes_all_twelve_joints_without_ros(self):
+        from mujoco_ros2_manipulation.verification.diagnostics import check_stop_physics
+
+        # Reuse the contact-pose preparation from the diagnostic regression.
+        self.test_workcell_inter_arm_contact_is_reported_without_commanding_ros()
+        model = self.directory / "cell.xml"
+        output = self.directory / "stopped_workcell.json"
+        subprocess.run(
+            [str(self.binary), str(model), "stop_workcell_contact"],
+            check=True,
+            env=dict(
+                os.environ,
+                MANIPULATION_DIAGNOSTICS_PATH=str(output),
+                MANIPULATION_DIAGNOSTICS_RUN_ID="native_stop",
+                MANIPULATION_CONTACT_STOP="1",
+            ),
+        )
+        data = json.loads(output.read_text())
+        check_stop_physics(
+            data, run_id="native_stop", source_sha256=self.digest, timestep=0.002
+        )
+        self.assertEqual(len(data["stopped_qpos"]), 12)
+        self.assertEqual(data["steps"], 1)
+        self.assertEqual(data["hold_ticks"], 23)

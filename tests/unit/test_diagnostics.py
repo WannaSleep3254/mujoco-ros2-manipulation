@@ -89,3 +89,68 @@ class DiagnosticTests(unittest.TestCase):
             self.assertEqual(set(sample), {10})
             self.assertEqual(sample[10]["cpu_ticks"], 25)
             self.assertGreater(sample[10]["rss_bytes"], 0)
+
+
+class StopReportTests(unittest.TestCase):
+    def stopped_report(self):
+        value = clean_report()
+        value.update(
+            stop_enabled=True,
+            stop_latched=True,
+            contact_steps=1,
+            contacts=1,
+            active_contacts=1,
+            stop_step=100,
+            hold_ticks=20,
+            hold_time_sec=0.24,
+            stop_time_sec=0.2,
+            last_state_time_sec=0.2,
+            stopped_qpos=[0.0] * 12,
+            pairs=[dict(occurrences=1)],
+        )
+        return value
+
+    def test_normal_run_requires_ready_native_interlock(self):
+        data = clean_report()
+        with self.assertRaisesRegex(ValueError, "interlock"):
+            check_physics(
+                data,
+                run_id="run",
+                source_sha256="hash",
+                timestep=0.002,
+                require_interlock=True,
+            )
+        data.update(stop_enabled=True, stop_latched=False)
+        check_physics(
+            data,
+            run_id="run",
+            source_sha256="hash",
+            timestep=0.002,
+            require_interlock=True,
+        )
+
+    def test_expected_contact_requires_latch_coverage_and_hold_ticks(self):
+        from mujoco_ros2_manipulation.verification.diagnostics import check_stop_physics
+
+        check_stop_physics(
+            self.stopped_report(), run_id="run", source_sha256="hash", timestep=0.002
+        )
+        for key, value in [
+            ("stop_latched", False),
+            ("stop_enabled", False),
+            ("contact_steps", 2),
+            ("active_contacts", 0),
+            ("stop_step", 99),
+            ("hold_ticks", 0),
+            ("hold_time_sec", 0.1),
+            ("stop_time_sec", 0.1),
+            ("stopped_qpos", []),
+            ("stopped_qpos", [float("nan")]),
+            ("pairs", [dict(occurrences=2)]),
+        ]:
+            data = self.stopped_report()
+            data[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                check_stop_physics(
+                    data, run_id="run", source_sha256="hash", timestep=0.002
+                )

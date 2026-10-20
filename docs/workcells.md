@@ -43,6 +43,8 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 | right | UR5e | `right_shoulder_pan_joint` | `right_controller` | `right_arm` | `right_tool0` |
 | 전체 | 12관절 | 양팔 전체 | 두 제어기로 분배 | `both_arms` | 관절 공간 공동 목표 |
 
+기본 공동 실행은 [양팔 접촉 자동 정지](contact_stop.md)를 적용합니다. 접촉 후에는 새 명령으로 재개하지 않으며 시뮬레이션 재시작이 필요합니다.
+
 Action 경로는 `/left_controller/follow_joint_trajectory`, `/right_controller/follow_joint_trajectory`입니다.
 상태는 `/joint_states`, 시계는 `/clock` 하나이며 모든 제어기에 `use_sim_time`을 적용합니다.
 직접 Action 명령은 MoveIt 충돌 검사를 자동 수행하지 않습니다. 검증기는 계획·상태 검사를 통과한 궤적만 정상 실행으로 전달합니다.

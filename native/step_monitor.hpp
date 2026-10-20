@@ -15,6 +15,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #ifndef MANIPULATION_MONITOR_SHA256
 #error "Build the monitor with its source SHA-256"
@@ -88,6 +89,24 @@ class StepMonitor {
   uint64_t engine_steps_ = 0;
   double sim_seconds_ = 0, first_time_ = 0, last_time_ = 0;
   bool finished_ = false;
+  bool stop_enabled_ = false, latched_ = false;
+  uint64_t stop_step_ = 0, hold_ticks_ = 0;
+  double stop_time_ = 0, hold_time_ = 0;
+  std::vector<mjtNum> held_qpos_, held_mocap_pos_, held_mocap_quat_;
+  void freeze(const mjModel* m, mjData* d) const {
+    std::copy(held_qpos_.begin(), held_qpos_.end(), d->qpos);
+    std::fill_n(d->qvel, m->nv, 0.0);
+    std::fill_n(d->qacc, m->nv, 0.0);
+    std::fill_n(d->ctrl, m->nu, 0.0);
+    std::fill_n(d->act, m->na, 0.0);
+    std::fill_n(d->qfrc_applied, m->nv, 0.0);
+    std::fill_n(d->xfrc_applied, m->nbody * 6, 0.0);
+    std::copy(held_mocap_pos_.begin(), held_mocap_pos_.end(), d->mocap_pos);
+    std::copy(held_mocap_quat_.begin(), held_mocap_quat_.end(), d->mocap_quat);
+    d->time = hold_time_;
+    mj_kinematics(m, d);
+    mj_comPos(m, d);
+  }
   std::map<std::pair<int, int>, Pair> pairs_;
   Timing physics_, monitor_;
   static double seconds(Clock::duration value) {
@@ -212,6 +231,16 @@ class StepMonitor {
           << ",\"min_distance_m\":" << p.distance
           << ",\"max_normal_force_N\":" << p.normal_force << '}';
     }
+    out << "],\"stop_enabled\":" << (stop_enabled_ ? "true" : "false")
+        << ",\"stop_latched\":" << (latched_ ? "true" : "false")
+        << ",\"stop_step\":" << stop_step_
+        << ",\"stop_time_sec\":" << stop_time_
+        << ",\"hold_ticks\":" << hold_ticks_
+        << ",\"hold_time_sec\":" << hold_time_ << ",\"stopped_qpos\":[";
+    for (size_t j = 0; j < held_qpos_.size(); ++j) {
+      if (j) out << ',';
+      out << held_qpos_[j];
+    }
     out << "]}\n";
     out.close();
     if (!out || std::rename(temporary.c_str(), path_.c_str()))
@@ -221,6 +250,8 @@ class StepMonitor {
 
  public:
   StepMonitor() {
+    const char* stop = std::getenv("MANIPULATION_CONTACT_STOP");
+    stop_enabled_ = stop && std::string(stop) == "1";
     const char* path = std::getenv("MANIPULATION_DIAGNOSTICS_PATH");
     const char* id = std::getenv("MANIPULATION_DIAGNOSTICS_RUN_ID");
     if (path && *path && id && *id) {
@@ -229,10 +260,23 @@ class StepMonitor {
     }
   }
   ~StepMonitor() { write(); }
-  void step(const mjModel* m, mjData* d) {
-    if (path_.empty()) {
+  bool latched() const { return latched_; }
+  bool enabled() const { return stop_enabled_; }
+  // Also called before the viewer reset/paused paths: UI edits cannot release
+  // the latch.
+  void restore(const mjModel* m, mjData* d) const {
+    if (latched_) freeze(m, d);
+  }
+  bool step(const mjModel* m, mjData* d) {
+    if (latched_) {
+      hold_time_ += m->opt.timestep;
+      freeze(m, d);
+      ++hold_ticks_;
+      return false;  // Clock-only tick; no physics integration after contact.
+    }
+    if (path_.empty() && !stop_enabled_) {
       mj_step(m, d);
-      return;
+      return true;
     }
     const auto before = Clock::now();
     const double start = d->time;
@@ -246,6 +290,18 @@ class StepMonitor {
     last_wall_ = inspected;
     physics_.add(seconds(after - before));
     monitor_.add(seconds(inspected - after));
+    if (stop_enabled_ && d->ncon > 0) {
+      latched_ = true;
+      stop_step_ = steps_;
+      stop_time_ = hold_time_ = d->time;
+      held_qpos_.assign(d->qpos, d->qpos + m->nq);
+      held_mocap_pos_.assign(d->mocap_pos, d->mocap_pos + 3 * m->nmocap);
+      held_mocap_quat_.assign(d->mocap_quat, d->mocap_quat + 4 * m->nmocap);
+      freeze(m, d);
+      mj_forward(m, d);  // Align transforms/sensors with the fixed pose once.
+      freeze(m, d);
+    }
+    return true;
   }
   void finish(uint64_t engine_steps) {
     engine_steps_ = engine_steps;

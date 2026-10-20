@@ -41,6 +41,7 @@ def load_manifest(root=ROOT):
         runtime = data['runtime']
         local_path(root, runtime['patch'])
         local_path(root, runtime['monitor_patch'])
+        local_path(root, runtime['contact_stop_patch'])
         if runtime['repository'] not in data['repositories'] or runtime['package'] not in data['packages']:
             raise ValueError('Unknown runtime repository/package')
         seen = set()
@@ -147,6 +148,40 @@ def prepare_debs(root, manifest, download=False):
         run(['dpkg-deb', '-x', cache / entry['file'], root / 'runtime/root'])
 
 
+def apply_patch_series(source, patches):
+    """Recognize exact patch prefixes even when later patches change earlier hunks."""
+    source = Path(source)
+    patches = [Path(p).resolve() for p in patches]
+    names = set()
+    for patch in patches:
+        for row in subprocess.check_output(['git', 'apply', '--numstat', str(patch)], text=True).splitlines():
+            name = row.split('\t', 2)[2]
+            local_path(source, name)
+            names.add(name)
+    def snapshot(root):
+        return {name: (root / name).read_bytes() if (root / name).is_file() else None for name in names}
+    current = snapshot(source)
+    with tempfile.TemporaryDirectory(prefix='runtime-patch-check-') as temporary:
+        shadow = Path(temporary)
+        for name in names:
+            original = subprocess.run(['git', '-C', str(source), 'show', 'HEAD:' + name], capture_output=True)
+            if original.returncode == 0:
+                path = shadow / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(original.stdout)
+        prefixes = [snapshot(shadow)]
+        for patch in patches:
+            subprocess.run(['git', 'apply', '--check', str(patch)], cwd=shadow, check=True, capture_output=True)
+            subprocess.run(['git', 'apply', str(patch)], cwd=shadow, check=True, capture_output=True)
+            prefixes.append(snapshot(shadow))
+    matched = [index for index, expected in enumerate(prefixes) if current == expected]
+    if not matched:
+        raise ValueError('Runtime source has incompatible changes; left unchanged')
+    for patch in patches[max(matched):]:
+        run(['git', '-C', source, 'apply', '--check', patch])
+        run(['git', '-C', source, 'apply', patch])
+
+
 def colcon(root, packages, runtime=False):
     command = ['colcon', '--log-base', 'ros_ws/log', 'build', '--base-paths']
     command += [entry['path'] for entry in packages]
@@ -205,12 +240,8 @@ def main():
         if args.component in ('all', 'runtime'):
             runtime = manifest['runtime']
             source = local_path(ROOT, manifest['repositories'][runtime['repository']]['path'])
-            for key in ('patch', 'monitor_patch'):
-                patch = local_path(ROOT, runtime[key])
-                if subprocess.run(['git', '-C', str(source), 'apply', '--check', str(patch)], capture_output=True).returncode == 0:
-                    run(['git', '-C', source, 'apply', patch])
-                elif subprocess.run(['git', '-C', str(source), 'apply', '--reverse', '--check', str(patch)], capture_output=True).returncode != 0:
-                    raise ValueError(f'Runtime source has incompatible changes for {key}; left unchanged')
+            apply_patch_series(source, [local_path(ROOT, runtime[key])
+                for key in ('patch', 'monitor_patch', 'contact_stop_patch')])
             prepare_debs(ROOT, manifest, args.download_debs)
             native = ROOT / 'runtime/native'
             native.mkdir(parents=True, exist_ok=True)

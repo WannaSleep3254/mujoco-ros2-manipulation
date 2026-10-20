@@ -39,6 +39,7 @@ runtime:
   repository: mujoco_ros2_control
   package: mujoco_ros2_control
   patch: patches/mujoco_ros2_control-0.1.2-shutdown.patch
+  contact_stop_patch: patches/mujoco_ros2_control-contact-stop.patch
   monitor_patch: patches/mujoco_ros2_control-step-monitor.patch
   debs:
   - package: libglfw3-dev

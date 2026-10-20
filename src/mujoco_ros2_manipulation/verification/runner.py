@@ -87,7 +87,9 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
         report.update(**payload, motion_checks_passed=True)
         if args.gui:
             report.stage('gui')
-            if f'Ready to take commands for planning group {profile.ros["planning_group"]}.' not in report.log_path.read_text():
+            ready_marker = f'Ready to take commands for planning group {profile.ros["planning_group"]}.'
+            node.until(lambda: ready_marker in report.log_path.read_text(), 15, 'RViz MoveIt panel ready')
+            if ready_marker not in report.log_path.read_text():
                 raise RuntimeError('RViz MoveIt panel is not ready')
             gpu = subprocess.run(['nvidia-smi'], capture_output=True, text=True, timeout=5)
             (report.directory / 'nvidia_smi.txt').write_text(gpu.stdout + gpu.stderr)
