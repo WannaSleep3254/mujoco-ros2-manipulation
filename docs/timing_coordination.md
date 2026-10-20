@@ -96,7 +96,7 @@ GUI 촬영 시 각 실행에 `--gui --record-dir runtime/validation/new-timing-<
 비교 영상은 `scripts/compare_timing.py --gui --plan <계획경로> --output-dir <새 runtime 경로>`로 생성합니다.
 CLI `manipulation-verify-timing`도 제공합니다. 녹화는 X11·OpenCV H.264·Pillow·Noto CJK를 사용하며 CI는 headless 실행만 수행합니다.
 
-- 단위 88개·모델 19개, 총 107개 검사 통과. 패키지 빌드·설치와 저장소 외부 CLI 도움말도 확인했습니다.
+- 단위 89개·모델 19개, 총 108개 검사 통과. 패키지 빌드·설치와 저장소 외부 CLI 도움말도 확인했습니다.
 - 원본 계획 생성 ROS 실행, 기존 회피/타이밍 조정의 headless 두 실행 및 GUI 두 실행·비교 판정 통과.
 - 거리의 부호·최근접 점·FK·시각화 geom 제외를 해석 가능한 구 형상으로 검사했습니다.
 - 시작 대기·끝 자세 유지·다항식 보존·최소 지연 선택·해 없는 예산·입력 변조·간격 미달·비정상 수치 거부를 테스트합니다.
@@ -104,3 +104,23 @@ CLI `manipulation-verify-timing`도 제공합니다. 녹화는 X11·OpenCV H.264
   [탐색 계획 원본](timing_coordination/plan.json.gz) · [원본 궤적 묶음](timing_coordination/bundle.json.gz)
 - [전체 자료와 해시](timing_coordination/published_manifest.json)에 네 실행 보고서·관측 자세·로그·원본 영상의 출처를 보관합니다.
   큰 JSON과 로그는 무손실 gzip이며 압축 해제 원본 해시도 함께 기록합니다.
+
+
+## CI에서 확인한 종료 실패와 보강
+
+첫 PR CI [39405553984](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39405553984)는
+새 타이밍 단계 전의 기존 일시정지 접촉 주입 시험에서 실패했습니다. 동작·물리 검사는 통과했지만
+`ros2_control_node`의 `rclcpp::Executor` 소멸 중 SIGSEGV(-11)가 발생했습니다.
+[원본 결과](timing_coordination/ci-shutdown-failure.json.gz)와 [전체 로그](timing_coordination/ci-shutdown-failure.log.txt.gz)를 보존합니다.
+
+플러그인이 해제된 뒤 executor에 남은 콜백/weak-pointer 제어 블록을 정리할 때 코드가 언매핑되는 문제와 맞는 양상입니다.
+이 CI 로그만으로 특정 주소의 라이브러리까지 단일 원인으로 확정하지는 않습니다.
+기존 MoveIt 라이브러리 수명 보호를 제어 프로세스에도 제한적으로 적용해 해당 조건을 제거했습니다.
+`MANIPULATION_PIN_CONTROL_PLUGINS=1`인 자식 프로세스에서 MuJoCo 제어·관절 궤적/상태 플러그인만
+`RTLD_NODELETE`로 종료까지 매핑을 유지합니다. 객체·executor의 정상 소멸 절차와 크래시 판정은 유지합니다.
+
+실제 로더 테스트는 플래그 범위·관련 없는 라이브러리 제외·프로세스 종료 시 소멸자 실행을 확인합니다.
+SIGSEGV를 성공으로 처리하거나 시험 재시도로 실패를 숨기지 않습니다. 런타임 재빌드가 필요합니다.
+
+수명 보강 후 일시정지 접촉 정지 시험을 새 launch 6회에서 수행해 모두 정상 종료했습니다.
+[반복 검증 명세](timing_coordination/guard-regression.json)에 소스·바이너리 해시와 실행 ID를 기록했습니다.

@@ -17,7 +17,21 @@
     "bundle.json.gz": "73884f7009d83218fcc477ab3bc360fba7dad920c4558975a5c3557698efe011",
     "source-verification.json.gz": "3c992be1c03000cd32cfdb042a52442f96cd3691f0e630b4c9a2f4273545f68f",
     "source-trajectories.json.gz": "51df29161fff43fd27adac47012bd2c46cb2de4de7d7220d6c22a95721fef6bc",
-    "source.log.txt.gz": "a784d1b1d7f05d804b6216486f2dda2c97b9f3a665baf54bd86ad8b05cff977b"
+    "source.log.txt.gz": "a784d1b1d7f05d804b6216486f2dda2c97b9f3a665baf54bd86ad8b05cff977b",
+    "ci-shutdown-failure.json.gz": "6fc574adb7d2fc84ee05b2d5bce077b351cdc99c5473bdb017e5d3bbe0ed7db0",
+    "ci-shutdown-failure.log.txt.gz": "386eb61c714dc3269fbee0a7fa585fba2339211fecf27d6f2a6c8c3b9226f939",
+    "guard-paused-1.json.gz": "4a34f369904c6097203b12efa4646b7b34151d9c8e345908ded4f46b3bca4e6e",
+    "guard-paused-1.log.txt.gz": "cb0f753f7684e7db3636e022832bdb5eb9ec03170e93b2a10a8b4b0b30a4f8e9",
+    "guard-paused-2.json.gz": "7b06fdf81d4f1f6e1fa916b18eac668e6407a67409aa9f77b6d4f3d61159f7ca",
+    "guard-paused-2.log.txt.gz": "f2d51efdbf27553a77087ab4e1d598f007037e6cfb568a30796675f7db546bad",
+    "guard-paused-3.json.gz": "68fca27706f62748b73367c75c159d7e24e2eb3dc6cd93ffd565f49cbbc28bce",
+    "guard-paused-3.log.txt.gz": "6ed81a1ef15fa0427578ffcf0a5ef627d250325502bab6c0387c57b62dc818df",
+    "guard-paused-4.json.gz": "6a6ff2258cd5927f0e0bb2ef551d580044c6952c7bdba7e7c3e15fcbbdc0526c",
+    "guard-paused-4.log.txt.gz": "eafec91bef25f5af11976bc80b87741b40c862196c83b866a438e303c24a5d71",
+    "guard-paused-5.json.gz": "6053901e6a54e135d865170ebc66c553151829e3bb13435d34944550ce39b94a",
+    "guard-paused-5.log.txt.gz": "0e2709061138c00b6732138d4376dba0dd1e06304133042c6ff2e37d5a968067",
+    "guard-paused-6.json.gz": "14edb29ee1ed47c2c67898b30669a38f2f44e6349d797457aca789eb355e260e",
+    "guard-paused-6.log.txt.gz": "b1a572522c51a962880d0f6b3020474bf2c3c0f412aea16c8b27bd8023fcf641"
   },
   "files": {
     "baseline-complete.png": {
@@ -32,6 +46,14 @@
       "bytes": 581994,
       "sha256": "6d48d7e9da09f83e1cfcfb17a95bc908f3a9fda3513a02bf824733ba24fd8095"
     },
+    "ci-shutdown-failure.json.gz": {
+      "bytes": 2027,
+      "sha256": "a8850ff2ee16890287c44b1ff93653cd3a92a9fc8a2b55889c70bf57be6e7db2"
+    },
+    "ci-shutdown-failure.log.txt.gz": {
+      "bytes": 6805,
+      "sha256": "e00f16062e715782ea0e79bbbbaf4cf0ee7d0dcbb21d4e4e8afb9e44c0a85820"
+    },
     "comparison.json": {
       "bytes": 12714,
       "sha256": "59b7a386b0d348ad1e4a789a52419ee8db052a3e6770ef72a36d5b4a3881da03"
@@ -43,6 +65,58 @@
     "crossing.png": {
       "bytes": 164398,
       "sha256": "0b4e1bb32cd5a134f9700929b11a4753592934074572f041526f54b327d1a750"
+    },
+    "guard-paused-1.json.gz": {
+      "bytes": 1943,
+      "sha256": "32209f61226cad86e75105a9d5ee1f470eff2175543d1330e1a1384ec4430cf3"
+    },
+    "guard-paused-1.log.txt.gz": {
+      "bytes": 5587,
+      "sha256": "6b246f8be20f8374fd2443ce2c37e12deb07620531af65f395087a7f8aabb73c"
+    },
+    "guard-paused-2.json.gz": {
+      "bytes": 1942,
+      "sha256": "e64d0cb7a1891427b079452006427753b4b1da0d05672a58e1d307b5c4db3783"
+    },
+    "guard-paused-2.log.txt.gz": {
+      "bytes": 5590,
+      "sha256": "887363a2a49440496705389d11a9ebf8bce0a3789a8c41540e96f377b10a5c94"
+    },
+    "guard-paused-3.json.gz": {
+      "bytes": 1941,
+      "sha256": "90583a7047da87ce3f0f41dc61fa41e7fe02bd60e6ebbd740c10e7b7363f44b8"
+    },
+    "guard-paused-3.log.txt.gz": {
+      "bytes": 5596,
+      "sha256": "fdfbfac5d53acf3f774ad77b54610da611a10cddbdab0908372d1eb80ae04f16"
+    },
+    "guard-paused-4.json.gz": {
+      "bytes": 1943,
+      "sha256": "dc3e9a42edd4b8f809d800e157cb9fe3fb5da587dbf48c762f966d91f1f4c667"
+    },
+    "guard-paused-4.log.txt.gz": {
+      "bytes": 5582,
+      "sha256": "abe9e5d0f8cf850770670be00970b4c35ab7bdb831279f382b8fffd10c66836f"
+    },
+    "guard-paused-5.json.gz": {
+      "bytes": 1945,
+      "sha256": "e5c65561133bb71a9c568c72b8ac4e89b91aa86e16607fe90cbfe64e3e388df8"
+    },
+    "guard-paused-5.log.txt.gz": {
+      "bytes": 5590,
+      "sha256": "d5801954597521771611a7815136c97aa761c5b19e04dc8d42987680e1fb4547"
+    },
+    "guard-paused-6.json.gz": {
+      "bytes": 1952,
+      "sha256": "cf2f06bdae7990f95d36ec7a55cadf69ab8cb85e6507117db7ec11fac08bc6da"
+    },
+    "guard-paused-6.log.txt.gz": {
+      "bytes": 5594,
+      "sha256": "242290f6e0490abbb3412a47dbb9c430de02dd2b5470c76c0d7ebe1a3ba143eb"
+    },
+    "guard-regression.json": {
+      "bytes": 1555,
+      "sha256": "54937818dd6db9d20ceef889f84f053330d9443bb7538ecc3973d8b2b4e6250d"
     },
     "gui-baseline-observations.json.gz": {
       "bytes": 341922,

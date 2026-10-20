@@ -43,6 +43,7 @@ def launch_nodes(context):
         raise RuntimeError('Runtime is missing. Run bash build_runtime.sh first.')
     core_nodes = []
     simulation = Node(package='mujoco_ros2_control', executable='ros2_control_node',
+                      additional_env={'LD_PRELOAD': str(plugin_guard), 'MANIPULATION_PIN_CONTROL_PLUGINS': '1'},
                       output='screen',
                       parameters=[robot_description, controllers_path, {'use_sim_time': True}])
     core_nodes.append(simulation)
