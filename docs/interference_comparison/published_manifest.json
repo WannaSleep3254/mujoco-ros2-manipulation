@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "compressed_logs_original_sha256": {
+    "left.log.txt.gz": "0f55ef347ef4676816f518c366cb016e6dcf2895a8ff63cb3c6199a72bb5f661",
+    "right.log.txt.gz": "01d7d4a58c78b70f0b38e5dca3182886060e4eab064442791d8a1deeb4b2d12b",
+    "collision.log.txt.gz": "bd27162db36fa84ca1a7dae0acab1a666f005dddeeddfc1e1766344a3e33449a",
+    "avoidance.log.txt.gz": "38cb3a79284a94df77442247e3e9bc54aa0b471bfc759af84d1d0bd0f4b72630"
+  },
+  "bundle_original_sha256": "050c93747beb5bd9e850386e666050076e39512fc9c471923ff07e9c39852c2b",
+  "files": {
+    "avoidance-complete.png": {
+      "bytes": 423673,
+      "sha256": "f75d7f032a6f41a54404c8b6e900ae531f31a6c577c8e9dc013027f1c8e65f21"
+    },
+    "avoidance.json": {
+      "bytes": 605757,
+      "sha256": "8072cc9b6217783bf865ac8cc2a0b7d52cd0518552c216303dec29c9084182d8"
+    },
+    "avoidance.log.txt.gz": {
+      "bytes": 6186,
+      "sha256": "5852b86b5a143a82eec8f524c57c47b8e29701cfd9bac3d1c1e0e804eb84e971"
+    },
+    "avoidance.mp4": {
+      "bytes": 553835,
+      "sha256": "6223993410d8a59060865f912e0707e9c4d789ee3fc3e6d3ac20c6654711a7f1"
+    },
+    "bundle.json.gz": {
+      "bytes": 513552,
+      "sha256": "80339d41ab011227dae4b88356a27fefe1e115f31855c608847f8f87c8e8500c"
+    },
+    "collision.json": {
+      "bytes": 527887,
+      "sha256": "199cd27b227650dbc4255dbcdfa9acba39f3043847677e1b96bd0aedf21dde75"
+    },
+    "collision.log.txt.gz": {
+      "bytes": 6501,
+      "sha256": "8935ac3d50ec79c5b8f4075cbcbdea9abe07616ef6446ef23a4bfcc23821e705"
+    },
+    "collision.mp4": {
+      "bytes": 237848,
+      "sha256": "3dc8857d79262deb0475fb4ed81ffc94db84b2815706dcc0a66e39ff4e043bab"
+    },
+    "comparison.json": {
+      "bytes": 2997,
+      "sha256": "1785642c22aa0a46ed5964529e751e266aa5fede766d6972933a7fcc3a2a3d63"
+    },
+    "comparison.mp4": {
+      "bytes": 1164601,
+      "sha256": "d37f530d13b2d3ce82a2420093b320e220002b52a720f008ccb3d0c48a7d9f4a"
+    },
+    "contact.png": {
+      "bytes": 453053,
+      "sha256": "4f1350ae046ff982b493c871670635242d1fef58ffc9a92aa7df786c9ec8349e"
+    },
+    "headless-avoidance.json": {
+      "bytes": 580097,
+      "sha256": "08af6379e77b2766acb4ade5de432971931db8ab244933d2da33f429ac4ed8b9"
+    },
+    "headless-collision.json": {
+      "bytes": 502257,
+      "sha256": "cc493354ace645d5af9d5ecd158a68442aab3c26cf168625265501322769a8e7"
+    },
+    "headless-comparison.json": {
+      "bytes": 1429,
+      "sha256": "6356f328ea743bf6250a52f79a1c3ec1d0d6663170dddd1aee7dedba85ed8be0"
+    },
+    "headless-left.json": {
+      "bytes": 589783,
+      "sha256": "1cae5c367e775142756eb5bcaae529cc4057a777039bb9ac235dc62fbbc9b367"
+    },
+    "headless-right.json": {
+      "bytes": 590155,
+      "sha256": "51b2086c454acb2a517d29fa611154df71d691ffb3bf9d256dbcb928aed2b754"
+    },
+    "left.json": {
+      "bytes": 616852,
+      "sha256": "76da0408e71c20f4f1a8d0e4510e1de1dd641e15c69d9e23a571fa0b79a5421b"
+    },
+    "left.log.txt.gz": {
+      "bytes": 6176,
+      "sha256": "1d40cc3795d4fe8ec5277c64ad40b71a98c08f74fc1ea67c417645f211ba5dca"
+    },
+    "left.mp4": {
+      "bytes": 251972,
+      "sha256": "f65420809437973f12dc2dd0705685c7f874d0f5d83e010c0774ea7da4300912"
+    },
+    "normal-complete.png": {
+      "bytes": 458183,
+      "sha256": "aa44b81bb292c38ce3877fa32bca5b123508257ca61ef114f24c97e86f3bda1f"
+    },
+    "right.json": {
+      "bytes": 618763,
+      "sha256": "968f058cf1d2d3a5f48cf1c3ad93251340a14b8a8e3eeb4c83c3122e3c0a184f"
+    },
+    "right.log.txt.gz": {
+      "bytes": 6190,
+      "sha256": "040feb18da3bb2c054a2bf697f47a2452bf7769810def4552869fad25fe07270"
+    },
+    "right.mp4": {
+      "bytes": 261469,
+      "sha256": "572c67a289138bf3721d544ef72c30c3d425f49c5ff82a03ad5538b8b922b35d"
+    },
+    "start.png": {
+      "bytes": 421130,
+      "sha256": "4e0029f7aa89edd26af02260ab2e7340591fece5da83d6228e8c672222c838ca"
+    }
+  }
+}

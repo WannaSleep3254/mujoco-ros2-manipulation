@@ -77,9 +77,9 @@ def zoom_owned_window(window, steps=6):
         x.XCloseDisplay(display)
 
 
-class RecordedInterference(InterferenceVerification):
-    def __init__(self, cell, progress, case, directory):
-        super().__init__(cell, progress, case)
+class RecordingMixin:
+    def setup_recording(self, directory, video="coordinated-avoidance.mp4"):
+        self.video = video
         self.directory = Path(directory).resolve()
         require(
             self.directory.is_relative_to(ROOT / "runtime"),
@@ -126,7 +126,7 @@ class RecordedInterference(InterferenceVerification):
                 captures += 1
                 if writer is None:
                     writer = cv2.VideoWriter(
-                        str(self.directory / "coordinated-avoidance.mp4"),
+                        str(self.directory / self.video),
                         cv2.VideoWriter_fourcc(*"avc1"),
                         fps,
                         image.size,
@@ -153,13 +153,13 @@ class RecordedInterference(InterferenceVerification):
                 playback_sec=frames / fps,
                 maximum_capture_gap_sec=maximum_gap,
                 kind="Actual owned MuJoCo X11 pixels; no overlays or speed changes; repeated captured frames preserve wall time",
-                video="coordinated-avoidance.mp4",
+                video=self.video,
                 camera_wheel_down_steps=6,
             )
 
-    def run(self):
+    def recorded_run(self, execute):
         try:
-            result = super().run()
+            result = execute()
             deadline = time.monotonic() + 1
             self.until(lambda: time.monotonic() >= deadline, 3, "show completed motion")
             save_window_image(
@@ -180,3 +180,12 @@ class RecordedInterference(InterferenceVerification):
             directory=str(self.directory.relative_to(ROOT)), **self.metadata
         )
         return result
+
+
+class RecordedInterference(RecordingMixin, InterferenceVerification):
+    def __init__(self, cell, progress, case, directory):
+        super().__init__(cell, progress, case)
+        self.setup_recording(directory)
+
+    def run(self):
+        return self.recorded_run(super().run)

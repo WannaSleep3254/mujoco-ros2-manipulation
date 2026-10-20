@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "matched": true,
+  "bundle_sha256": "050c93747beb5bd9e850386e666050076e39512fc9c471923ff07e9c39852c2b",
+  "categories": {
+    "1_normal": [
+      "left",
+      "right"
+    ],
+    "2_without_avoidance": "collision",
+    "3_coordinated_avoidance": "avoidance"
+  },
+  "runs": {
+    "left": {
+      "run_id": "20261020T090934.978270Z-47fe61e1",
+      "report_sha256": "1cae5c367e775142756eb5bcaae529cc4057a777039bb9ac235dc62fbbc9b367",
+      "contacts": 0,
+      "duration_sec": 6.317257189,
+      "goal_terminal_statuses": [
+        4
+      ]
+    },
+    "right": {
+      "run_id": "20261020T091009.330881Z-a8034469",
+      "report_sha256": "51b2086c454acb2a517d29fa611154df71d691ffb3bf9d256dbcb928aed2b754",
+      "contacts": 0,
+      "duration_sec": 6.317257189,
+      "goal_terminal_statuses": [
+        4
+      ]
+    },
+    "collision": {
+      "run_id": "20261020T091043.641156Z-9a0f1ec6",
+      "report_sha256": "cc493354ace645d5af9d5ecd158a68442aab3c26cf168625265501322769a8e7",
+      "contacts": 3,
+      "duration_sec": 6.317257189,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ]
+    },
+    "avoidance": {
+      "run_id": "20261020T091117.949199Z-8f57cd29",
+      "report_sha256": "08af6379e77b2766acb4ade5de432971931db8ab244933d2da33f429ac4ed8b9",
+      "contacts": 0,
+      "duration_sec": 21.898262216,
+      "goal_terminal_statuses": [
+        4,
+        4
+      ]
+    }
+  }
+}

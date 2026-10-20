@@ -184,7 +184,7 @@ class InterferenceVerification(WorkcellVerification):
         self.executions.append(record)
         return record
 
-    def run(self):
+    def discover(self):
         self.progress("interference_discovery")
         self.until(
             lambda: self.positions is not None and self.clock_count > 10,
@@ -233,6 +233,8 @@ class InterferenceVerification(WorkcellVerification):
                 self.validity_of(self.case[key]).valid,
                 "Case endpoint is colliding: " + key,
             )
+    def run(self):
+        self.discover()
         self.progress("move_to_common_start")
         setup = self.planned("both_arms", self.case["start_rad"], self.commanded)
         self.evidence["setup"] = Spline.from_ros(setup).record()

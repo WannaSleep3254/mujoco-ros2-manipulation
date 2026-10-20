@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "matched": true,
+  "bundle_sha256": "050c93747beb5bd9e850386e666050076e39512fc9c471923ff07e9c39852c2b",
+  "categories": {
+    "1_normal": [
+      "left",
+      "right"
+    ],
+    "2_without_avoidance": "collision",
+    "3_coordinated_avoidance": "avoidance"
+  },
+  "runs": {
+    "left": {
+      "run_id": "20261020T090546.212366Z-3b2fa51c",
+      "report_sha256": "76da0408e71c20f4f1a8d0e4510e1de1dd641e15c69d9e23a571fa0b79a5421b",
+      "contacts": 0,
+      "duration_sec": 6.317257189,
+      "goal_terminal_statuses": [
+        4
+      ]
+    },
+    "right": {
+      "run_id": "20261020T090624.134152Z-7e44a5b8",
+      "report_sha256": "968f058cf1d2d3a5f48cf1c3ad93251340a14b8a8e3eeb4c83c3122e3c0a184f",
+      "contacts": 0,
+      "duration_sec": 6.317257189,
+      "goal_terminal_statuses": [
+        4
+      ]
+    },
+    "collision": {
+      "run_id": "20261020T090702.193388Z-73be03a1",
+      "report_sha256": "199cd27b227650dbc4255dbcdfa9acba39f3043847677e1b96bd0aedf21dde75",
+      "contacts": 3,
+      "duration_sec": 6.317257189,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ]
+    },
+    "avoidance": {
+      "run_id": "20261020T090740.130660Z-2df63648",
+      "report_sha256": "8072cc9b6217783bf865ac8cc2a0b7d52cd0518552c216303dec29c9084182d8",
+      "contacts": 0,
+      "duration_sec": 21.898262216,
+      "goal_terminal_statuses": [
+        4,
+        4
+      ]
+    }
+  },
+  "composition": {
+    "video": "comparison.mp4",
+    "frames": 585,
+    "fps": 24,
+    "duration_sec": 24.375,
+    "camera_crop_xyxy": [
+      480,
+      160,
+      960,
+      500
+    ],
+    "scale_to_panel": [
+      900,
+      638
+    ],
+    "source_size": [
+      1440,
+      900
+    ],
+    "sources": [
+      {
+        "run_id": "20261020T090546.212366Z-3b2fa51c",
+        "video": "runtime/validation/interference_comparison_gui_left/motion.mp4",
+        "sha256": "f65420809437973f12dc2dd0705685c7f874d0f5d83e010c0774ea7da4300912",
+        "first_frame": 12
+      },
+      {
+        "run_id": "20261020T090624.134152Z-7e44a5b8",
+        "video": "runtime/validation/interference_comparison_gui_right/motion.mp4",
+        "sha256": "572c67a289138bf3721d544ef72c30c3d425f49c5ff82a03ad5538b8b922b35d",
+        "first_frame": 12
+      },
+      {
+        "run_id": "20261020T090702.193388Z-73be03a1",
+        "video": "runtime/validation/interference_comparison_gui_collision/motion.mp4",
+        "sha256": "3dc8857d79262deb0475fb4ed81ffc94db84b2815706dcc0a66e39ff4e043bab",
+        "first_frame": 12
+      },
+      {
+        "run_id": "20261020T090740.130660Z-2df63648",
+        "video": "runtime/validation/interference_comparison_gui_avoidance/motion.mp4",
+        "sha256": "6223993410d8a59060865f912e0707e9c4d789ee3fc3e6d3ac20c6654711a7f1",
+        "first_frame": 12
+      }
+    ],
+    "leading_sec": 0.5,
+    "kind": "Four independent actual GUI recordings, aligned at command start; fixed crop/scale and editorial labels; no speed changes or padded tail"
+  }
+}

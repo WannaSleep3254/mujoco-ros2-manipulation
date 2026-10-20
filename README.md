@@ -193,17 +193,22 @@ python3 verify_contact_demo.py --gui --control
 접촉 시점에 약 6초의 명령이 남아 있으므로 목표 도달과 접촉 정지를 구분할 수 있습니다.
 기본 실행은 양팔 동시 정지를 유지합니다. 이전 단독 영상은 [과거 시연 기록](docs/contact_stop.md#고정-장애물-접촉-시연)에 보존합니다.
 
-## 양팔 간섭 회피: 첫 시도
+## 양팔 간섭: 정상·접촉·회피 비교
 
-팔별 계획은 각각 안전하지만 동시에 실행하면 손목이 간섭하는 사례를 추가했습니다.
-위험한 참조 궤적은 전송 전에 차단하고, 같은 시작·목표 조건의 양팔 공동 계획만 실행합니다.
-현재 영상은 공동 회피 실행만 보여주는 **첫 시도**입니다. 단독 정상 동작과 무회피 실제 접촉을 촬영한 비교 영상은 아직 포함하지 않습니다.
-[검증 절차·원본 보고서](docs/interference_avoidance.md) · [실제 GUI 회피 영상](docs/interference_avoidance/coordinated-avoidance.mp4)
+회피 대상은 **상대 로봇팔**입니다. 같은 장면·시작·목표와 고정된 궤적 묶음으로 세 조건을 비교합니다.
 
-```bash
-source ./manipulation_env.sh
-python3 verify_interference.py --gui --domain 126
-```
+1. FR5·UR5e 각각 단독 정상 동작: 상대 팔은 시작 자세 유지.
+2. 회피 없는 동시 동작: 손목 간 실제 접촉 후 양팔 자동 정지.
+3. 공동 간섭 회피: 상대 팔을 고려해 경로·타이밍을 바꾸고 양팔 목표 도달.
+
+[![실제 접촉 후 양팔 정지와 공동 회피 비교](docs/interference_comparison/contact.png)](docs/interference_comparison/comparison.mp4)
+
+[비교 영상 — 약 24.38초](docs/interference_comparison/comparison.mp4) ·
+[실행 방법·측정값·원본 보고서](docs/interference_comparison.md) ·
+[첫 회피 시도 보존](docs/interference_avoidance.md)
+
+무회피 실행은 명령이 **3.24초 남은 상태**에서 실제 손목 접촉으로 멈췄습니다.
+단독 두 실행과 공동 회피는 접촉 없이 완료했습니다. 기존 위험 경로 전송 차단과 양팔 자동 정지는 유지합니다.
 
 ## 구현 범위와 다음 작업
 
