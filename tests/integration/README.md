@@ -26,3 +26,14 @@ CI는 5초 준비 후 기본 10초 성능 구간과 20회 양팔 계획을 포�
 `python3 verify_contact_stop.py --domain 112 --paused-contact`입니다.
 검증기가 직접 목표를 취소하지 않고 네이티브 정지·감시 노드의 취소/비활성화를 관찰합니다.
 주입 서비스는 시험용 launch에만 있으며, 일반 검증은 해당 서비스가 노출되지 않는지도 확인합니다.
+
+핵심 프로세스 크래시의 전체 종료 검증은 각각 새 launch로 실행합니다.
+
+```bash
+python3 verify_process_crash.py --target move_group --domain 115
+python3 verify_process_crash.py --target ros2_control_node --domain 116
+```
+
+CI의 공동 장면 작업에도 같은 명령을 포함합니다. 이 시험은 실행에서 소유한 프로세스 하나에만
+SIGKILL을 주입합니다. 정상 동작·접촉 정지의 물리 커버리지 검사를 대체하지 않습니다.
+자세한 성공 조건과 미검증 범위는 [크래시 검증](../../docs/process_crash.md)에 있습니다.

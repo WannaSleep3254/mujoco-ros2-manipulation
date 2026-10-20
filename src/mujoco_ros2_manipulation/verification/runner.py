@@ -9,6 +9,7 @@ import time
 from mujoco_ros2_manipulation.profiles import check_generated_model, load_profile
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 from mujoco_ros2_manipulation.verification.reports import VerificationReport, utc_now
+from mujoco_ros2_manipulation.verification.process_faults import process_failures
 
 
 def group_gone(pid):
@@ -47,7 +48,7 @@ def stop_process(process):
 
 def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=None,
                      validator=None, command_builder=None, report_prefix="",
-                     launch_environment=None, finalize=None):
+                     launch_environment=None, finalize=None, expected_crash=None):
     mode = 'gui' if args.gui else 'headless'
     if args.stop_mode == 'window':
         mode += '_window'
@@ -59,6 +60,7 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
     interrupted = False
     forced = False
     cleanup = []
+    expected_exits = []
     os.environ['ROS_DOMAIN_ID'] = str(args.domain)
     os.environ['MANIPULATION_ROS_DOMAIN_ID'] = str(args.domain)
     try:
@@ -78,13 +80,17 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
         ros.init()
         node = factory(profile, progress=report.stage)
         node.process_group = process.pid
+        node.launch_process = process
         node.launch_log_path = report.log_path
         report.stage('motion')
         payload = node.run()
-        if process.poll() is not None:
-            raise RuntimeError('Launch process exited unexpectedly')
-        if 'process has died' in report.log_path.read_text():
-            raise RuntimeError('A launch node failed; see the log')
+        if expected_crash is not None:
+            expected_exits = expected_crash.verify(report.log_path.read_text(), process.poll())
+        else:
+            if process.poll() is not None:
+                raise RuntimeError('Launch process exited unexpectedly')
+            if 'process has died' in report.log_path.read_text():
+                raise RuntimeError('A launch node failed; see the log')
         report.update(**payload, motion_checks_passed=True)
         if args.gui:
             report.stage('gui')
@@ -153,8 +159,11 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
                     report.update(error={'type': type(error).__name__, 'message': str(error)},
                                   failure_stage='physics_diagnostics')
         log = report.log_path.read_text()
-        failures = [{'node': name, 'exit_code': int(code)} for name, code in re.findall(
-            r'\[ERROR\] \[([^\]]+)\]: process has died \[pid \d+, exit code (-?\d+)', log) if int(code) != 0]
+        observed_failures = process_failures(log)
+        failures = [entry for entry in observed_failures if entry not in expected_exits]
+        # Recheck the complete log: a late extra crash must fail the run too.
+        if expected_exits and observed_failures != expected_exits:
+            failures = observed_failures
         try:
             gone = process is None or group_gone(process.pid)
         except OSError as error:
@@ -168,7 +177,7 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
                           failure_stage='shutdown')
         report.update(status='interrupted' if interrupted else ('failed' if failed else 'passed'),
                       completed_utc=utc_now(), stage='complete', cleanup_errors=cleanup,
-                      shutdown_failures=failures, shutdown_timed_out=forced or 'failed to terminate' in log,
+                      shutdown_failures=failures, expected_process_exits=expected_exits, shutdown_timed_out=forced or 'failed to terminate' in log,
                       launch_return_code=process.returncode if process is not None else None,
                       launch_started=process is not None, process_group_gone=gone, shutdown_clean=clean)
     print(f'{report.data["status"].upper()}: {report.path}', flush=True)

@@ -57,7 +57,7 @@ class LifecycleTests(unittest.TestCase):
         self.process = Mock(pid=12345678, returncode=0)
         self.process.poll.return_value = None
 
-    def run_case(self, *, preflight=None, spawn=None, finalize=None):
+    def run_case(self, *, preflight=None, spawn=None, finalize=None, expected_crash=None):
         with patch('mujoco_ros2_manipulation.verification.runner.load_profile', return_value=self.profile), \
              patch('mujoco_ros2_manipulation.verification.runner.check_generated_model', side_effect=preflight), \
              patch('mujoco_ros2_manipulation.verification.runner.subprocess.Popen', side_effect=spawn, return_value=self.process), \
@@ -66,12 +66,42 @@ class LifecycleTests(unittest.TestCase):
              patch.dict(os.environ), patch('builtins.print'):
             code = run_verification(self.args, self.root, self.ros,
                                     lambda profile, progress: self.node,
-                                    SimpleNamespace(Request=lambda: object()), finalize=finalize)
+                                    SimpleNamespace(Request=lambda: object()), finalize=finalize, expected_crash=expected_crash)
         mode = ('gui' if self.args.gui else 'headless') + ('_window' if self.args.stop_mode == 'window' else '')
         scene = getattr(self.args, 'scene', 'default')
         report_id = 'fr5' if scene == 'default' else f'fr5_{scene}'
         latest = self.root / 'runtime/validation' / f'{report_id}_{mode}.json'
         return code, json.loads(latest.read_text())
+
+    def test_only_explicit_exact_crash_can_pass(self):
+        from mujoco_ros2_manipulation.verification.process_faults import ExpectedCrash
+        crash = ExpectedCrash('move_group')
+        crash.expected = dict(node='move_group-2', pid=4321, exit_code=-9)
+        line = '[ERROR] [move_group-2]: process has died [pid 4321, exit code -9]'
+        self.process.poll.return_value = 0
+
+        def spawn(*args, **kwargs):
+            kwargs['stdout'].write(line)
+            kwargs['stdout'].flush()
+            return self.process
+
+        code, report = self.run_case(spawn=spawn, expected_crash=crash)
+        self.assertEqual(code, 0)
+        self.assertTrue(report['shutdown_clean'])
+        self.assertEqual(report['expected_process_exits'], [crash.expected])
+        self.assertEqual(report['shutdown_failures'], [])
+        code, report = self.run_case(spawn=spawn)
+        self.assertEqual(code, 1)
+        self.assertFalse(report['shutdown_clean'])
+
+        def late_crash(report, *_):
+            with report.log_path.open('a') as log:
+                log.write('\n[ERROR] [another-3]: process has died [pid 4322, exit code -11]')
+
+        code, report = self.run_case(spawn=spawn, expected_crash=crash, finalize=late_crash)
+        self.assertEqual(code, 1)
+        self.assertFalse(report['shutdown_clean'])
+        self.assertEqual(len(report['shutdown_failures']), 2)
 
     def test_failed_new_run_replaces_old_success_and_preserves_history(self):
         code, first = self.run_case()

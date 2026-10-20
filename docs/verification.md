@@ -77,12 +77,13 @@ GUI GPU 관측은 해당 실행 디렉터리의 `nvidia_smi.txt`에 저장합니
 | `error` / `cleanup_errors` | 최초 오류의 타입·메시지와 정리 중 추가 오류 |
 | `started_utc` / `completed_utc` | 실행 시작·완료 시각 |
 | `model_manifest_sha256` | 검증한 모델 무결성 명세의 해시 |
-| `motion_checks_passed` | 궤적·MoveIt·상태·TF·시계 검사 통과 |
+| `motion_checks_passed` | 선택한 검증기의 동작 검사 통과. 크래시 전용 검증은 양팔 이동 전제만 포함하며 전체 정상 동작 검증과 구분 |
 | `direct_tracking_error_rad` / `moveit_tracking_error_rad` | 상태 확인을 마친 시점의 관절별 오차 |
 | `shutdown_clean` | 종료 검사 통과 |
 | `launch_return_code` | launch 프로세스의 종료 코드, 정상값 0 |
 | `process_group_gone` | 검증이 실행한 프로세스 그룹의 잔류 없음 |
-| `shutdown_failures` / `shutdown_timed_out` | 종료 중 비정상 노드와 시간 초과 |
+| `shutdown_failures` / `shutdown_timed_out` | 예상하지 않은 비정상 노드와 시간 초과 |
+| `expected_process_exits` | 크래시 전용 검증에서만 허용한 정확한 노드·PID·종료 코드. 일반 검증은 빈 목록 |
 | `robot_profile_sha256` | 검증에 사용한 프로필의 해시 |
 
 성공은 종료 코드 0, 사전 검사·동작·정리 실패는 1, 사용자 중단은 130을 반환합니다.
@@ -202,3 +203,8 @@ GUI 녹화와 영상의 시각 검토는 로컬에서 수행했습니다. 기존
 물리 기록의 접촉 쌍과 정지 스텝은 기능 검증 근거이며 시각적 접촉 장면의 증거로 사용하지 않습니다.
 촬영용 이동 대기가 포함된 `guard_observed_wall_sec`는 반응 시간으로 사용하지 않습니다.
 이 시연은 자동 정지 검증이며 실제 로봇의 제동 시험이나 고속 충돌 시연을 포함하지 않습니다.
+
+## 핵심 프로세스 크래시 검증
+
+[실행 방법과 범위](process_crash.md)에 두 대상의 독립 실행·실패 판정·보고서 해석을 정리했습니다.
+전체 프로세스 종료 검증은 접촉 시 물리 위치 고정 검증과 구분합니다.
