@@ -327,7 +327,7 @@ class WorkcellVerification(Verification):
         self.ready_guard()
         require(
             not any(
-                name.endswith("/inject_test_contact")
+                name.endswith(("/inject_test_contact", "/inject_test_clock_stall"))
                 for name, _ in self.get_service_names_and_types()
             ),
             "Contact injection service must not be exposed in normal launch",

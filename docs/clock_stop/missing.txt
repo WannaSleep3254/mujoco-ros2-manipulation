@@ -1,0 +1,301 @@
+[INFO] [launch]: All log files can be found below /tmp/manipulation_ros2_logs/2026-10-20-16-14-25-991681-sea21jk-145966
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [ros2_control_node-1]: process started with pid [145996]
+[INFO] [robot_state_publisher-2]: process started with pid [145998]
+[INFO] [spawner-3]: process started with pid [146000]
+[INFO] [spawner-4]: process started with pid [146002]
+[INFO] [spawner-5]: process started with pid [146004]
+[INFO] [move_group-6]: process started with pid [146006]
+[INFO] [python3-7]: process started with pid [146008]
+[robot_state_publisher-2] 1792480466.217813 [119] robot_stat: selected interface "lo" is not multicast-capable: disabling multicast
+[ros2_control_node-1] 1792480466.219476 [119] ros2_contr: selected interface "lo" is not multicast-capable: disabling multicast
+[robot_state_publisher-2] [INFO] [1792480466.221008360] [robot_state_publisher]: got segment left_base_link
+[robot_state_publisher-2] [INFO] [1792480466.221040073] [robot_state_publisher]: got segment left_forearm_link
+[robot_state_publisher-2] [INFO] [1792480466.221044429] [robot_state_publisher]: got segment left_shoulder_link
+[robot_state_publisher-2] [INFO] [1792480466.221053023] [robot_state_publisher]: got segment left_upperarm_link
+[robot_state_publisher-2] [INFO] [1792480466.221055456] [robot_state_publisher]: got segment left_world
+[robot_state_publisher-2] [INFO] [1792480466.221057918] [robot_state_publisher]: got segment left_wrist1_link
+[robot_state_publisher-2] [INFO] [1792480466.221060313] [robot_state_publisher]: got segment left_wrist2_link
+[robot_state_publisher-2] [INFO] [1792480466.221062909] [robot_state_publisher]: got segment left_wrist3_link
+[robot_state_publisher-2] [INFO] [1792480466.221065397] [robot_state_publisher]: got segment right_base
+[robot_state_publisher-2] [INFO] [1792480466.221067877] [robot_state_publisher]: got segment right_base_link
+[robot_state_publisher-2] [INFO] [1792480466.221070356] [robot_state_publisher]: got segment right_base_link_inertia
+[robot_state_publisher-2] [INFO] [1792480466.221072937] [robot_state_publisher]: got segment right_flange
+[robot_state_publisher-2] [INFO] [1792480466.221075366] [robot_state_publisher]: got segment right_forearm_link
+[robot_state_publisher-2] [INFO] [1792480466.221077764] [robot_state_publisher]: got segment right_ft_frame
+[robot_state_publisher-2] [INFO] [1792480466.221080153] [robot_state_publisher]: got segment right_shoulder_link
+[robot_state_publisher-2] [INFO] [1792480466.221082470] [robot_state_publisher]: got segment right_tool0
+[robot_state_publisher-2] [INFO] [1792480466.221084907] [robot_state_publisher]: got segment right_upper_arm_link
+[robot_state_publisher-2] [INFO] [1792480466.221087378] [robot_state_publisher]: got segment right_workcell_source_root
+[robot_state_publisher-2] [INFO] [1792480466.221089735] [robot_state_publisher]: got segment right_world
+[robot_state_publisher-2] [INFO] [1792480466.221092308] [robot_state_publisher]: got segment right_wrist_1_link
+[robot_state_publisher-2] [INFO] [1792480466.221094622] [robot_state_publisher]: got segment right_wrist_2_link
+[robot_state_publisher-2] [INFO] [1792480466.221096961] [robot_state_publisher]: got segment right_wrist_3_link
+[robot_state_publisher-2] [INFO] [1792480466.221099290] [robot_state_publisher]: got segment workcell_floor
+[robot_state_publisher-2] [INFO] [1792480466.221101624] [robot_state_publisher]: got segment workcell_left_pedestal
+[robot_state_publisher-2] [INFO] [1792480466.221104074] [robot_state_publisher]: got segment workcell_right_pedestal
+[robot_state_publisher-2] [INFO] [1792480466.221106429] [robot_state_publisher]: got segment world
+[ros2_control_node-1] [WARN] [1792480466.223310722] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[ros2_control_node-1] [INFO] [1792480466.223480615] [resource_manager]: Loading hardware 'WorkcellMuJoCo' 
+[ros2_control_node-1] [INFO] [1792480466.225691613] [resource_manager]: Initialize hardware 'WorkcellMuJoCo' 
+[ros2_control_node-1] [INFO] [1792480466.225721778] [MujocoSystemInterface]: Loading 'mujoco_model' from: '/home/sea21jk/projects/isaac_sim_setup/runtime/generated/workcells/fr5_ur5e/cell.xml'
+[ros2_control_node-1] [INFO] [1792480466.225738270] [MujocoSystemInterface]: Constructing node and executor...
+[ros2_control_node-1] [INFO] [1792480466.226543341] [MujocoSystemInterface]: Executor thread started.
+[ros2_control_node-1] [INFO] [1792480466.226559611] [MujocoSimulation]: Running the simulation at 100.00 percent speed
+[ros2_control_node-1] [INFO] [1792480466.226566552] [MujocoSimulation]: Running in HEADLESS mode.
+[ros2_control_node-1] [INFO] [1792480466.226568095] [MujocoSimulation]: Scanning plugin libraries...
+[ros2_control_node-1] [INFO] [1792480466.226618019] [MujocoSimulation]: Initializing simulation...
+[ros2_control_node-1] [INFO] [1792480466.229113732] [MujocoSimulation]: Sim ready, continuing initialization...
+[ros2_control_node-1] [INFO] [1792480466.229119759] [MujocoSimulation]: Constructing clock publisher.
+[ros2_control_node-1] [INFO] [1792480466.229858468] [MujocoSimulation]: Created reset_world service at: /mujoco_ros2_control_node/reset_world
+[ros2_control_node-1] [INFO] [1792480466.229916045] [MujocoSimulation]: Created set_pause service at: /mujoco_ros2_control_node/set_pause
+[ros2_control_node-1] [INFO] [1792480466.229966008] [MujocoSimulation]: Created step_simulation service at: /mujoco_ros2_control_node/step_simulation
+[ros2_control_node-1] [INFO] [1792480466.230492295] [MujocoSimulation]: Created set_free_joint_state service at: /mujoco_ros2_control_node/set_free_joint_state
+[ros2_control_node-1] [INFO] [1792480466.230496635] [MujocoSimulation]: Loading model...
+[move_group-6] 1792480466.235457 [119] move_group: selected interface "lo" is not multicast-capable: disabling multicast
+[move_group-6] [INFO] [1792480466.243106542] [moveit_rdf_loader.rdf_loader]: Loaded robot model in 0 seconds
+[move_group-6] [INFO] [1792480466.243173234] [moveit_robot_model.robot_model]: Loading robot model 'fr5_ur5e'...
+[move_group-6] [INFO] [1792480466.243181856] [moveit_robot_model.robot_model]: No root/virtual joint specified in SRDF. Assuming fixed joint
+[ros2_control_node-1] [INFO] [1792480466.289397995] [MujocoSystemInterface]: Constructing publishers.
+[ros2_control_node-1] [INFO] [1792480466.289798551] [MujocoSystemInterface]: Registering actuators.
+[ros2_control_node-1] [INFO] [1792480466.289809210] [MujocoSystemInterface]: override_start_position_file not passed. Loading initial positions from ros2_control xacro.
+[ros2_control_node-1] [INFO] [1792480466.289811299] [MujocoSystemInterface]: Registering MuJoCo actuator 'left_j1' for joint 'left_j1'
+[ros2_control_node-1] [INFO] [1792480466.289814057] [MujocoSystemInterface]: Registering MuJoCo actuator 'left_j2' for joint 'left_j2'
+[ros2_control_node-1] [INFO] [1792480466.289815419] [MujocoSystemInterface]: Registering MuJoCo actuator 'left_j3' for joint 'left_j3'
+[ros2_control_node-1] [INFO] [1792480466.289816673] [MujocoSystemInterface]: Registering MuJoCo actuator 'left_j4' for joint 'left_j4'
+[ros2_control_node-1] [INFO] [1792480466.289817908] [MujocoSystemInterface]: Registering MuJoCo actuator 'left_j5' for joint 'left_j5'
+[ros2_control_node-1] [INFO] [1792480466.289819207] [MujocoSystemInterface]: Registering MuJoCo actuator 'left_j6' for joint 'left_j6'
+[ros2_control_node-1] [INFO] [1792480466.289820451] [MujocoSystemInterface]: Registering MuJoCo actuator 'right_shoulder_pan_joint' for joint 'right_shoulder_pan_joint'
+[ros2_control_node-1] [INFO] [1792480466.289821855] [MujocoSystemInterface]: Registering MuJoCo actuator 'right_shoulder_lift_joint' for joint 'right_shoulder_lift_joint'
+[ros2_control_node-1] [INFO] [1792480466.289823099] [MujocoSystemInterface]: Registering MuJoCo actuator 'right_elbow_joint' for joint 'right_elbow_joint'
+[ros2_control_node-1] [INFO] [1792480466.289824555] [MujocoSystemInterface]: Registering MuJoCo actuator 'right_wrist_1_joint' for joint 'right_wrist_1_joint'
+[ros2_control_node-1] [INFO] [1792480466.289825887] [MujocoSystemInterface]: Registering MuJoCo actuator 'right_wrist_2_joint' for joint 'right_wrist_2_joint'
+[ros2_control_node-1] [INFO] [1792480466.289827117] [MujocoSystemInterface]: Registering MuJoCo actuator 'right_wrist_3_joint' for joint 'right_wrist_3_joint'
+[ros2_control_node-1] [INFO] [1792480466.289828999] [MujocoSystemInterface]: Applying initial keyframe: 'home'
+[ros2_control_node-1] [INFO] [1792480466.289851393] [MujocoSystemInterface]: Registering joints and sensors.
+[ros2_control_node-1] [INFO] [1792480466.289854005] [MujocoSystemInterface]: Registering joints...
+[ros2_control_node-1] [INFO] [1792480466.289861821] [MujocoSystemInterface]: Found the actuator 'left_j1' for joint 'left_j1'
+[ros2_control_node-1] [INFO] [1792480466.289874542] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'left_j1'
+[ros2_control_node-1] [INFO] [1792480466.289890728] [MujocoSystemInterface]: Found the actuator 'left_j2' for joint 'left_j2'
+[ros2_control_node-1] [INFO] [1792480466.289892820] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'left_j2'
+[ros2_control_node-1] [INFO] [1792480466.289894330] [MujocoSystemInterface]: Found the actuator 'left_j3' for joint 'left_j3'
+[ros2_control_node-1] [INFO] [1792480466.289895978] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'left_j3'
+[ros2_control_node-1] [INFO] [1792480466.289897649] [MujocoSystemInterface]: Found the actuator 'left_j4' for joint 'left_j4'
+[ros2_control_node-1] [INFO] [1792480466.289899361] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'left_j4'
+[ros2_control_node-1] [INFO] [1792480466.289900869] [MujocoSystemInterface]: Found the actuator 'left_j5' for joint 'left_j5'
+[ros2_control_node-1] [INFO] [1792480466.289902508] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'left_j5'
+[ros2_control_node-1] [INFO] [1792480466.289903966] [MujocoSystemInterface]: Found the actuator 'left_j6' for joint 'left_j6'
+[ros2_control_node-1] [INFO] [1792480466.289905556] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'left_j6'
+[ros2_control_node-1] [INFO] [1792480466.289907403] [MujocoSystemInterface]: Found the actuator 'right_shoulder_pan_joint' for joint 'right_shoulder_pan_joint'
+[ros2_control_node-1] [INFO] [1792480466.289909323] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'right_shoulder_pan_joint'
+[ros2_control_node-1] [INFO] [1792480466.289911037] [MujocoSystemInterface]: Found the actuator 'right_shoulder_lift_joint' for joint 'right_shoulder_lift_joint'
+[ros2_control_node-1] [INFO] [1792480466.289912771] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'right_shoulder_lift_joint'
+[ros2_control_node-1] [INFO] [1792480466.289914446] [MujocoSystemInterface]: Found the actuator 'right_elbow_joint' for joint 'right_elbow_joint'
+[ros2_control_node-1] [INFO] [1792480466.289916260] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'right_elbow_joint'
+[ros2_control_node-1] [INFO] [1792480466.289917982] [MujocoSystemInterface]: Found the actuator 'right_wrist_1_joint' for joint 'right_wrist_1_joint'
+[ros2_control_node-1] [INFO] [1792480466.289919701] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'right_wrist_1_joint'
+[ros2_control_node-1] [INFO] [1792480466.289921305] [MujocoSystemInterface]: Found the actuator 'right_wrist_2_joint' for joint 'right_wrist_2_joint'
+[ros2_control_node-1] [INFO] [1792480466.289922936] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'right_wrist_2_joint'
+[ros2_control_node-1] [INFO] [1792480466.289924518] [MujocoSystemInterface]: Found the actuator 'right_wrist_3_joint' for joint 'right_wrist_3_joint'
+[ros2_control_node-1] [INFO] [1792480466.289926257] [MujocoSystemInterface]: Using MuJoCo position actuator for the joint : 'right_wrist_3_joint'
+[ros2_control_node-1] [INFO] [1792480466.290288561] [MujocoSimulation]: Starting the MuJoCo physics thread...
+[ros2_control_node-1] [INFO] [1792480466.290355317] [MujocoSystemInterface]: No 'mujoco_plugins' parameter found!
+[ros2_control_node-1] [INFO] [1792480466.290362635] [MujocoSystemInterface]: on_init complete.
+[ros2_control_node-1] [INFO] [1792480466.290374425] [resource_manager]: Successful initialization of hardware 'WorkcellMuJoCo'
+[ros2_control_node-1] [INFO] [1792480466.290424993] [resource_manager]: 'configure' hardware 'WorkcellMuJoCo' 
+[ros2_control_node-1] [INFO] [1792480466.290428845] [resource_manager]: Successful 'configure' of hardware 'WorkcellMuJoCo'
+[ros2_control_node-1] [INFO] [1792480466.290434157] [resource_manager]: 'activate' hardware 'WorkcellMuJoCo' 
+[ros2_control_node-1] [INFO] [1792480466.290435679] [MujocoSystemInterface]: Activating MuJoCo hardware interface and starting Simulate threads...
+[ros2_control_node-1] [INFO] [1792480466.290438058] [resource_manager]: Successful 'activate' of hardware 'WorkcellMuJoCo'
+[ros2_control_node-1] [INFO] [1792480466.291246772] [controller_manager]: update rate is 100 Hz
+[ros2_control_node-1] [INFO] [1792480466.291259916] [controller_manager]: Overruns handling is : enabled
+[ros2_control_node-1] [INFO] [1792480466.291263993] [controller_manager]: Spawning controller_manager RT thread with scheduler priority: 50
+[ros2_control_node-1] [WARN] [1792480466.291299886] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1>(Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+[python3-7] 1792480466.341340 [119]    python3: selected interface "lo" is not multicast-capable: disabling multicast
+[spawner-5] 1792480466.364562 [119]    spawner: selected interface "lo" is not multicast-capable: disabling multicast
+[spawner-3] 1792480466.365536 [119]    spawner: selected interface "lo" is not multicast-capable: disabling multicast
+[spawner-4] 1792480466.366813 [119]    spawner: selected interface "lo" is not multicast-capable: disabling multicast
+[ros2_control_node-1] [INFO] [1792480466.383842998] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[ros2_control_node-1] [INFO] [1792480466.392888943] [controller_manager]: Loading controller 'left_controller'
+[ros2_control_node-1] [INFO] [1792480466.401999291] [controller_manager]: Loading controller 'right_controller'
+[spawner-3] [INFO] [1792480466.403645015] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[spawner-4] [INFO] [1792480466.408381525] [spawner_left_controller]: [94mLoaded [1mleft_controller[0m
+[ros2_control_node-1] [INFO] [1792480466.412591832] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[ros2_control_node-1] [INFO] [1792480466.412630747] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[spawner-5] [INFO] [1792480466.420166642] [spawner_right_controller]: [94mLoaded [1mright_controller[0m
+[ros2_control_node-1] [INFO] [1792480466.422281680] [controller_manager]: Configuring controller 'left_controller'
+[ros2_control_node-1] [INFO] [1792480466.422360444] [left_controller]: No specific joint names are used for command interfaces. Using 'joints' parameter.
+[ros2_control_node-1] [INFO] [1792480466.422372852] [left_controller]: Command interfaces are [position] and state interfaces are [position velocity].
+[ros2_control_node-1] [INFO] [1792480466.422383851] [left_controller]: Using 'splines' interpolation method.
+[ros2_control_node-1] [INFO] [1792480466.422542994] [left_controller]: Controller state will be published at 50.00 Hz.
+[ros2_control_node-1] [INFO] [1792480466.423346433] [left_controller]: Action status changes will be monitored at 20.00 Hz.
+[move_group-6] [INFO] [1792480466.425132788] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Publishing maintained planning scene on 'monitored_planning_scene'
+[move_group-6] [INFO] [1792480466.425237621] [moveit.ros_planning_interface.moveit_cpp]: Listening to 'joint_states' for joint states
+[move_group-6] [INFO] [1792480466.425471476] [moveit_ros.current_state_monitor]: Listening to joint states on topic 'joint_states'
+[move_group-6] [INFO] [1792480466.425733616] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to '/attached_collision_object' for attached collision objects
+[move_group-6] [INFO] [1792480466.425742278] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Starting planning scene monitor
+[move_group-6] [INFO] [1792480466.426027705] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to '/planning_scene'
+[move_group-6] [INFO] [1792480466.426032029] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Starting world geometry update monitor for collision objects, attached objects, octomap updates.
+[move_group-6] [INFO] [1792480466.426137362] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to 'collision_object'
+[move_group-6] [INFO] [1792480466.426253810] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to 'planning_scene_world' for planning scene world geometry
+[move_group-6] [WARN] [1792480466.426318721] [moveit.ros.occupancy_map_monitor.middleware_handle]: Resolution not specified for Octomap. Assuming resolution = 0.1 instead
+[move_group-6] [ERROR] [1792480466.426322888] [moveit.ros.occupancy_map_monitor.middleware_handle]: No 3D sensor plugin(s) defined for octomap updates
+[ros2_control_node-1] [INFO] [1792480466.431765766] [controller_manager]: Configuring controller 'right_controller'
+[ros2_control_node-1] [INFO] [1792480466.431840138] [right_controller]: No specific joint names are used for command interfaces. Using 'joints' parameter.
+[ros2_control_node-1] [INFO] [1792480466.431852377] [right_controller]: Command interfaces are [position] and state interfaces are [position velocity].
+[ros2_control_node-1] [INFO] [1792480466.431858961] [right_controller]: Using 'splines' interpolation method.
+[ros2_control_node-1] [INFO] [1792480466.431975379] [right_controller]: Controller state will be published at 50.00 Hz.
+[ros2_control_node-1] [INFO] [1792480466.432836582] [right_controller]: Action status changes will be monitored at 20.00 Hz.
+[spawner-3] [INFO] [1792480466.462698180] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[ros2_control_node-1] [INFO] [1792480466.471883889] [MujocoSystemInterface]: Joint left_j1: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.471897920] [MujocoSystemInterface]: Joint left_j2: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.471899628] [MujocoSystemInterface]: Joint left_j3: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.471900927] [MujocoSystemInterface]: Joint left_j4: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.471902262] [MujocoSystemInterface]: Joint left_j5: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.471903533] [MujocoSystemInterface]: Joint left_j6: position control enabled (velocity, effort disabled)
+[move_group-6] [INFO] [1792480466.477646818] [moveit.ros_planning_interface.moveit_cpp]: Loading planning pipeline 'ompl'
+[move_group-6] [INFO] [1792480466.482538966] [moveit.ros_planning.planning_pipeline]: Using planning interface 'OMPL'
+[spawner-4] [INFO] [1792480466.483154077] [spawner_left_controller]: [92mConfigured and activated [1mleft_controller[0m
+[move_group-6] [INFO] [1792480466.483518121] [moveit_ros.add_time_optimal_parameterization]: Param 'ompl.path_tolerance' was not set. Using default value: 0.100000
+[move_group-6] [INFO] [1792480466.483530952] [moveit_ros.add_time_optimal_parameterization]: Param 'ompl.resample_dt' was not set. Using default value: 0.100000
+[move_group-6] [INFO] [1792480466.483535962] [moveit_ros.add_time_optimal_parameterization]: Param 'ompl.min_angle_change' was not set. Using default value: 0.001000
+[move_group-6] [INFO] [1792480466.483547857] [moveit_ros.fix_workspace_bounds]: Param 'ompl.default_workspace_bounds' was not set. Using default value: 10.000000
+[move_group-6] [INFO] [1792480466.483560786] [moveit_ros.fix_start_state_bounds]: Param 'ompl.start_state_max_bounds_error' was set to 0.100000
+[move_group-6] [INFO] [1792480466.483566132] [moveit_ros.fix_start_state_bounds]: Param 'ompl.start_state_max_dt' was not set. Using default value: 0.500000
+[move_group-6] [INFO] [1792480466.483576129] [moveit_ros.fix_start_state_collision]: Param 'ompl.start_state_max_dt' was not set. Using default value: 0.500000
+[move_group-6] [INFO] [1792480466.483580594] [moveit_ros.fix_start_state_collision]: Param 'ompl.jiggle_fraction' was not set. Using default value: 0.020000
+[move_group-6] [INFO] [1792480466.483585223] [moveit_ros.fix_start_state_collision]: Param 'ompl.max_sampling_attempts' was not set. Using default value: 100
+[move_group-6] [INFO] [1792480466.483594620] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Add Time Optimal Parameterization'
+[move_group-6] [INFO] [1792480466.483598646] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Workspace Bounds'
+[move_group-6] [INFO] [1792480466.483601737] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Start State Bounds'
+[move_group-6] [INFO] [1792480466.483604526] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Start State In Collision'
+[move_group-6] [INFO] [1792480466.483607218] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Start State Path Constraints'
+[move_group-6] [INFO] [1792480466.491367358] [moveit.plugins.moveit_simple_controller_manager]: Added FollowJointTrajectory controller for left_controller
+[ros2_control_node-1] [INFO] [1792480466.492086343] [MujocoSystemInterface]: Joint right_shoulder_pan_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.492103405] [MujocoSystemInterface]: Joint right_shoulder_lift_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.492107896] [MujocoSystemInterface]: Joint right_elbow_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.492111418] [MujocoSystemInterface]: Joint right_wrist_1_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.492114849] [MujocoSystemInterface]: Joint right_wrist_2_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480466.492118112] [MujocoSystemInterface]: Joint right_wrist_3_joint: position control enabled (velocity, effort disabled)
+[move_group-6] [INFO] [1792480466.492331842] [moveit.plugins.moveit_simple_controller_manager]: Added FollowJointTrajectory controller for right_controller
+[move_group-6] [INFO] [1792480466.492432263] [moveit.plugins.moveit_simple_controller_manager]: Returned 2 controllers in list
+[move_group-6] [INFO] [1792480466.492450641] [moveit.plugins.moveit_simple_controller_manager]: Returned 2 controllers in list
+[move_group-6] [INFO] [1792480466.492583449] [moveit_ros.trajectory_execution_manager]: Trajectory execution is managing controllers
+[move_group-6] [INFO] [1792480466.492593557] [move_group.move_group]: MoveGroup debug mode is ON
+[move_group-6] [INFO] [1792480466.501577133] [move_group.move_group]: 
+[move_group-6] 
+[move_group-6] ********************************************************
+[move_group-6] * MoveGroup using: 
+[move_group-6] *     - ApplyPlanningSceneService
+[move_group-6] *     - ClearOctomapService
+[move_group-6] *     - CartesianPathService
+[move_group-6] *     - ExecuteTrajectoryAction
+[move_group-6] *     - GetPlanningSceneService
+[move_group-6] *     - KinematicsService
+[move_group-6] *     - MoveAction
+[move_group-6] *     - MotionPlanService
+[move_group-6] *     - QueryPlannersService
+[move_group-6] *     - StateValidationService
+[move_group-6] ********************************************************
+[move_group-6] 
+[move_group-6] [INFO] [1792480466.501601658] [moveit_move_group_capabilities_base.move_group_context]: MoveGroup context using planning plugin ompl_interface/OMPLPlanner
+[move_group-6] [INFO] [1792480466.501605431] [moveit_move_group_capabilities_base.move_group_context]: MoveGroup context initialization complete
+[move_group-6] [96mLoading 'move_group/ApplyPlanningSceneService'...
+[move_group-6] [0m[96mLoading 'move_group/ClearOctomapService'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupCartesianPathService'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupExecuteTrajectoryAction'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupGetPlanningSceneService'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupKinematicsService'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupMoveAction'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupPlanService'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupQueryPlannersService'...
+[move_group-6] [0m[96mLoading 'move_group/MoveGroupStateValidationService'...
+[move_group-6] [0m[92m
+[move_group-6] You can start planning now!
+[move_group-6] 
+[spawner-5] [INFO] [1792480466.502359459] [spawner_right_controller]: [92mConfigured and activated [1mright_controller[0m
+[ros2_control_node-1] [INFO] [1792480466.663678758] [MujocoSimulation]: Simulation paused.
+[INFO] [spawner-5]: process has finished cleanly [pid 146004]
+[INFO] [spawner-4]: process has finished cleanly [pid 146002]
+[INFO] [spawner-3]: process has finished cleanly [pid 146000]
+[ros2_control_node-1] [INFO] [1792480468.511227443] [MujocoSimulation]: Simulation resumed.
+[ros2_control_node-1] [INFO] [1792480468.557575876] [left_controller]: Received new action goal
+[ros2_control_node-1] [INFO] [1792480468.557619292] [left_controller]: Accepted new action goal
+[ros2_control_node-1] [INFO] [1792480468.579574275] [right_controller]: Received new action goal
+[ros2_control_node-1] [INFO] [1792480468.579595147] [right_controller]: Accepted new action goal
+[ros2_control_node-1] [WARN] [1792480470.782630020] [MujocoSimulation]: SIMULATION STOP latched (clock_stall): whole world frozen; restart required
+[ros2_control_node-1] [INFO] [1792480470.810694311] [left_controller]: Got request to cancel goal
+[ros2_control_node-1] [INFO] [1792480470.810716805] [left_controller]: Canceling active action goal because cancel callback received.
+[ros2_control_node-1] [INFO] [1792480470.810801394] [right_controller]: Got request to cancel goal
+[ros2_control_node-1] [INFO] [1792480470.810825280] [right_controller]: Canceling active action goal because cancel callback received.
+[ros2_control_node-1] [INFO] [1792480470.862681013] [MujocoSystemInterface]: Joint left_j1: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862691456] [MujocoSystemInterface]: Joint left_j2: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862693249] [MujocoSystemInterface]: Joint left_j3: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862694585] [MujocoSystemInterface]: Joint left_j4: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862695934] [MujocoSystemInterface]: Joint left_j5: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862697254] [MujocoSystemInterface]: Joint left_j6: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862698780] [MujocoSystemInterface]: Joint right_shoulder_pan_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862700446] [MujocoSystemInterface]: Joint right_shoulder_lift_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862701798] [MujocoSystemInterface]: Joint right_elbow_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862703267] [MujocoSystemInterface]: Joint right_wrist_1_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862704699] [MujocoSystemInterface]: Joint right_wrist_2_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480470.862706038] [MujocoSystemInterface]: Joint right_wrist_3_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.153063342] [left_controller]: Received new action goal
+[ros2_control_node-1] [ERROR] [1792480471.153091171] [left_controller]: Can't accept new action goals. Controller is not running.
+[ros2_control_node-1] [INFO] [1792480471.153742177] [right_controller]: Received new action goal
+[ros2_control_node-1] [ERROR] [1792480471.153772196] [right_controller]: Can't accept new action goals. Controller is not running.
+[ros2_control_node-1] [INFO] [1792480471.162689271] [MujocoSystemInterface]: Joint left_j1: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162699128] [MujocoSystemInterface]: Joint left_j2: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162700941] [MujocoSystemInterface]: Joint left_j3: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162702273] [MujocoSystemInterface]: Joint left_j4: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162703572] [MujocoSystemInterface]: Joint left_j5: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162704863] [MujocoSystemInterface]: Joint left_j6: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162706395] [MujocoSystemInterface]: Joint right_shoulder_pan_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162707987] [MujocoSystemInterface]: Joint right_shoulder_lift_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162709411] [MujocoSystemInterface]: Joint right_elbow_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162710790] [MujocoSystemInterface]: Joint right_wrist_1_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162712241] [MujocoSystemInterface]: Joint right_wrist_2_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.162713675] [MujocoSystemInterface]: Joint right_wrist_3_joint: position control enabled (velocity, effort disabled)
+[ros2_control_node-1] [INFO] [1792480471.212140724] [MujocoSystemInterface]: Joint left_j1: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212146202] [MujocoSystemInterface]: Joint left_j2: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212147839] [MujocoSystemInterface]: Joint left_j3: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212149205] [MujocoSystemInterface]: Joint left_j4: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212150536] [MujocoSystemInterface]: Joint left_j5: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212151896] [MujocoSystemInterface]: Joint left_j6: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212153276] [MujocoSystemInterface]: Joint right_shoulder_pan_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212154828] [MujocoSystemInterface]: Joint right_shoulder_lift_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212156187] [MujocoSystemInterface]: Joint right_elbow_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212157668] [MujocoSystemInterface]: Joint right_wrist_1_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212159119] [MujocoSystemInterface]: Joint right_wrist_2_joint: position control disabled
+[ros2_control_node-1] [INFO] [1792480471.212160609] [MujocoSystemInterface]: Joint right_wrist_3_joint: position control disabled
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[INFO] [python3-7]: sending signal 'SIGINT' to process[python3-7]
+[INFO] [move_group-6]: sending signal 'SIGINT' to process[move_group-6]
+[INFO] [robot_state_publisher-2]: sending signal 'SIGINT' to process[robot_state_publisher-2]
+[INFO] [ros2_control_node-1]: sending signal 'SIGINT' to process[ros2_control_node-1]
+[move_group-6] [INFO] [1792480472.352645313] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[robot_state_publisher-2] [INFO] [1792480472.353057648] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[ros2_control_node-1] [INFO] [1792480472.353357083] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[ros2_control_node-1] [INFO] [1792480472.353394718] [controller_manager]: Shutdown request received....
+[ros2_control_node-1] [INFO] [1792480472.353414035] [controller_manager]: Shutting down all controllers in the controller manager.
+[ros2_control_node-1] [INFO] [1792480472.353421705] [controller_manager]: Deactivating controller 'joint_state_broadcaster'
+[ros2_control_node-1] [INFO] [1792480472.353436432] [controller_manager]: Shutting down controller 'joint_state_broadcaster'
+[ros2_control_node-1] [INFO] [1792480472.353450214] [controller_manager]: Shutting down controller 'left_controller'
+[ros2_control_node-1] [INFO] [1792480472.353458641] [controller_manager]: Shutting down controller 'right_controller'
+[ros2_control_node-1] [INFO] [1792480472.353471392] [resource_manager]: 'deactivate' hardware 'WorkcellMuJoCo' 
+[ros2_control_node-1] [INFO] [1792480472.353474818] [MujocoSystemInterface]: Deactivating MuJoCo hardware interface and shutting down Simulate...
+[ros2_control_node-1] [INFO] [1792480472.353478977] [resource_manager]: Successful 'deactivate' of hardware 'WorkcellMuJoCo'
+[ros2_control_node-1] [INFO] [1792480472.353482305] [resource_manager]: 'shutdown' hardware 'WorkcellMuJoCo' 
+[ros2_control_node-1] [INFO] [1792480472.353484630] [resource_manager]: Successful 'shutdown' of hardware 'WorkcellMuJoCo'
+[ros2_control_node-1] [INFO] [1792480472.353486244] [controller_manager]: Shutting down the controller manager.
+[move_group-6] [INFO] [1792480472.393288788] [moveit.ros_planning_interface.moveit_cpp]: Deleting MoveItCpp
+[move_group-6] [INFO] [1792480472.394306578] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Stopped publishing maintained planning scene.
+[move_group-6] [INFO] [1792480472.396436788] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Stopping world geometry monitor
+[move_group-6] [INFO] [1792480472.397497609] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Stopping planning scene monitor
+[move_group-6] Warning: class_loader.ClassLoader: SEVERE WARNING!!! Attempting to unload library while objects created by this loader exist in the heap! You should delete your objects before attempting to unload the library or destroying the ClassLoader. The library will NOT be unloaded.
+[move_group-6]          at line 127 in ./src/class_loader.cpp
+[INFO] [robot_state_publisher-2]: process has finished cleanly [pid 145998]
+[INFO] [python3-7]: process has finished cleanly [pid 146008]
+[INFO] [move_group-6]: process has finished cleanly [pid 146006]
+[move_group-6] [0m
+[INFO] [ros2_control_node-1]: process has finished cleanly [pid 145996]

@@ -1,0 +1,198 @@
+{
+  "schema_version": 2,
+  "run_id": "20261020T071912.449700Z-fcbc85d3",
+  "robot_id": "clock_repeated_fr5_ur5e",
+  "ros_domain_id": 124,
+  "status": "passed",
+  "stage": "complete",
+  "started_utc": "2026-10-20T07:19:12.449777+00:00",
+  "completed_utc": "2026-10-20T07:19:23.788351+00:00",
+  "motion_checks_passed": true,
+  "shutdown_clean": true,
+  "error": null,
+  "cleanup_errors": [],
+  "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T071912.449700Z-fcbc85d3/launch.log",
+  "scene_id": "default",
+  "robot": "FR5 + UR5e 공동 작업장면",
+  "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+  "model_manifest_sha256": "fe711db4041ca76e098b72fccd6ee6419d7f2bdc3d314e70624ade5e70fb73b8",
+  "gui": true,
+  "stop_mode": "interrupt",
+  "workcell_id": "fr5_ur5e",
+  "paused_contact": false,
+  "contact_stop_test": false,
+  "clock_stop_test": true,
+  "stop_reason": "clock_stall",
+  "both_arms_moving_before_fault_rad": {
+    "left": 0.010585381376464344,
+    "right": 0.010434111827549369
+  },
+  "guard_observed_wall_sec": 1.0038376019983843,
+  "trajectory_remaining_at_fault_sim_sec": 4.744000000000001,
+  "goal_terminal_statuses": [
+    5,
+    5
+  ],
+  "verifier_cancel_requests": 0,
+  "new_goals_rejected": true,
+  "direct_commands_ignored": true,
+  "reset_resume_step_rejected": true,
+  "reactivation_watchdog_passed": true,
+  "post_stop_drift_rad": 0.0,
+  "clock_advance_after_stop_sec": 1.3519999999999994,
+  "stopped_positions_rad": {
+    "left_j1": 0.012800000000858734,
+    "left_j2": -1.1968509816131285,
+    "left_j3": 1.2036145173777013,
+    "left_j4": -1.4992269337376987,
+    "left_j5": -1.4999916930044634,
+    "left_j6": -1.146917967517071e-06,
+    "right_shoulder_pan_joint": 0.012800000000000165,
+    "right_shoulder_lift_joint": -1.5678887200514018,
+    "right_elbow_joint": 1.5748517650887717,
+    "right_wrist_1_joint": -1.5689798801980444,
+    "right_wrist_2_joint": -1.5707999970593556,
+    "right_wrist_3_joint": -1.816894718848766e-19
+  },
+  "contact_guard": {
+    "latched": true,
+    "reason": "clock_stall",
+    "phase": "stopped",
+    "controllers": {
+      "right_controller": "inactive",
+      "left_controller": "inactive",
+      "joint_state_broadcaster": "active"
+    },
+    "deactivation_requests": 2,
+    "error": ""
+  },
+  "simulated_clock_continues_while_physics_frozen": true,
+  "verification_scope": "clock_stall_dual_arm_hold",
+  "clock_fault_mode": "repeated",
+  "intentional_pause_test_wall_sec": 1.5,
+  "intentional_pause_no_false_stop": true,
+  "longest_clock_message_gap_wall_sec": 0.003272537000157172,
+  "repeated_clock_messages": 500,
+  "repeated_clock_span_wall_sec": 0.9997599010021077,
+  "physical_hold_verified": true,
+  "stop_observation_deadline_wall_sec": 2.0,
+  "mujoco_gpu_process_seen": true,
+  "rviz_gpu_process_seen": true,
+  "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "logical_cpus": 24,
+    "memory_total_bytes": 33404817408,
+    "kernel": "6.8.0-147-generic",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+  },
+  "graphics": {
+    "owned_gpu_processes": [
+      "|    0   N/A  N/A          149340      G   ...os2_control/ros2_control_node        141MiB |",
+      "|    0   N/A  N/A          149354      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |"
+    ],
+    "opengl": "name of display: :1\ndisplay: :1  screen: 0\ndirect rendering: Yes\nMemory info (GL_NVX_gpu_memory_info):\n    Dedicated video memory: 6144 MB\n    Total available memory: 6144 MB\n    Currently available dedicated video memory: 4750 MB\nOpenGL vendor string: NVIDIA Corporation\nOpenGL renderer string: NVIDIA GeForce RTX 3050/PCIe/SSE2\nOpenGL core profile version string: 4.6.0 NVIDIA 580.178.04\nOpenGL core profile shading language version string: 4.60 NVIDIA\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6.0 NVIDIA 580.178.04\nOpenGL shading language version string: 4.60 NVIDIA\nOpenGL context flags: (none)\nOpenGL profile mask: (none)\n\nOpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 580.178.04\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+    "nvidia_smi": "Tue Oct 20 16:19:19 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050        Off |   00000000:01:00.0  On |                  N/A |\n| 34%   44C    P3             21W /   70W |    1021MiB /   6144MiB |     36%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1655      G   /usr/lib/xorg/Xorg                       95MiB |\n|    0   N/A  N/A            2772      G   /usr/lib/xorg/Xorg                      473MiB |\n|    0   N/A  N/A            2933      G   /usr/bin/gnome-shell                     61MiB |\n|    0   N/A  N/A            3513      G   ...rack-uuid=3190708988185955192        114MiB |\n|    0   N/A  N/A          120022      G   ...rack-uuid=3190708988185955192         37MiB |\n|    0   N/A  N/A          149340      G   ...os2_control/ros2_control_node        141MiB |\n|    0   N/A  N/A          149354      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |\n+-----------------------------------------------------------------------------------------+\n"
+  },
+  "screenshots": {
+    "captured_utc": "2026-10-20T07:19:23.231454+00:00",
+    "robot_id": "fr5_ur5e",
+    "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+    "model_manifest_sha256": "fe711db4041ca76e098b72fccd6ee6419d7f2bdc3d314e70624ade5e70fb73b8",
+    "pose": "After selected verification completed",
+    "images": [
+      {
+        "file": "runtime/validation/clock_gui_capture/mujoco_gui.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "ros2_control_node",
+        "kind": "X11 client-window screenshot",
+        "sha256": "c156db66641d7605b279984cdee517cb1aadd13f3eecc4bace99fcfe254c9e62",
+        "camera_wheel_up_steps": 0
+      },
+      {
+        "file": "runtime/validation/clock_gui_capture/rviz.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "rviz2",
+        "kind": "X11 client-window screenshot",
+        "sha256": "c9112abc05478853e36895f2f412269df557fba823230812bcd2c8745a0563e8",
+        "camera_wheel_up_steps": 0
+      }
+    ]
+  },
+  "physics": {
+    "schema_version": 1,
+    "run_id": "20261020T071912.449700Z-fcbc85d3",
+    "monitor_source_sha256": "11ea5c7004d01300fc14a2ed21dcbf09f30d398e65fd395c36332c416c82e2f3",
+    "mujoco_version": "3.12.0",
+    "pid": 149340,
+    "complete": true,
+    "steps": 1252,
+    "engine_steps": 1252,
+    "timestep_sec": 0.002,
+    "integrator": 3,
+    "first_contact_evaluation_time_sec": 0,
+    "last_state_time_sec": 2.503999999999946,
+    "simulated_sec": 2.503999999999946,
+    "wall_span_sec": 4.346722534,
+    "paced_real_time_factor": 0.5760662155022995,
+    "contact_steps": 0,
+    "contacts": 0,
+    "active_contacts": 0,
+    "invalid_values": 0,
+    "time_discontinuities": 0,
+    "pair_overflow": 0,
+    "physics_step": {
+      "count": 1252,
+      "mean_sec": 7.452835463258781e-06,
+      "max_sec": 3.117e-05,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 2e-05,
+      "p99_upper_sec": 3e-05,
+      "overflow_count": 0
+    },
+    "monitor_step": {
+      "count": 1252,
+      "mean_sec": 8.31277955271565e-08,
+      "max_sec": 2.402e-06,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 1e-05,
+      "p99_upper_sec": 1e-05,
+      "overflow_count": 0
+    },
+    "pairs": [],
+    "stop_enabled": true,
+    "stop_latched": true,
+    "stop_reason": "clock_stall",
+    "stop_step": 1252,
+    "stop_time_sec": 2.503999999999946,
+    "hold_ticks": 2769,
+    "hold_time_sec": 8.041999999999355,
+    "stopped_qpos": [
+      0.012800000000858734,
+      -1.1968509816131285,
+      1.2036145173777013,
+      -1.4992269337376987,
+      -1.4999916930044634,
+      -1.146917967517071e-06,
+      0.012800000000000165,
+      -1.5678887200514018,
+      1.5748517650887717,
+      -1.5689798801980444,
+      -1.5707999970593556,
+      -1.816894718848766e-19
+    ]
+  },
+  "physics_report_sha256": "19f3d9175bf46b76729e36f4686d25d5483f6e0feec26a66a5349616166a2a9b",
+  "physics_checks_passed": true,
+  "shutdown_failures": [],
+  "expected_process_exits": [],
+  "shutdown_timed_out": false,
+  "launch_return_code": 0,
+  "launch_started": true,
+  "process_group_gone": true
+}

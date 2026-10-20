@@ -216,7 +216,7 @@ def capture_gui_windows(profile, process_group, directory):
     return {'captured_utc': datetime.now(timezone.utc).isoformat(),
             'robot_id': profile.id, 'robot_profile_sha256': profile.fingerprint,
             'model_manifest_sha256': file_sha256(profile.output / 'source.json'),
-            'pose': 'After verified MoveIt trajectory execution', 'images': screenshots}
+            'pose': 'After selected verification completed', 'images': screenshots}
 
 
 def render_reference(profile, directory):

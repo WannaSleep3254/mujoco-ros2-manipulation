@@ -23,6 +23,12 @@ from mujoco_ros2_manipulation.workcells.verify import WorkcellVerification, requ
 
 
 class ContactStopVerification(WorkcellVerification):
+    fault_service = "inject_test_contact"
+    fault_reason = "contact"
+
+    def before_motion(self):
+        pass
+
     def __init__(self, cell, progress=None, paused_contact=False):
         super().__init__(cell, progress)
         self.paused_contact = paused_contact
@@ -33,7 +39,7 @@ class ContactStopVerification(WorkcellVerification):
         return self.result(client.call_async(request), 5, name)
 
     def run(self):
-        self.progress("contact_stop_discovery")
+        self.progress(self.fault_reason + "_stop_discovery")
         self.until(
             lambda: self.positions is not None and self.clock_count > 10,
             30,
@@ -44,10 +50,11 @@ class ContactStopVerification(WorkcellVerification):
             self.until(client.server_is_ready, 10, "arm action server")
         self.until(self.validity.service_is_ready, 15, "MoveIt collision checker")
         self.settle(self.cell.home)
+        self.before_motion()
         start_positions = self.state()
         start = self.clock_last + 1
         handles = []
-        self.progress("both_arms_moving_before_contact")
+        self.progress("both_arms_moving_before_" + self.fault_reason)
         for inst in self.cell.instances:
             target = [
                 self.commanded[n] + (0.25 if n == inst.joints[0] else 0)
@@ -91,10 +98,18 @@ class ContactStopVerification(WorkcellVerification):
             require(
                 paused.success, "Could not exercise paused single-step contact path"
             )
-        self.progress("contact_injection")
-        injected_at = time.monotonic()
+        self.progress(self.fault_reason + "_injection")
+        require(
+            all(not future.done() for _, future in handles),
+            "Goal ended before fault injection",
+        )
+        remaining = start + 5 - self.clock_last
+        require(remaining > 2, "Insufficient trajectory remaining at fault injection")
+        injected_at = self.fault_injected_wall = time.monotonic()
         injected = self.call(
-            Trigger, "/mujoco_ros2_control_node/inject_test_contact", Trigger.Request()
+            Trigger,
+            "/mujoco_ros2_control_node/" + self.fault_service,
+            Trigger.Request(),
         )
         require(injected.success, injected.message)
         if self.paused_contact:
@@ -125,9 +140,14 @@ class ContactStopVerification(WorkcellVerification):
             f"A contact-stopped goal was not canceled/aborted: {statuses}",
         )
         self.until(
-            lambda: self.contact_guard["phase"] == "stopped",
+            lambda: self.contact_guard["phase"] == "stopped"
+            and self.contact_guard.get("reason") == self.fault_reason,
             5,
             "both controllers inactive",
+        )
+        require(
+            self.contact_guard.get("reason") == self.fault_reason,
+            "Stop reason did not match injected fault",
         )
         require(
             all(
@@ -177,7 +197,7 @@ class ContactStopVerification(WorkcellVerification):
             (ResetWorld, "reset_world", ResetWorld.Request()),
             (SetPause, "set_pause", SetPause.Request(paused=False)),
             (StepSimulation, "step_simulation", StepSimulation.Request(steps=1)),
-            (Trigger, "inject_test_contact", Trigger.Request()),
+            (Trigger, self.fault_service, Trigger.Request()),
         ]:
             response = self.call(kind, "/mujoco_ros2_control_node/" + name, request)
             require(not response.success, "Mutation bypassed latched stop: " + name)
@@ -223,9 +243,17 @@ class ContactStopVerification(WorkcellVerification):
         return dict(
             workcell_id=self.cell.id,
             paused_contact=self.paused_contact,
-            contact_stop_test=True,
-            both_arms_moving_before_contact_rad=moved,
+            contact_stop_test=self.fault_reason == "contact",
+            clock_stop_test=self.fault_reason == "clock_stall",
+            stop_reason=self.fault_reason,
+            both_arms_moving_before_fault_rad=moved,
+            **(
+                {"both_arms_moving_before_contact_rad": moved}
+                if self.fault_reason == "contact"
+                else {}
+            ),
             guard_observed_wall_sec=observed_after,
+            trajectory_remaining_at_fault_sim_sec=remaining,
             goal_terminal_statuses=statuses,
             verifier_cancel_requests=0,
             new_goals_rejected=True,

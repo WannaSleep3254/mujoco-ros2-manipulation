@@ -42,6 +42,7 @@ def load_manifest(root=ROOT):
         local_path(root, runtime['patch'])
         local_path(root, runtime['monitor_patch'])
         local_path(root, runtime['contact_stop_patch'])
+        local_path(root, runtime['clock_watchdog_patch'])
         if runtime['repository'] not in data['repositories'] or runtime['package'] not in data['packages']:
             raise ValueError('Unknown runtime repository/package')
         seen = set()
@@ -241,7 +242,7 @@ def main():
             runtime = manifest['runtime']
             source = local_path(ROOT, manifest['repositories'][runtime['repository']]['path'])
             apply_patch_series(source, [local_path(ROOT, runtime[key])
-                for key in ('patch', 'monitor_patch', 'contact_stop_patch')])
+                for key in ('patch', 'monitor_patch', 'contact_stop_patch', 'clock_watchdog_patch')])
             prepare_debs(ROOT, manifest, args.download_debs)
             native = ROOT / 'runtime/native'
             native.mkdir(parents=True, exist_ok=True)

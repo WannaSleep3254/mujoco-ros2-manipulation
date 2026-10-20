@@ -23,6 +23,7 @@ class ContactGuard(Node):
         self.cancel_started = None
         self.cancel_futures = []
         self.last_error = ""
+        self.stop_reason = ""
         self.switch_count = 0
         qos = QoSProfile(
             depth=1,
@@ -32,6 +33,9 @@ class ContactGuard(Node):
         self.publisher = self.create_publisher(String, "/workcell/contact_stop", qos)
         self.create_subscription(
             Bool, "/mujoco_ros2_control_node/contact_stop", self.event, qos
+        )
+        self.create_subscription(
+            String, "/mujoco_ros2_control_node/stop_reason", self.reason_event, qos
         )
         self.manager = self.create_client(
             ListControllers, "/controller_manager/list_controllers"
@@ -49,6 +53,10 @@ class ContactGuard(Node):
             0.05, self.tick, clock=Clock(clock_type=ClockType.STEADY_TIME)
         )
 
+    def reason_event(self, message):
+        self.stop_reason = message.data
+        self.publish()
+
     def event(self, message):
         self.policy.observe(message.data)
         self.publish()
@@ -59,6 +67,7 @@ class ContactGuard(Node):
                 data=json.dumps(
                     dict(
                         latched=self.policy.latched,
+                        reason=self.stop_reason,
                         phase=self.policy.phase(self.states),
                         controllers=self.states,
                         deactivation_requests=self.switch_count,
