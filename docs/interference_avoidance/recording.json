@@ -1,0 +1,13 @@
+{
+  "video_start_clock_sec": 9.401999999000001,
+  "frames": 578,
+  "captures": 576,
+  "fps": 24,
+  "wall_sec": 24.106282892997115,
+  "playback_sec": 24.083333333333332,
+  "maximum_capture_gap_sec": 0.08828698100114707,
+  "kind": "Actual owned MuJoCo X11 pixels; no overlays or speed changes; repeated captured frames preserve wall time",
+  "video": "coordinated-avoidance.mp4",
+  "camera_wheel_down_steps": 6,
+  "errors": []
+}

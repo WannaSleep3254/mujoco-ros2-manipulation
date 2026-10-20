@@ -115,6 +115,19 @@ def nodes(context):
             )
         )
     config = yaml.safe_load((cell.output / "moveit.yaml").read_text())
+    planning_case = LaunchConfiguration("planning_case").perform(context)
+    if planning_case != "none":
+        from mujoco_ros2_manipulation.workcells.interference import load_case
+
+        _, scenario = load_case(cell, planning_case)
+        settings = scenario["planning"]
+        for key in ("path_tolerance", "resample_dt"):
+            config["ompl"][key] = settings[key]
+        for group in ["both_arms"] + [i.group for i in cell.instances]:
+            config["ompl"][group]["longest_valid_segment_fraction"] = settings[
+                "longest_valid_segment_fraction"
+            ]
+
     config.update(description)
     guard = cell.root / "runtime/native/moveit_plugin_lifetime.so"
     if not guard.is_file():
@@ -166,6 +179,7 @@ def generate_launch_description():
             DeclareLaunchArgument("rviz", default_value="true"),
             DeclareLaunchArgument("contact_test", default_value="false"),
             DeclareLaunchArgument("clock_test", default_value="off"),
+            DeclareLaunchArgument("planning_case", default_value="none"),
             DeclareLaunchArgument("contact_demo", default_value="false"),
             DeclareLaunchArgument("contact_demo_control", default_value="false"),
             OpaqueFunction(function=nodes),

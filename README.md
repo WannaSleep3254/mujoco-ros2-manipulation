@@ -193,6 +193,23 @@ python3 verify_contact_demo.py --gui --control
 접촉 시점에 약 6초의 명령이 남아 있으므로 목표 도달과 접촉 정지를 구분할 수 있습니다.
 기본 실행은 양팔 동시 정지를 유지합니다. 이전 단독 영상은 [과거 시연 기록](docs/contact_stop.md#고정-장애물-접촉-시연)에 보존합니다.
 
+## 양팔 간섭: 정상·접촉·회피 비교
+
+회피 대상은 **상대 로봇팔**입니다. 같은 장면·시작·목표와 고정된 궤적 묶음으로 세 조건을 비교합니다.
+
+1. FR5·UR5e 각각 단독 정상 동작: 상대 팔은 시작 자세 유지.
+2. 회피 없는 동시 동작: 손목 간 실제 접촉 후 양팔 자동 정지.
+3. 공동 간섭 회피: 상대 팔을 고려해 경로·타이밍을 바꾸고 양팔 목표 도달.
+
+[![실제 접촉 후 양팔 정지와 공동 회피 비교](docs/interference_comparison/contact.png)](docs/interference_comparison/comparison.mp4)
+
+[비교 영상 — 약 24.38초](docs/interference_comparison/comparison.mp4) ·
+[실행 방법·측정값·원본 보고서](docs/interference_comparison.md) ·
+[첫 회피 시도 보존](docs/interference_avoidance.md)
+
+무회피 실행은 명령이 **3.24초 남은 상태**에서 실제 손목 접촉으로 멈췄습니다.
+단독 두 실행과 공동 회피는 접촉 없이 완료했습니다. 기존 위험 경로 전송 차단과 양팔 자동 정지는 유지합니다.
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
@@ -205,7 +222,8 @@ python3 verify_contact_demo.py --gui --control
 | 구현 | FR5·UR5e 공동 배치, 팔별 제어·계획, 관절 공간 공동 계획과 충돌 목표 거부 |
 | 검증 추가 | [핵심 프로세스 크래시 시 자동 전체 종료](docs/process_crash.md) |
 | 검증 추가 | [시계 누락·반복 감시와 양팔 위치 고정](docs/clock_stop.md) |
-| 2 | 크래시 후 위치 유지 검증, 전용 양팔 간섭 회피 사례 |
+| 검증 추가 | [양팔 간섭 참조 경로 차단·공동 회피 전용 사례](docs/interference_avoidance.md) |
+| 2 | 크래시 후 위치 유지 검증, 끝단 Pose/IK 사례 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |

@@ -1,0 +1,14 @@
+schema_version: 1
+id: dual_arm_crossing
+workcell: fr5_ur5e
+sample_dt_sec: 0.02
+planning:
+  path_tolerance: 0.001
+  resample_dt: 0.02
+  longest_valid_segment_fraction: 0.001
+start_rad:
+  left: [-0.7, -1.1, 1.1, -1.4, -1.5, 0.1]
+  right: [-0.7, -1.45, 1.45, -1.5, -1.5708, 0.1]
+goal_rad:
+  left: [0.3, -1.1, 1.1, -1.4, -1.5, 0.1]
+  right: [0.3, -1.45, 1.45, -1.5, -1.5708, 0.1]

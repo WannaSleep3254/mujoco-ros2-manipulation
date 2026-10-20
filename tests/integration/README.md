@@ -48,3 +48,15 @@ python3 verify_clock_stop.py --mode repeated --domain 120
 각 실행에 1.5초 의도한 일시정지·복귀, 양팔 이동, 시계 오류 관측, 물리 고정·양팔 목표 취소와
 제어기 비활성화·새 명령/리셋/재활성화 차단 검사를 포함합니다.
 CI의 공동 장면 작업도 동일 명령을 실행합니다. [범위·판정](../../docs/clock_stop.md)을 참고합니다.
+
+전용 양팔 간섭 회피 사례는 다음을 새 launch에서 두 번 실행합니다.
+
+```bash
+python3 verify_interference.py --domain 126
+python3 verify_interference.py --domain 127
+```
+
+양팔 시작·목표는 안전하고 팔별 계획도 상대 팔 고정 시 안전해야 합니다.
+합성 궤적의 교차 간섭을 전송 전에 차단한 뒤, 같은 조건의 `both_arms` 계획만 실행합니다.
+두 Action 성공·실제 목표 수렴·네이티브 전체 스텝 접촉 0까지 검사합니다.
+[엄격한 후처리 설정과 재현 자료](../../docs/interference_avoidance.md)를 참고합니다.

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "compressed_logs_original_sha256": {
+    "left.log.txt.gz": "0f55ef347ef4676816f518c366cb016e6dcf2895a8ff63cb3c6199a72bb5f661",
+    "right.log.txt.gz": "01d7d4a58c78b70f0b38e5dca3182886060e4eab064442791d8a1deeb4b2d12b",
+    "collision.log.txt.gz": "bd27162db36fa84ca1a7dae0acab1a666f005dddeeddfc1e1766344a3e33449a",
+    "avoidance.log.txt.gz": "38cb3a79284a94df77442247e3e9bc54aa0b471bfc759af84d1d0bd0f4b72630"
+  },
+  "bundle_original_sha256": "050c93747beb5bd9e850386e666050076e39512fc9c471923ff07e9c39852c2b",
+  "files": {
+    "avoidance-complete.png": {
+      "bytes": 405774,
+      "sha256": "4e055fb93a4af8340738dad8c153b4b4e50f00e847b772d3244c5df1c7872cbe"
+    },
+    "avoidance.json.gz": {
+      "bytes": 122142,
+      "sha256": "11a6ce4de1cca5781f0f3093f8e664735216855e2565caba98a0444678349846"
+    },
+    "avoidance.log.txt.gz": {
+      "bytes": 6186,
+      "sha256": "5852b86b5a143a82eec8f524c57c47b8e29701cfd9bac3d1c1e0e804eb84e971"
+    },
+    "avoidance.mp4": {
+      "bytes": 553835,
+      "sha256": "6223993410d8a59060865f912e0707e9c4d789ee3fc3e6d3ac20c6654711a7f1"
+    },
+    "bundle.json.gz": {
+      "bytes": 513552,
+      "sha256": "80339d41ab011227dae4b88356a27fefe1e115f31855c608847f8f87c8e8500c"
+    },
+    "collision.json.gz": {
+      "bytes": 28726,
+      "sha256": "c51bed60af5cce2b46ffea995f10ab0a74e7326cf2826b5ffee16f5f8de514a1"
+    },
+    "collision.log.txt.gz": {
+      "bytes": 6501,
+      "sha256": "8935ac3d50ec79c5b8f4075cbcbdea9abe07616ef6446ef23a4bfcc23821e705"
+    },
+    "collision.mp4": {
+      "bytes": 237848,
+      "sha256": "3dc8857d79262deb0475fb4ed81ffc94db84b2815706dcc0a66e39ff4e043bab"
+    },
+    "comparison.json": {
+      "bytes": 2998,
+      "sha256": "0530eba2f9ec5a7f27b9e72030214f4cf8da0bd0b149db41dceeb8bbd43b0c73"
+    },
+    "comparison.mp4": {
+      "bytes": 1116631,
+      "sha256": "4afefd6ac740464a315cfa46a67b1a3f4fd3de8079fad4d0c22e3c017e9f319a"
+    },
+    "contact.png": {
+      "bytes": 434093,
+      "sha256": "13c3780c663eb96b9bf1b3dedddb1458d71f31a52840666982280ee42e431c23"
+    },
+    "headless-avoidance.json.gz": {
+      "bytes": 118699,
+      "sha256": "c28df663113c195d1453ce6e9e868160bac1983d40e681d6b625c7011df97410"
+    },
+    "headless-collision.json.gz": {
+      "bytes": 26950,
+      "sha256": "9e8ef89890336fd970216aa7976f798ccd92217434251c96e25c3a566997aba9"
+    },
+    "headless-comparison.json": {
+      "bytes": 1429,
+      "sha256": "6356f328ea743bf6250a52f79a1c3ec1d0d6663170dddd1aee7dedba85ed8be0"
+    },
+    "headless-left.json.gz": {
+      "bytes": 76538,
+      "sha256": "87ed2a602d5b0c8377d6fa7dbfd1f928f6571355197d4fa4838f97042148b405"
+    },
+    "headless-right.json.gz": {
+      "bytes": 76153,
+      "sha256": "81d4e9b47392b298a34b6fb4ff031993097e2bb19bb32a380f62182236b59418"
+    },
+    "left.json.gz": {
+      "bytes": 79755,
+      "sha256": "e2df374312c955fda1034b2e0ba8f3fd1a063b947e1314c9f2a9581b6f246799"
+    },
+    "left.log.txt.gz": {
+      "bytes": 6176,
+      "sha256": "1d40cc3795d4fe8ec5277c64ad40b71a98c08f74fc1ea67c417645f211ba5dca"
+    },
+    "left.mp4": {
+      "bytes": 251972,
+      "sha256": "f65420809437973f12dc2dd0705685c7f874d0f5d83e010c0774ea7da4300912"
+    },
+    "normal-complete.png": {
+      "bytes": 439169,
+      "sha256": "158b6bd909a2506aa370e9b086ec71deaab53f4c31ece9de5a82c3c24dbef610"
+    },
+    "right.json.gz": {
+      "bytes": 79646,
+      "sha256": "c4c1fd07a0b1fabe4c10dd56fd48e78634e3b6cc334cff0c1416d0a18cda3bc3"
+    },
+    "right.log.txt.gz": {
+      "bytes": 6190,
+      "sha256": "040feb18da3bb2c054a2bf697f47a2452bf7769810def4552869fad25fe07270"
+    },
+    "right.mp4": {
+      "bytes": 261469,
+      "sha256": "572c67a289138bf3721d544ef72c30c3d425f49c5ff82a03ad5538b8b922b35d"
+    },
+    "start.png": {
+      "bytes": 405159,
+      "sha256": "f695659339f335303e279cc54dd17e122a93a6868254a7672f4b0288852acf0a"
+    }
+  },
+  "compressed_reports_original_sha256": {
+    "left.json.gz": "76da0408e71c20f4f1a8d0e4510e1de1dd641e15c69d9e23a571fa0b79a5421b",
+    "headless-left.json.gz": "1cae5c367e775142756eb5bcaae529cc4057a777039bb9ac235dc62fbbc9b367",
+    "collision.json.gz": "199cd27b227650dbc4255dbcdfa9acba39f3043847677e1b96bd0aedf21dde75",
+    "headless-collision.json.gz": "cc493354ace645d5af9d5ecd158a68442aab3c26cf168625265501322769a8e7",
+    "right.json.gz": "968f058cf1d2d3a5f48cf1c3ad93251340a14b8a8e3eeb4c83c3122e3c0a184f",
+    "headless-right.json.gz": "51b2086c454acb2a517d29fa611154df71d691ffb3bf9d256dbcb928aed2b754",
+    "avoidance.json.gz": "8072cc9b6217783bf865ac8cc2a0b7d52cd0518552c216303dec29c9084182d8",
+    "headless-avoidance.json.gz": "08af6379e77b2766acb4ade5de432971931db8ab244933d2da33f429ac4ed8b9"
+  }
+}

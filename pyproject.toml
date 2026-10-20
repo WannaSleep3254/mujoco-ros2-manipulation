@@ -18,6 +18,8 @@ manipulation-build = "mujoco_ros2_manipulation.build:main"
 
 manipulation-prepare-workcell = "mujoco_ros2_manipulation.workcells.prepare:main"
 manipulation-demo-contact = "mujoco_ros2_manipulation.workcells.verify_contact_demo:main"
+manipulation-compare-interference = "mujoco_ros2_manipulation.workcells.verify_interference_comparison:main"
+manipulation-verify-interference = "mujoco_ros2_manipulation.workcells.verify_interference:main"
 manipulation-verify-clock-stop = "mujoco_ros2_manipulation.workcells.verify_clock_stop:main"
 manipulation-verify-process-crash = "mujoco_ros2_manipulation.workcells.verify_process_crash:main"
 manipulation-verify-contact-stop = "mujoco_ros2_manipulation.workcells.verify_contact_stop:main"

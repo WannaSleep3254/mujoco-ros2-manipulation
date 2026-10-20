@@ -1,0 +1,40 @@
+{
+  "kind": "Counterfactual state of rejected independent plans; no physics steps or ROS commands executed",
+  "source_run_id": "20261020T074338.789840Z-eceb3d3f",
+  "source_report_sha256": "aa5fa6f59e256618eaa3605744f2d00eb52f2273e0f92905b79c6cedfdcd1b19",
+  "mujoco_version": "3.14.0",
+  "witness": {
+    "time_from_start_sec": 3.0386806731898734,
+    "state_rad": {
+      "left_j1": -0.2356137928188206,
+      "left_j2": -1.0990890876290926,
+      "left_j3": 1.0995870975268291,
+      "left_j4": -1.4013570327696043,
+      "left_j5": -1.4986945730070267,
+      "left_j6": 0.10088851263573809,
+      "right_shoulder_pan_joint": -0.23780387573953077,
+      "right_shoulder_lift_joint": -1.4506399457842938,
+      "right_elbow_joint": 1.449222435563433,
+      "right_wrist_1_joint": -1.5023027241199751,
+      "right_wrist_2_joint": -1.5698960538635607,
+      "right_wrist_3_joint": 0.09865081103446227
+    },
+    "contacts": [
+      [
+        "left_wrist2_link",
+        "right_wrist_2_link"
+      ]
+    ],
+    "inter_arm": true
+  },
+  "mujoco_contacts": [
+    {
+      "bodies": [
+        "left_wrist2_link",
+        "right_wrist_2_link"
+      ],
+      "distance_m": -0.0011368214839027778
+    }
+  ],
+  "image_sha256": "192080bafad10a801e137a75022dd71aac95ba841f9c52beaad1cfec1d273c8e"
+}
