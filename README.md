@@ -134,6 +134,7 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [의존성 업데이트](docs/dependency_updates.md) | Dependabot 주간 검사, ROS 호환성 제한, 보안 업데이트와 사본 반영 절차 |
 | [모델별 자료](docs/robots/README.md) | FR5·FR10·UR5e 설정, 좌표계, 실제 GUI 스크린샷 |
 | [검증 안내](docs/verification.md) | 연속 명령의 완료 확인, 자동 검증, JSON·로그 해석 |
+| [CI 통합·병합 경로](docs/integration.md) | 보호된 main에 CI와 선행 PR을 함께 반영하는 절차 |
 | [문제 해결](docs/troubleshooting.md) | 종료 오류 원인·수정 근거, Python 환경과 모델 재생성 |
 | [자료 촬영과 재생성](docs/robots/capture.md) | 기준 렌더, GUI 촬영, 출처·해시 갱신 |
 | [초기 1관절 데모](docs/single_joint_demo.md) | Python 브리지, ROS 토픽 제어, rqt 및 초기 검증 기록 |
