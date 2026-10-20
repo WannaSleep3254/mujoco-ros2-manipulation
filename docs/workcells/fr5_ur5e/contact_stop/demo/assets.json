@@ -24,7 +24,8 @@
     "injection_method": "Place a test-only mocap sphere into left_forearm_link; not an approach or impact trajectory.",
     "guard_observed_wall_sec": "Includes the demonstration movement wait inside the injection call; not contact reaction latency.",
     "both_arms_moving_before_contact_rad": "Snapshot before the additional demonstration wait; not the displacement at contact.",
-    "visibility_limit": "Test geom is in group 3 and overlaps the forearm; the video does not clearly show the obstacle or contact."
+    "visibility_limit": "No visually identifiable contact scene in any of the 130 video frames or the stop images. Arms remain separated; CONTACT STOP first appears around frame 75 (6.25 seconds).",
+    "evidence_scope": "Stop-state recording after artificial overlap injection, not a visible obstacle approach, surface-contact or robot-to-robot collision demonstration. Numerical contact evidence is confined to the physics record."
   },
   "artifacts": [
     {

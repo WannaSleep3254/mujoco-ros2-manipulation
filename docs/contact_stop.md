@@ -84,7 +84,7 @@ CI는 정상 공동 동작 두 회와 접촉 정지의 일반/일시정지 두 �
 
 ## 시연 영상 (2026-10-20)
 
-[![실제 MuJoCo 시연의 접촉 후 정지 화면](workcells/fr5_ur5e/contact_stop/demo/contact-stop.png)](workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4)
+[![시험용 접촉 주입 후 MuJoCo 정지 화면](workcells/fr5_ur5e/contact_stop/demo/contact-stop.png)](workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4)
 
 [MP4 재생·다운로드](workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4) ·
 [원본 실행 결과](workcells/fr5_ur5e/contact_stop/demo/validation.json) ·
@@ -103,11 +103,14 @@ CI는 정상 공동 동작 두 회와 접촉 정지의 일반/일시정지 두 �
 | 자동 정지 | `CONTACT STOP`, `Paused`, 실제 속도 0%, 접촉 수 1 표시 |
 | 정지 유지 | 양팔 Action 상태 CANCELED(5), 양팔 제어기 inactive, 관절 변화 0rad, 접촉 후 추가 적분 0회 |
 
-현재 영상은 **저속·짧은 이동으로 동작 변화가 작고 접촉 물체도 잘 보이지 않는 초기 시연**입니다.
-시험 구체는 반지름 0.06m, 렌더 그룹 3이며 전완 내부와 겹치게 배치됩니다.
-장애물의 접근·충격·반발이나 로봇끼리 부딪히는 장면을 보여주는 시연으로 해석하지 않습니다.
-실제 접촉은 물리 기록의 `left_forearm_link`와 `contact_stop_test_probe` 쌍 1건으로 확인합니다.
-큰 이동, 화면에서 식별되는 장애물, 접촉 전후 확대·표시를 갖춘 시연은 후속 개선 사항입니다.
+**영상 130프레임과 정지 이미지 두 장을 재확인했으며, 눈으로 확인할 수 있는 접촉 장면은 없습니다.**
+두 로봇은 서로 떨어져 있습니다. 영상 약 6.25초(프레임 75)에 `CONTACT STOP` 표시가 나타나지만,
+장애물이 접근하거나 로봇 표면에 닿는 과정은 화면에 나타나지 않습니다.
+시험 구체는 반지름 0.06m, 렌더 그룹 3이며 주입 서비스가 전완 내부로 순간 배치합니다.
+따라서 이 자료의 범위는 **시험용 접촉 주입 후 정지 상태 기록**입니다.
+물리 기록에는 `left_forearm_link`와 `contact_stop_test_probe` 쌍 1건이 있지만,
+이는 화면에서 접촉을 확인했다는 근거가 아닙니다. 로봇끼리 충돌한 기록도 아닙니다.
+큰 이동, 화면에서 식별되는 장애물의 접근·표면 접촉, 접촉 전후 확대·표시를 갖춘 시연은 아직 없습니다.
 이번 자료 추가에서는 궤적·충돌 형상·자동 정지 구현을 변경하지 않았습니다.
 
 촬영에는 기존 검증기의 주입 호출을 잠시 기다리게 하는 임시 보조 스크립트를 사용했습니다.

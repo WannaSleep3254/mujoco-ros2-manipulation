@@ -170,9 +170,9 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 물리 엔진·시계·전체 상태 하나와 팔별 궤적 제어기 두 개를 사용합니다.
 [공동 작업장면 안내](docs/workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
 
-### 양팔 접촉 자동 정지 시연
+### 시험용 접촉 주입 후 양팔 정지 기록
 
-[![FR5·UR5e 접촉 자동 정지 시연의 정지 화면](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.png)](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4)
+[![시험용 접촉 주입 후 FR5·UR5e 정지 화면](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.png)](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4)
 
 [시연 영상 재생·다운로드 (MP4, 약 11초)](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4) ·
 [동작·시연 한계와 검증 기록](docs/contact_stop.md#시연-영상-2026-10-20)
@@ -180,8 +180,9 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 실제 MuJoCo 창을 녹화했습니다. 양팔 첫 관절을 약 0.20rad(11.5°) 움직인 뒤 시험용 접촉을 발생시켜
 `CONTACT STOP`·`Paused`·실제 속도 0%로 바뀝니다. 접촉 1건, 양팔 목표 자동 취소,
 정지 후 관절 변화 0rad·추가 물리 적분 0회를 확인했습니다.
-현재 영상은 저속·짧은 이동이며, 전완과 겹친 시험 구체가 잘 보이지 않아 충돌을 시각적으로 확인하기 어렵습니다.
-큰 이동·명확한 장애물 접근을 보여주는 시연은 후속 개선 사항입니다.
+**현재 영상과 이미지에는 눈으로 확인할 수 있는 접촉 장면이 없습니다.** 양팔은 서로 떨어져 있고,
+시험 구체를 FR5 전완 내부로 순간 배치한 뒤 영상 약 6.25초에 정지 표시가 나타납니다.
+이 자료는 시험용 접촉 주입에 대한 정지 상태 기록입니다. 장애물 접근·표면 접촉이 보이는 시연은 아직 없습니다.
 
 ## 구현 범위와 다음 작업
 
