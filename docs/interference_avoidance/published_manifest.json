@@ -18,33 +18,33 @@
       "sha256": "ca13e13dd7f63db441340a75f0367c1d29f01230bebf8d05f34ec9d3d4c1c61f",
       "bytes": 2670
     },
-    "default_settings_failure.txt": {
-      "sha256": "1964b631e8b2edca0c2e0f64843c58521b402f5342ff57de91c8425fd211fc9b",
-      "bytes": 34581
+    "default_settings_failure.txt.gz": {
+      "sha256": "cc221e8956c0d03c5d17f6fa1bdd5ce72a1e4dd26f2b2a212e7e3ee5ab05fb20",
+      "bytes": 5620
     },
     "gui.json": {
       "sha256": "aa5fa6f59e256618eaa3605744f2d00eb52f2273e0f92905b79c6cedfdcd1b19",
       "bytes": 12669
     },
-    "gui.txt": {
-      "sha256": "1cdfcc7e94650f760c86882d3b24a93ac06c550cab3be56d88f5a006d0497693",
-      "bytes": 37369
+    "gui.txt.gz": {
+      "sha256": "f487211c015c55145b2dc3fce53cdc0f76dbed13b4d3b84ea200152230312089",
+      "bytes": 6450
     },
     "headless_1.json": {
       "sha256": "77047931a1afb54d99df25011b4ee8b3f0b8b09662949df65948b7c99b09f629",
       "bytes": 8384
     },
-    "headless_1.txt": {
-      "sha256": "597a9af6d6a12f535d49119dee96245a5f5f68f5c249409d784a97d0610d237c",
-      "bytes": 32883
+    "headless_1.txt.gz": {
+      "sha256": "7ecb82913330cd0f622b509907b4dc8e3581ca50aedce0c3522c6f21b11083f0",
+      "bytes": 5365
     },
     "headless_2.json": {
       "sha256": "b1002c92c5cf6abf02e26087c8f481abe6b92f78f692d907942489e4eaff6b9f",
       "bytes": 8379
     },
-    "headless_2.txt": {
-      "sha256": "11cb6708f1ce9176ff2c9b5d2260e6dfce1859ec9631d033eacc977c42534627",
-      "bytes": 32883
+    "headless_2.txt.gz": {
+      "sha256": "bee712dd21a6ea5dfa545a949dd824d05fd3f726d5100c7aa94595791fee5e36",
+      "bytes": 5371
     },
     "recording.json": {
       "sha256": "c70562d5d3530a44031efb5aaa48a85f384c96d6e976add72ebc2c56f4c03864",
@@ -62,5 +62,11 @@
       "sha256": "3ed17be276a69483eec345ce7f57483acde4ddb4ffc7418782e9f91305fa5eba",
       "bytes": 511608
     }
+  },
+  "compressed_logs_original_sha256": {
+    "gui.txt": "1cdfcc7e94650f760c86882d3b24a93ac06c550cab3be56d88f5a006d0497693",
+    "headless_2.txt": "11cb6708f1ce9176ff2c9b5d2260e6dfce1859ec9631d033eacc977c42534627",
+    "headless_1.txt": "597a9af6d6a12f535d49119dee96245a5f5f68f5c249409d784a97d0610d237c",
+    "default_settings_failure.txt": "1964b631e8b2edca0c2e0f64843c58521b402f5342ff57de91c8425fd211fc9b"
   }
 }

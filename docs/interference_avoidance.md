@@ -56,7 +56,7 @@ python3 verify_interference.py --gui --domain 128 \
 ## 계획 후처리 설정을 보강한 이유
 
 기본 설정 재실행에서 시간 파라미터화 후 경로 검사 중 손목 충돌이 발견돼 MoveIt이 계획을 거부했습니다.
-[실패 보고서](interference_avoidance/default_settings_failure.json)와 [로그](interference_avoidance/default_settings_failure.txt)를 보존했습니다.
+[실패 보고서](interference_avoidance/default_settings_failure.json)와 [로그](interference_avoidance/default_settings_failure.txt.gz)를 보존했습니다.
 이때 위험한 공동 경로는 전송되지 않았습니다.
 
 MoveIt 공식 문서는 TOTG가 원래 경로에서 허용 편차 내의 새 점을 만들 수 있어 추가 충돌 검사가 필요하다고 설명합니다.
@@ -84,7 +84,7 @@ OMPL 검사 비율 `longest_valid_segment_fraction=0.001`을 적용했고 실제
 
 아래는 **실제로 실행한 공동 회피 동작**입니다. 24fps·약 24.08초, 원본 MuJoCo 창 픽셀이며
 속도 변경·장면 합성을 하지 않았습니다. 영상과 전후 프레임을 직접 확인했습니다.
-계획 원본은 무손실 gzip으로 보관하며 압축 해제 SHA-256은 GUI 보고서의 `trajectories_sha256`과 일치합니다.
+원본 로그와 계획은 무손실 gzip으로 보관하며 압축 해제 SHA-256은 GUI 보고서의 `trajectories_sha256`과 일치합니다.
 [촬영 정보](interference_avoidance/recording.json) · [계획 원본](interference_avoidance/trajectories.json.gz)
 
 [![공동 회피 실행 시작](interference_avoidance/before.png)](interference_avoidance/coordinated-avoidance.mp4)
