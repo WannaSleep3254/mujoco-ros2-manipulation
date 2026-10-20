@@ -31,7 +31,11 @@
     "guard-paused-5.json.gz": "6053901e6a54e135d865170ebc66c553151829e3bb13435d34944550ce39b94a",
     "guard-paused-5.log.txt.gz": "0e2709061138c00b6732138d4376dba0dd1e06304133042c6ff2e37d5a968067",
     "guard-paused-6.json.gz": "14edb29ee1ed47c2c67898b30669a38f2f44e6349d797457aca789eb355e260e",
-    "guard-paused-6.log.txt.gz": "b1a572522c51a962880d0f6b3020474bf2c3c0f412aea16c8b27bd8023fcf641"
+    "guard-paused-6.log.txt.gz": "b1a572522c51a962880d0f6b3020474bf2c3c0f412aea16c8b27bd8023fcf641",
+    "ci-grazing-failure.json.gz": "6901cb91f534196961f50dbc269fa202899fc2aed5fb6f2571dd2cb213ba04d0",
+    "ci-grazing-failure.log.txt.gz": "76768b80f2112fec984cf749322740e27d987802238af5437455edecc7c71ef4",
+    "ci-grazing-physics.json.gz": "b355f10765cbb6ee581e0f1fefb2d322f0cda8472e473ece075f0b7792ded2fe",
+    "ci-grazing-trajectories.json.gz": "ce1d4f856a78f8051fcf25c917cb122bb055711f2073eda215c56a4f0fee660f"
   },
   "files": {
     "baseline-complete.png": {
@@ -197,6 +201,22 @@
     "timing.mp4": {
       "bytes": 333455,
       "sha256": "20791a9078ce305499f5b4ef8d9d62c5cfc5f86a629aa68fd37c58f7b93286f1"
+    },
+    "ci-grazing-failure.json.gz": {
+      "bytes": 1504,
+      "sha256": "d7dd2d6dc05029c7f9402ad8d2c70a38cdacd2fab870ae3211a730daa90cc15c"
+    },
+    "ci-grazing-failure.log.txt.gz": {
+      "bytes": 5618,
+      "sha256": "3014a6cada655f5eb21117a73eb5dee38c5ac876abda253af473dcd5a7557049"
+    },
+    "ci-grazing-physics.json.gz": {
+      "bytes": 829,
+      "sha256": "885ace5b9cefc837429b6d1af7e4ce74d43887993270f6d5116d1f71874c3988"
+    },
+    "ci-grazing-trajectories.json.gz": {
+      "bytes": 422096,
+      "sha256": "ce9e94654bcda87e0c91d01f88ea10ec14d7a7e8d8a382acee6cffb65d197152"
     }
   }
 }

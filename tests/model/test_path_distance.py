@@ -47,3 +47,45 @@ class NativeDistanceTests(unittest.TestCase):
                 self.assertEqual(evaluator.version, "3.12.0")
             with self.assertRaises(ValueError):
                 evaluator.at(dict(l=0.0, r=0.0))
+
+    def test_saved_ci_grazing_spline_is_rejected_before_execution(self):
+        import gzip
+        import json
+        from mujoco_ros2_manipulation.workcells.config import load_workcell
+        from mujoco_ros2_manipulation.workcells.interference import Spline
+        from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path
+        from mujoco_ros2_manipulation.workcells.timing import load_policy
+
+        cell = load_workcell()
+        if (
+            not (ROOT / "runtime/native/path_distance.so").is_file()
+            or not (cell.output / "cell.xml").is_file()
+        ):
+            self.skipTest("Native runtime and shared robot model not built")
+        evidence = json.loads(
+            gzip.decompress(
+                (
+                    ROOT / "docs/timing_coordination/ci-grazing-trajectories.json.gz"
+                ).read_bytes()
+            )
+        )
+        curve = Spline(**evidence["coordinated"])
+        _, policy = load_policy(cell)
+        threshold = policy["min_inter_arm_distance_m"] + policy["tracking_reserve_m"]
+        with DistanceEvaluator(cell) as evaluator:
+            full = evaluate_path([curve], evidence["initial_rad"], cell, evaluator)
+            gate = evaluate_path(
+                [curve],
+                evidence["initial_rad"],
+                cell,
+                evaluator,
+                reject_below=threshold,
+            )
+        self.assertGreater(full["minimum"]["distance_m"], 0.0)
+        self.assertLess(full["minimum"]["distance_m"], 0.001)
+        self.assertEqual(
+            full["minimum"]["bodies"], ["left_wrist2_link", "right_wrist_3_link"]
+        )
+        self.assertFalse(gate["complete"])
+        self.assertLess(gate["minimum"]["distance_m"], threshold)
+        self.assertLess(gate["samples"], full["samples"])

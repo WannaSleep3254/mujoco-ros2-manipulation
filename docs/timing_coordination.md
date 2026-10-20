@@ -96,7 +96,7 @@ GUI 촬영 시 각 실행에 `--gui --record-dir runtime/validation/new-timing-<
 비교 영상은 `scripts/compare_timing.py --gui --plan <계획경로> --output-dir <새 runtime 경로>`로 생성합니다.
 CLI `manipulation-verify-timing`도 제공합니다. 녹화는 X11·OpenCV H.264·Pillow·Noto CJK를 사용하며 CI는 headless 실행만 수행합니다.
 
-- 단위 89개·모델 19개, 총 108개 검사 통과. 패키지 빌드·설치와 저장소 외부 CLI 도움말도 확인했습니다.
+- 단위 92개·모델 20개, 총 112개 검사 통과. 패키지 빌드·설치와 저장소 외부 CLI 도움말도 확인했습니다.
 - 원본 계획 생성 ROS 실행, 기존 회피/타이밍 조정의 headless 두 실행 및 GUI 두 실행·비교 판정 통과.
 - 거리의 부호·최근접 점·FK·시각화 geom 제외를 해석 가능한 구 형상으로 검사했습니다.
 - 시작 대기·끝 자세 유지·다항식 보존·최소 지연 선택·해 없는 예산·입력 변조·간격 미달·비정상 수치 거부를 테스트합니다.
@@ -124,3 +124,26 @@ SIGSEGV를 성공으로 처리하거나 시험 재시도로 실패를 숨기지 
 
 수명 보강 후 일시정지 접촉 정지 시험을 새 launch 6회에서 수행해 모두 정상 종료했습니다.
 [반복 검증 명세](timing_coordination/guard-regression.json)에 소스·바이너리 해시와 실행 ID를 기록했습니다.
+
+
+## CI에서 확인한 여유 없는 공동 계획과 실행 전 거부
+
+두 번째 CI [39406882736](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39406882736)에서는
+종료 오류가 재발하지 않았지만, 기존 공동 회피의 두 번째 새 실행에서 손목끼리 접촉해 양팔이 자동 정지했습니다.
+`left_wrist2_link`·`right_wrist_3_link`의 접촉 깊이는 약 0.031mm이고, 종료는 정상입니다.
+[원본 결과](timing_coordination/ci-grazing-failure.json.gz) · [네이티브 물리 기록](timing_coordination/ci-grazing-physics.json.gz) ·
+[실패 궤적](timing_coordination/ci-grazing-trajectories.json.gz) · [로그](timing_coordination/ci-grazing-failure.log.txt.gz)를 보존합니다.
+
+저장한 계획을 동일한 네이티브 엔진으로 재평가하면 최소 간격은 약 **0.234mm**입니다.
+MoveIt의 이진 유효성 검사만 통과한 궤적은 추종 오차와 충돌 모델 차이를 흡수할 여유가 부족했습니다.
+접촉 자동 정지는 이 상황에서 정상 작동했으며 이를 성공으로 바꾸지 않습니다.
+
+공동 **회피 동작**의 계획 선택에도 이번 비교의 30mm 기준과 실제 JTC spline 거리 검사를 추가했습니다.
+RRTConnect 계획 후보를 최대 12개까지 확인하고, 네이티브 여유와 MoveIt 유효성을 모두 통과한 첫 후보만 보냅니다.
+모든 후보의 원본 spline·거부 시점/자세·최소거리·계획 오류 코드·정책·평가기 해시를 실행 폴더의 `trajectories.json`에 기록합니다.
+후보가 없으면 지령 전에 실패하며, 실제 실행 실패는 재시도하지 않습니다. CI 전체 시험 재시도도 추가하지 않았습니다.
+
+준비 자세로 이동하는 setup은 비교 대상 경로가 아니므로 기존 MoveIt 검사·목표 도달·매 물리 스텝 접촉 감시를 유지합니다.
+독립 경로는 기존의 상대 팔 시작 자세 고정 검사를 유지하고, 타이밍을 합친 비교 경로는 별도의 30mm 검사를 통과해야 합니다.
+실패했던 CI 궤적이 새 검사에서 실행 전에 거부되는 네이티브 회귀 검사와,
+후보 거부·MoveIt 거부·후보 소진 시 증거 보존 검사를 추가했습니다.
