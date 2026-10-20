@@ -5,6 +5,9 @@ from copy import deepcopy
 import json
 import math
 import random
+import statistics
+import time
+from pathlib import Path
 from types import SimpleNamespace
 import rclpy
 from rclpy.action import ActionClient
@@ -19,6 +22,12 @@ from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from mujoco_ros2_manipulation.paths import ROOT
+from mujoco_ros2_manipulation.verification.diagnostics import (
+    benchmark,
+    host_info,
+    diagnostic_environment,
+    finalize_physics,
+)
 from mujoco_ros2_manipulation.verification.ros_checks import Verification
 from mujoco_ros2_manipulation.verification.runner import run_verification
 from mujoco_ros2_manipulation.workcells.config import identifier, load_workcell
@@ -36,7 +45,9 @@ def seconds(stamp):
 
 
 class WorkcellVerification(Verification):
-    def __init__(self, cell, progress=None):
+    def __init__(self, cell, progress=None, performance_seconds=10):
+        self.performance_seconds = performance_seconds
+        self.planning_timings = []
         settings = cell.instances[0].profile.data["verification"]
         proxy = SimpleNamespace(
             id=cell.id,
@@ -93,7 +104,8 @@ class WorkcellVerification(Verification):
             self.validity.call_async(request), 5, "shared collision check"
         )
 
-    def plan(self, group, target):
+    def plan(self, group, target, start_state=None):
+        started = time.monotonic()
         request = GetMotionPlan.Request()
         motion = request.motion_plan_request
         motion.group_name = group
@@ -104,7 +116,11 @@ class WorkcellVerification(Verification):
         motion.max_acceleration_scaling_factor = 0.1
         motion.start_state.is_diff = True
         motion.start_state.joint_state.name = list(self.joint_names)
-        motion.start_state.joint_state.position = list(self.positions)
+        motion.start_state.joint_state.position = (
+            [start_state[name] for name in self.joint_names]
+            if start_state is not None
+            else list(self.positions)
+        )
         constraint = Constraints()
         for name, value in target.items():
             joint = JointConstraint()
@@ -114,9 +130,17 @@ class WorkcellVerification(Verification):
             joint.weight = 1.0
             constraint.joint_constraints.append(joint)
         motion.goal_constraints = [constraint]
-        return self.result(
+        answer = self.result(
             self.planner.call_async(request), 25, "shared motion plan"
         ).motion_plan_response
+        self.planning_timings.append(
+            dict(
+                group=group,
+                wall_sec=time.monotonic() - started,
+                error_code=answer.error_code.val,
+            )
+        )
+        return answer
 
     def anchored(self, trajectory):
         trajectory = deepcopy(trajectory)
@@ -525,7 +549,39 @@ class WorkcellVerification(Verification):
             "PASS: shared 12-joint state, isolated arms, joint planning, collision rejection and peer cancellation",
             flush=True,
         )
+        self.progress("planning_performance")
+        benchmark_target = {
+            name: value
+            for inst in self.cell.instances
+            for name, value in zip(inst.joints, inst.plan_target)
+        }
+        timings = []
+        benchmark_start = self.state()
+        for _ in range(20):
+            plan = self.plan("both_arms", benchmark_target, benchmark_start)
+            require(
+                plan.error_code.val == MoveItErrorCodes.SUCCESS,
+                "Repeated both-arm performance planning failed",
+            )
+            timings.append(self.planning_timings[-1]["wall_sec"])
+        planning_performance = dict(
+            attempts=20,
+            successes=20,
+            median_wall_sec=statistics.median(timings),
+            p95_wall_sec=sorted(timings)[18],
+            samples_wall_sec=timings,
+            scope="20 service round trips, same full start and goal states, no execution",
+            random_seed="OMPL default; not fixed by this benchmark",
+            target_rad=benchmark_target,
+            start_rad=benchmark_start,
+        )
+        self.progress("steady_holding_performance")
+        performance = benchmark(self, self.performance_seconds)
         return {
+            "host": host_info(),
+            "performance": performance,
+            "planning_performance": planning_performance,
+            "planning_wall_timings": self.planning_timings,
             "workcell_id": self.cell.id,
             "rmw_implementation": get_rmw_implementation_identifier(),
             "joints": self.joint_names,
@@ -560,20 +616,33 @@ def main():
     parser.add_argument("--workcell", default="fr5_ur5e")
     parser.add_argument("--domain", type=int, default=93)
     parser.add_argument("--gui", action="store_true")
+    parser.add_argument("--screenshot-dir", type=Path)
+    parser.add_argument(
+        "--stop-mode", choices=["interrupt", "window"], default="interrupt"
+    )
+    parser.add_argument("--performance-seconds", type=float, default=10)
     args = parser.parse_args()
+    if (
+        not math.isfinite(args.performance_seconds)
+        or not 2 <= args.performance_seconds <= 120
+    ):
+        parser.error("--performance-seconds must be between 2 and 120")
+    if args.stop_mode == "window" and not args.gui:
+        parser.error("--stop-mode window requires --gui")
+    args.require_gpu = args.gui
     try:
         identifier(args.workcell)
     except ValueError as error:
         parser.error(str(error))
     args.robot = args.workcell
     args.scene = "default"
-    args.stop_mode = "interrupt"
-    args.screenshot_dir = None
     return run_verification(
         args,
         ROOT,
         rclpy,
-        WorkcellVerification,
+        lambda cell, progress: WorkcellVerification(
+            cell, progress, args.performance_seconds
+        ),
         Trigger,
         profile_loader=lambda name, **kw: load_workcell(name, root=kw["root"]),
         validator=check_workcell,
@@ -585,4 +654,6 @@ def main():
             f"rviz:={str(args.gui).lower()}",
         ],
         report_prefix="workcell_",
+        launch_environment=diagnostic_environment,
+        finalize=finalize_physics,
     )

@@ -1,0 +1,538 @@
+{
+  "schema_version": 1,
+  "collected_utc": "2026-10-20T02:01:21.827579+00:00",
+  "measured_date_kst": "2026-10-20",
+  "base_commit": "81a8d68882a4824705370834d5a5ea2aba8b4e2c",
+  "source_sha256": {
+    "native/step_monitor.hpp": "2f1e98d6b2d2743afb730b7e468280360605c48f2feb9eae3d0961432da1f967",
+    "native/step_monitor_probe.cpp": "f35e4bc82d416bb4dc12b1c88ac8256b2bce2fc1059322747e9dfe9abdd723fb",
+    "config/build.yaml": "c015a4d7e6c5133526b0ec1091515e2bb4870e7c59ecd92ce2c6bc83a15d6d97",
+    "patches/mujoco_ros2_control-step-monitor.patch": "4fd3850ba62255debd818eb749d1e970717915a64efb41461c89c476794ae333",
+    "src/mujoco_ros2_manipulation/build.py": "631fad5841394dc8e297a8d11d12fff74cae9c713cf670001837e4f0b61483fa",
+    "src/mujoco_ros2_manipulation/verification/runner.py": "824e0bcd3cdf600d629b50c9c3e91637a1d8ba6659e935f3bf94db4697f17fc9",
+    "src/mujoco_ros2_manipulation/verification/diagnostics.py": "73f4b28f202578c11dc7b0fc4f6f1aa231cb179e43656e32f7f33995b4235d5a",
+    "src/mujoco_ros2_manipulation/workcells/verify.py": "d3605abd2d84c60640abb46aea3e1472969733de0ac20c3c66872c6062ce23f4",
+    "tests/model/test_step_monitor.py": "2375eed456de76d14111eaf97b9bbfa02d757434a2f85ebcda3b13df1a3c3797",
+    "tests/unit/test_diagnostics.py": "78e51aec65ac3fbf5dcb4b04256d15b2604a971c821d893cd62f5321092871b9",
+    "tests/unit/test_verification_reports.py": "21c120cda34932ca570697a17fbd226f82c9d693125932a558ef943cef7fb665"
+  },
+  "native_library_sha256": "6cf8d1b61c705d8dc853f5fbe61b21b77916203957106e82a9ad42778719f56b",
+  "tests": {
+    "total": 64,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "f41589b762132d61bf4dcab19fe02a5af3650e8a1fde4d845e7e6060b4d0b0e6"
+  },
+  "runs": [
+    {
+      "run_id": "20261020T015757.796317Z-869af9a1",
+      "started_utc": "2026-10-20T01:57:57.796406+00:00",
+      "completed_utc": "2026-10-20T01:59:21.151280+00:00",
+      "model_manifest_sha256": "534435f557ab7ce4d9adf7e1c0e92c68041a1e88f225602b8b417fed6ce64efe",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "status": "passed",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "ros_domain_id": 103,
+      "host": {
+        "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+        "logical_cpus": 24,
+        "memory_total_bytes": 33404817408,
+        "kernel": "6.8.0-147-generic",
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+      },
+      "physics": {
+        "schema_version": 1,
+        "run_id": "20261020T015757.796317Z-869af9a1",
+        "monitor_source_sha256": "2f1e98d6b2d2743afb730b7e468280360605c48f2feb9eae3d0961432da1f967",
+        "mujoco_version": "3.12.0",
+        "pid": 18763,
+        "complete": true,
+        "steps": 41251,
+        "engine_steps": 41251,
+        "timestep_sec": 0.002,
+        "integrator": 3,
+        "first_contact_evaluation_time_sec": 0,
+        "last_state_time_sec": 82.50199999998912,
+        "simulated_sec": 82.50199999998912,
+        "wall_span_sec": 82.500573393,
+        "paced_real_time_factor": 1.000017292085745,
+        "contact_steps": 0,
+        "contacts": 0,
+        "active_contacts": 0,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "physics_step": {
+          "count": 41251,
+          "mean_sec": 6.6133635305810965e-06,
+          "max_sec": 8.1176e-05,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 2e-05,
+          "p99_upper_sec": 3e-05,
+          "overflow_count": 0
+        },
+        "monitor_step": {
+          "count": 41251,
+          "mean_sec": 6.026059974303832e-08,
+          "max_sec": 4.657e-06,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 1e-05,
+          "p99_upper_sec": 1e-05,
+          "overflow_count": 0
+        },
+        "pairs": []
+      },
+      "performance": {
+        "kind": "paced stationary holding after verified motion",
+        "requested_wall_sec": 60.0,
+        "warmup_wall_sec": 5,
+        "joint_state_received_hz": 99.99759861600126,
+        "clock_received_hz": 499.9879930800063,
+        "wall_sec": 60.00144086499995,
+        "simulated_sec": 60.001999999999995,
+        "real_time_factor": 1.0000093186928845,
+        "cpu_core_equivalents": 0.11599721439456145,
+        "rss_sum_peak_bytes": 421904384,
+        "sample_count": 300,
+        "process_ids": [
+          18735,
+          18763,
+          18765,
+          18773
+        ],
+        "cpu_scope": "launch process group, excludes verifier; 1.0 = one full CPU core",
+        "memory_scope": "sum of process RSS; shared pages can be counted more than once"
+      },
+      "planning_performance": {
+        "attempts": 20,
+        "successes": 20,
+        "median_wall_sec": 0.017522926499964342,
+        "p95_wall_sec": 0.02900026599991179,
+        "samples_wall_sec": [
+          0.009029070999986288,
+          0.007567594000079225,
+          0.024667956000030244,
+          0.02900026599991179,
+          0.010219858999903408,
+          0.0312778799999478,
+          0.020186660000035772,
+          0.014534166999965237,
+          0.009669130000020232,
+          0.011064255000064804,
+          0.020924478999972962,
+          0.016692622999926243,
+          0.016519850000008773,
+          0.01835323000000244,
+          0.008713225000064995,
+          0.020338964999950804,
+          0.02094919299997855,
+          0.021116871000003812,
+          0.015983025000082307,
+          0.0205900930000098
+        ],
+        "scope": "20 service round trips, same full start and goal states, no execution",
+        "random_seed": "OMPL default; not fixed by this benchmark",
+        "target_rad": {
+          "left_j1": 0.1,
+          "left_j2": -1.1,
+          "left_j3": 1.1,
+          "left_j4": -1.4,
+          "left_j5": -1.5,
+          "left_j6": 0.1,
+          "right_shoulder_pan_joint": 0.1,
+          "right_shoulder_lift_joint": -1.45,
+          "right_elbow_joint": 1.45,
+          "right_wrist_1_joint": -1.5,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.1
+        },
+        "start_rad": {
+          "left_j1": 0.20574586313789123,
+          "left_j2": -1.1946198439218982,
+          "left_j3": 1.2043107338522954,
+          "left_j4": -1.5014486693652542,
+          "left_j5": -1.4991762391596621,
+          "left_j6": 0.0013582148030060596,
+          "right_shoulder_pan_joint": 0.20739459857142176,
+          "right_shoulder_lift_joint": -1.5643660218431688,
+          "right_elbow_joint": 1.5769445861265268,
+          "right_wrist_1_joint": -1.564575797409953,
+          "right_wrist_2_joint": -1.5705919353225863,
+          "right_wrist_3_joint": -0.0005142212399663122
+        }
+      },
+      "observed_start_skew_sec": 0.009999999999999787,
+      "physics_checks_passed": true,
+      "shutdown_clean": true,
+      "process_group_gone": true,
+      "launch_return_code": 0
+    },
+    {
+      "run_id": "20261020T015542.490304Z-b23c9394",
+      "started_utc": "2026-10-20T01:55:42.490388+00:00",
+      "completed_utc": "2026-10-20T01:57:10.726876+00:00",
+      "model_manifest_sha256": "534435f557ab7ce4d9adf7e1c0e92c68041a1e88f225602b8b417fed6ce64efe",
+      "rmw_implementation": "rmw_cyclonedds_cpp",
+      "status": "passed",
+      "gui": true,
+      "stop_mode": "window",
+      "ros_domain_id": 104,
+      "host": {
+        "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+        "logical_cpus": 24,
+        "memory_total_bytes": 33404817408,
+        "kernel": "6.8.0-147-generic",
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+      },
+      "physics": {
+        "schema_version": 1,
+        "run_id": "20261020T015542.490304Z-b23c9394",
+        "monitor_source_sha256": "2f1e98d6b2d2743afb730b7e468280360605c48f2feb9eae3d0961432da1f967",
+        "mujoco_version": "3.12.0",
+        "pid": 14774,
+        "complete": true,
+        "steps": 43095,
+        "engine_steps": 43095,
+        "timestep_sec": 0.002,
+        "integrator": 3,
+        "first_contact_evaluation_time_sec": 0,
+        "last_state_time_sec": 86.18999999998053,
+        "simulated_sec": 86.18999999998053,
+        "wall_span_sec": 86.188615807,
+        "paced_real_time_factor": 1.0000160600442132,
+        "contact_steps": 0,
+        "contacts": 0,
+        "active_contacts": 0,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "physics_step": {
+          "count": 43095,
+          "mean_sec": 8.572622763661807e-06,
+          "max_sec": 0.000135944,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 2e-05,
+          "p99_upper_sec": 3e-05,
+          "overflow_count": 0
+        },
+        "monitor_step": {
+          "count": 43095,
+          "mean_sec": 8.723580461770458e-08,
+          "max_sec": 6.313e-06,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 1e-05,
+          "p99_upper_sec": 1e-05,
+          "overflow_count": 0
+        },
+        "pairs": []
+      },
+      "performance": {
+        "kind": "paced stationary holding after verified motion",
+        "requested_wall_sec": 60.0,
+        "warmup_wall_sec": 5,
+        "joint_state_received_hz": 99.99729011510338,
+        "clock_received_hz": 499.9697843604977,
+        "wall_sec": 60.001625975000024,
+        "simulated_sec": 60.00200000000001,
+        "real_time_factor": 1.0000062335810722,
+        "cpu_core_equivalents": 0.2604929407498443,
+        "rss_sum_peak_bytes": 858763264,
+        "sample_count": 300,
+        "process_ids": [
+          14746,
+          14774,
+          14776,
+          14784,
+          14786
+        ],
+        "cpu_scope": "launch process group, excludes verifier; 1.0 = one full CPU core",
+        "memory_scope": "sum of process RSS; shared pages can be counted more than once"
+      },
+      "planning_performance": {
+        "attempts": 20,
+        "successes": 20,
+        "median_wall_sec": 0.01900534650002328,
+        "p95_wall_sec": 0.021794631000034315,
+        "samples_wall_sec": [
+          0.011669005000044308,
+          0.021463116000063565,
+          0.014223291999996945,
+          0.019674735999956283,
+          0.012781098000004931,
+          0.020700515000044106,
+          0.021484985000029155,
+          0.017659820999938347,
+          0.018271003999984714,
+          0.021276570000054562,
+          0.0177484779999304,
+          0.018335957000090275,
+          0.021155096000029516,
+          0.021794631000034315,
+          0.02228266800000256,
+          0.02063308100002814,
+          0.015956612000081805,
+          0.0215454620000628,
+          0.016186504999950557,
+          0.011429664000047524
+        ],
+        "scope": "20 service round trips, same full start and goal states, no execution",
+        "random_seed": "OMPL default; not fixed by this benchmark",
+        "target_rad": {
+          "left_j1": 0.1,
+          "left_j2": -1.1,
+          "left_j3": 1.1,
+          "left_j4": -1.4,
+          "left_j5": -1.5,
+          "left_j6": 0.1,
+          "right_shoulder_pan_joint": 0.1,
+          "right_shoulder_lift_joint": -1.45,
+          "right_elbow_joint": 1.45,
+          "right_wrist_1_joint": -1.5,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.1
+        },
+        "start_rad": {
+          "left_j1": 0.2088383060959323,
+          "left_j2": -1.1961554507776355,
+          "left_j3": 1.2073711601257733,
+          "left_j4": -1.4963085894358568,
+          "left_j5": -1.5015830339113592,
+          "left_j6": 0.0020022696140381256,
+          "right_shoulder_pan_joint": 0.20482186833785446,
+          "right_shoulder_lift_joint": -1.567815407589433,
+          "right_elbow_joint": 1.5762393170025928,
+          "right_wrist_1_joint": -1.5694033168208616,
+          "right_wrist_2_joint": -1.571699327597622,
+          "right_wrist_3_joint": 0.002653676597396529
+        }
+      },
+      "observed_start_skew_sec": 0.009999999999999787,
+      "physics_checks_passed": true,
+      "shutdown_clean": true,
+      "process_group_gone": true,
+      "launch_return_code": 0,
+      "graphics": {
+        "owned_gpu_processes": [
+          "|    0   N/A  N/A           14774      G   ...os2_control/ros2_control_node        141MiB |",
+          "|    0   N/A  N/A           14786      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |"
+        ],
+        "opengl": "name of display: :1\ndisplay: :1  screen: 0\ndirect rendering: Yes\nMemory info (GL_NVX_gpu_memory_info):\n    Dedicated video memory: 6144 MB\n    Total available memory: 6144 MB\n    Currently available dedicated video memory: 4833 MB\nOpenGL vendor string: NVIDIA Corporation\nOpenGL renderer string: NVIDIA GeForce RTX 3050/PCIe/SSE2\nOpenGL core profile version string: 4.6.0 NVIDIA 580.178.04\nOpenGL core profile shading language version string: 4.60 NVIDIA\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6.0 NVIDIA 580.178.04\nOpenGL shading language version string: 4.60 NVIDIA\nOpenGL context flags: (none)\nOpenGL profile mask: (none)\n\nOpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 580.178.04\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+        "nvidia_smi": "Tue Oct 20 10:57:06 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050        Off |   00000000:01:00.0  On |                  N/A |\n| 34%   46C    P2             23W /   70W |     938MiB /   6144MiB |     39%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1655      G   /usr/lib/xorg/Xorg                       95MiB |\n|    0   N/A  N/A            2772      G   /usr/lib/xorg/Xorg                      455MiB |\n|    0   N/A  N/A            2933      G   /usr/bin/gnome-shell                     55MiB |\n|    0   N/A  N/A            3513      G   ...rack-uuid=3190708988185955192        101MiB |\n|    0   N/A  N/A           14774      G   ...os2_control/ros2_control_node        141MiB |\n|    0   N/A  N/A           14786      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |\n+-----------------------------------------------------------------------------------------+\n"
+      },
+      "screenshots": {
+        "captured_utc": "2026-10-20T01:57:09.950333+00:00",
+        "robot_id": "fr5_ur5e",
+        "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+        "model_manifest_sha256": "534435f557ab7ce4d9adf7e1c0e92c68041a1e88f225602b8b417fed6ce64efe",
+        "pose": "After verified MoveIt trajectory execution",
+        "images": [
+          {
+            "file": "docs/workcells/fr5_ur5e/images/mujoco_gui.png",
+            "size_px": [
+              1850,
+              950
+            ],
+            "application": "ros2_control_node",
+            "kind": "X11 client-window screenshot",
+            "sha256": "8ebab6934a226db92f62a1c8c36ddee036c020e44f5e4584069db1e4b80e7817",
+            "camera_wheel_up_steps": 0
+          },
+          {
+            "file": "docs/workcells/fr5_ur5e/images/rviz.png",
+            "size_px": [
+              1850,
+              950
+            ],
+            "application": "rviz2",
+            "kind": "X11 client-window screenshot",
+            "sha256": "2449d899450b8bb7de696052e8534999bd9d74a3fb7a39429d8a8e0d85a5f017",
+            "camera_wheel_up_steps": 0
+          }
+        ]
+      }
+    }
+  ],
+  "negative_contact_probes": {
+    "transient": {
+      "schema_version": 1,
+      "run_id": "probe\"\\id",
+      "monitor_source_sha256": "2f1e98d6b2d2743afb730b7e468280360605c48f2feb9eae3d0961432da1f967",
+      "mujoco_version": "3.12.0",
+      "pid": 20037,
+      "complete": true,
+      "steps": 24,
+      "engine_steps": 24,
+      "timestep_sec": 0.002,
+      "integrator": 3,
+      "first_contact_evaluation_time_sec": 0,
+      "last_state_time_sec": 0.04800000000000003,
+      "simulated_sec": 0.04800000000000003,
+      "wall_span_sec": 6.8239e-05,
+      "paced_real_time_factor": 703.4100734184269,
+      "contact_steps": 1,
+      "contacts": 1,
+      "active_contacts": 1,
+      "invalid_values": 0,
+      "time_discontinuities": 0,
+      "pair_overflow": 0,
+      "physics_step": {
+        "count": 24,
+        "mean_sec": 2.6209999999999996e-06,
+        "max_sec": 1.649e-05,
+        "p50_upper_sec": 1e-05,
+        "p95_upper_sec": 1e-05,
+        "p99_upper_sec": 2e-05,
+        "overflow_count": 0
+      },
+      "monitor_step": {
+        "count": 24,
+        "mean_sec": 1.4008333333333337e-07,
+        "max_sec": 2.517e-06,
+        "p50_upper_sec": 1e-05,
+        "p95_upper_sec": 1e-05,
+        "p99_upper_sec": 1e-05,
+        "overflow_count": 0
+      },
+      "pairs": [
+        {
+          "geom_ids": [
+            0,
+            1
+          ],
+          "geoms": [
+            "floor",
+            "ball_geom"
+          ],
+          "bodies": [
+            "world",
+            "ball"
+          ],
+          "occurrences": 1,
+          "active": 1,
+          "first_sec": 0.022000000000000006,
+          "last_sec": 0.022000000000000006,
+          "min_distance_m": -0.05,
+          "max_normal_force_N": 523.5987755982986
+        }
+      ]
+    },
+    "workcell_inter_arm": {
+      "schema_version": 1,
+      "run_id": "workcell_probe",
+      "monitor_source_sha256": "2f1e98d6b2d2743afb730b7e468280360605c48f2feb9eae3d0961432da1f967",
+      "mujoco_version": "3.12.0",
+      "pid": 20024,
+      "complete": true,
+      "steps": 1,
+      "engine_steps": 1,
+      "timestep_sec": 0.002,
+      "integrator": 3,
+      "first_contact_evaluation_time_sec": 0,
+      "last_state_time_sec": 0.002,
+      "simulated_sec": 0.002,
+      "wall_span_sec": 6.3582e-05,
+      "paced_real_time_factor": 31.45544336447422,
+      "contact_steps": 1,
+      "contacts": 5,
+      "active_contacts": 5,
+      "invalid_values": 0,
+      "time_discontinuities": 0,
+      "pair_overflow": 0,
+      "physics_step": {
+        "count": 1,
+        "mean_sec": 6.1893e-05,
+        "max_sec": 6.1893e-05,
+        "p50_upper_sec": 7e-05,
+        "p95_upper_sec": 7e-05,
+        "p99_upper_sec": 7e-05,
+        "overflow_count": 0
+      },
+      "monitor_step": {
+        "count": 1,
+        "mean_sec": 1.689e-06,
+        "max_sec": 1.689e-06,
+        "p50_upper_sec": 1e-05,
+        "p95_upper_sec": 1e-05,
+        "p99_upper_sec": 1e-05,
+        "overflow_count": 0
+      },
+      "pairs": [
+        {
+          "geom_ids": [
+            11,
+            35
+          ],
+          "geoms": [
+            "<unnamed>",
+            "<unnamed>"
+          ],
+          "bodies": [
+            "left_wrist2_link",
+            "right_wrist_2_link"
+          ],
+          "occurrences": 4,
+          "active": 4,
+          "first_sec": 0,
+          "last_sec": 0,
+          "min_distance_m": -0.03296252991908329,
+          "max_normal_force_N": 28.66364744599064
+        },
+        {
+          "geom_ids": [
+            11,
+            39
+          ],
+          "geoms": [
+            "<unnamed>",
+            "<unnamed>"
+          ],
+          "bodies": [
+            "left_wrist2_link",
+            "right_wrist_3_link"
+          ],
+          "occurrences": 1,
+          "active": 1,
+          "first_sec": 0,
+          "last_sec": 0,
+          "min_distance_m": -0.026194318168192003,
+          "max_normal_force_N": 77.87914003179807
+        }
+      ]
+    }
+  },
+  "single_model_regressions": [
+    {
+      "run_id": "20261020T015948.035874Z-a734db90",
+      "robot_id": "fr5",
+      "scene_id": "default",
+      "status": "passed",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    },
+    {
+      "run_id": "20261020T015957.392181Z-f437cdf7",
+      "robot_id": "fr10",
+      "scene_id": "default",
+      "status": "passed",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    },
+    {
+      "run_id": "20261020T020003.547577Z-a491344c",
+      "robot_id": "ur5e",
+      "scene_id": "default",
+      "status": "passed",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    },
+    {
+      "run_id": "20261020T020012.160188Z-8e87fb20",
+      "robot_id": "fr5",
+      "scene_id": "pedestal",
+      "status": "passed",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    }
+  ]
+}

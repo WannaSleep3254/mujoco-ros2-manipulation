@@ -57,7 +57,7 @@ class LifecycleTests(unittest.TestCase):
         self.process = Mock(pid=12345678, returncode=0)
         self.process.poll.return_value = None
 
-    def run_case(self, *, preflight=None, spawn=None):
+    def run_case(self, *, preflight=None, spawn=None, finalize=None):
         with patch('mujoco_ros2_manipulation.verification.runner.load_profile', return_value=self.profile), \
              patch('mujoco_ros2_manipulation.verification.runner.check_generated_model', side_effect=preflight), \
              patch('mujoco_ros2_manipulation.verification.runner.subprocess.Popen', side_effect=spawn, return_value=self.process), \
@@ -66,7 +66,7 @@ class LifecycleTests(unittest.TestCase):
              patch.dict(os.environ), patch('builtins.print'):
             code = run_verification(self.args, self.root, self.ros,
                                     lambda profile, progress: self.node,
-                                    SimpleNamespace(Request=lambda: object()))
+                                    SimpleNamespace(Request=lambda: object()), finalize=finalize)
         mode = ('gui' if self.args.gui else 'headless') + ('_window' if self.args.stop_mode == 'window' else '')
         scene = getattr(self.args, 'scene', 'default')
         report_id = 'fr5' if scene == 'default' else f'fr5_{scene}'
@@ -153,6 +153,21 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(report['motion_checks_passed'])
         self.assertEqual(report['status'], 'failed')
         self.assertEqual(report['error']['type'], 'ShutdownError')
+
+    def test_missing_physics_report_prevents_success_after_motion(self):
+        code, report = self.run_case(finalize=Mock(side_effect=FileNotFoundError('physics.json missing')))
+        self.assertEqual(code, 1)
+        self.assertEqual(report['failure_stage'], 'physics_diagnostics')
+        self.assertFalse(report['physics_checks_passed'])
+        self.assertTrue(report['motion_checks_passed'])
+        self.assertTrue(report['shutdown_clean'])
+
+    def test_physics_failure_cannot_hide_primary_motion_failure(self):
+        self.node.run.side_effect = RuntimeError('primary motion failure')
+        code, report = self.run_case(finalize=Mock(side_effect=ValueError('contact found')))
+        self.assertEqual(code, 1)
+        self.assertEqual(report['error']['message'], 'primary motion failure')
+        self.assertEqual(report['diagnostics_error'], 'contact found')
 
     def test_failed_report_cannot_be_collected_even_with_old_success_flags(self):
         from mujoco_ros2_manipulation.verification import images as capture_robot_images

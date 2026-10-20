@@ -16,3 +16,8 @@ GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 
 
 공동 장면 검증은 `python3 verify_scene.py --workcell fr5_ur5e --domain 93`을 실행합니다.
 `build_workspace.py --workcell fr5_ur5e`로 준비하며 CI에서는 두 번 연속 실행합니다.
+
+공동 장면 검증은 현재 실행 ID·감시 코드 해시를 가진 네이티브 `physics.json`을 필수로 요구합니다.
+전체 물리 스텝 수와 일치하지 않거나 접촉이 발견되면 검증이 실패합니다.
+CI는 5초 준비 후 기본 10초 성능 구간과 20회 양팔 계획을 포함합니다.
+로컬 60초·GPU GUI 검증 절차는 [공동 장면 진단](../../docs/workcell_diagnostics.md)을 참고합니다.

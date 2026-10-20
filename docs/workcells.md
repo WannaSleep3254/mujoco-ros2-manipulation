@@ -29,7 +29,7 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 ```
 
 설치형 명령은 `manipulation-prepare-workcell`, `manipulation-verify-workcell`입니다.
-`MUJOCO_ROS2_WORKSPACE`를 지정하면 저장소 밖에서도 사용합니다. GUI 자동 검사·스크린샷은 이번 검증 범위에 포함하지 않았습니다.
+`MUJOCO_ROS2_WORKSPACE`를 지정하면 저장소 밖에서도 사용합니다. GUI·GPU·성능 검사는 [접촉 감시와 성능 검증](workcell_diagnostics.md)을 참고합니다.
 
 ## 설정과 이름
 
@@ -97,7 +97,8 @@ Action 경로는 `/left_controller/follow_joint_trajectory`, `/right_controller/
 최근 보고서는 `runtime/validation/workcell_fr5_ur5e_headless.json`, 실행별 JSON·로그는 `runtime/validation/runs/`에 보관합니다.
 코드·모델 해시와 실제 결과는 [검증 기록](workcell_validation.json)에 정리합니다. 실패·중단 보고서도 같은 수명주기를 사용합니다.
 
-이산 상태 검사는 연속 시간의 무충돌 보장이 아닙니다. MuJoCo의 모든 물리 스텝 접촉을 수집하는 실시간 감시,
-시계 정지·프로세스 비정상 종료의 양팔 정지 실패 주입, 개별 경로가 간섭하지만 공동 계획으로 우회하는 전용 사례, 실제 하드웨어, GUI 자료 촬영과 성능 평가(M6)는 남아 있습니다.
-접촉 감시·고급 실패 주입을 완료하기 전에는 M5 전체 완료로 표시하지 않습니다.
+이산 상태 검사는 연속 시간의 무충돌 보장이 아닙니다. 네이티브 물리 스텝의 접촉 기록과 GUI·성능의 1차 측정은
+[접촉 감시와 성능 검증](workcell_diagnostics.md)에 추가했습니다. 시계 정지·프로세스 비정상 종료의 양팔 정지 실패 주입,
+개별 경로가 간섭하지만 공동 계획으로 우회하는 전용 사례, 실제 하드웨어와 전체 성능 비교(M6)는 남아 있습니다.
+고급 실패 주입과 공동 회피 전용 사례를 완료하기 전에는 M5 전체 완료로 표시하지 않습니다.
 CAD 메시 받침대·레일·그리퍼·도구 TCP는 기존 후속 범위입니다.

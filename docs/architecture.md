@@ -25,7 +25,7 @@ config/
 launch/manipulation.launch.py     ROS launch 어댑터
 scripts/check_repository.py       구문·문서 링크·설정 검사
 packages/ur5e_moveit_config/       ament/MoveIt 패키지
-native/ + patches/               네이티브 종료 처리
+native/ + patches/               네이티브 종료 처리·물리 스텝 접촉/시간 계측
 examples/single_joint/            예제 안내
 tests/unit/                     ROS 없이 실행하는 검사
 tests/model/                    제조사 모델이 필요한 회귀 검사

@@ -137,6 +137,7 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [문제 해결](docs/troubleshooting.md) | 종료 오류 원인·수정 근거, Python 환경과 모델 재생성 |
 | [자료 촬영과 재생성](docs/robots/capture.md) | 기준 렌더, GUI 촬영, 출처·해시 갱신 |
 | [초기 1관절 데모](docs/single_joint_demo.md) | Python 브리지, ROS 토픽 제어, rqt 및 초기 검증 기록 |
+| [공동 장면 접촉·GUI·성능](docs/workcell_diagnostics.md) | 매 물리 스텝 접촉 기록, 현재 PC의 headless·GUI 측정과 스크린샷 |
 | [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md) | 작업장면 설정 분리, 고정 베이스, FR5·UR5e 공동 제어와 단계별 완료 기준 |
 
 ## 패키지·빌드·작업장면

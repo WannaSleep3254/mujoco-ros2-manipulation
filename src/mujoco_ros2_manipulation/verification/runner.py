@@ -46,14 +46,15 @@ def stop_process(process):
 
 
 def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=None,
-                     validator=None, command_builder=None, report_prefix=""):
+                     validator=None, command_builder=None, report_prefix="",
+                     launch_environment=None, finalize=None):
     mode = 'gui' if args.gui else 'headless'
     if args.stop_mode == 'window':
         mode += '_window'
     scene_id = getattr(args, 'scene', 'default')
     report_id = args.robot if scene_id == 'default' else f'{args.robot}_{scene_id}'
     report = VerificationReport(root, report_prefix + report_id, mode, args.domain)
-    process = node = None
+    process = node = profile = None
     failed = False
     interrupted = False
     forced = False
@@ -71,10 +72,12 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
             command = command_builder(profile, args) if command_builder else ['bash', str(root / 'run_sim.sh'), f'robot:={profile.id}', f'scene:={scene_id}',
                  f'gui:={str(args.gui).lower()}', f'rviz:={str(args.gui).lower()}', 'moveit:=true']
             process = subprocess.Popen(command,
-                cwd=root, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                cwd=root, stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
+                env=launch_environment(report, args) if launch_environment else None)
         report.stage('ros_initialization')
         ros.init()
         node = factory(profile, progress=report.stage)
+        node.process_group = process.pid
         report.stage('motion')
         payload = node.run()
         if process.poll() is not None:
@@ -90,6 +93,20 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
             (report.directory / 'nvidia_smi.txt').write_text(gpu.stdout + gpu.stderr)
             report.update(mujoco_gpu_process_seen='ros2_control_node' in gpu.stdout,
                           rviz_gpu_process_seen='/rviz2' in gpu.stdout)
+            if getattr(args, 'require_gpu', False):
+                from mujoco_ros2_manipulation.verification.diagnostics import process_sample, host_info
+                owned = process_sample(process.pid)
+                owned_gpu = [line for line in gpu.stdout.splitlines()
+                             if any(re.search(r'\b' + str(pid) + r'\b', line) for pid in owned)]
+                if gpu.returncode != 0 or not all(any(name in line for line in owned_gpu)
+                        for name in ('ros2_control_node', '/rviz2')):
+                    raise RuntimeError('Owned MuJoCo/RViz processes were not both seen on the NVIDIA GPU')
+                gl = subprocess.run(['glxinfo', '-B'], capture_output=True, text=True, timeout=5)
+                (report.directory / 'glxinfo.txt').write_text(gl.stdout + gl.stderr)
+                if gl.returncode or 'NVIDIA' not in gl.stdout:
+                    raise RuntimeError('Hardware NVIDIA OpenGL context was not confirmed')
+                report.update(host=host_info(), graphics=dict(owned_gpu_processes=owned_gpu,
+                              opengl=gl.stdout, nvidia_smi=gpu.stdout))
             if args.screenshot_dir:
                 from mujoco_ros2_manipulation.verification.images import capture_gui_windows
                 report.update(screenshots=capture_gui_windows(profile, process.pid, args.screenshot_dir))
@@ -123,6 +140,15 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
                 forced = stop_process(process)
             except Exception as error:
                 cleanup.append(f'launch cleanup: {error}')
+        if finalize is not None and process is not None:
+            try:
+                finalize(report, profile, args)
+            except Exception as error:
+                report.update(physics_checks_passed=False, diagnostics_error=str(error))
+                if not failed:
+                    failed = True
+                    report.update(error={'type': type(error).__name__, 'message': str(error)},
+                                  failure_stage='physics_diagnostics')
         log = report.log_path.read_text()
         failures = [{'node': name, 'exit_code': int(code)} for name, code in re.findall(
             r'\[ERROR\] \[([^\]]+)\]: process has died \[pid \d+, exit code (-?\d+)', log) if int(code) != 0]

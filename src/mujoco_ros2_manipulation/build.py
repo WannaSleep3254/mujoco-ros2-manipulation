@@ -40,6 +40,7 @@ def load_manifest(root=ROOT):
             local_path(base, package['path'])
         runtime = data['runtime']
         local_path(root, runtime['patch'])
+        local_path(root, runtime['monitor_patch'])
         if runtime['repository'] not in data['repositories'] or runtime['package'] not in data['packages']:
             raise ValueError('Unknown runtime repository/package')
         seen = set()
@@ -153,7 +154,9 @@ def colcon(root, packages, runtime=False):
     command += [entry['name'] for entry in packages]
     command += ['--cmake-args', '-DBUILD_TESTING=OFF']
     if runtime:
-        command += ['-DCMAKE_BUILD_TYPE=RelWithDebInfo']
+        command += ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                    f'-DMANIPULATION_MONITOR_INCLUDE_DIR={root / "native"}',
+                    '-DMANIPULATION_MONITOR_SHA256=' + hashlib.sha256((root / 'native/step_monitor.hpp').read_bytes()).hexdigest()]
     run(['bash', '-c', 'source "$1"\nexport CMAKE_PREFIX_PATH="$2/runtime/root/usr:$2/runtime/root/opt/ros/humble:${CMAKE_PREFIX_PATH:-}"\nshift 2\nexec "$@"',
          'manipulation-build', root / 'manipulation_env.sh', root, *command], cwd=root)
 
@@ -202,11 +205,12 @@ def main():
         if args.component in ('all', 'runtime'):
             runtime = manifest['runtime']
             source = local_path(ROOT, manifest['repositories'][runtime['repository']]['path'])
-            patch = local_path(ROOT, runtime['patch'])
-            if subprocess.run(['git', '-C', str(source), 'apply', '--check', str(patch)], capture_output=True).returncode == 0:
-                run(['git', '-C', source, 'apply', patch])
-            elif subprocess.run(['git', '-C', str(source), 'apply', '--reverse', '--check', str(patch)], capture_output=True).returncode != 0:
-                raise ValueError('Runtime source has incompatible changes; left unchanged')
+            for key in ('patch', 'monitor_patch'):
+                patch = local_path(ROOT, runtime[key])
+                if subprocess.run(['git', '-C', str(source), 'apply', '--check', str(patch)], capture_output=True).returncode == 0:
+                    run(['git', '-C', source, 'apply', patch])
+                elif subprocess.run(['git', '-C', str(source), 'apply', '--reverse', '--check', str(patch)], capture_output=True).returncode != 0:
+                    raise ValueError(f'Runtime source has incompatible changes for {key}; left unchanged')
             prepare_debs(ROOT, manifest, args.download_debs)
             native = ROOT / 'runtime/native'
             native.mkdir(parents=True, exist_ok=True)
