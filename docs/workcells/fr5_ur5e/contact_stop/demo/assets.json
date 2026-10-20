@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_commit": "1b3f92e76914c901c6a52bab39760e574f92694c",
+  "collected_utc": "2026-10-20T03:41:33.769271+00:00",
+  "run_id": "20261020T031658.580272Z-135895a1",
+  "recording": {
+    "frames": 130,
+    "fps": 12,
+    "wall_seconds": 10.814209862000098,
+    "kind": "Actual owned MuJoCo X11 window recording",
+    "video": "contact-stop.mp4",
+    "errors": [],
+    "width_px": 1850,
+    "height_px": 950,
+    "codec": "H.264",
+    "playback_duration_sec": 10.833333333333334
+  },
+  "capture_helper_sha256": "8020047f3dbd6215b74cde10ad70f08ed5fb8d89468a495869a6d4d0693dd4a5",
+  "capture_helper_scope": "Temporary wrapper around ContactStopVerification; delays first injection until both first joints move >0.20 rad; does not implement the stop or cancel goals.",
+  "interpretation": {
+    "command_first_joint_delta_rad": 0.25,
+    "command_duration_sec": 5,
+    "injection_first_joint_delta_threshold_rad": 0.2,
+    "injection_method": "Place a test-only mocap sphere into left_forearm_link; not an approach or impact trajectory.",
+    "guard_observed_wall_sec": "Includes the demonstration movement wait inside the injection call; not contact reaction latency.",
+    "both_arms_moving_before_contact_rad": "Snapshot before the additional demonstration wait; not the displacement at contact.",
+    "visibility_limit": "Test geom is in group 3 and overlaps the forearm; the video does not clearly show the obstacle or contact."
+  },
+  "artifacts": [
+    {
+      "file": "contact-stop.mp4",
+      "bytes": 246849,
+      "sha256": "204ecaa6f85351085f0cc054b87e1f366bfad123b5854c5bbef04953b22ffc54"
+    },
+    {
+      "file": "contact-stop.png",
+      "bytes": 85539,
+      "sha256": "f502d995f72b0421f3a22e282705b37700f6825879029263442bf8e80c0f291c"
+    },
+    {
+      "file": "validation.json",
+      "bytes": 9583,
+      "sha256": "ac6f497fd9c1f9befd0a9a9872babff04867801786435c1ed457ce03f2dffbb9"
+    },
+    {
+      "file": "physics.json",
+      "bytes": 1634,
+      "sha256": "99c41e71ed04af5070dc603a66650df16c140d50f1aa68542b76d3f51916bc38"
+    }
+  ]
+}

@@ -150,3 +150,21 @@ GUI 경로는 모의 검사이며 실제 데스크톱 GUI 재실행과 구분합
 공동 작업장면 확장 후 **56개 통과·실패 0개·건너뜀 0개**를 확인했습니다.
 기존 4개 모델·장면 ROS 실행과 공동 장면 2회 연속 실행도 통과했습니다.
 [공동 장면 검증 기록](workcell_validation.json)에 좌우 격리·공동 계획·충돌 거부·상호 취소·종료와 남은 검사를 구분했습니다.
+
+## 양팔 접촉 정지 시연 기록
+
+[시연 영상 (MP4, 약 11초)](workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4) ·
+[정지 화면](workcells/fr5_ur5e/contact_stop/demo/contact-stop.png) ·
+[시연 해석과 시험 절차](contact_stop.md#시연-영상-2026-10-20)
+
+2026-10-20 실제 FR5·UR5e GUI 실행 `20261020T031658.580272Z-135895a1`에서
+시험 접촉 1건, 양팔 Action 자동 취소(CANCELED), 양팔 제어기 비활성화,
+정지 후 최대 관절 변화 0rad·추가 물리 적분 0회와 정상 종료·잔류 프로세스 없음을 확인했습니다.
+[원본 실행 결과](workcells/fr5_ur5e/contact_stop/demo/validation.json),
+[물리 기록](workcells/fr5_ur5e/contact_stop/demo/physics.json),
+[영상·화면·기록의 해시](workcells/fr5_ur5e/contact_stop/demo/assets.json)를 함께 보관합니다.
+
+현재 영상은 저속·짧은 이동과 전완에 겹친 시험 구체 때문에 충돌 장면을 시각적으로 확인하기 어렵습니다.
+접촉 여부는 영상만으로 판정하지 않고 물리 기록의 접촉 쌍과 정지 스텝을 확인합니다.
+촬영용 이동 대기가 포함된 `guard_observed_wall_sec`는 반응 시간으로 사용하지 않습니다.
+이 시연은 자동 정지 검증이며 실제 로봇의 제동 시험이나 고속 충돌 시연을 포함하지 않습니다.
