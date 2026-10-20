@@ -18,6 +18,10 @@ from launch_ros.actions import Node
 from mujoco_ros2_manipulation.ros_launch import stop_when_core_exits
 from mujoco_ros2_manipulation.workcells.config import load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import check_workcell
+from mujoco_ros2_manipulation.workcells.contact_demo import (
+    contact_demo_model,
+    add_demo_urdf,
+)
 from mujoco_ros2_manipulation.workcells.contact_policy import (
     check_contact_runtime,
     contact_test_model,
@@ -31,15 +35,24 @@ def nodes(context):
     contact_test = (
         LaunchConfiguration("contact_test").perform(context).lower() == "true"
     )
+    contact_demo = (
+        LaunchConfiguration("contact_demo").perform(context).lower() == "true"
+    )
+    if contact_test and contact_demo:
+        raise ValueError("Select either injected contact test or fixed-obstacle demo")
     gui = LaunchConfiguration("gui").perform(context).lower() == "true"
     rviz = LaunchConfiguration("rviz").perform(context).lower() == "true"
     robot = ET.parse(cell.output / "cell.urdf").getroot()
     robot.find("ros2_control/hardware/param[@name='headless']").text = str(
         not gui
     ).lower()
-    if contact_test:
+    if contact_test or contact_demo:
         path = Path(os.environ["MANIPULATION_DIAGNOSTICS_PATH"])
-        fixture = contact_test_model(cell, path.parent)
+        fixture = (contact_demo_model if contact_demo else contact_test_model)(
+            cell, path.parent
+        )
+        if contact_demo:
+            add_demo_urdf(robot)
         robot.find("ros2_control/hardware/param[@name='mujoco_model']").text = str(
             fixture
         )
@@ -133,6 +146,7 @@ def generate_launch_description():
             DeclareLaunchArgument("gui", default_value="true"),
             DeclareLaunchArgument("rviz", default_value="true"),
             DeclareLaunchArgument("contact_test", default_value="false"),
+            DeclareLaunchArgument("contact_demo", default_value="false"),
             OpaqueFunction(function=nodes),
         ]
     )

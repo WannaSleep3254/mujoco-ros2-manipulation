@@ -4,6 +4,13 @@ from pathlib import Path
 from types import SimpleNamespace
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
+from mujoco_ros2_manipulation.workcells.contact_demo import (
+    contact_demo_model,
+    add_demo_urdf,
+    OBSTACLE_XYZ,
+    OBSTACLE_SIZE,
+)
 from mujoco_ros2_manipulation.workcells.contact_policy import (
     ContactPolicy,
     contact_test_model,
@@ -72,3 +79,56 @@ class ContactPolicyTests(unittest.TestCase):
                 check_contact_runtime(root)
             binary.write_bytes(hashlib.sha256(header.read_bytes()).hexdigest().encode())
             check_contact_runtime(root)
+
+
+class FixedObstacleFixtureTests(unittest.TestCase):
+    def test_visible_fixture_is_fixed_matches_urdf_and_preserves_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output = root / "generated"
+            output.mkdir()
+            source = "<mujoco><worldbody/></mujoco>"
+            (output / "cell.xml").write_text(source)
+            cell = SimpleNamespace(root=root, output=output, id="fr5_ur5e")
+            with self.assertRaises(ValueError):
+                contact_demo_model(cell, root)
+            run = root / "runtime/validation/runs/demo"
+            run.mkdir(parents=True)
+            fixture = ET.parse(contact_demo_model(cell, run))
+            body = fixture.find("worldbody/body[@name='demo_obstacle']")
+            self.assertNotIn("mocap", body.attrib)
+            self.assertEqual(body.findall("joint"), [])
+            self.assertEqual(tuple(map(float, body.get("pos").split())), OBSTACLE_XYZ)
+            geom = body.find("geom")
+            self.assertEqual(geom.get("group"), "0")
+            self.assertEqual(geom.get("contype"), "1")
+            self.assertEqual(
+                tuple(2 * float(v) for v in geom.get("size").split()), OBSTACLE_SIZE
+            )
+            robot = ET.fromstring('<robot name="test"><link name="world"/></robot>')
+            add_demo_urdf(robot)
+            self.assertEqual(robot.find("joint").get("type"), "fixed")
+            self.assertEqual(
+                tuple(map(float, robot.find("joint/origin").get("xyz").split())),
+                OBSTACLE_XYZ,
+            )
+            self.assertEqual(
+                tuple(
+                    map(
+                        float,
+                        robot.find("link[@name='demo_obstacle']/visual/geometry/box")
+                        .get("size")
+                        .split(),
+                    )
+                ),
+                OBSTACLE_SIZE,
+            )
+            self.assertEqual((output / "cell.xml").read_text(), source)
+            with self.assertRaises(ValueError):
+                contact_demo_model(cell, run)
+            with self.assertRaises(ValueError):
+                add_demo_urdf(robot)
+
+    def test_other_workcell_cannot_run_robot_specific_demo(self):
+        with self.assertRaises(ValueError):
+            contact_demo_model(SimpleNamespace(id="other"), Path("/tmp"))

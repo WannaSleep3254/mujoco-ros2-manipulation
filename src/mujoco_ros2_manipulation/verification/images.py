@@ -42,8 +42,8 @@ class XEvent(ctypes.Union):
                 ('padding', ctypes.c_long * 24)]
 
 
-def save_window_image(window, destination):
-    """Capture a visible client window and encode its unchanged pixels as PNG."""
+def window_image(window):
+    """Read actual visible X11 client pixels without altering their contents."""
     from PIL import Image
 
     dump = subprocess.check_output(['xwd', '-silent', '-nobdrs', '-id', window], timeout=10)
@@ -58,16 +58,17 @@ def save_window_image(window, destination):
     offset = header[0] + header[19] * 12
     pixels = dump[offset:offset + stride * height]
     image = Image.frombytes('RGB', (width, height), pixels, 'raw', mode, stride, 1)
+    return image
+
+
+def save_window_image(window, destination):
+    image = window_image(window)
     image.save(destination)
-    return [width, height]
+    return list(image.size)
 
 
-def capture_gui_windows(profile, process_group, directory):
-    """Capture only processes started by the current verifier's launch group."""
-    directory = Path(directory).resolve()
-    if not directory.is_relative_to(ROOT):
-        raise ValueError('Screenshot output must be inside the project')
-    directory.mkdir(parents=True, exist_ok=True)
+def find_gui_windows(process_group):
+    """Find MuJoCo/RViz windows belonging only to the supplied launch group."""
     processes = {}
     for entry in Path('/proc').iterdir():
         if not entry.name.isdigit():
@@ -102,6 +103,17 @@ def capture_gui_windows(profile, process_group, directory):
         time.sleep(0.2)
     else:
         raise RuntimeError('MuJoCo and RViz X11 windows did not become available')
+
+    return windows
+
+
+def capture_gui_windows(profile, process_group, directory):
+    """Capture only processes started by the current verifier's launch group."""
+    directory = Path(directory).resolve()
+    if not directory.is_relative_to(ROOT):
+        raise ValueError('Screenshot output must be inside the project')
+    directory.mkdir(parents=True, exist_ok=True)
+    windows = find_gui_windows(process_group)
 
     x11 = ctypes.CDLL('libX11.so.6')
     x11.XOpenDisplay.argtypes = [ctypes.c_char_p]

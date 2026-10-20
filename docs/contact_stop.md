@@ -82,7 +82,76 @@ CI는 정상 공동 동작 두 회와 접촉 정지의 일반/일시정지 두 �
 기존 종료/감시/정지 패치는 겹치는 부분이 있어도 전체 패치 순서와 현재 적용 단계를 검사한 뒤 나머지만 적용합니다.
 반복 빌드·중간 단계에서 재개를 지원하며, 예상과 다른 사용자 수정은 덮어쓰지 않고 실패합니다.
 
+## 고정 장애물 접촉 시연
+
+[영상 재생·다운로드 (MP4, 약 7.08초)](workcells/fr5_ur5e/contact_stop/visible_approach/approach-contact-stop.mp4)
+
+| 초기 간격 | 이동·접근 | 접촉 후 자동 정지 |
+|---|---|---|
+| [![고정 기둥과 떨어진 초기 로봇 자세](workcells/fr5_ur5e/contact_stop/visible_approach/before.png)](workcells/fr5_ur5e/contact_stop/visible_approach/before.png) | [![기둥 쪽으로 이동하는 FR5 손목](workcells/fr5_ur5e/contact_stop/visible_approach/approach.png)](workcells/fr5_ur5e/contact_stop/visible_approach/approach.png) | [![기둥 표면에 손목이 닿은 뒤 양팔 정지](workcells/fr5_ur5e/contact_stop/visible_approach/contact.png)](workcells/fr5_ur5e/contact_stop/visible_approach/contact.png) |
+
+실행 `20261020T035225.895962Z-17bf9e00`의 실제 MuJoCo 창을 1440×900, H.264, 24fps,
+170프레임으로 녹화했습니다. 처음부터 고정된 붉은 기둥에 FR5 손목이 접근하고,
+영상 약 4.17초(프레임 100)에 표면 접촉 후 `CONTACT STOP`·`Paused`·실제 속도 0%로 바뀝니다.
+접촉 전후 프레임과 정지 유지 구간을 직접 확인했습니다. 재생 배속·합성 오버레이는 적용하지 않았습니다.
+
+기둥은 `(-0.45, 0.72, 0.5)m` 위치의 `0.16×0.16×1.0m` 고정 상자이며,
+MuJoCo의 충돌·시각 형상과 ROS/MoveIt URDF에 같은 크기·위치로 추가됩니다.
+이 시연에는 mocap이나 접촉 주입 서비스가 없습니다. 로봇의 실제 적분·이동으로 접촉이 발생합니다.
+기본 장면과 과거 주입 시험은 그대로 두고, 별도 실행 디렉터리에 시연 모델만 생성합니다.
+
+| 항목 | 최종 GUI 기록 |
+|---|---|
+| 첫 관절 명령 | FR5 +1.2rad, UR5e −1.2rad / 2.5초 |
+| 접촉 전 실제 회전 | 약 0.984rad씩, 약 56.4° |
+| 관측 첫 관절 최고 속도 | FR5 0.497rad/s, UR5e 0.472rad/s |
+| 손목 경로 길이 재계산 | FR5 약 0.650m, UR5e 약 0.504m |
+| 초기 로봇·장애물 최소 간격 재계산 | 약 0.437m, 초기 접촉 0개 |
+| 실제 접촉 쌍 | `left_wrist2_link` ↔ `demo_obstacle` |
+| 접촉 검출 | 첫 접촉 스텝 1회에 활성 접촉점 4개, 최대 겹침 약 0.21mm |
+| 자동 정지 결과 | 양팔 Action CANCELED(5), 두 제어기 inactive, 새 목표 거부 |
+| 정지 유지·종료 | 관절 변화 0rad, 추가 실제 적분 0회, 정상 종료·잔류 프로세스 없음 |
+
+이전 영상의 명령 범위 0.25rad/5초와 비교해 범위는 4.8배, 명령 평균 속도는 약 9.6배입니다.
+끝까지 실행하기 전에 접촉으로 정지하므로 실제 이동량은 명령 범위보다 작습니다.
+손목 거리·초기 간격은 관절 상태를 Python MuJoCo 3.14.0으로 재계산한 값이고,
+접촉·정지 판정의 원본은 ROS 런타임 MuJoCo 3.12.0의 물리 기록입니다.
+관측 속도는 `/joint_states` 표본의 최고값으로 연속 시간 최대값을 보장하지 않습니다.
+
+```bash
+source ./manipulation_env.sh
+# GUI 없이도 고정 장애물 접촉·양팔 취소·정지 유지·종료를 검사
+python3 verify_contact_demo.py --domain 122
+# 실제 창 실행 / 녹화 (아래 폴더가 이미 있으면 다른 이름 사용)
+python3 verify_contact_demo.py --domain 123 --gui \
+  --record-dir runtime/demos/my-contact-demo
+```
+
+설치형 명령은 `manipulation-demo-contact`입니다. 녹화 기능에만 시스템 Python의
+OpenCV·Pillow와 X11 도구(`python3-opencv`, `python3-pil`, `x11-apps`, `x11-utils`)가 필요합니다.
+X11 데스크톱과 H.264 인코더를 사용하며, RViz 계획 패널이 준비된 뒤 이 실행의 MuJoCo 창만 녹화합니다.
+녹화 폴더는 덮어쓰지 않습니다. GUI는 NVIDIA OpenGL과 이 실행의 MuJoCo·RViz GPU 프로세스도 확인합니다.
+
+이 검증기는 이동량 0.7rad 초과·관측 최고 속도 0.4rad/s 초과를 양팔 모두 요구하며,
+주입 서비스 부재, 의도한 장애물과의 접촉 쌍, 얕은 표면 접촉, 양팔 자동 취소·정지 유지·새 목표 거부를 검사합니다.
+MoveIt 충돌 회피를 우회하는 **시뮬레이션 전용 직접 궤적**으로 정지 기능을 시험합니다.
+장애물 회피 성공 사례나 실제 로봇 제동 시험으로 해석하지 않습니다.
+
+검증 자료: [GUI 원본 결과](workcells/fr5_ur5e/contact_stop/visible_approach/validation.json),
+[headless 결과](workcells/fr5_ur5e/contact_stop/visible_approach/headless_validation.json),
+[물리 기록](workcells/fr5_ur5e/contact_stop/visible_approach/physics.json),
+[기구학 재계산](workcells/fr5_ur5e/contact_stop/visible_approach/geometry.json),
+[프레임 검토](workcells/fr5_ur5e/contact_stop/visible_approach/frame_review.json),
+[코드·자료 해시 및 회귀 실행 ID](workcells/fr5_ur5e/contact_stop/visible_approach/assets.json).
+기구학은 `.venv/bin/python scripts/analyze_contact_demo.py --report <result.json> --fixture <contact_test.xml> --output <geometry.json>`으로 재계산합니다.
+
+전체 단위·모델 검사 78개(실패·건너뜀 0개), 새 headless·GUI 시연,
+기존 일반·일시정지 주입 시험과 정상 공동 제어 회귀 검사가 통과했습니다.
+CI의 공동 장면 작업에도 주입 없는 고정 장애물 접근 시험을 추가했습니다. GUI 녹화는 로컬 검사입니다.
+
 ## 시연 영상 (2026-10-20)
+
+이 절은 **이전의 시각적 접촉이 없는 시험용 주입 기록**입니다. 최신 접근·접촉 영상은 위 절을 참고합니다.
 
 [![시험용 접촉 주입 후 MuJoCo 정지 화면](workcells/fr5_ur5e/contact_stop/demo/contact-stop.png)](workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4)
 

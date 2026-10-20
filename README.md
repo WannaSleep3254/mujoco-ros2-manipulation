@@ -170,19 +170,28 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 물리 엔진·시계·전체 상태 하나와 팔별 궤적 제어기 두 개를 사용합니다.
 [공동 작업장면 안내](docs/workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
 
-### 시험용 접촉 주입 후 양팔 정지 기록
+### 고정 장애물에 접근·접촉한 뒤 양팔 자동 정지
 
-[![시험용 접촉 주입 후 FR5·UR5e 정지 화면](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.png)](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4)
+[![FR5 손목이 붉은 고정 기둥에 닿은 뒤 양팔이 정지한 실제 화면](docs/workcells/fr5_ur5e/contact_stop/visible_approach/contact.png)](docs/workcells/fr5_ur5e/contact_stop/visible_approach/approach-contact-stop.mp4)
 
-[시연 영상 재생·다운로드 (MP4, 약 11초)](docs/workcells/fr5_ur5e/contact_stop/demo/contact-stop.mp4) ·
-[동작·시연 한계와 검증 기록](docs/contact_stop.md#시연-영상-2026-10-20)
+[시연 영상 (MP4, 약 7초)](docs/workcells/fr5_ur5e/contact_stop/visible_approach/approach-contact-stop.mp4) ·
+[접근·접촉 화면과 검증 근거](docs/contact_stop.md#고정-장애물-접촉-시연)
 
-실제 MuJoCo 창을 녹화했습니다. 양팔 첫 관절을 약 0.20rad(11.5°) 움직인 뒤 시험용 접촉을 발생시켜
-`CONTACT STOP`·`Paused`·실제 속도 0%로 바뀝니다. 접촉 1건, 양팔 목표 자동 취소,
-정지 후 관절 변화 0rad·추가 물리 적분 0회를 확인했습니다.
-**현재 영상과 이미지에는 눈으로 확인할 수 있는 접촉 장면이 없습니다.** 양팔은 서로 떨어져 있고,
-시험 구체를 FR5 전완 내부로 순간 배치한 뒤 영상 약 6.25초에 정지 표시가 나타납니다.
-이 자료는 시험용 접촉 주입에 대한 정지 상태 기록입니다. 장애물 접근·표면 접촉이 보이는 시연은 아직 없습니다.
+붉은 기둥은 시작부터 고정되어 있습니다. 양팔이 각각 약 56° 회전하고, **FR5 손목이 기둥 표면에 닿으면
+접촉하지 않은 UR5e까지 함께 정지**합니다. 관측 최고 속도는 약 0.50/0.47rad/s입니다.
+기록된 관절 상태로 재계산한 손목 경로 길이는 약 0.65/0.50m입니다.
+접촉 후 양팔 목표 자동 취소·제어기 비활성화, 관절 변화 0rad·추가 적분 0회를 확인했습니다.
+
+```bash
+source ./manipulation_env.sh
+python3 verify_contact_demo.py --gui
+# 실제 MuJoCo 창을 녹화: 매번 새 runtime 하위 경로 사용
+python3 verify_contact_demo.py --gui --record-dir runtime/demos/my-contact-demo
+```
+
+시뮬레이션의 정지 검증을 위해 의도적으로 접촉하는 직접 궤적입니다.
+MoveIt의 충돌 회피 계획과 구분하며, 시험 물체 순간 배치·접촉 주입 서비스는 사용하지 않습니다.
+이전의 시각적 접촉이 없던 주입 기록은 [과거 자료](docs/contact_stop.md#시연-영상-2026-10-20)로 보존합니다.
 
 ## 구현 범위와 다음 작업
 
@@ -199,7 +208,8 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |
 
 [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md)에 변경할 파일, 설정 초안, 검증 기준과 구현 순서를 정리했습니다.
-고정 받침대와 FR5·UR5e 공동 장면을 지원합니다. CAD 메시 입력·연속 접촉 감시·성능 평가는 후속 작업입니다.
+고정 받침대, FR5·UR5e 공동 장면, 매 물리 스텝 접촉 감시·자동 정지와 고정 장애물 접촉 시연을 지원합니다.
+CAD 메시 입력과 추가 작업·성능 비교는 후속 범위입니다.
 
 실제 로봇 연결은 아직 검증하지 않았습니다.
 제조사 모델과 연동 패키지의 고정 커밋·라이선스는 [출처 안내](docs/setup.md#소스-버전과-출처)에 기록했습니다.

@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "base_commit": "a184fdc3a69dcbf993325ad34bde8d321f354ad3",
+  "collected_utc": "2026-10-20T03:55:19.542065+00:00",
+  "run_id": "20261020T035225.895962Z-17bf9e00",
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/workcells/contact_demo.py": "2e671788c63175c363ae002dc8851dceb134ceb167e9ab4ff82924d08655971e",
+    "src/mujoco_ros2_manipulation/workcells/verify_contact_demo.py": "2d7ebf24a5c526f796879a85607a04516aba017a710d14739241c35d6d31975d",
+    "src/mujoco_ros2_manipulation/workcells/record_contact_demo.py": "9a864f7ec312882ae4fb740b3fd961a0a4254129f0f0bdc73279bf56b0e74b27",
+    "src/mujoco_ros2_manipulation/workcells/launch.py": "407704a485dbb141e93da21d7dba23cbb2852361186ae79cac269907b41aefaf",
+    "src/mujoco_ros2_manipulation/workcells/contact_guard.py": "75b501a50929dccfafddde3ecbbf6a589639c60eee058a7212c5a43aeee64b95",
+    "src/mujoco_ros2_manipulation/verification/images.py": "92c872fde2882341b74d41e98b08518e273b91812c0be5f80b2acdd37bc0b2aa",
+    "src/mujoco_ros2_manipulation/verification/runner.py": "6fa9af647ae02c34485401db61b8175de83c75b890c819b839d265851a2cb569",
+    "native/step_monitor.hpp": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+    "scripts/analyze_contact_demo.py": "dce87d18af8797d8814c7d7fc2a37803753e736d1d378d76b193afbe51cb0b88"
+  },
+  "recording": {
+    "frames": 170,
+    "fps": 24,
+    "playback_duration_sec": 7.083333333333333,
+    "wall_seconds": 7.088355105000119,
+    "maximum_capture_gap_sec": 0.05128522500035615,
+    "kind": "Actual owned MuJoCo X11 client pixels; no overlays or speed changes",
+    "video": "approach-contact-stop.mp4",
+    "errors": [],
+    "directory": "runtime/demos/visible-contact-20261020"
+  },
+  "review": {
+    "total_frames": 170,
+    "fps": 24,
+    "first_stop_overlay_frame": 100,
+    "first_stop_overlay_video_sec": 4.166666666666667,
+    "approach_frame": 80,
+    "manual_review": "Initial gap, fixed red post, FR5 wrist approach, visible surface meeting at stop, both arms stationary after stop; no RViz occlusion."
+  },
+  "evidence_scope": "Visible stationary obstacle approached by actual simulated robot motion; no injection service, no mocap, no fabricated contact overlay. Native GUI banner and telemetry are captured pixels.",
+  "unit_model_tests": {
+    "total": 78,
+    "failures": 0,
+    "skipped": 0,
+    "log_sha256": "fc9bb1eb1d11b915c501c8796babc2770474df71ece77b1c4be87270084ed6d0"
+  },
+  "regressions": {
+    "headless": {
+      "run_id": "20261020T035346.582080Z-86da56ce",
+      "status": "passed",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    "injected_regression": {
+      "run_id": "20261020T035151.722342Z-3fd2937d",
+      "status": "passed",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    "paused_regression": {
+      "run_id": "20261020T035156.180894Z-e879e267",
+      "status": "passed",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    },
+    "normal_workcell_regression": {
+      "run_id": "20261020T035200.591813Z-028be680",
+      "status": "passed",
+      "shutdown_clean": true,
+      "physics_checks_passed": true
+    }
+  },
+  "artifacts": [
+    {
+      "file": "approach-contact-stop.mp4",
+      "bytes": 353161,
+      "sha256": "6a60de70f9f0576f8ad87583d33db28fd0dcac382462f65c31a5a111275b797f"
+    },
+    {
+      "file": "approach.png",
+      "bytes": 410177,
+      "sha256": "9741b544944a85a0ca29bd104e27e581209da18290d7a8cce74c4e042e02e938"
+    },
+    {
+      "file": "before.png",
+      "bytes": 137808,
+      "sha256": "75b1b1196d3096413095e5b5116273a4ecf74c30f71b1d579cdd7846fce3ef74"
+    },
+    {
+      "file": "contact.png",
+      "bytes": 407602,
+      "sha256": "f72836f30cb793676acdedd0b6197e1625e4eafb03a1d5e0f57f66809802304d"
+    },
+    {
+      "file": "frame_review.json",
+      "bytes": 307,
+      "sha256": "21fbb589b8d2d1988cc747185fdd1dcc1b8f7c1a5f1cf192367bb952a46b2998"
+    },
+    {
+      "file": "geometry.json",
+      "bytes": 1110,
+      "sha256": "8227a7c2f4158f1b39aee3bec93e0bb086ca9d38fff6ea9b890b8a78a3331fd5"
+    },
+    {
+      "file": "headless_validation.json",
+      "bytes": 399138,
+      "sha256": "5d33f697d99a1a4e1affccb5126eb198cd6f317a1f777cd0a7966a5adb1c68e1"
+    },
+    {
+      "file": "physics.json",
+      "bytes": 1646,
+      "sha256": "6f202b08b042d6a4d4bc18e2e6983987d2030d8ec7fb69dcfa0608147738666e"
+    },
+    {
+      "file": "stopped.png",
+      "bytes": 126574,
+      "sha256": "719b28b783cb90f369ea48084ddbb58824b241eedfb23b7d16967af917a2cb3c"
+    },
+    {
+      "file": "validation.json",
+      "bytes": 404122,
+      "sha256": "924c2a4be7d6b1ab97f793f120d1b9a57452a654fd7a2835e0e4948175c96c99"
+    }
+  ]
+}

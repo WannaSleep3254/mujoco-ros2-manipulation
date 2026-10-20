@@ -100,6 +100,11 @@ jobs:
           source ./manipulation_env.sh
           python3 verify_contact_stop.py --workcell '${{ matrix.scene }}' --domain 111
           python3 verify_contact_stop.py --workcell '${{ matrix.scene }}' --domain 112 --paused-contact
+      - name: Fixed visible obstacle approach (no injection)
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_contact_demo.py --domain 113
       - name: Preserve reports on success or failure
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

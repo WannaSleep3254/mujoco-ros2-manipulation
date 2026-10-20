@@ -78,6 +78,7 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
         ros.init()
         node = factory(profile, progress=report.stage)
         node.process_group = process.pid
+        node.launch_log_path = report.log_path
         report.stage('motion')
         payload = node.run()
         if process.poll() is not None:

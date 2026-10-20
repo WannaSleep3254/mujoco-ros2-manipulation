@@ -1,0 +1,8 @@
+{
+  "total_frames": 170,
+  "fps": 24,
+  "first_stop_overlay_frame": 100,
+  "first_stop_overlay_video_sec": 4.166666666666667,
+  "approach_frame": 80,
+  "manual_review": "Initial gap, fixed red post, FR5 wrist approach, visible surface meeting at stop, both arms stationary after stop; no RViz occlusion."
+}
