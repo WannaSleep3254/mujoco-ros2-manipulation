@@ -12,9 +12,9 @@
       "bytes": 423673,
       "sha256": "f75d7f032a6f41a54404c8b6e900ae531f31a6c577c8e9dc013027f1c8e65f21"
     },
-    "avoidance.json": {
-      "bytes": 605757,
-      "sha256": "8072cc9b6217783bf865ac8cc2a0b7d52cd0518552c216303dec29c9084182d8"
+    "avoidance.json.gz": {
+      "bytes": 122142,
+      "sha256": "11a6ce4de1cca5781f0f3093f8e664735216855e2565caba98a0444678349846"
     },
     "avoidance.log.txt.gz": {
       "bytes": 6186,
@@ -28,9 +28,9 @@
       "bytes": 513552,
       "sha256": "80339d41ab011227dae4b88356a27fefe1e115f31855c608847f8f87c8e8500c"
     },
-    "collision.json": {
-      "bytes": 527887,
-      "sha256": "199cd27b227650dbc4255dbcdfa9acba39f3043847677e1b96bd0aedf21dde75"
+    "collision.json.gz": {
+      "bytes": 28726,
+      "sha256": "c51bed60af5cce2b46ffea995f10ab0a74e7326cf2826b5ffee16f5f8de514a1"
     },
     "collision.log.txt.gz": {
       "bytes": 6501,
@@ -52,29 +52,29 @@
       "bytes": 453053,
       "sha256": "4f1350ae046ff982b493c871670635242d1fef58ffc9a92aa7df786c9ec8349e"
     },
-    "headless-avoidance.json": {
-      "bytes": 580097,
-      "sha256": "08af6379e77b2766acb4ade5de432971931db8ab244933d2da33f429ac4ed8b9"
+    "headless-avoidance.json.gz": {
+      "bytes": 118699,
+      "sha256": "c28df663113c195d1453ce6e9e868160bac1983d40e681d6b625c7011df97410"
     },
-    "headless-collision.json": {
-      "bytes": 502257,
-      "sha256": "cc493354ace645d5af9d5ecd158a68442aab3c26cf168625265501322769a8e7"
+    "headless-collision.json.gz": {
+      "bytes": 26950,
+      "sha256": "9e8ef89890336fd970216aa7976f798ccd92217434251c96e25c3a566997aba9"
     },
     "headless-comparison.json": {
       "bytes": 1429,
       "sha256": "6356f328ea743bf6250a52f79a1c3ec1d0d6663170dddd1aee7dedba85ed8be0"
     },
-    "headless-left.json": {
-      "bytes": 589783,
-      "sha256": "1cae5c367e775142756eb5bcaae529cc4057a777039bb9ac235dc62fbbc9b367"
+    "headless-left.json.gz": {
+      "bytes": 76538,
+      "sha256": "87ed2a602d5b0c8377d6fa7dbfd1f928f6571355197d4fa4838f97042148b405"
     },
-    "headless-right.json": {
-      "bytes": 590155,
-      "sha256": "51b2086c454acb2a517d29fa611154df71d691ffb3bf9d256dbcb928aed2b754"
+    "headless-right.json.gz": {
+      "bytes": 76153,
+      "sha256": "81d4e9b47392b298a34b6fb4ff031993097e2bb19bb32a380f62182236b59418"
     },
-    "left.json": {
-      "bytes": 616852,
-      "sha256": "76da0408e71c20f4f1a8d0e4510e1de1dd641e15c69d9e23a571fa0b79a5421b"
+    "left.json.gz": {
+      "bytes": 79755,
+      "sha256": "e2df374312c955fda1034b2e0ba8f3fd1a063b947e1314c9f2a9581b6f246799"
     },
     "left.log.txt.gz": {
       "bytes": 6176,
@@ -88,9 +88,9 @@
       "bytes": 458183,
       "sha256": "aa44b81bb292c38ce3877fa32bca5b123508257ca61ef114f24c97e86f3bda1f"
     },
-    "right.json": {
-      "bytes": 618763,
-      "sha256": "968f058cf1d2d3a5f48cf1c3ad93251340a14b8a8e3eeb4c83c3122e3c0a184f"
+    "right.json.gz": {
+      "bytes": 79646,
+      "sha256": "c4c1fd07a0b1fabe4c10dd56fd48e78634e3b6cc334cff0c1416d0a18cda3bc3"
     },
     "right.log.txt.gz": {
       "bytes": 6190,
@@ -104,5 +104,15 @@
       "bytes": 421130,
       "sha256": "4e0029f7aa89edd26af02260ab2e7340591fece5da83d6228e8c672222c838ca"
     }
+  },
+  "compressed_reports_original_sha256": {
+    "left.json.gz": "76da0408e71c20f4f1a8d0e4510e1de1dd641e15c69d9e23a571fa0b79a5421b",
+    "headless-left.json.gz": "1cae5c367e775142756eb5bcaae529cc4057a777039bb9ac235dc62fbbc9b367",
+    "collision.json.gz": "199cd27b227650dbc4255dbcdfa9acba39f3043847677e1b96bd0aedf21dde75",
+    "headless-collision.json.gz": "cc493354ace645d5af9d5ecd158a68442aab3c26cf168625265501322769a8e7",
+    "right.json.gz": "968f058cf1d2d3a5f48cf1c3ad93251340a14b8a8e3eeb4c83c3122e3c0a184f",
+    "headless-right.json.gz": "51b2086c454acb2a517d29fa611154df71d691ffb3bf9d256dbcb928aed2b754",
+    "avoidance.json.gz": "8072cc9b6217783bf865ac8cc2a0b7d52cd0518552c216303dec29c9084182d8",
+    "headless-avoidance.json.gz": "08af6379e77b2766acb4ade5de432971931db8ab244933d2da33f429ac4ed8b9"
   }
 }

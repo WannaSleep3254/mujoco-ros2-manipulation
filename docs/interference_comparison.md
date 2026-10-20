@@ -30,10 +30,10 @@ MuJoCo 창의 고정 영역을 확대하고 한글 설명을 추가했습니다.
 
 | 조건 | 원래 궤적 길이 | 실제 결과 | 물리 스텝 | 원본 보고서 / 영상 |
 |---|---:|---|---:|---|
-| FR5 단독 | 6.317초 | 성공(4), 접촉 0 | 18,001 | [JSON](interference_comparison/left.json) / [MP4](interference_comparison/left.mp4) |
-| UR5e 단독 | 6.317초 | 성공(4), 접촉 0 | 18,016 | [JSON](interference_comparison/right.json) / [MP4](interference_comparison/right.mp4) |
-| 무회피 동시 | 6.317초 | 약 3.08초에 접촉, 양팔 취소(5,5)·비활성화 | 6,528 | [JSON](interference_comparison/collision.json) / [MP4](interference_comparison/collision.mp4) |
-| 공동 회피 | 21.898초 | 양팔 성공(4,4), 접촉 0 | 17,991 | [JSON](interference_comparison/avoidance.json) / [MP4](interference_comparison/avoidance.mp4) |
+| FR5 단독 | 6.317초 | 성공(4), 접촉 0 | 18,001 | [원본 JSON.gz](interference_comparison/left.json.gz) / [MP4](interference_comparison/left.mp4) |
+| UR5e 단독 | 6.317초 | 성공(4), 접촉 0 | 18,016 | [원본 JSON.gz](interference_comparison/right.json.gz) / [MP4](interference_comparison/right.mp4) |
+| 무회피 동시 | 6.317초 | 약 3.08초에 접촉, 양팔 취소(5,5)·비활성화 | 6,528 | [원본 JSON.gz](interference_comparison/collision.json.gz) / [MP4](interference_comparison/collision.mp4) |
+| 공동 회피 | 21.898초 | 양팔 성공(4,4), 접촉 0 | 17,991 | [원본 JSON.gz](interference_comparison/avoidance.json.gz) / [MP4](interference_comparison/avoidance.mp4) |
 
 접촉 링크는 `left_wrist2_link`와 `right_wrist_2_link`입니다. 첫 접촉 스텝에서 활성 접촉점 3개,
 최대 침투 약 0.31mm를 기록했고 이후 추가 물리 적분 없이 양팔 위치를 유지했습니다.
@@ -61,7 +61,8 @@ MuJoCo 창의 고정 영역을 확대하고 한글 설명을 추가했습니다.
   원본 길이가 부족하면 정지 프레임을 임의로 채우지 않고 실패합니다. 시계 수신과 프레임 캡처 간 수십 ms 차이가 있어
   자막 시점은 제어기 반응 지연 측정값으로 사용하지 않습니다.
 - [보관 명세](interference_comparison/published_manifest.json)에 영상·보고서·이미지·압축 로그의 해시가 있습니다.
-  로그는 무손실 gzip으로 보관하며 압축 해제 원본 해시도 기록합니다.
+  원본 보고서와 로그는 무손실 gzip으로 보관하며 압축 해제 원본 해시도 기록합니다.
+  관측 샘플 수만 줄이거나 실패 항목을 삭제하지 않고 전체 보고서를 보존합니다.
   [FR5 로그](interference_comparison/left.log.txt.gz), [UR5e 로그](interference_comparison/right.log.txt.gz),
   [실제 접촉 로그](interference_comparison/collision.log.txt.gz), [회피 로그](interference_comparison/avoidance.log.txt.gz)
 
