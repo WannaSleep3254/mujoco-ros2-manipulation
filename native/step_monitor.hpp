@@ -22,7 +22,7 @@
 #endif
 
 namespace manipulation {
-inline std::string json_string(const std::string& value) {
+inline std::string json_string(const std::string &value) {
   std::ostringstream out;
   out << '"';
   for (unsigned char c : value) {
@@ -36,6 +36,35 @@ inline std::string json_string(const std::string& value) {
   out << '"';
   return out.str();
 }
+
+// Physics-thread policy. ROS callbacks only increment an atomic sequence on
+// changed /clock stamps; repeated messages cannot refresh the steady deadline.
+class ClockWatchdog {
+  bool running_ = false, progressed_ = false;
+  uint64_t sequence_ = 0;
+  double last_progress_ = 0;
+
+ public:
+  static constexpr double timeout = 1.0, startup_timeout = 5.0;
+  bool stalled(uint64_t sequence, bool running, double steady_now) {
+    if (!running) {
+      running_ = false;
+      return false;
+    }
+    if (!running_) {
+      running_ = true;
+      sequence_ = sequence;
+      progressed_ = sequence > 0;
+      last_progress_ = steady_now;
+    } else if (sequence != sequence_) {
+      sequence_ = sequence;
+      progressed_ = true;
+      last_progress_ = steady_now;
+    }
+    return steady_now - last_progress_ >=
+           (progressed_ ? timeout : startup_timeout);
+  }
+};
 
 class StepMonitor {
   using Clock = std::chrono::steady_clock;
@@ -71,7 +100,7 @@ class StepMonitor {
       }
       return "null";
     }
-    void write(std::ostream& out) const {
+    void write(std::ostream &out) const {
       out << "{\"count\":" << count << ",\"mean_sec\":"
           << (count ? total / static_cast<double>(count) : 0)
           << ",\"max_sec\":" << maximum
@@ -82,7 +111,7 @@ class StepMonitor {
     }
   };
   std::string path_, run_id_;
-  const mjModel* model_ = nullptr;
+  const mjModel *model_ = nullptr;
   Clock::time_point first_wall_, last_wall_;
   uint64_t steps_ = 0, contact_steps_ = 0, contacts_ = 0, active_ = 0;
   uint64_t invalid_ = 0, discontinuities_ = 0, overflow_ = 0;
@@ -90,10 +119,11 @@ class StepMonitor {
   double sim_seconds_ = 0, first_time_ = 0, last_time_ = 0;
   bool finished_ = false;
   bool stop_enabled_ = false, latched_ = false;
+  std::string stop_reason_;
   uint64_t stop_step_ = 0, hold_ticks_ = 0;
   double stop_time_ = 0, hold_time_ = 0;
   std::vector<mjtNum> held_qpos_, held_mocap_pos_, held_mocap_quat_;
-  void freeze(const mjModel* m, mjData* d) const {
+  void freeze(const mjModel *m, mjData *d) const {
     std::copy(held_qpos_.begin(), held_qpos_.end(), d->qpos);
     std::fill_n(d->qvel, m->nv, 0.0);
     std::fill_n(d->qacc, m->nv, 0.0);
@@ -112,7 +142,7 @@ class StepMonitor {
   static double seconds(Clock::duration value) {
     return std::chrono::duration<double>(value).count();
   }
-  void inspect(const mjModel* m, const mjData* d, double contact_time,
+  void inspect(const mjModel *m, const mjData *d, double contact_time,
                double post_time) {
     if (!steps_) {
       first_time_ = contact_time;
@@ -137,7 +167,7 @@ class StepMonitor {
     for (int j = 0; j < m->nu; ++j)
       if (!std::isfinite(d->ctrl[j])) ++invalid_;
     for (int j = 0; j < d->ncon; ++j) {
-      const auto& c = d->contact[j];
+      const auto &c = d->contact[j];
       ++contacts_;
       const bool active = c.efc_address >= 0;
       if (active) ++active_;
@@ -150,7 +180,7 @@ class StepMonitor {
         ++overflow_;
         continue;
       }
-      auto& pair = pairs_[key];
+      auto &pair = pairs_[key];
       if (!pair.occurrences) pair.first = contact_time;
       pair.last = contact_time;
       ++pair.occurrences;
@@ -206,22 +236,22 @@ class StepMonitor {
     monitor_.write(out);
     out << ",\"pairs\":[";
     bool comma = false;
-    for (const auto& item : pairs_) {
+    for (const auto &item : pairs_) {
       if (comma) out << ',';
       comma = true;
-      const auto& p = item.second;
+      const auto &p = item.second;
       out << "{\"geom_ids\":[" << item.first.first << ',' << item.first.second
           << "],\"geoms\":[";
       for (int k = 0; k < 2; ++k) {
         const int id = k ? item.first.second : item.first.first;
-        const char* name = mj_id2name(model_, mjOBJ_GEOM, id);
+        const char *name = mj_id2name(model_, mjOBJ_GEOM, id);
         if (k) out << ',';
         out << json_string(name ? name : "<unnamed>");
       }
       out << "],\"bodies\":[";
       for (int k = 0; k < 2; ++k) {
         const int id = k ? item.first.second : item.first.first;
-        const char* name =
+        const char *name =
             mj_id2name(model_, mjOBJ_BODY, model_->geom_bodyid[id]);
         if (k) out << ',';
         out << json_string(name ? name : "world");
@@ -233,6 +263,7 @@ class StepMonitor {
     }
     out << "],\"stop_enabled\":" << (stop_enabled_ ? "true" : "false")
         << ",\"stop_latched\":" << (latched_ ? "true" : "false")
+        << ",\"stop_reason\":" << json_string(stop_reason_)
         << ",\"stop_step\":" << stop_step_
         << ",\"stop_time_sec\":" << stop_time_
         << ",\"hold_ticks\":" << hold_ticks_
@@ -250,10 +281,10 @@ class StepMonitor {
 
  public:
   StepMonitor() {
-    const char* stop = std::getenv("MANIPULATION_CONTACT_STOP");
+    const char *stop = std::getenv("MANIPULATION_CONTACT_STOP");
     stop_enabled_ = stop && std::string(stop) == "1";
-    const char* path = std::getenv("MANIPULATION_DIAGNOSTICS_PATH");
-    const char* id = std::getenv("MANIPULATION_DIAGNOSTICS_RUN_ID");
+    const char *path = std::getenv("MANIPULATION_DIAGNOSTICS_PATH");
+    const char *id = std::getenv("MANIPULATION_DIAGNOSTICS_RUN_ID");
     if (path && *path && id && *id) {
       path_ = path;
       run_id_ = id;
@@ -262,12 +293,28 @@ class StepMonitor {
   ~StepMonitor() { write(); }
   bool latched() const { return latched_; }
   bool enabled() const { return stop_enabled_; }
+  const std::string &stop_reason() const { return stop_reason_; }
+  bool latch(const mjModel *m, mjData *d, const std::string &reason) {
+    if (!stop_enabled_ || latched_) return false;
+    latched_ = true;
+    model_ = m;
+    stop_reason_ = reason;
+    stop_step_ = steps_;
+    stop_time_ = hold_time_ = d->time;
+    held_qpos_.assign(d->qpos, d->qpos + m->nq);
+    held_mocap_pos_.assign(d->mocap_pos, d->mocap_pos + 3 * m->nmocap);
+    held_mocap_quat_.assign(d->mocap_quat, d->mocap_quat + 4 * m->nmocap);
+    freeze(m, d);
+    mj_forward(m, d);
+    freeze(m, d);
+    return true;
+  }
   // Also called before the viewer reset/paused paths: UI edits cannot release
   // the latch.
-  void restore(const mjModel* m, mjData* d) const {
+  void restore(const mjModel *m, mjData *d) const {
     if (latched_) freeze(m, d);
   }
-  bool step(const mjModel* m, mjData* d) {
+  bool step(const mjModel *m, mjData *d) {
     if (latched_) {
       hold_time_ += m->opt.timestep;
       freeze(m, d);
@@ -290,17 +337,7 @@ class StepMonitor {
     last_wall_ = inspected;
     physics_.add(seconds(after - before));
     monitor_.add(seconds(inspected - after));
-    if (stop_enabled_ && d->ncon > 0) {
-      latched_ = true;
-      stop_step_ = steps_;
-      stop_time_ = hold_time_ = d->time;
-      held_qpos_.assign(d->qpos, d->qpos + m->nq);
-      held_mocap_pos_.assign(d->mocap_pos, d->mocap_pos + 3 * m->nmocap);
-      held_mocap_quat_.assign(d->mocap_quat, d->mocap_quat + 4 * m->nmocap);
-      freeze(m, d);
-      mj_forward(m, d);  // Align transforms/sensors with the fixed pose once.
-      freeze(m, d);
-    }
+    if (stop_enabled_ && d->ncon > 0) latch(m, d, "contact");
     return true;
   }
   void finish(uint64_t engine_steps) {

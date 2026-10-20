@@ -171,3 +171,23 @@ class NativeMonitorTests(unittest.TestCase):
         self.assertEqual(len(data["stopped_qpos"]), 12)
         self.assertEqual(data["steps"], 1)
         self.assertEqual(data["hold_ticks"], 23)
+
+    def test_clock_deadlines_progress_pause_and_startup(self):
+        self.run_probe("clean")  # Writes the small model consumed by the policy probe.
+        subprocess.run(
+            [str(self.binary), str(self.directory / "probe.xml"), "clock_policy"],
+            check=True,
+        )
+
+    def test_clock_stop_without_contact_freezes_physics_and_keeps_first_reason(self):
+        from mujoco_ros2_manipulation.verification.diagnostics import (
+            check_clock_stop_physics,
+        )
+
+        data = self.run_probe("stop_clock")
+        check_clock_stop_physics(
+            data, run_id='probe"\\id', source_sha256=self.digest, timestep=0.002
+        )
+        self.assertEqual(data["steps"], 11)
+        self.assertEqual(data["hold_ticks"], 13)
+        self.assertEqual(data["stop_reason"], "clock_stall")

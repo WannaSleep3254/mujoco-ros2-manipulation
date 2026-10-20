@@ -45,6 +45,17 @@ def nodes(context):
         raise ValueError("Control requires contact_demo")
     if contact_test and contact_demo:
         raise ValueError("Select either injected contact test or fixed-obstacle demo")
+    clock_test = LaunchConfiguration("clock_test").perform(context)
+    if clock_test not in ("off", "missing", "repeated"):
+        raise ValueError("clock_test must be off, missing or repeated")
+    if clock_test != "off":
+        if contact_test or contact_demo:
+            raise ValueError("Clock injection cannot be combined with contact fixtures")
+        directory = Path(os.environ["MANIPULATION_DIAGNOSTICS_PATH"]).resolve().parent
+        if not directory.is_relative_to(cell.root / "runtime/validation/runs"):
+            raise ValueError(
+                "Clock injection requires an isolated verification directory"
+            )
     gui = LaunchConfiguration("gui").perform(context).lower() == "true"
     rviz = LaunchConfiguration("rviz").perform(context).lower() == "true"
     robot = ET.parse(cell.output / "cell.urdf").getroot()
@@ -69,6 +80,7 @@ def nodes(context):
         executable="ros2_control_node",
         additional_env={
             "MANIPULATION_CONTACT_STOP": "1",
+            "MANIPULATION_CLOCK_TEST_MODE": clock_test,
             "MANIPULATION_ENABLE_CONTACT_TEST": "1" if contact_test else "0",
         },
         output="screen",
@@ -153,6 +165,7 @@ def generate_launch_description():
             DeclareLaunchArgument("gui", default_value="true"),
             DeclareLaunchArgument("rviz", default_value="true"),
             DeclareLaunchArgument("contact_test", default_value="false"),
+            DeclareLaunchArgument("clock_test", default_value="off"),
             DeclareLaunchArgument("contact_demo", default_value="false"),
             DeclareLaunchArgument("contact_demo_control", default_value="false"),
             OpaqueFunction(function=nodes),

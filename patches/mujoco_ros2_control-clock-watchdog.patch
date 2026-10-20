@@ -1,0 +1,157 @@
+--- a/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
++++ b/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
+@@ -49,6 +49,7 @@
+ #include <sensor_msgs/msg/joint_state.hpp>
+ #include <std_srvs/srv/trigger.hpp>
+ #include <std_msgs/msg/bool.hpp>
++#include <std_msgs/msg/string.hpp>
+ 
+ namespace mujoco_ros2_control
+ {
+@@ -532,6 +533,14 @@
+ 
+   std::atomic<bool> contact_stop_latched_{false};
+   std::atomic<bool> contact_test_requested_{false};
++  std::atomic<int64_t> observed_clock_ns_{-1};
++  std::atomic<uint64_t> clock_progress_sequence_{0};
++  std::atomic<int> clock_test_mode_{0};  // 0 normal, 1 missing, 2 repeated
++  int64_t repeated_clock_ns_ = -1;  // physics thread only
++  std::atomic<bool> clock_stop_latched_{false};
++  rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr clock_watch_subscription_;
++  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr stop_reason_publisher_;
++  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr clock_test_service_;
+   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr contact_stop_publisher_;
+   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr contact_status_service_, contact_test_service_;
+ 
+--- a/mujoco_ros2_control/src/mujoco_simulation.cpp
++++ b/mujoco_ros2_control/src/mujoco_simulation.cpp
+@@ -709,6 +709,26 @@
+         response->success = enabled && std::string(enabled) == "1";
+         response->message = contact_stop_latched_.load() ? "latched; restart required" : "ready";
+       });
++  stop_reason_publisher_ = node_->create_publisher<std_msgs::msg::String>(
++      "~/stop_reason", rclcpp::QoS(1).reliable().transient_local());
++  stop_reason_publisher_->publish(std_msgs::msg::String{});
++  clock_watch_subscription_ = node_->create_subscription<rosgraph_msgs::msg::Clock>(
++      "/clock", rclcpp::QoS(1).best_effort(),
++      [this](rosgraph_msgs::msg::Clock::ConstSharedPtr message) {
++        const int64_t stamp = int64_t(message->clock.sec) * 1000000000LL + message->clock.nanosec;
++        if (observed_clock_ns_.exchange(stamp) != stamp) clock_progress_sequence_.fetch_add(1);
++      });
++  const char* clock_test = std::getenv("MANIPULATION_CLOCK_TEST_MODE");
++  if (clock_test && (std::string(clock_test) == "missing" || std::string(clock_test) == "repeated")) {
++    const int mode = std::string(clock_test) == "missing" ? 1 : 2;
++    clock_test_service_ = node_->create_service<std_srvs::srv::Trigger>(
++        "~/inject_test_clock_stall", [this, mode](const std_srvs::srv::Trigger::Request::SharedPtr,
++                                                 std_srvs::srv::Trigger::Response::SharedPtr response) {
++          int expected = 0;
++          response->success = !contact_stop_latched_.load() && clock_test_mode_.compare_exchange_strong(expected, mode);
++          response->message = response->success ? "Clock publication fault injected" : "Already latched or injected";
++        });
++  }
+   const char* contact_test = std::getenv("MANIPULATION_ENABLE_CONTACT_TEST");
+   if (contact_test && std::string(contact_test) == "1") {
+     contact_test_service_ = node_->create_service<std_srvs::srv::Trigger>(
+@@ -968,7 +988,7 @@
+ {
+   if (contact_stop_latched_.load()) {
+     response->success = false;
+-    response->message = "Contact stop latched; restart the workcell";
++    response->message = "Simulation stop latched; restart the workcell";
+     return;
+   }
+ 
+@@ -977,7 +997,7 @@
+   RCLCPP_INFO_EXPRESSION(get_logger(), request->keyframe.empty(),
+                          "Reset world service called. Resetting to initial keyframe...");
+   const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+-  if (contact_stop_latched_.load()) { response->success = false; response->message = "Contact stop latched"; return; }
++  if (contact_stop_latched_.load()) { response->success = false; response->message = "Simulation stop latched"; return; }
+ 
+   // Validate every override before touching any state, so an invalid entry leaves the world
+   // un-reset. Validation only checks names and shapes against the model; free-joint frame_ids
+@@ -1025,7 +1045,7 @@
+ {
+   if (contact_stop_latched_.load()) {
+     response->success = false;
+-    response->message = "Contact stop latched; restart the workcell";
++    response->message = "Simulation stop latched; restart the workcell";
+     return;
+   }
+ 
+@@ -1071,7 +1091,7 @@
+ {
+   if (contact_stop_latched_.load()) {
+     response->success = false;
+-    response->message = "Contact stop latched; restart the workcell";
++    response->message = "Simulation stop latched; restart the workcell";
+     return;
+   }
+ 
+@@ -1322,7 +1342,7 @@
+     const std::vector<mujoco_ros2_control_msgs::msg::FreeJointState>& free_joints, std::string& error_message)
+ {
+   const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+-  if (contact_stop_latched_.load()) { error_message = "Contact stop latched"; return false; }
++  if (contact_stop_latched_.load()) { error_message = "Simulation stop latched"; return false; }
+ 
+   // Nothing to write, and nothing worth republishing a snapshot for.
+   if (free_joints.empty())
+@@ -1477,6 +1497,7 @@
+ void MujocoSimulation::physics_loop()
+ {
+   manipulation::StepMonitor monitor;
++  manipulation::ClockWatchdog clock_watchdog;
+   auto advance = [this, &monitor]() {
+     if (contact_test_requested_.exchange(false) && !monitor.latched()) {
+       const int body = mj_name2id(mj_model_, mjOBJ_BODY, "contact_stop_test_probe");
+@@ -1495,8 +1516,12 @@
+     const bool integrated = monitor.step(mj_model_, mj_data_);
+     if (monitor.latched() && !contact_stop_latched_.exchange(true)) {
+       std_msgs::msg::Bool state; state.data = true;
+-      contact_stop_publisher_->publish(state);
+-      RCLCPP_WARN(get_logger(), "CONTACT STOP latched: whole world frozen; restart required");
++      clock_stop_latched_.store(monitor.stop_reason() == "clock_stall");
++      clock_test_mode_.store(0);  // Clock-only recovery lets ROS cancel/deactivate controllers.
++      std_msgs::msg::String reason; reason.data = monitor.stop_reason();
++      stop_reason_publisher_->publish(reason);
++      contact_stop_publisher_->publish(state);  // Compatibility: this is the shared stop latch.
++      RCLCPP_WARN(get_logger(), "SIMULATION STOP latched (%s): whole world frozen; restart required", reason.data.c_str());
+     }
+     return integrated;
+   };
+@@ -1525,6 +1550,12 @@
+       // lock the sim mutex during the update
+       const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+ 
++      const double steady_now = std::chrono::duration<double>(
++          std::chrono::steady_clock::now().time_since_epoch()).count();
++      if (mj_model_ && monitor.enabled() && !monitor.latched() &&
++          clock_watchdog.stalled(clock_progress_sequence_.load(), sim_->run, steady_now)) {
++        monitor.latch(mj_model_, mj_data_, "clock_stall");
++      }
+       if (mj_model_ && monitor.latched()) {
+         monitor.restore(mj_model_, mj_data_);
+         sim_->run = true;  // Clock-only ticks keep ROS cancellation alive even after a paused contact.
+@@ -1765,7 +1796,11 @@
+ 
+ void MujocoSimulation::publish_clock()
+ {
+-  auto sim_time = mj_data_->time;
++  const int test_mode = clock_test_mode_.load();
++  if (test_mode == 1) return;
++  if (test_mode == 2 && repeated_clock_ns_ < 0)
++    repeated_clock_ns_ = static_cast<int64_t>(mj_data_->time * 1e9);
++  auto sim_time = test_mode == 2 ? static_cast<double>(repeated_clock_ns_) * 1e-9 : mj_data_->time;
+   int32_t sim_time_sec = static_cast<int32_t>(std::floor(sim_time));
+   uint32_t sim_time_nanosec = static_cast<uint32_t>((sim_time - sim_time_sec) * 1e9);
+   rclcpp::Time sim_time_ros(sim_time_sec, sim_time_nanosec, RCL_ROS_TIME);
+@@ -1813,7 +1848,7 @@
+   sim_->user_texts_new_.clear();
+   if (contact_stop_latched_.load())
+     sim_->user_texts_new_.emplace_back(mjFONT_BIG, mjGRID_TOPLEFT,
+-        "CONTACT STOP", "Both arms frozen - restart required");
++        clock_stop_latched_.load() ? "CLOCK STOP" : "CONTACT STOP", "Both arms frozen - restart required");
+   sim_->user_texts_new_.emplace_back(mjFONT_NORMAL, mjGRID_TOPRIGHT, title, content);
+ 
+   // Publish only after the vector is fully written; the release store pairs with

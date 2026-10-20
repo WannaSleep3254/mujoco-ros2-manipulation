@@ -154,3 +154,44 @@ class StopReportTests(unittest.TestCase):
                 check_stop_physics(
                     data, run_id="run", source_sha256="hash", timestep=0.002
                 )
+
+
+class ClockStopReportTests(unittest.TestCase):
+    def clock_report(self):
+        value = StopReportTests.stopped_report(self)
+        value.update(
+            stop_reason="clock_stall",
+            contacts=0,
+            contact_steps=0,
+            active_contacts=0,
+            pairs=[],
+        )
+        return value
+
+    def test_clock_requires_zero_contact_complete_coverage_and_clock_reason(self):
+        from mujoco_ros2_manipulation.verification.diagnostics import (
+            check_clock_stop_physics,
+        )
+
+        options = dict(run_id="run", source_sha256="hash", timestep=0.002)
+        check_clock_stop_physics(self.clock_report(), **options)
+        for key, value in [
+            ("stop_reason", "contact"),
+            ("stop_latched", False),
+            ("stop_enabled", False),
+            ("contacts", 1),
+            ("contact_steps", 1),
+            ("active_contacts", 1),
+            ("pairs", [{}]),
+            ("hold_ticks", 0),
+            ("stop_step", 99),
+            ("complete", False),
+            ("engine_steps", 99),
+            ("run_id", "old"),
+            ("stopped_qpos", []),
+            ("stopped_qpos", [float("nan")]),
+        ]:
+            data = self.clock_report()
+            data[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                check_clock_stop_physics(data, **options)

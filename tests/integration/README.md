@@ -37,3 +37,14 @@ python3 verify_process_crash.py --target ros2_control_node --domain 116
 CI의 공동 장면 작업에도 같은 명령을 포함합니다. 이 시험은 실행에서 소유한 프로세스 하나에만
 SIGKILL을 주입합니다. 정상 동작·접촉 정지의 물리 커버리지 검사를 대체하지 않습니다.
 자세한 성공 조건과 미검증 범위는 [크래시 검증](../../docs/process_crash.md)에 있습니다.
+
+시계 실패 주입은 새 launch 두 번으로 확인합니다.
+
+```bash
+python3 verify_clock_stop.py --mode missing --domain 119
+python3 verify_clock_stop.py --mode repeated --domain 120
+```
+
+각 실행에 1.5초 의도한 일시정지·복귀, 양팔 이동, 시계 오류 관측, 물리 고정·양팔 목표 취소와
+제어기 비활성화·새 명령/리셋/재활성화 차단 검사를 포함합니다.
+CI의 공동 장면 작업도 동일 명령을 실행합니다. [범위·판정](../../docs/clock_stop.md)을 참고합니다.

@@ -112,14 +112,44 @@ def check_stop_physics(data, *, run_id, source_sha256, timestep):
     return data
 
 
+def check_clock_stop_physics(data, *, run_id, source_sha256, timestep):
+    check_step_coverage(
+        data, run_id=run_id, source_sha256=source_sha256, timestep=timestep
+    )
+    if not (
+        data.get("stop_enabled") is True
+        and data.get("stop_latched") is True
+        and data.get("stop_reason") == "clock_stall"
+        and data.get("contact_steps") == 0
+        and data.get("contacts") == 0
+        and data.get("active_contacts") == 0
+        and data.get("pairs") == []
+        and data.get("stop_step") == data["steps"]
+        and data.get("hold_ticks", 0) >= 10
+        and data.get("hold_time_sec", 0) > data.get("stop_time_sec", 0)
+        and data.get("stop_time_sec") == data["last_state_time_sec"]
+        and len(data.get("stopped_qpos", [])) > 0
+        and all(math.isfinite(v) for v in data["stopped_qpos"])
+    ):
+        raise ValueError(
+            "Clock stall did not produce a complete zero-contact latched stop"
+        )
+    return data
+
+
 def finalize_physics(report, cell, args):
     path = report.directory / "physics.json"
     data = json.loads(path.read_text())
     # Keep contact pairs and timing evidence even when the zero-contact policy fails.
     report.update(physics=data, physics_report_sha256=file_sha256(path))
     stop_test = getattr(args, "contact_stop_test", False)
-    validator = check_stop_physics if stop_test else check_physics
-    options = {} if stop_test else {"require_interlock": True}
+    clock_test = getattr(args, "clock_stop_test", False)
+    validator = (
+        check_clock_stop_physics
+        if clock_test
+        else (check_stop_physics if stop_test else check_physics)
+    )
+    options = {} if stop_test or clock_test else {"require_interlock": True}
     validator(
         data,
         run_id=report.run_id,
