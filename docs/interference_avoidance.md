@@ -24,6 +24,7 @@ FR5·UR5e의 기존 받침대와 배치를 그대로 사용합니다. 시작·�
 - 실제 제어기의 `interpolation_method=splines`를 조회합니다. 위치만 있으면 선형,
   속도까지 있으면 3차, 가속도까지 있으면 5차 보간으로 중간 자세를 계산합니다.
   단순 위치 직선 보간으로 속도·가속도에 의한 오버슈트를 놓치지 않도록 검사합니다.
+  [Humble 제어기 보간 설명](https://control.ros.org/humble/doc/ros2_controllers/joint_trajectory_controller/doc/trajectory.html)
 - 모든 궤적 점과 20ms 이하 시간 간격을 검사하고 관측 관절 간격 0.025rad 초과는 거부합니다.
   미지/중복 관절, 겹친 소유권, 누락된 전체 관절, 비정상 시간·수치·도함수 배열도 거부합니다.
 - 독립 계획 두 개의 검사 성공, 합성 시 실제 교차 접촉 링크 검출, 전송 수 증가 없음이 음성 대조 조건입니다.
@@ -84,7 +85,8 @@ OMPL 검사 비율 `longest_valid_segment_fraction=0.001`을 적용했고 실제
 
 아래는 **실제로 실행한 공동 회피 동작**입니다. 24fps·약 24.08초, 원본 MuJoCo 창 픽셀이며
 속도 변경·장면 합성을 하지 않았습니다. 영상과 전후 프레임을 직접 확인했습니다.
-원본 로그와 계획은 무손실 gzip으로 보관하며 압축 해제 SHA-256은 GUI 보고서의 `trajectories_sha256`과 일치합니다.
+원본 로그와 계획은 무손실 gzip으로 보관합니다. 계획의 압축 해제 SHA-256은 GUI 보고서의 `trajectories_sha256`과 일치하고,
+로그별 원본 해시는 [보관 명세](interference_avoidance/published_manifest.json)의 `compressed_logs_original_sha256`에 있습니다.
 [촬영 정보](interference_avoidance/recording.json) · [계획 원본](interference_avoidance/trajectories.json.gz)
 
 [![공동 회피 실행 시작](interference_avoidance/before.png)](interference_avoidance/coordinated-avoidance.mp4)
