@@ -110,6 +110,12 @@ jobs:
             --contact-report runtime/validation/visible_contact_fr5_ur5e_headless.json \
             --control-report runtime/validation/control_contact_fr5_ur5e_headless.json \
             --summary-only --output-dir runtime/validation/contact_comparison
+      - name: Core process crash shutdown (two fresh launches)
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_process_crash.py --target move_group --domain 115
+          python3 verify_process_crash.py --target ros2_control_node --domain 116
       - name: Preserve reports on success or failure
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

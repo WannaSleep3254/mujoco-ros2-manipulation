@@ -18,6 +18,7 @@ manipulation-build = "mujoco_ros2_manipulation.build:main"
 
 manipulation-prepare-workcell = "mujoco_ros2_manipulation.workcells.prepare:main"
 manipulation-demo-contact = "mujoco_ros2_manipulation.workcells.verify_contact_demo:main"
+manipulation-verify-process-crash = "mujoco_ros2_manipulation.workcells.verify_process_crash:main"
 manipulation-verify-contact-stop = "mujoco_ros2_manipulation.workcells.verify_contact_stop:main"
 manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
 
