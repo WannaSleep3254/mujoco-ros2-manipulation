@@ -1,0 +1,205 @@
+{
+  "schema_version": 2,
+  "run_id": "20261020T031658.580272Z-135895a1",
+  "robot_id": "contact_stop_demo_fr5_ur5e",
+  "ros_domain_id": 121,
+  "status": "passed",
+  "stage": "complete",
+  "started_utc": "2026-10-20T03:16:58.580360+00:00",
+  "completed_utc": "2026-10-20T03:17:24.129635+00:00",
+  "motion_checks_passed": true,
+  "shutdown_clean": true,
+  "error": null,
+  "cleanup_errors": [],
+  "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T031658.580272Z-135895a1/launch.log",
+  "scene_id": "default",
+  "robot": "FR5 + UR5e \uacf5\ub3d9 \uc791\uc5c5\uc7a5\uba74",
+  "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+  "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+  "gui": true,
+  "stop_mode": "interrupt",
+  "workcell_id": "fr5_ur5e",
+  "paused_contact": false,
+  "contact_stop_test": true,
+  "both_arms_moving_before_contact_rad": {
+    "left": 0.010343191881247282,
+    "right": 0.01013938147975149
+  },
+  "guard_observed_wall_sec": 3.80324921600004,
+  "goal_terminal_statuses": [
+    5,
+    5
+  ],
+  "verifier_cancel_requests": 0,
+  "new_goals_rejected": true,
+  "direct_commands_ignored": true,
+  "reset_resume_step_rejected": true,
+  "reactivation_watchdog_passed": true,
+  "post_stop_drift_rad": 0.0,
+  "clock_advance_after_stop_sec": 1.4039999999999981,
+  "stopped_positions_rad": {
+    "left_j1": 0.2008316954122799,
+    "left_j2": -1.196395117384993,
+    "left_j3": 1.207005456394669,
+    "left_j4": -1.5005168802658,
+    "left_j5": -1.4999920164926648,
+    "left_j6": 7.673935647534614e-07,
+    "right_shoulder_pan_joint": 0.20048013968651732,
+    "right_shoulder_lift_joint": -1.567888358354162,
+    "right_elbow_joint": 1.5748516780011639,
+    "right_wrist_1_joint": -1.5689799673214477,
+    "right_wrist_2_joint": -1.5708001435827734,
+    "right_wrist_3_joint": 1.718023934734961e-09
+  },
+  "contact_guard": {
+    "latched": true,
+    "phase": "stopped",
+    "controllers": {
+      "right_controller": "inactive",
+      "left_controller": "inactive",
+      "joint_state_broadcaster": "active"
+    },
+    "deactivation_requests": 2,
+    "error": ""
+  },
+  "simulated_clock_continues_while_physics_frozen": true,
+  "mujoco_gpu_process_seen": true,
+  "rviz_gpu_process_seen": true,
+  "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "logical_cpus": 24,
+    "memory_total_bytes": 33404817408,
+    "kernel": "6.8.0-147-generic",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+  },
+  "graphics": {
+    "owned_gpu_processes": [
+      "|    0   N/A  N/A           59982      G   ...os2_control/ros2_control_node        141MiB |",
+      "|    0   N/A  N/A           59996      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |"
+    ],
+    "opengl": "name of display: :1\ndisplay: :1  screen: 0\ndirect rendering: Yes\nMemory info (GL_NVX_gpu_memory_info):\n    Dedicated video memory: 6144 MB\n    Total available memory: 6144 MB\n    Currently available dedicated video memory: 4862 MB\nOpenGL vendor string: NVIDIA Corporation\nOpenGL renderer string: NVIDIA GeForce RTX 3050/PCIe/SSE2\nOpenGL core profile version string: 4.6.0 NVIDIA 580.178.04\nOpenGL core profile shading language version string: 4.60 NVIDIA\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6.0 NVIDIA 580.178.04\nOpenGL shading language version string: 4.60 NVIDIA\nOpenGL context flags: (none)\nOpenGL profile mask: (none)\n\nOpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 580.178.04\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+    "nvidia_smi": "Tue Oct 20 12:17:19 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050        Off |   00000000:01:00.0  On |                  N/A |\n| 34%   45C    P3             22W /   70W |     908MiB /   6144MiB |     40%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1655      G   /usr/lib/xorg/Xorg                       95MiB |\n|    0   N/A  N/A            2772      G   /usr/lib/xorg/Xorg                      425MiB |\n|    0   N/A  N/A            2933      G   /usr/bin/gnome-shell                     53MiB |\n|    0   N/A  N/A            3513      G   ...rack-uuid=3190708988185955192        103MiB |\n|    0   N/A  N/A           59982      G   ...os2_control/ros2_control_node        141MiB |\n|    0   N/A  N/A           59996      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |\n+-----------------------------------------------------------------------------------------+\n"
+  },
+  "screenshots": {
+    "captured_utc": "2026-10-20T03:17:23.672148+00:00",
+    "robot_id": "fr5_ur5e",
+    "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+    "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+    "pose": "After verified MoveIt trajectory execution",
+    "images": [
+      {
+        "file": "runtime/demos/contact-stop-20261020/after/mujoco_gui.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "ros2_control_node",
+        "kind": "X11 client-window screenshot",
+        "sha256": "4377d21b94ac6016b38b8602a95c9ec957cc6f4ee1f645e8357a690d73bf5309",
+        "camera_wheel_up_steps": 0
+      },
+      {
+        "file": "runtime/demos/contact-stop-20261020/after/rviz.png",
+        "size_px": [
+          1850,
+          950
+        ],
+        "application": "rviz2",
+        "kind": "X11 client-window screenshot",
+        "sha256": "71d7a31f56bcc1123396ab8b880e5609118fcdff3d448ab8e12e62aa7f60a31e",
+        "camera_wheel_up_steps": 0
+      }
+    ]
+  },
+  "physics": {
+    "schema_version": 1,
+    "run_id": "20261020T031658.580272Z-135895a1",
+    "monitor_source_sha256": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+    "mujoco_version": "3.12.0",
+    "pid": 59982,
+    "complete": true,
+    "steps": 7662,
+    "engine_steps": 7662,
+    "timestep_sec": 0.002,
+    "integrator": 3,
+    "first_contact_evaluation_time_sec": 0,
+    "last_state_time_sec": 15.324000000001787,
+    "simulated_sec": 15.324000000001787,
+    "wall_span_sec": 15.322575984,
+    "paced_real_time_factor": 1.0000929358094406,
+    "contact_steps": 1,
+    "contacts": 1,
+    "active_contacts": 1,
+    "invalid_values": 0,
+    "time_discontinuities": 0,
+    "pair_overflow": 0,
+    "physics_step": {
+      "count": 7662,
+      "mean_sec": 9.167016053249823e-06,
+      "max_sec": 5.6916e-05,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 2e-05,
+      "p99_upper_sec": 3e-05,
+      "overflow_count": 0
+    },
+    "monitor_step": {
+      "count": 7662,
+      "mean_sec": 7.648420777864739e-08,
+      "max_sec": 1.3186e-05,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 1e-05,
+      "p99_upper_sec": 1e-05,
+      "overflow_count": 0
+    },
+    "pairs": [
+      {
+        "geom_ids": [
+          7,
+          44
+        ],
+        "geoms": [
+          "<unnamed>",
+          "contact_stop_test_geom"
+        ],
+        "bodies": [
+          "left_forearm_link",
+          "contact_stop_test_probe"
+        ],
+        "occurrences": 1,
+        "active": 1,
+        "first_sec": 15.322000000001786,
+        "last_sec": 15.322000000001786,
+        "min_distance_m": -0.107734320042819,
+        "max_normal_force_N": 4189.1552124181635
+      }
+    ],
+    "stop_enabled": true,
+    "stop_latched": true,
+    "stop_step": 7662,
+    "stop_time_sec": 15.324000000001787,
+    "hold_ticks": 4324,
+    "hold_time_sec": 23.971999999997593,
+    "stopped_qpos": [
+      0.2008316954122799,
+      -1.196395117384993,
+      1.207005456394669,
+      -1.5005168802658,
+      -1.4999920164926648,
+      7.673935647534614e-07,
+      0.20048013968651732,
+      -1.567888358354162,
+      1.5748516780011639,
+      -1.5689799673214477,
+      -1.5708001435827734,
+      1.718023934734961e-09
+    ]
+  },
+  "physics_report_sha256": "99c41e71ed04af5070dc603a66650df16c140d50f1aa68542b76d3f51916bc38",
+  "contact_test_model_sha256": "fb8c6161b29a316f0437c4fbf13355b7eb9ff3c5d30213cea733d54a5480f879",
+  "physics_checks_passed": true,
+  "shutdown_failures": [],
+  "shutdown_timed_out": false,
+  "launch_return_code": 0,
+  "launch_started": true,
+  "process_group_gone": true
+}

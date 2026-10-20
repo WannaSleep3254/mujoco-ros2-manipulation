@@ -1,0 +1,39 @@
+{
+  "run_id": "20261020T035225.895962Z-17bf9e00",
+  "kind": "Kinematics of recorded joint-state samples using Python MuJoCo 3.14.0",
+  "runtime_contact_authority": "Native MuJoCo 3.12.0 physics.json",
+  "initial_robot_obstacle_minimum_gap_m": 0.43661033097241514,
+  "initial_contacts": 0,
+  "endpoints": {
+    "left": {
+      "body": "left_wrist3_link",
+      "initial_xyz_m": [
+        0.002129941803975882,
+        0.1020803870926104,
+        0.9360102736147515
+      ],
+      "stopped_xyz_m": [
+        -0.3737942734156059,
+        0.5993211440426103,
+        0.9369301670094117
+      ],
+      "straight_line_displacement_m": 0.623352414100182,
+      "sampled_path_length_m": 0.6500422165184654
+    },
+    "right": {
+      "body": "right_wrist_3_link",
+      "initial_xyz_m": [
+        0.1575240467317638,
+        -0.133375914528695,
+        0.8815625740687645
+      ],
+      "stopped_xyz_m": [
+        0.2663733669165733,
+        0.3360312797728905,
+        0.8842833869946308
+      ],
+      "straight_line_displacement_m": 0.4818699942824405,
+      "sampled_path_length_m": 0.5044282794857675
+    }
+  }
+}

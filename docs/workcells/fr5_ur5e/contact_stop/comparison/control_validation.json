@@ -1,0 +1,3339 @@
+{
+  "schema_version": 2,
+  "run_id": "20261020T053818.458816Z-992e4397",
+  "robot_id": "control_contact_fr5_ur5e",
+  "ros_domain_id": 123,
+  "status": "passed",
+  "stage": "complete",
+  "started_utc": "2026-10-20T05:38:18.458912+00:00",
+  "completed_utc": "2026-10-20T05:38:39.268128+00:00",
+  "motion_checks_passed": true,
+  "shutdown_clean": true,
+  "error": null,
+  "cleanup_errors": [],
+  "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T053818.458816Z-992e4397/launch.log",
+  "scene_id": "default",
+  "robot": "FR5 + UR5e \uacf5\ub3d9 \uc791\uc5c5\uc7a5\uba74",
+  "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+  "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+  "gui": true,
+  "stop_mode": "interrupt",
+  "workcell_id": "fr5_ur5e",
+  "control_without_obstacle": true,
+  "contact_stop_test": false,
+  "natural_fixed_obstacle_contact": false,
+  "contact_injection_requests": 0,
+  "verifier_cancel_requests": 0,
+  "commanded_first_joint_offsets_rad": [
+    2.0,
+    -2.0
+  ],
+  "commanded_duration_sec": 8.0,
+  "outbound_duration_sec": 4.0,
+  "commanded_trajectories": [
+    {
+      "joints": [
+        "left_j1",
+        "left_j2",
+        "left_j3",
+        "left_j4",
+        "left_j5",
+        "left_j6"
+      ],
+      "points": [
+        {
+          "positions": [
+            0.0,
+            -1.2,
+            1.2,
+            -1.5,
+            -1.5,
+            0.0
+          ],
+          "seconds": 0,
+          "nanoseconds": 0
+        },
+        {
+          "positions": [
+            2.0,
+            -1.2,
+            1.2,
+            -1.5,
+            -1.5,
+            0.0
+          ],
+          "seconds": 4,
+          "nanoseconds": 0
+        },
+        {
+          "positions": [
+            0.0,
+            -1.2,
+            1.2,
+            -1.5,
+            -1.5,
+            0.0
+          ],
+          "seconds": 8,
+          "nanoseconds": 0
+        }
+      ]
+    },
+    {
+      "joints": [
+        "right_shoulder_pan_joint",
+        "right_shoulder_lift_joint",
+        "right_elbow_joint",
+        "right_wrist_1_joint",
+        "right_wrist_2_joint",
+        "right_wrist_3_joint"
+      ],
+      "points": [
+        {
+          "positions": [
+            0.0,
+            -1.5708,
+            1.5708,
+            -1.5708,
+            -1.5708,
+            0.0
+          ],
+          "seconds": 0,
+          "nanoseconds": 0
+        },
+        {
+          "positions": [
+            -2.0,
+            -1.5708,
+            1.5708,
+            -1.5708,
+            -1.5708,
+            0.0
+          ],
+          "seconds": 4,
+          "nanoseconds": 0
+        },
+        {
+          "positions": [
+            0.0,
+            -1.5708,
+            1.5708,
+            -1.5708,
+            -1.5708,
+            0.0
+          ],
+          "seconds": 8,
+          "nanoseconds": 0
+        }
+      ]
+    }
+  ],
+  "command_sha256": "c2c5057aa958f54bc01b23f3d97a5db17fd8bf3f8fe18632dad2b6784d23667a",
+  "motion_start_clock_sec": 6.901999999,
+  "motion_end_clock_sec": 14.901999999000001,
+  "guard_latch_clock_sec": null,
+  "remaining_motion_at_contact_sec": null,
+  "first_joint_peak_displacement_rad": {
+    "left": 1.9845339203548942,
+    "right": 1.984323427315973
+  },
+  "first_joint_displacement_rad": {
+    "left": 0.0005965286479050648,
+    "right": 0.00010735794347708335
+  },
+  "first_joint_peak_velocity_rad_sec": {
+    "left": 0.5390604900857244,
+    "right": 0.49221657932053564
+  },
+  "initial_positions_rad": {
+    "left_j1": -3.190994261447102e-05,
+    "left_j2": -1.1963166515054575,
+    "left_j3": 1.2047929295948965,
+    "left_j4": -1.4989135842105286,
+    "left_j5": -1.4999887770210625,
+    "left_j6": -1.3707276553506125e-06,
+    "right_shoulder_pan_joint": -8.94817914539763e-05,
+    "right_shoulder_lift_joint": -1.5645929642377505,
+    "right_elbow_joint": 1.5790282288815034,
+    "right_wrist_1_joint": -1.567115774964403,
+    "right_wrist_2_joint": -1.5707995203865286,
+    "right_wrist_3_joint": -1.0837605340828339e-08
+  },
+  "stopped_positions_rad": {
+    "left_j1": -0.0006284385905195359,
+    "left_j2": -1.196933952587978,
+    "left_j3": 1.2035925092919626,
+    "left_j4": -1.4992309821995922,
+    "left_j5": -1.4999879255069277,
+    "left_j6": -8.288650093986384e-07,
+    "right_shoulder_pan_joint": 1.7876152023107047e-05,
+    "right_shoulder_lift_joint": -1.567912414542207,
+    "right_elbow_joint": 1.5748608806162252,
+    "right_wrist_1_joint": -1.5689700204355972,
+    "right_wrist_2_joint": -1.570763124204797,
+    "right_wrist_3_joint": -5.180486129259983e-07
+  },
+  "goal_terminal_statuses": [
+    4,
+    4
+  ],
+  "new_goals_rejected": false,
+  "post_stop_drift_rad": null,
+  "final_holding_drift_rad": 0.0006284385905154707,
+  "motion_sample_minimum_period_sec": 0.1,
+  "contact_guard": {
+    "latched": false,
+    "phase": "ready",
+    "controllers": {
+      "left_controller": "active",
+      "right_controller": "active",
+      "joint_state_broadcaster": "active"
+    },
+    "deactivation_requests": 0,
+    "error": ""
+  },
+  "motion_samples": [
+    {
+      "clock_sec": 5.901999999,
+      "positions_rad": {
+        "left_j1": -3.190994261447102e-05,
+        "left_j2": -1.1963166515054575,
+        "left_j3": 1.2047929295948965,
+        "left_j4": -1.4989135842105286,
+        "left_j5": -1.4999887770210625,
+        "left_j6": -1.3707276553506125e-06,
+        "right_shoulder_pan_joint": -8.94817914539763e-05,
+        "right_shoulder_lift_joint": -1.5645929642377505,
+        "right_elbow_joint": 1.5790282288815034,
+        "right_wrist_1_joint": -1.567115774964403,
+        "right_wrist_2_joint": -1.5707995203865286,
+        "right_wrist_3_joint": -1.0837605340828339e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 4.207209148528147e-17,
+        "left_j2": -4.201477930913585e-14,
+        "left_j3": -2.411047105520571e-14,
+        "left_j6": -1.2520905650285927e-18,
+        "left_j4": 3.910194928003225e-14,
+        "left_j5": 3.541151832336849e-14,
+        "right_shoulder_pan_joint": 2.4792543004135234e-17,
+        "right_shoulder_lift_joint": 4.52748660681931e-14,
+        "right_elbow_joint": 1.5484828149400542e-14,
+        "right_wrist_1_joint": -2.6870164644776864e-14,
+        "right_wrist_2_joint": -1.8318316935805255e-14,
+        "right_wrist_3_joint": 1.7376578396660044e-19
+      }
+    },
+    {
+      "clock_sec": 6.005999999,
+      "positions_rad": {
+        "left_j1": -2.9639103501677357e-05,
+        "left_j2": -1.1963460514521882,
+        "left_j3": 1.2047209199065005,
+        "left_j4": -1.498934994266269,
+        "left_j5": -1.4999889737866676,
+        "left_j6": -1.3582419427609753e-06,
+        "right_shoulder_pan_joint": -8.917343056269526e-05,
+        "right_shoulder_lift_joint": -1.5648173933848615,
+        "right_elbow_joint": 1.578747685373751,
+        "right_wrist_1_joint": -1.5672356919648847,
+        "right_wrist_2_joint": -1.570799740128327,
+        "right_wrist_3_joint": -7.718761979947625e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.044254353665588e-05,
+        "left_j2": -0.0006567394189094283,
+        "left_j3": -0.0011544010787687678,
+        "left_j6": 2.4510641797184577e-07,
+        "left_j4": -0.00031234592275424525,
+        "left_j5": -3.0503576718218527e-06,
+        "right_shoulder_pan_joint": 0.00022206446861635582,
+        "right_shoulder_lift_joint": -0.003658173198309524,
+        "right_elbow_joint": -0.004235368867250287,
+        "right_wrist_1_joint": -0.0019402497191964164,
+        "right_wrist_2_joint": 1.3170588633509154e-06,
+        "right_wrist_3_joint": -1.2034846481527483e-08
+      }
+    },
+    {
+      "clock_sec": 6.115999999,
+      "positions_rad": {
+        "left_j1": -2.674369790489645e-05,
+        "left_j2": -1.1964118072947307,
+        "left_j3": 1.2045886811242232,
+        "left_j4": -1.4989701981128836,
+        "left_j5": -1.499989302254537,
+        "left_j6": -1.3306859666449533e-06,
+        "right_shoulder_pan_joint": -7.438711708351887e-05,
+        "right_shoulder_lift_joint": -1.5651886348393862,
+        "right_elbow_joint": 1.5782827401416686,
+        "right_wrist_1_joint": -1.5674434974584814,
+        "right_wrist_2_joint": -1.570799583564465,
+        "right_wrist_3_joint": -9.235834232290533e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.2203349788526794e-05,
+        "left_j2": -0.0005249499755315195,
+        "left_j3": -0.0011402267850411975,
+        "left_j6": 1.9322147899827705e-07,
+        "left_j4": -0.0003001100548896751,
+        "left_j5": -2.837155656471506e-06,
+        "right_shoulder_pan_joint": 8.598181511863947e-05,
+        "right_shoulder_lift_joint": -0.0032627277383901958,
+        "right_elbow_joint": -0.0040506394320611394,
+        "right_wrist_1_joint": -0.0018563413287157194,
+        "right_wrist_2_joint": -3.6760430623707944e-06,
+        "right_wrist_3_joint": 4.6264226135180426e-08
+      }
+    },
+    {
+      "clock_sec": 6.215999999,
+      "positions_rad": {
+        "left_j1": -2.338320712795958e-05,
+        "left_j2": -1.1964644129706357,
+        "left_j3": 1.2044708318583244,
+        "left_j4": -1.499001566172291,
+        "left_j5": -1.4999895947423685,
+        "left_j6": -1.3087970496476004e-06,
+        "right_shoulder_pan_joint": -6.563004236757353e-05,
+        "right_shoulder_lift_joint": -1.5655194369455656,
+        "right_elbow_joint": 1.5778634902122148,
+        "right_wrist_1_joint": -1.567630613002002,
+        "right_wrist_2_joint": -1.5707996560033426,
+        "right_wrist_3_joint": -7.817910407625443e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.2507769427894735e-05,
+        "left_j2": -0.0005427738190838662,
+        "left_j3": -0.001146999886277595,
+        "left_j6": 2.0365622758825378e-07,
+        "left_j4": -0.0003020377773275789,
+        "left_j5": -2.8592863345550383e-06,
+        "right_shoulder_pan_joint": 9.668181490775849e-05,
+        "right_shoulder_lift_joint": -0.0032829890920569806,
+        "right_elbow_joint": -0.004062333966383158,
+        "right_wrist_1_joint": -0.001861889068182262,
+        "right_wrist_2_joint": -2.597049528493832e-06,
+        "right_wrist_3_joint": 3.286599040048314e-08
+      }
+    },
+    {
+      "clock_sec": 6.325999999,
+      "positions_rad": {
+        "left_j1": -1.988241565129948e-05,
+        "left_j2": -1.1965236116519278,
+        "left_j3": 1.2043406079218208,
+        "left_j4": -1.499036190385253,
+        "left_j5": -1.4999899168290811,
+        "left_j6": -1.2839738935806593e-06,
+        "right_shoulder_pan_joint": -5.5737572986772096e-05,
+        "right_shoulder_lift_joint": -1.5658834160803974,
+        "right_elbow_joint": 1.5774022421060174,
+        "right_wrist_1_joint": -1.5678364841422343,
+        "right_wrist_2_joint": -1.5707997076198128,
+        "right_wrist_3_joint": -6.6345238744546724e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.202589320792758e-05,
+        "left_j2": -0.0005409776438920773,
+        "left_j3": -0.0011465262686818228,
+        "left_j6": 2.0264194685636726e-07,
+        "left_j4": -0.0003018005253437721,
+        "left_j5": -2.8550059933274793e-06,
+        "right_shoulder_pan_joint": 9.597024922986742e-05,
+        "right_shoulder_lift_joint": -0.0032820053550904693,
+        "right_elbow_joint": -0.004061742527703023,
+        "right_wrist_1_joint": -0.0018616054003389262,
+        "right_wrist_2_joint": -2.6679499885431454e-06,
+        "right_wrist_3_joint": 3.3723617779367765e-08
+      }
+    },
+    {
+      "clock_sec": 6.435999999,
+      "positions_rad": {
+        "left_j1": -1.6354825194932378e-05,
+        "left_j2": -1.196582594708302,
+        "left_j3": 1.2042104744006326,
+        "left_j4": -1.4990707945057096,
+        "left_j5": -1.4999902388689745,
+        "left_j6": -1.25927259709454e-06,
+        "right_shoulder_pan_joint": -4.585496501611839e-05,
+        "right_shoulder_lift_joint": -1.5662474050797717,
+        "right_elbow_joint": 1.576940987505026,
+        "right_wrist_1_joint": -1.568042358055371,
+        "right_wrist_2_joint": -1.570799760274714,
+        "right_wrist_3_joint": -5.437401406228995e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.212175526021763e-05,
+        "left_j2": -0.0005412467536153324,
+        "left_j3": -0.0011465965119254974,
+        "left_j6": 2.0278459018213693e-07,
+        "left_j4": -0.0003018364499111856,
+        "left_j5": -2.8557626836563642e-06,
+        "right_shoulder_pan_joint": 9.601635328267114e-05,
+        "right_shoulder_lift_joint": -0.0032820549376025273,
+        "right_elbow_joint": -0.004061761122002901,
+        "right_wrist_1_joint": -0.001861635539852147,
+        "right_wrist_2_joint": -2.6701830816317775e-06,
+        "right_wrist_3_joint": 3.3743535957444593e-08
+      }
+    },
+    {
+      "clock_sec": 6.535999999,
+      "positions_rad": {
+        "left_j1": -1.315148155177152e-05,
+        "left_j2": -1.1966362469294718,
+        "left_j3": 1.2040921579862873,
+        "left_j4": -1.4991022557410703,
+        "left_j5": -1.4999905316397373,
+        "left_j6": -1.2367991351026455e-06,
+        "right_shoulder_pan_joint": -3.687086521301133e-05,
+        "right_shoulder_lift_joint": -1.5665783046234953,
+        "right_elbow_joint": 1.5765216633661792,
+        "right_wrist_1_joint": -1.5682295175067384,
+        "right_wrist_2_joint": -1.5707998081431649,
+        "right_wrist_3_joint": -4.349180911817678e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.2103907689015084e-05,
+        "left_j2": -0.0005412150176256303,
+        "left_j3": -0.0011465896279402215,
+        "left_j6": 2.0276566926505942e-07,
+        "left_j4": -0.00030183166828674616,
+        "left_j5": -2.855617190165647e-06,
+        "right_shoulder_pan_joint": 9.603092732353526e-05,
+        "right_shoulder_lift_joint": -0.0032821009049607813,
+        "right_elbow_joint": -0.004061776477174363,
+        "right_wrist_1_joint": -0.001861660532892708,
+        "right_wrist_2_joint": -2.6749181603696937e-06,
+        "right_wrist_3_joint": 3.379771458441825e-08
+      }
+    },
+    {
+      "clock_sec": 6.645999999,
+      "positions_rad": {
+        "left_j1": -9.627251535184904e-06,
+        "left_j2": -1.1966952586549766,
+        "left_j3": 1.2039620122211212,
+        "left_j4": -1.4991368625871657,
+        "left_j5": -1.4999908536861168,
+        "left_j6": -1.2120815523930277e-06,
+        "right_shoulder_pan_joint": -2.6988316532476638e-05,
+        "right_shoulder_lift_joint": -1.5669422962197135,
+        "right_elbow_joint": 1.5760604039869544,
+        "right_wrist_1_joint": -1.5684353947730394,
+        "right_wrist_2_joint": -1.570799860795309,
+        "right_wrist_3_joint": -3.1521745102301087e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.210890088807058e-05,
+        "left_j2": -0.0005412152979776087,
+        "left_j3": -0.0011465877704358433,
+        "left_j6": 2.0276232676783538e-07,
+        "left_j4": -0.00030183203575619253,
+        "left_j5": -2.8556304135450927e-06,
+        "right_shoulder_pan_joint": 9.60473050738495e-05,
+        "right_shoulder_lift_joint": -0.003282148199064656,
+        "right_elbow_joint": -0.004061791617156961,
+        "right_wrist_1_joint": -0.0018616872945045127,
+        "right_wrist_2_joint": -2.6800766658625446e-06,
+        "right_wrist_3_joint": 3.38564789627423e-08
+      }
+    },
+    {
+      "clock_sec": 6.745999999,
+      "positions_rad": {
+        "left_j1": -6.4234458480098456e-06,
+        "left_j2": -1.1967489065607002,
+        "left_j3": 1.2038436974543258,
+        "left_j4": -1.4991683234678355,
+        "left_j5": -1.4999911464563787,
+        "left_j6": -1.1896105260263907e-06,
+        "right_shoulder_pan_joint": -1.800418410112427e-05,
+        "right_shoulder_lift_joint": -1.567273199474718,
+        "right_elbow_joint": 1.5756410747675529,
+        "right_wrist_1_joint": -1.568622557596927,
+        "right_wrist_2_joint": -1.5707999086611404,
+        "right_wrist_3_joint": -2.063983918482768e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.210850442659763e-05,
+        "left_j2": -0.0005412173836248325,
+        "left_j3": -0.0011465883380399737,
+        "left_j6": 2.0276077753265292e-07,
+        "left_j4": -0.00030183215590879584,
+        "left_j5": -2.8556150812675127e-06,
+        "right_shoulder_pan_joint": 9.606224536678448e-05,
+        "right_shoulder_lift_joint": -0.003282191426856679,
+        "right_elbow_joint": -0.004061805503627571,
+        "right_wrist_1_joint": -0.0018617116770735668,
+        "right_wrist_2_joint": -2.684766805069373e-06,
+        "right_wrist_3_joint": 3.390992176274671e-08
+      }
+    },
+    {
+      "clock_sec": 6.855999999,
+      "positions_rad": {
+        "left_j1": -2.8992554131808206e-06,
+        "left_j2": -1.1968079192101435,
+        "left_j3": 1.2037135511413368,
+        "left_j4": -1.499202930459265,
+        "left_j5": -1.499991468503962,
+        "left_j6": -1.1648924195262594e-06,
+        "right_shoulder_pan_joint": -8.121638221531124e-06,
+        "right_shoulder_lift_joint": -1.56763719504524,
+        "right_elbow_joint": 1.5751798098605054,
+        "right_wrist_1_joint": -1.5688284385454774,
+        "right_wrist_2_joint": -1.5707999613135457,
+        "right_wrist_3_joint": -8.669744151359606e-10
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.2109083416708335e-05,
+        "left_j2": -0.0005412187966346996,
+        "left_j3": -0.0011465883037823448,
+        "left_j6": 2.027584834993537e-07,
+        "left_j4": -0.00030183228038750746,
+        "left_j5": -2.8556034557789766e-06,
+        "right_shoulder_pan_joint": 9.607868990220956e-05,
+        "right_shoulder_lift_joint": -0.003282238946561352,
+        "right_elbow_joint": -0.004061820755175977,
+        "right_wrist_1_joint": -0.001861738485876408,
+        "right_wrist_2_joint": -2.6899293817719774e-06,
+        "right_wrist_3_joint": 3.396875296404155e-08
+      }
+    },
+    {
+      "clock_sec": 6.955999999,
+      "positions_rad": {
+        "left_j1": 0.0067185611142137214,
+        "left_j2": -1.1970072814241803,
+        "left_j3": 1.2036364856871138,
+        "left_j4": -1.4992239151218212,
+        "left_j5": -1.4999647255925121,
+        "left_j6": 8.27232374065257e-07,
+        "right_shoulder_pan_joint": -0.00824038404599603,
+        "right_shoulder_lift_joint": -1.5682568269113815,
+        "right_elbow_joint": 1.574863813078803,
+        "right_wrist_1_joint": -1.5689294807001775,
+        "right_wrist_2_joint": -1.5705636718780418,
+        "right_wrist_3_joint": -2.9705103173794926e-06
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.30152087267551253,
+        "left_j2": -0.004077413001345523,
+        "left_j3": -0.00141668601700251,
+        "left_j6": 1.4473411379420412e-05,
+        "left_j4": -0.00026918957124095214,
+        "left_j5": 8.00055341640844e-05,
+        "right_shoulder_pan_joint": -0.33158519927660335,
+        "right_shoulder_lift_joint": -0.0034346732983643715,
+        "right_elbow_joint": -0.004427119781534152,
+        "right_wrist_1_joint": -0.0019350196559210172,
+        "right_wrist_2_joint": -0.0023259253755285006,
+        "right_wrist_3_joint": 2.0229847136911464e-05
+      }
+    },
+    {
+      "clock_sec": 7.065999999,
+      "positions_rad": {
+        "left_j1": 0.05946361370301326,
+        "left_j2": -1.1967826462756606,
+        "left_j3": 1.2036142945391888,
+        "left_j4": -1.499226247343356,
+        "left_j5": -1.4999913353645042,
+        "left_j6": -1.2344666783924268e-06,
+        "right_shoulder_pan_joint": -0.05977893834749228,
+        "right_shoulder_lift_joint": -1.5678457721596641,
+        "right_elbow_joint": 1.5748647257686714,
+        "right_wrist_1_joint": -1.56897701638117,
+        "right_wrist_2_joint": -1.5707837345262463,
+        "right_wrist_3_joint": -2.1563126574925074e-07
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.509582566792057,
+        "left_j2": 0.0031988770155196803,
+        "left_j3": 0.0005356432289148679,
+        "left_j6": -1.9147191399330133e-05,
+        "left_j4": 0.00013541349873897799,
+        "left_j5": -0.0002873838970429308,
+        "right_shoulder_pan_joint": -0.4917795219973405,
+        "right_shoulder_lift_joint": 0.0023805956177019175,
+        "right_elbow_joint": -0.0011922112118928632,
+        "right_wrist_1_joint": -0.0007109000979864792,
+        "right_wrist_2_joint": -0.0035572707876134627,
+        "right_wrist_3_joint": 4.066608235751552e-05
+      }
+    },
+    {
+      "clock_sec": 7.165999999,
+      "positions_rad": {
+        "left_j1": 0.10978152145607609,
+        "left_j2": -1.1967711616962446,
+        "left_j3": 1.2036179482153226,
+        "left_j4": -1.4992266304833126,
+        "left_j5": -1.4999923379569597,
+        "left_j6": -1.2995803576491102e-06,
+        "right_shoulder_pan_joint": -0.1097899890989625,
+        "right_shoulder_lift_joint": -1.5678577448729012,
+        "right_elbow_joint": 1.574847437673552,
+        "right_wrist_1_joint": -1.5689881065847515,
+        "right_wrist_2_joint": -1.5708013530143192,
+        "right_wrist_3_joint": 4.0334839914661006e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49412134261820284,
+        "left_j2": -0.0004365268242918703,
+        "left_j3": -0.0005591692657295201,
+        "left_j6": -8.402985381821819e-06,
+        "left_j4": -8.638794752714653e-05,
+        "left_j5": -0.00017001215961278966,
+        "right_shoulder_pan_joint": -0.4912129182818263,
+        "right_shoulder_lift_joint": 0.0015565766610119497,
+        "right_elbow_joint": -0.0012070036569165688,
+        "right_wrist_1_joint": -0.0006151000502175821,
+        "right_wrist_2_joint": -0.002867074055972473,
+        "right_wrist_3_joint": 3.116521554896589e-05
+      }
+    },
+    {
+      "clock_sec": 7.275999999,
+      "positions_rad": {
+        "left_j1": 0.16474199471945364,
+        "left_j2": -1.1967832528198057,
+        "left_j3": 1.2036126920385342,
+        "left_j4": -1.4992272590224789,
+        "left_j5": -1.499992084124797,
+        "left_j6": -1.2750878670848778e-06,
+        "right_shoulder_pan_joint": -0.16479005571712407,
+        "right_shoulder_lift_joint": -1.5678560584914998,
+        "right_elbow_joint": 1.5748482876614218,
+        "right_wrist_1_joint": -1.5689878133431245,
+        "right_wrist_2_joint": -1.5708016657543962,
+        "right_wrist_3_joint": 4.605541202774117e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49518585570532375,
+        "left_j2": 0.00041373122478564656,
+        "left_j3": -0.0002319876238408209,
+        "left_j6": -9.724846267889622e-06,
+        "left_j4": -2.0582053492244926e-05,
+        "left_j5": -0.00018074353540291103,
+        "right_shoulder_pan_joint": -0.49124295955949254,
+        "right_shoulder_lift_joint": 0.0015608209350637056,
+        "right_elbow_joint": -0.0011975236098098478,
+        "right_wrist_1_joint": -0.0006053470938393962,
+        "right_wrist_2_joint": -0.002856805087053049,
+        "right_wrist_3_joint": 3.0975287497433284e-05
+      }
+    },
+    {
+      "clock_sec": 7.375999999,
+      "positions_rad": {
+        "left_j1": 0.21474503038129222,
+        "left_j2": -1.1967807445653003,
+        "left_j3": 1.2036138569523995,
+        "left_j4": -1.4992270927072069,
+        "left_j5": -1.4999921070820537,
+        "left_j6": -1.2780250369498393e-06,
+        "right_shoulder_pan_joint": -0.21479001561689656,
+        "right_shoulder_lift_joint": -1.5678561731597953,
+        "right_elbow_joint": 1.5748482226109357,
+        "right_wrist_1_joint": -1.5689878449718977,
+        "right_wrist_2_joint": -1.5708016672656266,
+        "right_wrist_3_joint": 4.6121103347316354e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513748961930715,
+        "left_j2": 0.00027062467753649264,
+        "left_j3": -0.0002908996363025109,
+        "left_j6": -9.595768365424438e-06,
+        "left_j4": -3.302328074308151e-05,
+        "left_j5": -0.00018017406285183123,
+        "right_shoulder_pan_joint": -0.49124256371930763,
+        "right_shoulder_lift_joint": 0.001564088118441144,
+        "right_elbow_joint": -0.001195791908168601,
+        "right_wrist_1_joint": -0.0006045933086304943,
+        "right_wrist_2_joint": -0.002856561448833885,
+        "right_wrist_3_joint": 3.097052480863844e-05
+      }
+    },
+    {
+      "clock_sec": 7.485999999,
+      "positions_rad": {
+        "left_j1": 0.26974477592891044,
+        "left_j2": -1.1967813702457473,
+        "left_j3": 1.2036135697847432,
+        "left_j4": -1.4992271416219725,
+        "left_j5": -1.4999921051207699,
+        "left_j6": -1.2775469193736066e-06,
+        "right_shoulder_pan_joint": -0.269790018950469,
+        "right_shoulder_lift_joint": -1.5678561661418247,
+        "right_elbow_joint": 1.5748482266475103,
+        "right_wrist_1_joint": -1.5689878430443756,
+        "right_wrist_2_joint": -1.5708016676562668,
+        "right_wrist_3_joint": 4.612729903171881e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513694912988815,
+        "left_j2": 0.00029519438184622953,
+        "left_j3": -0.0002808060680595568,
+        "left_j6": -9.61132829645874e-06,
+        "left_j4": -3.071436854289102e-05,
+        "left_j5": -0.0001801776521797323,
+        "right_shoulder_pan_joint": -0.49124253572061966,
+        "right_shoulder_lift_joint": 0.0015637772883680934,
+        "right_elbow_joint": -0.0011959619496058275,
+        "right_wrist_1_joint": -0.0006046673801532579,
+        "right_wrist_2_joint": -0.002856556606565341,
+        "right_wrist_3_joint": 3.0970422390143685e-05
+      }
+    },
+    {
+      "clock_sec": 7.585999999,
+      "positions_rad": {
+        "left_j1": 0.319744799706495,
+        "left_j2": -1.1967812647451421,
+        "left_j3": 1.2036136183747468,
+        "left_j4": -1.499227133037999,
+        "left_j5": -1.4999921052430034,
+        "left_j6": -1.2776125443774464e-06,
+        "right_shoulder_pan_joint": -0.3197900187578581,
+        "right_shoulder_lift_joint": -1.567856166303884,
+        "right_elbow_joint": 1.5748482265453916,
+        "right_wrist_1_joint": -1.5689878431016662,
+        "right_wrist_2_joint": -1.570801667639817,
+        "right_wrist_3_joint": 4.6127119664444125e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513716991060036,
+        "left_j2": 0.00029140146013661414,
+        "left_j3": -0.0002823591483844164,
+        "left_j6": -9.609236901709727e-06,
+        "left_j4": -3.107982014850939e-05,
+        "left_j5": -0.00018018146486625783,
+        "right_shoulder_pan_joint": -0.49124254283372226,
+        "right_shoulder_lift_joint": 0.0015637960376742835,
+        "right_elbow_joint": -0.001195951257828552,
+        "right_wrist_1_joint": -0.0006046622741318942,
+        "right_wrist_2_joint": -0.002856557113106575,
+        "right_wrist_3_joint": 3.097042734197148e-05
+      }
+    },
+    {
+      "clock_sec": 7.695999999,
+      "positions_rad": {
+        "left_j1": 0.3747447969337816,
+        "left_j2": -1.196781286614982,
+        "left_j3": 1.2036136085796336,
+        "left_j4": -1.4992271349208213,
+        "left_j5": -1.4999921052415615,
+        "left_j6": -1.277600205318213e-06,
+        "right_shoulder_pan_joint": -0.37479001876843737,
+        "right_shoulder_lift_joint": -1.5678561663038122,
+        "right_elbow_joint": 1.574848226546212,
+        "right_wrist_1_joint": -1.5689878431006372,
+        "right_wrist_2_joint": -1.570801667640909,
+        "right_wrist_3_joint": 4.6127134568079166e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371039437996,
+        "left_j2": 0.00029197693251744716,
+        "left_j3": -0.0002821334706472373,
+        "left_j6": -9.609536815766442e-06,
+        "left_j4": -3.102137533015456e-05,
+        "left_j5": -0.00018018042742121008,
+        "right_shoulder_pan_joint": -0.4912425422431434,
+        "right_shoulder_lift_joint": 0.0015637949733171234,
+        "right_elbow_joint": -0.0011959518783471912,
+        "right_wrist_1_joint": -0.000604662580102551,
+        "right_wrist_2_joint": -0.0028565570607310816,
+        "right_wrist_3_joint": 3.0970426667040427e-05
+      }
+    },
+    {
+      "clock_sec": 7.795999999,
+      "positions_rad": {
+        "left_j1": 0.42474479736562076,
+        "left_j2": -1.1967812830537163,
+        "left_j3": 1.2036136101641508,
+        "left_j4": -1.4992271346106452,
+        "left_j5": -1.4999921052410892,
+        "left_j6": -1.2776021790163395e-06,
+        "right_shoulder_pan_joint": -0.42479001876831035,
+        "right_shoulder_lift_joint": -1.5678561663027881,
+        "right_elbow_joint": 1.5748482265467576,
+        "right_wrist_1_joint": -1.56898784310041,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.6127134295697187e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371125118215,
+        "left_j2": 0.0002918905018487682,
+        "left_j3": -0.00028216680101141424,
+        "left_j6": -9.609490993448917e-06,
+        "left_j4": -3.1030277887220416e-05,
+        "left_j5": -0.00018018058379270786,
+        "right_shoulder_pan_joint": -0.4912425422733639,
+        "right_shoulder_lift_joint": 0.0015637949898700773,
+        "right_elbow_joint": -0.0011959518671399289,
+        "right_wrist_1_joint": -0.0006046625732822526,
+        "right_wrist_2_joint": -0.0028565570636068516,
+        "right_wrist_3_joint": 3.097042670306566e-05
+      }
+    },
+    {
+      "clock_sec": 7.9059999990000005,
+      "positions_rad": {
+        "left_j1": 0.4797447973076029,
+        "left_j2": -1.1967812837265337,
+        "left_j3": 1.2036136098730092,
+        "left_j4": -1.499227134671419,
+        "left_j5": -1.49999210524139,
+        "left_j6": -1.2776018083590213e-06,
+        "right_shoulder_pan_joint": -0.4797900187682998,
+        "right_shoulder_lift_joint": -1.5678561663028825,
+        "right_elbow_joint": 1.5748482265467059,
+        "right_wrist_1_joint": -1.568987843100433,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.6127134294432765e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.495137110280467,
+        "left_j2": 0.0002919016206878659,
+        "left_j3": -0.00028216289823727707,
+        "left_j6": -9.60949688185183e-06,
+        "left_j4": -3.102903320088574e-05,
+        "left_j5": -0.00018018055500369667,
+        "right_shoulder_pan_joint": -0.49124254227183584,
+        "right_shoulder_lift_joint": 0.0015637949906071172,
+        "right_elbow_joint": -0.001195951866864195,
+        "right_wrist_1_joint": -0.0006046625732670371,
+        "right_wrist_2_joint": -0.0028565570634358516,
+        "right_wrist_3_joint": 3.097042670098836e-05
+      }
+    },
+    {
+      "clock_sec": 8.015999999,
+      "positions_rad": {
+        "left_j1": 0.53474479731702,
+        "left_j2": -1.1967812836208527,
+        "left_j3": 1.203613609918639,
+        "left_j4": -1.499227134661853,
+        "left_j5": -1.4999921052413443,
+        "left_j6": -1.2776018668173377e-06,
+        "right_shoulder_pan_joint": -0.5347900187683018,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296527597e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371106208024,
+        "left_j2": 0.00029189992809840193,
+        "left_j3": -0.00028216348581792077,
+        "left_j6": -9.609495972018855e-06,
+        "left_j4": -3.102922403020681e-05,
+        "left_j5": -0.0001801805593357452,
+        "right_shoulder_pan_joint": -0.4912425422718419,
+        "right_shoulder_lift_joint": 0.001563794990428594,
+        "right_elbow_joint": -0.0011959518669702692,
+        "right_wrist_1_joint": -0.0006046625733043039,
+        "right_wrist_2_joint": -0.002856557063455295,
+        "right_wrist_3_joint": 3.097042670101454e-05
+      }
+    },
+    {
+      "clock_sec": 8.125999999,
+      "positions_rad": {
+        "left_j1": 0.5897447973155442,
+        "left_j2": -1.1967812836374532,
+        "left_j3": 1.203613609911486,
+        "left_j4": -1.4992271346633592,
+        "left_j5": -1.4999921052413512,
+        "left_j6": -1.2776018576124395e-06,
+        "right_shoulder_pan_joint": -0.5897900187683018,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429640083e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711056675574,
+        "left_j2": 0.00029190018556505523,
+        "left_j3": -0.0002821633974178584,
+        "left_j6": -9.609496111198962e-06,
+        "left_j4": -3.102919475416915e-05,
+        "left_j5": -0.00018018055867571856,
+        "right_shoulder_pan_joint": -0.49124254227184116,
+        "right_shoulder_lift_joint": 0.0015637949904361037,
+        "right_elbow_joint": -0.0011959518669672506,
+        "right_wrist_1_joint": -0.0006046625733015734,
+        "right_wrist_2_joint": -0.0028565570634567863,
+        "right_wrist_3_joint": 3.097042670102064e-05
+      }
+    },
+    {
+      "clock_sec": 8.225999999,
+      "positions_rad": {
+        "left_j1": 0.6397447973157566,
+        "left_j2": -1.1967812836348046,
+        "left_j3": 1.2036136099126196,
+        "left_j4": -1.499227134663117,
+        "left_j5": -1.49999210524135,
+        "left_j6": -1.2776018590816378e-06,
+        "right_shoulder_pan_joint": -0.6397900187683019,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296379134e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057622,
+        "left_j2": 0.00029190014930384543,
+        "left_j3": -0.00028216340930962096,
+        "left_j6": -9.609496091639877e-06,
+        "left_j4": -3.102919901153139e-05,
+        "left_j5": -0.00018018055877576603,
+        "right_shoulder_pan_joint": -0.49124254227184005,
+        "right_shoulder_lift_joint": 0.0015637949904384273,
+        "right_elbow_joint": -0.0011959518669685575,
+        "right_wrist_1_joint": -0.0006046625733026048,
+        "right_wrist_2_joint": -0.0028565570634570834,
+        "right_wrist_3_joint": 3.097042670101742e-05
+      }
+    },
+    {
+      "clock_sec": 8.335999999,
+      "positions_rad": {
+        "left_j1": 0.6947447973157391,
+        "left_j2": -1.196781283635261,
+        "left_j3": 1.2036136099124297,
+        "left_j4": -1.49922713466316,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.277601858829068e-06,
+        "right_shoulder_pan_joint": -0.6947900187683019,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429636121e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057393506,
+        "left_j2": 0.0002919001519186685,
+        "left_j3": -0.00028216340892309617,
+        "left_j6": -9.609496092987144e-06,
+        "left_j4": -3.10291985880153e-05,
+        "left_j5": -0.00018018055876671405,
+        "right_shoulder_pan_joint": -0.49124254227183883,
+        "right_shoulder_lift_joint": 0.001563794990437236,
+        "right_elbow_joint": -0.0011959518669682843,
+        "right_wrist_1_joint": -0.0006046625733000418,
+        "right_wrist_2_joint": -0.0028565570634539843,
+        "right_wrist_3_joint": 3.0970426701019675e-05
+      }
+    },
+    {
+      "clock_sec": 8.445999999,
+      "positions_rad": {
+        "left_j1": 0.7497447973157416,
+        "left_j2": -1.19678128363519,
+        "left_j3": 1.2036136099124592,
+        "left_j4": -1.4992271346631532,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588684542e-06,
+        "right_shoulder_pan_joint": -0.749790018768302,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296367706e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742978,
+        "left_j2": 0.0002919001515589959,
+        "left_j3": -0.0002821634089628827,
+        "left_j6": -9.60949609279618e-06,
+        "left_j4": -3.1029198657240035e-05,
+        "left_j5": -0.00018018055876736197,
+        "right_shoulder_pan_joint": -0.49124254227183756,
+        "right_shoulder_lift_joint": 0.0015637949904360026,
+        "right_elbow_joint": -0.001195951866967772,
+        "right_wrist_1_joint": -0.0006046625733015748,
+        "right_wrist_2_joint": -0.0028565570634557233,
+        "right_wrist_3_joint": 3.0970426701018896e-05
+      }
+    },
+    {
+      "clock_sec": 8.555999999,
+      "positions_rad": {
+        "left_j1": 0.8047447973157413,
+        "left_j2": -1.1967812836352012,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588623998e-06,
+        "right_shoulder_pan_joint": -0.804790018768302,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296411315e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057423826,
+        "left_j2": 0.0002919001516124555,
+        "left_j3": -0.00028216340896804047,
+        "left_j6": -9.609496092823704e-06,
+        "left_j4": -3.1029198650360203e-05,
+        "left_j5": -0.00018018055876607383,
+        "right_shoulder_pan_joint": -0.49124254227183545,
+        "right_shoulder_lift_joint": 0.0015637949904363183,
+        "right_elbow_joint": -0.001195951866968481,
+        "right_wrist_1_joint": -0.0006046625732997174,
+        "right_wrist_2_joint": -0.002856557063457937,
+        "right_wrist_3_joint": 3.097042670102018e-05
+      }
+    },
+    {
+      "clock_sec": 8.665999999,
+      "positions_rad": {
+        "left_j1": 0.8597447973157412,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588632625e-06,
+        "right_shoulder_pan_joint": -0.8597900187683021,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296398e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057425175,
+        "left_j2": 0.0002919001516135789,
+        "left_j3": -0.00028216340894879333,
+        "left_j6": -9.609496092819714e-06,
+        "left_j4": -3.102919864390177e-05,
+        "left_j5": -0.00018018055876753802,
+        "right_shoulder_pan_joint": -0.4912425422718344,
+        "right_shoulder_lift_joint": 0.0015637949904388944,
+        "right_elbow_joint": -0.001195951866969017,
+        "right_wrist_1_joint": -0.0006046625733020375,
+        "right_wrist_2_joint": -0.0028565570634545246,
+        "right_wrist_3_joint": 3.097042670102049e-05
+      }
+    },
+    {
+      "clock_sec": 8.775999999,
+      "positions_rad": {
+        "left_j1": 0.9147447973157412,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631632e-06,
+        "right_shoulder_pan_joint": -0.9147900187683021,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429639284e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057425097,
+        "left_j2": 0.00029190015160996503,
+        "left_j3": -0.0002821634089517432,
+        "left_j6": -9.60949609281686e-06,
+        "left_j4": -3.102919864410743e-05,
+        "left_j5": -0.0001801805587667829,
+        "right_shoulder_pan_joint": -0.491242542271834,
+        "right_shoulder_lift_joint": 0.0015637949904372555,
+        "right_elbow_joint": -0.001195951866968275,
+        "right_wrist_1_joint": -0.0006046625733023706,
+        "right_wrist_2_joint": -0.002856557063456137,
+        "right_wrist_3_joint": 3.097042670102193e-05
+      }
+    },
+    {
+      "clock_sec": 8.885999999,
+      "positions_rad": {
+        "left_j1": 0.9697447973157413,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588632056e-06,
+        "right_shoulder_pan_joint": -0.9697900187683022,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429637702e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742489,
+        "left_j2": 0.0002919001516100494,
+        "left_j3": -0.00028216340895233775,
+        "left_j6": -9.60949609281869e-06,
+        "left_j4": -3.102919864152882e-05,
+        "left_j5": -0.00018018055876616024,
+        "right_shoulder_pan_joint": -0.49124254227183284,
+        "right_shoulder_lift_joint": 0.0015637949904341766,
+        "right_elbow_joint": -0.00119595186696665,
+        "right_wrist_1_joint": -0.0006046625733007519,
+        "right_wrist_2_joint": -0.00285655706345346,
+        "right_wrist_3_joint": 3.097042670101777e-05
+      }
+    },
+    {
+      "clock_sec": 8.985999999,
+      "positions_rad": {
+        "left_j1": 1.0197447973157416,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588632598e-06,
+        "right_shoulder_pan_joint": -1.0197900187683018,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296258796e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742455,
+        "left_j2": 0.0002919001516097849,
+        "left_j3": -0.0002821634089515353,
+        "left_j6": -9.60949609281948e-06,
+        "left_j4": -3.102919864268222e-05,
+        "left_j5": -0.0001801805587654329,
+        "right_shoulder_pan_joint": -0.4912425422718402,
+        "right_shoulder_lift_joint": 0.001563794990435382,
+        "right_elbow_joint": -0.0011959518669684838,
+        "right_wrist_1_joint": -0.0006046625733008767,
+        "right_wrist_2_joint": -0.0028565570634567243,
+        "right_wrist_3_joint": 3.097042670101837e-05
+      }
+    },
+    {
+      "clock_sec": 9.095999999,
+      "positions_rad": {
+        "left_j1": 1.0747447973157422,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631876e-06,
+        "right_shoulder_pan_joint": -1.0747900187683017,
+        "right_shoulder_lift_joint": -1.5678561663028778,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.568987843100432,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429640308e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742272,
+        "left_j2": 0.0002919001516099511,
+        "left_j3": -0.000282163408951941,
+        "left_j6": -9.60949609281899e-06,
+        "left_j4": -3.1029198644503845e-05,
+        "left_j5": -0.0001801805587679371,
+        "right_shoulder_pan_joint": -0.49124254227184155,
+        "right_shoulder_lift_joint": 0.0015637949904378098,
+        "right_elbow_joint": -0.0011959518669697675,
+        "right_wrist_1_joint": -0.0006046625732936172,
+        "right_wrist_2_joint": -0.0028565570634579013,
+        "right_wrist_3_joint": 3.097042670102009e-05
+      }
+    },
+    {
+      "clock_sec": 9.205999999,
+      "positions_rad": {
+        "left_j1": 1.1297447973157422,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588632202e-06,
+        "right_shoulder_pan_joint": -1.1297900187683017,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429633065e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742254,
+        "left_j2": 0.00029190015160958556,
+        "left_j3": -0.00028216340895194386,
+        "left_j6": -9.609496092821488e-06,
+        "left_j4": -3.102919864241943e-05,
+        "left_j5": -0.00018018055876744898,
+        "right_shoulder_pan_joint": -0.49124254227184555,
+        "right_shoulder_lift_joint": 0.0015637949904357905,
+        "right_elbow_joint": -0.0011959518669682882,
+        "right_wrist_1_joint": -0.0006046625732993955,
+        "right_wrist_2_joint": -0.0028565570634575435,
+        "right_wrist_3_joint": 3.09704267010183e-05
+      }
+    },
+    {
+      "clock_sec": 9.305999999,
+      "positions_rad": {
+        "left_j1": 1.1797447973157422,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631954e-06,
+        "right_shoulder_pan_joint": -1.1797900187683017,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429640464e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057422505,
+        "left_j2": 0.0002919001516096102,
+        "left_j3": -0.00028216340895126466,
+        "left_j6": -9.609496092819133e-06,
+        "left_j4": -3.102919864352164e-05,
+        "left_j5": -0.00018018055876634157,
+        "right_shoulder_pan_joint": -0.49124254227184205,
+        "right_shoulder_lift_joint": 0.0015637949904356335,
+        "right_elbow_joint": -0.0011959518669679141,
+        "right_wrist_1_joint": -0.0006046625733008377,
+        "right_wrist_2_joint": -0.0028565570634534855,
+        "right_wrist_3_joint": 3.0970426701015975e-05
+      }
+    },
+    {
+      "clock_sec": 9.415999999,
+      "positions_rad": {
+        "left_j1": 1.2347447973157422,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631895e-06,
+        "right_shoulder_pan_joint": -1.2347900187683019,
+        "right_shoulder_lift_joint": -1.5678561663028774,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.568987843100432,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.6127134296393e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742258,
+        "left_j2": 0.00029190015160983265,
+        "left_j3": -0.00028216340895190716,
+        "left_j6": -9.609496092818784e-06,
+        "left_j4": -3.102919864042735e-05,
+        "left_j5": -0.00018018055876599113,
+        "right_shoulder_pan_joint": -0.49124254227184294,
+        "right_shoulder_lift_joint": 0.0015637949904351704,
+        "right_elbow_joint": -0.001195951866967142,
+        "right_wrist_1_joint": -0.0006046625732936458,
+        "right_wrist_2_joint": -0.0028565570634540285,
+        "right_wrist_3_joint": 3.0970426701021694e-05
+      }
+    },
+    {
+      "clock_sec": 9.525999999,
+      "positions_rad": {
+        "left_j1": 1.289744797315742,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631622e-06,
+        "right_shoulder_pan_joint": -1.2897900187683018,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.568987843100432,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429636957e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057422755,
+        "left_j2": 0.0002919001516099914,
+        "left_j3": -0.0002821634089521414,
+        "left_j6": -9.60949609281867e-06,
+        "left_j4": -3.102919864210242e-05,
+        "left_j5": -0.00018018055876778955,
+        "right_shoulder_pan_joint": -0.49124254227184283,
+        "right_shoulder_lift_joint": 0.0015637949904369268,
+        "right_elbow_joint": -0.0011959518669688316,
+        "right_wrist_1_joint": -0.0006046625732959911,
+        "right_wrist_2_joint": -0.0028565570634560434,
+        "right_wrist_3_joint": 3.0970426701021986e-05
+      }
+    },
+    {
+      "clock_sec": 9.635999999,
+      "positions_rad": {
+        "left_j1": 1.344744797315742,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631656e-06,
+        "right_shoulder_pan_joint": -1.3447900187683017,
+        "right_shoulder_lift_joint": -1.5678561663028778,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429635517e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742266,
+        "left_j2": 0.0002919001516095454,
+        "left_j3": -0.0002821634089519192,
+        "left_j6": -9.609496092814256e-06,
+        "left_j4": -3.102919864442559e-05,
+        "left_j5": -0.00018018055876713518,
+        "right_shoulder_pan_joint": -0.4912425422718463,
+        "right_shoulder_lift_joint": 0.001563794990438173,
+        "right_elbow_joint": -0.0011959518669698915,
+        "right_wrist_1_joint": -0.0006046625733018276,
+        "right_wrist_2_joint": -0.0028565570634567572,
+        "right_wrist_3_joint": 3.097042670101918e-05
+      }
+    },
+    {
+      "clock_sec": 9.735999999,
+      "positions_rad": {
+        "left_j1": 1.394744797315742,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631918e-06,
+        "right_shoulder_pan_joint": -1.3947900187683018,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429638446e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742256,
+        "left_j2": 0.00029190015160956344,
+        "left_j3": -0.0002821634089513822,
+        "left_j6": -9.609496092823509e-06,
+        "left_j4": -3.1029198640794925e-05,
+        "left_j5": -0.00018018055876597457,
+        "right_shoulder_pan_joint": -0.49124254227184283,
+        "right_shoulder_lift_joint": 0.0015637949904364027,
+        "right_elbow_joint": -0.001195951866968631,
+        "right_wrist_1_joint": -0.0006046625732997444,
+        "right_wrist_2_joint": -0.002856557063457588,
+        "right_wrist_3_joint": 3.0970426701019065e-05
+      }
+    },
+    {
+      "clock_sec": 9.845999999,
+      "positions_rad": {
+        "left_j1": 1.4497447973157422,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588631963e-06,
+        "right_shoulder_pan_joint": -1.4497900187683017,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429638344e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742274,
+        "left_j2": 0.0002919001516097301,
+        "left_j3": -0.0002821634089517374,
+        "left_j6": -9.609496092820233e-06,
+        "left_j4": -3.10291986429778e-05,
+        "left_j5": -0.00018018055876790494,
+        "right_shoulder_pan_joint": -0.49124254227184366,
+        "right_shoulder_lift_joint": 0.001563794990435922,
+        "right_elbow_joint": -0.001195951866967133,
+        "right_wrist_1_joint": -0.0006046625733029055,
+        "right_wrist_2_joint": -0.002856557063454051,
+        "right_wrist_3_joint": 3.097042670101802e-05
+      }
+    },
+    {
+      "clock_sec": 9.955999999,
+      "positions_rad": {
+        "left_j1": 1.5047447973157422,
+        "left_j2": -1.1967812836351999,
+        "left_j3": 1.203613609912455,
+        "left_j4": -1.4992271346631543,
+        "left_j5": -1.4999921052413503,
+        "left_j6": -1.2776018588632033e-06,
+        "right_shoulder_pan_joint": -1.5047900187683017,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.574848226546709,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408885,
+        "right_wrist_3_joint": 4.612713429638221e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057422544,
+        "left_j2": 0.0002919001516100818,
+        "left_j3": -0.0002821634089524665,
+        "left_j6": -9.609496092814634e-06,
+        "left_j4": -3.1029198640694704e-05,
+        "left_j5": -0.00018018055876747757,
+        "right_shoulder_pan_joint": -0.4912425422718442,
+        "right_shoulder_lift_joint": 0.0015637949904360206,
+        "right_elbow_joint": -0.0011959518669678866,
+        "right_wrist_1_joint": -0.00060466257330079,
+        "right_wrist_2_joint": -0.0028565570634552593,
+        "right_wrist_3_joint": 3.0970426701016355e-05
+      }
+    },
+    {
+      "clock_sec": 10.056,
+      "positions_rad": {
+        "left_j1": 1.5547447977821711,
+        "left_j2": -1.196781283633611,
+        "left_j3": 1.2036136099114232,
+        "left_j4": -1.4992271346633566,
+        "left_j5": -1.4999921052417045,
+        "left_j6": -1.2776018860673193e-06,
+        "right_shoulder_pan_joint": -1.5547900192267277,
+        "right_shoulder_lift_joint": -1.5678561662968244,
+        "right_elbow_joint": 1.5748482265465236,
+        "right_wrist_1_joint": -1.5689878431013176,
+        "right_wrist_2_joint": -1.570801667644031,
+        "right_wrist_3_joint": 4.6127173338318206e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711374264513,
+        "left_j2": 0.0002919003112083856,
+        "left_j3": -0.0002821633713759868,
+        "left_j6": -9.60949685596352e-06,
+        "left_j4": -3.102918929697361e-05,
+        "left_j5": -0.0001801805672205388,
+        "right_shoulder_pan_joint": -0.491242544352021,
+        "right_shoulder_lift_joint": 0.0015637951419143377,
+        "right_elbow_joint": -0.0011959517721791795,
+        "right_wrist_1_joint": -0.0006046625309993115,
+        "right_wrist_2_joint": -0.0028565570800270727,
+        "right_wrist_3_joint": 3.097042700255962e-05
+      }
+    },
+    {
+      "clock_sec": 10.156,
+      "positions_rad": {
+        "left_j1": 1.6047447978230185,
+        "left_j2": -1.1967812836341853,
+        "left_j3": 1.2036136099127979,
+        "left_j4": -1.4992271346631012,
+        "left_j5": -1.4999921052413832,
+        "left_j6": -1.2776018616706796e-06,
+        "right_shoulder_pan_joint": -1.6047900192686069,
+        "right_shoulder_lift_joint": -1.5678561663030322,
+        "right_elbow_joint": 1.5748482265464343,
+        "right_wrist_1_joint": -1.5689878431006103,
+        "right_wrist_2_joint": -1.5708016676412089,
+        "right_wrist_3_joint": 4.6127138902632016e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371102855709,
+        "left_j2": 0.0002919000784777841,
+        "left_j3": -0.00028216342941962496,
+        "left_j6": -9.609495864233093e-06,
+        "left_j4": -3.1029203169573305e-05,
+        "left_j5": -0.00018018055628396475,
+        "right_shoulder_pan_joint": -0.4912425422575307,
+        "right_shoulder_lift_joint": 0.001563794966943672,
+        "right_elbow_joint": -0.001195951872048026,
+        "right_wrist_1_joint": -0.0006046625738733709,
+        "right_wrist_2_joint": -0.002856557050939537,
+        "right_wrist_3_joint": 3.097042653055534e-05
+      }
+    },
+    {
+      "clock_sec": 10.266,
+      "positions_rad": {
+        "left_j1": 1.6597447978151307,
+        "left_j2": -1.196781283635439,
+        "left_j3": 1.2036136099123513,
+        "left_j4": -1.4992271346631685,
+        "left_j5": -1.4999921052413465,
+        "left_j6": -1.2776018584608935e-06,
+        "right_shoulder_pan_joint": -1.6597900192683046,
+        "right_shoulder_lift_joint": -1.5678561663028443,
+        "right_elbow_joint": 1.5748482265467263,
+        "right_wrist_1_joint": -1.5689878431004247,
+        "right_wrist_2_joint": -1.5708016676408922,
+        "right_wrist_3_joint": 4.6127134364611655e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711059058685,
+        "left_j2": 0.0002919001655522217,
+        "left_j3": -0.00028216340362926477,
+        "left_j6": -9.609496113604509e-06,
+        "left_j4": -3.102919754677503e-05,
+        "left_j5": -0.00018018055892149323,
+        "right_shoulder_pan_joint": -0.49124254227236575,
+        "right_shoulder_lift_joint": 0.001563794990262098,
+        "right_elbow_joint": -0.0011959518669647513,
+        "right_wrist_1_joint": -0.0006046625732343631,
+        "right_wrist_2_joint": -0.0028565570633495036,
+        "right_wrist_3_joint": 3.097042669901844e-05
+      }
+    },
+    {
+      "clock_sec": 10.376,
+      "positions_rad": {
+        "left_j1": 1.7147447978157884,
+        "left_j2": -1.1967812836351557,
+        "left_j3": 1.2036136099124757,
+        "left_j4": -1.4992271346631512,
+        "left_j5": -1.4999921052413507,
+        "left_j6": -1.2776018589108112e-06,
+        "right_shoulder_pan_joint": -1.714790019268301,
+        "right_shoulder_lift_joint": -1.567856166302879,
+        "right_elbow_joint": 1.5748482265467079,
+        "right_wrist_1_joint": -1.568987843100432,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.612713429685974e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105734871,
+        "left_j2": 0.0002919001492960598,
+        "left_j3": -0.00028216340990005334,
+        "left_j6": -9.609496090767848e-06,
+        "left_j4": -3.102919885522697e-05,
+        "left_j5": -0.00018018055875279178,
+        "right_shoulder_pan_joint": -0.49124254227184366,
+        "right_shoulder_lift_joint": 0.0015637949904829741,
+        "right_elbow_joint": -0.0011959518669220986,
+        "right_wrist_1_joint": -0.0006046625732855297,
+        "right_wrist_2_joint": -0.0028565570634412223,
+        "right_wrist_3_joint": 3.097042670096102e-05
+      }
+    },
+    {
+      "clock_sec": 10.476,
+      "positions_rad": {
+        "left_j1": 1.7647447978157371,
+        "left_j2": -1.196781283635211,
+        "left_j3": 1.2036136099124504,
+        "left_j4": -1.4992271346631552,
+        "left_j5": -1.4999921052413505,
+        "left_j6": -1.2776018588548898e-06,
+        "right_shoulder_pan_joint": -1.7647900192683017,
+        "right_shoulder_lift_joint": -1.5678561663028778,
+        "right_elbow_joint": 1.5748482265467085,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.6127134296426456e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.49513711057423593,
+        "left_j2": 0.00029190015199215014,
+        "left_j3": -0.00028216340880180365,
+        "left_j6": -9.609496093060441e-06,
+        "left_j4": -3.1029198610931714e-05,
+        "left_j5": -0.00018018055875483182,
+        "right_shoulder_pan_joint": -0.49124254227184044,
+        "right_shoulder_lift_joint": 0.0015637949904366364,
+        "right_elbow_joint": -0.0011959518669545182,
+        "right_wrist_1_joint": -0.000604662573301109,
+        "right_wrist_2_joint": -0.002856557063445798,
+        "right_wrist_3_joint": 3.0970426701006665e-05
+      }
+    },
+    {
+      "clock_sec": 10.586,
+      "positions_rad": {
+        "left_j1": 1.8197447978157415,
+        "left_j2": -1.1967812836351976,
+        "left_j3": 1.2036136099124564,
+        "left_j4": -1.499227134663154,
+        "left_j5": -1.4999921052413505,
+        "left_j6": -1.2776018588643088e-06,
+        "right_shoulder_pan_joint": -1.8197900192683019,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.5748482265467085,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.612713429640281e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742577,
+        "left_j2": 0.00029190015153819556,
+        "left_j3": -0.0002821634089865643,
+        "left_j6": -9.60949609278291e-06,
+        "left_j4": -3.102919865418614e-05,
+        "left_j5": -0.00018018055875557333,
+        "right_shoulder_pan_joint": -0.4912425422718395,
+        "right_shoulder_lift_joint": 0.0015637949904383564,
+        "right_elbow_joint": -0.0011959518669516147,
+        "right_wrist_1_joint": -0.0006046625733019,
+        "right_wrist_2_joint": -0.0028565570634456854,
+        "right_wrist_3_joint": 3.097042670101272e-05
+      }
+    },
+    {
+      "clock_sec": 10.696,
+      "positions_rad": {
+        "left_j1": 1.874744797815742,
+        "left_j2": -1.1967812836352,
+        "left_j3": 1.203613609912456,
+        "left_j4": -1.499227134663154,
+        "left_j5": -1.4999921052413505,
+        "left_j6": -1.277601858863108e-06,
+        "right_shoulder_pan_joint": -1.8747900192683018,
+        "right_shoulder_lift_joint": -1.5678561663028778,
+        "right_elbow_joint": 1.5748482265467085,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.6127134296464996e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742267,
+        "left_j2": 0.0002919001516123673,
+        "left_j3": -0.00028216340897924033,
+        "left_j6": -9.609496092819152e-06,
+        "left_j4": -3.1029198654415675e-05,
+        "left_j5": -0.0001801805587552421,
+        "right_shoulder_pan_joint": -0.4912425422718375,
+        "right_shoulder_lift_joint": 0.00156379499043793,
+        "right_elbow_joint": -0.0011959518669530766,
+        "right_wrist_1_joint": -0.0006046625733020946,
+        "right_wrist_2_joint": -0.0028565570634460887,
+        "right_wrist_3_joint": 3.097042670102881e-05
+      }
+    },
+    {
+      "clock_sec": 10.806000000000001,
+      "positions_rad": {
+        "left_j1": 1.9297447978157423,
+        "left_j2": -1.1967812836352,
+        "left_j3": 1.203613609912456,
+        "left_j4": -1.499227134663154,
+        "left_j5": -1.4999921052413505,
+        "left_j6": -1.2776018588631647e-06,
+        "right_shoulder_pan_joint": -1.929790019268302,
+        "right_shoulder_lift_joint": -1.5678561663028776,
+        "right_elbow_joint": 1.5748482265467085,
+        "right_wrist_1_joint": -1.5689878431004318,
+        "right_wrist_2_joint": -1.5708016676408887,
+        "right_wrist_3_joint": 4.6127134296351076e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.4951371105742267,
+        "left_j2": 0.00029190015161752105,
+        "left_j3": -0.00028216340897668026,
+        "left_j6": -9.609496092815027e-06,
+        "left_j4": -3.1029198653933436e-05,
+        "left_j5": -0.00018018055875630034,
+        "right_shoulder_pan_joint": -0.49124254227184405,
+        "right_shoulder_lift_joint": 0.0015637949904365263,
+        "right_elbow_joint": -0.001195951866950908,
+        "right_wrist_1_joint": -0.0006046625733030194,
+        "right_wrist_2_joint": -0.002856557063448709,
+        "right_wrist_3_joint": 3.097042670102607e-05
+      }
+    },
+    {
+      "clock_sec": 10.916,
+      "positions_rad": {
+        "left_j1": 1.9845020104122797,
+        "left_j2": -1.1967708148156329,
+        "left_j3": 1.2036071348420212,
+        "left_j4": -1.4992282155074659,
+        "left_j5": -1.499996430021611,
+        "left_j6": -1.5449453871883922e-06,
+        "right_shoulder_pan_joint": -1.9844129091074272,
+        "right_shoulder_lift_joint": -1.5678119512825686,
+        "right_elbow_joint": 1.5748274286828745,
+        "right_wrist_1_joint": -1.5690034220447617,
+        "right_wrist_2_joint": -1.5708561464416424,
+        "right_wrist_3_joint": 6.798450526814171e-07
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.45749527314877175,
+        "left_j2": 0.0016829418118626148,
+        "left_j3": -0.0008933943802717617,
+        "left_j6": -3.973913970001229e-05,
+        "left_j4": -0.00015929472087921899,
+        "left_j5": -0.0006195332006630284,
+        "right_shoulder_pan_joint": -0.4362016193369996,
+        "right_shoulder_lift_joint": 0.00663517734892891,
+        "right_elbow_joint": -0.002580607741175555,
+        "right_wrist_1_joint": -0.0021569149772475097,
+        "right_wrist_2_joint": -0.0072934155745817755,
+        "right_wrist_3_joint": 8.638074773286531e-05
+      }
+    },
+    {
+      "clock_sec": 11.026,
+      "positions_rad": {
+        "left_j1": 1.9623708041022259,
+        "left_j2": -1.196512352288468,
+        "left_j3": 1.2036666396841809,
+        "left_j4": -1.4992162374999514,
+        "left_j5": -1.5000097352576667,
+        "left_j6": -2.722915574396121e-06,
+        "right_shoulder_pan_joint": -1.9601792066247705,
+        "right_shoulder_lift_joint": -1.5676808161985958,
+        "right_elbow_joint": 1.5748622219499269,
+        "right_wrist_1_joint": -1.5690027734199712,
+        "right_wrist_2_joint": -1.5709317762754675,
+        "right_wrist_3_joint": 1.8461861128455447e-06
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.536730534268531,
+        "left_j2": -0.006451516619106611,
+        "left_j3": -0.00037276944533439865,
+        "left_j6": 6.027447169968095e-05,
+        "left_j4": -0.00016535961910032319,
+        "left_j5": 0.0008359036639484796,
+        "right_shoulder_pan_joint": 0.48295009333133626,
+        "right_shoulder_lift_joint": -0.010808767856098148,
+        "right_elbow_joint": -0.0007975936333073769,
+        "right_wrist_1_joint": 0.00038932373208373794,
+        "right_wrist_2_joint": 0.007032970836758717,
+        "right_wrist_3_joint": -8.509360657589499e-05
+      }
+    },
+    {
+      "clock_sec": 11.136,
+      "positions_rad": {
+        "left_j1": 1.9051291609115244,
+        "left_j2": -1.1968346208508522,
+        "left_j3": 1.2035941698724453,
+        "left_j4": -1.4992309431354818,
+        "left_j5": -1.4999903756048996,
+        "left_j6": -1.1323351345550729e-06,
+        "right_shoulder_pan_joint": -1.9052075616872928,
+        "right_shoulder_lift_joint": -1.5678619973807981,
+        "right_elbow_joint": 1.5748499268342924,
+        "right_wrist_1_joint": -1.568987912847562,
+        "right_wrist_2_joint": -1.5707948251713757,
+        "right_wrist_3_joint": -1.2063418156588851e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49429709631113283,
+        "left_j2": 0.000638291053813393,
+        "left_j3": 0.0005985728386139267,
+        "left_j6": 6.970680988895187e-06,
+        "left_j4": 0.00011342061949262919,
+        "left_j5": 0.00015158184079284726,
+        "right_shoulder_pan_joint": 0.49114084381187484,
+        "right_shoulder_lift_joint": -0.0012270522910604233,
+        "right_elbow_joint": 0.0014272949223893073,
+        "right_wrist_1_joint": 0.0007333419563206863,
+        "right_wrist_2_joint": 0.0029395375627791443,
+        "right_wrist_3_joint": -3.2332100167876484e-05
+      }
+    },
+    {
+      "clock_sec": 11.236,
+      "positions_rad": {
+        "left_j1": 1.8552603791809368,
+        "left_j2": -1.1967722343518017,
+        "left_j3": 1.2036183309424706,
+        "left_j4": -1.4992262023550103,
+        "left_j5": -1.4999916800302187,
+        "left_j6": -1.2637245964331196e-06,
+        "right_shoulder_pan_joint": -1.8552101243052819,
+        "right_shoulder_lift_joint": -1.5678603748371542,
+        "right_elbow_joint": 1.5748518150542943,
+        "right_wrist_1_joint": -1.5689863963829451,
+        "right_wrist_2_joint": -1.5707929393785556,
+        "right_wrist_3_joint": -4.50191535278818e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49490637543631394,
+        "left_j2": -0.000351675331614855,
+        "left_j3": 0.0002629867736406447,
+        "left_j6": 9.642791253826723e-06,
+        "left_j4": 2.056712539255495e-05,
+        "left_j5": 0.00018027475803076656,
+        "right_shoulder_pan_joint": 0.49125441989764446,
+        "right_shoulder_lift_joint": -0.0015773375954482348,
+        "right_elbow_joint": 0.0011826162429692654,
+        "right_wrist_1_joint": 0.0005968349851281114,
+        "right_wrist_2_joint": 0.0028598313711195623,
+        "right_wrist_3_joint": -3.1017536969055136e-05
+      }
+    },
+    {
+      "clock_sec": 11.346,
+      "positions_rad": {
+        "left_j1": 1.8002550680301717,
+        "left_j2": -1.1967834851903099,
+        "left_j3": 1.2036137624231757,
+        "left_j4": -1.499227216738611,
+        "left_j5": -1.499991595212421,
+        "left_j6": -1.2512178918324676e-06,
+        "right_shoulder_pan_joint": -1.8002099816768637,
+        "right_shoulder_lift_joint": -1.5678602668433927,
+        "right_elbow_joint": 1.574851861187554,
+        "right_wrist_1_joint": -1.5689863796062378,
+        "right_wrist_2_joint": -1.5707928828863924,
+        "right_wrist_3_joint": -4.6110727363415056e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49516518566581924,
+        "left_j2": -0.0002818422244130268,
+        "left_j3": 0.0002801861952125258,
+        "left_j6": 9.599758127424891e-06,
+        "left_j4": 3.176149415879292e-05,
+        "left_j5": 0.0001802496510500447,
+        "right_shoulder_pan_joint": 0.4912420145752455,
+        "right_shoulder_lift_joint": -0.0015590654199612503,
+        "right_elbow_joint": 0.0011933946098146044,
+        "right_wrist_1_joint": 0.0006019878098079868,
+        "right_wrist_2_joint": 0.002857059215974591,
+        "right_wrist_3_joint": -3.0970342507702955e-05
+      }
+    },
+    {
+      "clock_sec": 11.456,
+      "positions_rad": {
+        "left_j1": 1.7452552068416358,
+        "left_j2": -1.1967817512586325,
+        "left_j3": 1.2036144795065875,
+        "left_j4": -1.4992270528061336,
+        "left_j5": -1.4999915985166594,
+        "left_j6": -1.2524335470085621e-06,
+        "right_shoulder_pan_joint": -1.7452099801717584,
+        "right_shoulder_lift_joint": -1.567860291421774,
+        "right_elbow_joint": 1.574851847901899,
+        "right_wrist_1_joint": -1.5689863852110264,
+        "right_wrist_2_joint": -1.5707928821663801,
+        "right_wrist_3_joint": -4.61258512600112e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513427254994835,
+        "left_j2": -0.00028896324108812184,
+        "left_j3": 0.00027940305837500384,
+        "left_j6": 9.595419274168958e-06,
+        "left_j4": 3.028091606896073e-05,
+        "left_j5": 0.00018012399598287,
+        "right_shoulder_pan_joint": 0.4912425534902262,
+        "right_shoulder_lift_joint": -0.0015591074208370723,
+        "right_elbow_joint": 0.001193330397022734,
+        "right_wrist_1_joint": 0.0006019191370483974,
+        "right_wrist_2_joint": 0.0028570842990828776,
+        "right_wrist_3_joint": -3.0970420999665966e-05
+      }
+    },
+    {
+      "clock_sec": 11.556000000000001,
+      "positions_rad": {
+        "left_j1": 1.6952552039747644,
+        "left_j2": -1.1967820171599348,
+        "left_j3": 1.2036143703053004,
+        "left_j4": -1.4992270785502992,
+        "left_j5": -1.4999915985091443,
+        "left_j6": -1.2522827119670193e-06,
+        "right_shoulder_pan_joint": -1.6952099807933905,
+        "right_shoulder_lift_joint": -1.5678602897623954,
+        "right_elbow_joint": 1.5748518488423449,
+        "right_wrist_1_joint": -1.568986384765353,
+        "right_wrist_2_joint": -1.5707928822084471,
+        "right_wrist_3_joint": -4.612556757218545e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951375380827573,
+        "left_j2": -0.0002886546211166312,
+        "left_j3": 0.0002791221492395173,
+        "left_j6": 9.596409024839795e-06,
+        "left_j4": 3.043993147494104e-05,
+        "left_j5": 0.0001801423912528978,
+        "right_shoulder_pan_joint": 0.49124254875356815,
+        "right_shoulder_lift_joint": -0.0015591555500463576,
+        "right_elbow_joint": 0.0011933047892424766,
+        "right_wrist_1_joint": 0.0006019084006524313,
+        "right_wrist_2_joint": 0.0028570831897140785,
+        "right_wrist_3_joint": -3.097039633872487e-05
+      }
+    },
+    {
+      "clock_sec": 11.666,
+      "positions_rad": {
+        "left_j1": 1.6402552022091854,
+        "left_j2": -1.1967819770262769,
+        "left_j3": 1.2036143860570054,
+        "left_j4": -1.499227074457241,
+        "left_j5": -1.4999915984750343,
+        "left_j6": -1.252303285429479e-06,
+        "right_shoulder_pan_joint": -1.6402099807400388,
+        "right_shoulder_lift_joint": -1.5678602898628455,
+        "right_elbow_joint": 1.5748518487842877,
+        "right_wrist_1_joint": -1.5689863847935714,
+        "right_wrist_2_joint": -1.570792882203541,
+        "right_wrist_3_joint": -4.612563099485217e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951370593473305,
+        "left_j2": -0.0002882310009507833,
+        "left_j3": 0.0002793832239329686,
+        "left_j6": 9.59601391590806e-06,
+        "left_j4": 3.0455668794062484e-05,
+        "left_j5": 0.00018013971711327068,
+        "right_shoulder_pan_joint": 0.4912425480771421,
+        "right_shoulder_lift_joint": -0.0015591510406154944,
+        "right_elbow_joint": 0.0011933072680007039,
+        "right_wrist_1_joint": 0.0006019094997417941,
+        "right_wrist_2_joint": 0.0028570831377100155,
+        "right_wrist_3_joint": -3.097039582002798e-05
+      }
+    },
+    {
+      "clock_sec": 11.776,
+      "positions_rad": {
+        "left_j1": 1.5852552021577944,
+        "left_j2": -1.1967819832004625,
+        "left_j3": 1.2036143836527082,
+        "left_j4": -1.4992270750884564,
+        "left_j5": -1.499991598479139,
+        "left_j6": -1.2523000254749913e-06,
+        "right_shoulder_pan_joint": -1.5852099807428286,
+        "right_shoulder_lift_joint": -1.5678602898606904,
+        "right_elbow_joint": 1.5748518487856558,
+        "right_wrist_1_joint": -1.5689863847928014,
+        "right_wrist_2_joint": -1.5707928822037982,
+        "right_wrist_3_joint": -4.612562775810196e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711882079564,
+        "left_j2": -0.0002883030457692777,
+        "left_j3": 0.00027933951212670544,
+        "left_j6": 9.596069144958565e-06,
+        "left_j4": 3.0452578991576257e-05,
+        "left_j5": 0.00018014000391073216,
+        "right_shoulder_pan_joint": 0.49124254819206614,
+        "right_shoulder_lift_joint": -0.0015591513033546551,
+        "right_elbow_joint": 0.0011933071179722546,
+        "right_wrist_1_joint": 0.000601909428064578,
+        "right_wrist_2_joint": 0.0028570831474484418,
+        "right_wrist_3_joint": -3.097039592830105e-05
+      }
+    },
+    {
+      "clock_sec": 11.886,
+      "positions_rad": {
+        "left_j1": 1.5302552021902982,
+        "left_j2": -1.1967819822480514,
+        "left_j3": 1.2036143840213642,
+        "left_j4": -1.4992270749908299,
+        "left_j5": -1.4999915984786643,
+        "left_j6": -1.2523005410323497e-06,
+        "right_shoulder_pan_joint": -1.530209980742759,
+        "right_shoulder_lift_joint": -1.5678602898605776,
+        "right_elbow_joint": 1.5748518487857108,
+        "right_wrist_1_joint": -1.5689863847927825,
+        "right_wrist_2_joint": -1.5707928822037907,
+        "right_wrist_3_joint": -4.6125627868928725e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711030213803,
+        "left_j2": -0.0002882909586350118,
+        "left_j3": 0.0002793467236539236,
+        "left_j6": 9.596060747921593e-06,
+        "left_j4": 3.0453143676404258e-05,
+        "left_j5": 0.00018013996850997575,
+        "right_shoulder_pan_joint": 0.4912425481849139,
+        "right_shoulder_lift_joint": -0.0015591512953327257,
+        "right_elbow_joint": 0.0011933071228285167,
+        "right_wrist_1_joint": 0.0006019094306136486,
+        "right_wrist_2_joint": 0.002857083146789755,
+        "right_wrist_3_joint": -3.097039591992986e-05
+      }
+    },
+    {
+      "clock_sec": 11.986,
+      "positions_rad": {
+        "left_j1": 1.4802552021860795,
+        "left_j2": -1.1967819823908938,
+        "left_j3": 1.2036143839669764,
+        "left_j4": -1.499227075005686,
+        "left_j5": -1.4999915984787313,
+        "left_j6": -1.2523004630094888e-06,
+        "right_shoulder_pan_joint": -1.4802099807427567,
+        "right_shoulder_lift_joint": -1.567860289860593,
+        "right_elbow_joint": 1.5748518487857026,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.6125627869845314e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.495137111684545,
+        "left_j2": -0.0002882933163491964,
+        "left_j3": 0.0002793453916443962,
+        "left_j6": 9.596062288145668e-06,
+        "left_j4": 3.045301302329616e-05,
+        "left_j5": 0.00018013997358833027,
+        "right_shoulder_pan_joint": 0.4912425481851659,
+        "right_shoulder_lift_joint": -0.0015591512952288413,
+        "right_elbow_joint": 0.0011933071228629954,
+        "right_wrist_1_joint": 0.0006019094306086495,
+        "right_wrist_2_joint": 0.0028570831467934965,
+        "right_wrist_3_joint": -3.0970395920276344e-05
+      }
+    },
+    {
+      "clock_sec": 12.096,
+      "positions_rad": {
+        "left_j1": 1.4252552021846498,
+        "left_j2": -1.1967819823730708,
+        "left_j3": 1.2036143839730744,
+        "left_j4": -1.4992270750036525,
+        "left_j5": -1.4999915984787144,
+        "left_j6": -1.2523004724568261e-06,
+        "right_shoulder_pan_joint": -1.4252099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786956471e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711139758937,
+        "left_j2": -0.00028829258557288033,
+        "left_j3": 0.0002793457577190745,
+        "left_j6": 9.596061840020607e-06,
+        "left_j4": 3.045306587348497e-05,
+        "left_j5": 0.00018013997269625498,
+        "right_shoulder_pan_joint": 0.4912425481851524,
+        "right_shoulder_lift_joint": -0.0015591512952600327,
+        "right_elbow_joint": 0.0011933071228529208,
+        "right_wrist_1_joint": 0.0006019094306175727,
+        "right_wrist_2_joint": 0.0028570831467890283,
+        "right_wrist_3_joint": -3.0970395920255954e-05
+      }
+    },
+    {
+      "clock_sec": 12.206,
+      "positions_rad": {
+        "left_j1": 1.3702552021848957,
+        "left_j2": -1.196781982375777,
+        "left_j3": 1.2036143839721591,
+        "left_j4": -1.4992270750039636,
+        "left_j5": -1.499991598478717,
+        "left_j6": -1.2523004710221823e-06,
+        "right_shoulder_pan_joint": -1.370209980742757,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786956893e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711144315764,
+        "left_j2": -0.00028829270334766705,
+        "left_j3": 0.0002793456990221624,
+        "left_j6": 9.596061912065502e-06,
+        "left_j4": 3.0453057261263478e-05,
+        "left_j5": 0.00018013997284088544,
+        "right_shoulder_pan_joint": 0.4912425481851503,
+        "right_shoulder_lift_joint": -0.0015591512952596938,
+        "right_elbow_joint": 0.0011933071228519038,
+        "right_wrist_1_joint": 0.0006019094306166208,
+        "right_wrist_2_joint": 0.002857083146790031,
+        "right_wrist_3_joint": -3.0970395920258685e-05
+      }
+    },
+    {
+      "clock_sec": 12.316,
+      "positions_rad": {
+        "left_j1": 1.3152552021848531,
+        "left_j2": -1.1967819823753667,
+        "left_j3": 1.2036143839722961,
+        "left_j4": -1.4992270750039165,
+        "left_j5": -1.4999915984787167,
+        "left_j6": -1.2523004712389933e-06,
+        "right_shoulder_pan_joint": -1.3152099807427566,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786955943e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143593125,
+        "left_j2": -0.00028829268438327726,
+        "left_j3": 0.0002793457084303789,
+        "left_j6": 9.596061900482488e-06,
+        "left_j4": 3.0453058677730224e-05,
+        "left_j5": 0.00018013997281584007,
+        "right_shoulder_pan_joint": 0.49124254818515045,
+        "right_shoulder_lift_joint": -0.0015591512952610924,
+        "right_elbow_joint": 0.001193307122853355,
+        "right_wrist_1_joint": 0.0006019094306178923,
+        "right_wrist_2_joint": 0.0028570831467866053,
+        "right_wrist_3_joint": -3.097039592026094e-05
+      }
+    },
+    {
+      "clock_sec": 12.426,
+      "positions_rad": {
+        "left_j1": 1.2602552021848603,
+        "left_j2": -1.1967819823754287,
+        "left_j3": 1.2036143839722757,
+        "left_j4": -1.4992270750039236,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712062434e-06,
+        "right_shoulder_pan_joint": -1.2602099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786954935e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143707967,
+        "left_j2": -0.0002882926874282686,
+        "left_j3": 0.0002793457069214426,
+        "left_j6": 9.59606190233457e-06,
+        "left_j4": 3.045305845238275e-05,
+        "left_j5": 0.00018013997282571628,
+        "right_shoulder_pan_joint": 0.49124254818515295,
+        "right_shoulder_lift_joint": -0.0015591512952600707,
+        "right_elbow_joint": 0.0011933071228518188,
+        "right_wrist_1_joint": 0.0006019094306163196,
+        "right_wrist_2_joint": 0.002857083146780631,
+        "right_wrist_3_joint": -3.097039592025887e-05
+      }
+    },
+    {
+      "clock_sec": 12.536,
+      "positions_rad": {
+        "left_j1": 1.2052552021848595,
+        "left_j2": -1.1967819823754196,
+        "left_j3": 1.2036143839722788,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712111858e-06,
+        "right_shoulder_pan_joint": -1.2052099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.61256278696309e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369049,
+        "left_j2": -0.00028829268694072403,
+        "left_j3": 0.0002793457071579012,
+        "left_j6": 9.596061902041087e-06,
+        "left_j4": 3.045305849679854e-05,
+        "left_j5": 0.00018013997282615704,
+        "right_shoulder_pan_joint": 0.49124254818514607,
+        "right_shoulder_lift_joint": -0.001559151295261062,
+        "right_elbow_joint": 0.0011933071228529325,
+        "right_wrist_1_joint": 0.0006019094306181849,
+        "right_wrist_2_joint": 0.0028570831467887373,
+        "right_wrist_3_joint": -3.0970395920263246e-05
+      }
+    },
+    {
+      "clock_sec": 12.646,
+      "positions_rad": {
+        "left_j1": 1.15025520218486,
+        "left_j2": -1.1967819823754213,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712104633e-06,
+        "right_shoulder_pan_joint": -1.1502099807427566,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.6125627869581437e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143694616,
+        "left_j2": -0.00028829268700376355,
+        "left_j3": 0.00027934570713438703,
+        "left_j6": 9.596061902096402e-06,
+        "left_j4": 3.045305848670484e-05,
+        "left_j5": 0.00018013997282568625,
+        "right_shoulder_pan_joint": 0.4912425481851505,
+        "right_shoulder_lift_joint": -0.0015591512952602333,
+        "right_elbow_joint": 0.0011933071228530582,
+        "right_wrist_1_joint": 0.0006019094306160557,
+        "right_wrist_2_joint": 0.002857083146788699,
+        "right_wrist_3_joint": -3.0970395920261795e-05
+      }
+    },
+    {
+      "clock_sec": 12.756,
+      "positions_rad": {
+        "left_j1": 1.0952552021848603,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105552e-06,
+        "right_shoulder_pan_joint": -1.0952099807427569,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.6125627869569724e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.495137111436943,
+        "left_j2": -0.00028829268700446633,
+        "left_j3": 0.0002793457071407616,
+        "left_j6": 9.596061902082392e-06,
+        "left_j4": 3.0453058488959784e-05,
+        "left_j5": 0.00018013997282614042,
+        "right_shoulder_pan_joint": 0.49124254818515123,
+        "right_shoulder_lift_joint": -0.0015591512952594447,
+        "right_elbow_joint": 0.0011933071228518723,
+        "right_wrist_1_joint": 0.0006019094306146959,
+        "right_wrist_2_joint": 0.002857083146789062,
+        "right_wrist_3_joint": -3.097039592025659e-05
+      }
+    },
+    {
+      "clock_sec": 12.866,
+      "positions_rad": {
+        "left_j1": 1.0402552021848603,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.25230047121051e-06,
+        "right_shoulder_pan_joint": -1.0402099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786959221e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143694666,
+        "left_j2": -0.0002882926870041181,
+        "left_j3": 0.00027934570714046605,
+        "left_j6": 9.596061902084337e-06,
+        "left_j4": 3.045305848896712e-05,
+        "left_j5": 0.00018013997282601568,
+        "right_shoulder_pan_joint": 0.4912425481851476,
+        "right_shoulder_lift_joint": -0.0015591512952599447,
+        "right_elbow_joint": 0.0011933071228527284,
+        "right_wrist_1_joint": 0.00060190943061613,
+        "right_wrist_2_joint": 0.002857083146790452,
+        "right_wrist_3_joint": -3.097039592026116e-05
+      }
+    },
+    {
+      "clock_sec": 12.976,
+      "positions_rad": {
+        "left_j1": 0.9852552021848592,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.252300471210455e-06,
+        "right_shoulder_pan_joint": -0.9852099807427569,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786957082e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143693245,
+        "left_j2": -0.000288292687004843,
+        "left_j3": 0.0002793457071410205,
+        "left_j6": 9.596061902087434e-06,
+        "left_j4": 3.045305848470847e-05,
+        "left_j5": 0.00018013997282616,
+        "right_shoulder_pan_joint": 0.4912425481851527,
+        "right_shoulder_lift_joint": -0.0015591512952599581,
+        "right_elbow_joint": 0.0011933071228518543,
+        "right_wrist_1_joint": 0.0006019094306180479,
+        "right_wrist_2_joint": 0.002857083146789728,
+        "right_wrist_3_joint": -3.097039592025825e-05
+      }
+    },
+    {
+      "clock_sec": 13.086,
+      "positions_rad": {
+        "left_j1": 0.9302552021848594,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105842e-06,
+        "right_shoulder_pan_joint": -0.9302099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.6125627869626673e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143692385,
+        "left_j2": -0.0002882926870042395,
+        "left_j3": 0.00027934570714026606,
+        "left_j6": 9.59606190208081e-06,
+        "left_j4": 3.0453058484759707e-05,
+        "left_j5": 0.0001801399728243167,
+        "right_shoulder_pan_joint": 0.4912425481851523,
+        "right_shoulder_lift_joint": -0.0015591512952597766,
+        "right_elbow_joint": 0.001193307122852723,
+        "right_wrist_1_joint": 0.0006019094306159514,
+        "right_wrist_2_joint": 0.002857083146786343,
+        "right_wrist_3_joint": -3.0970395920255494e-05
+      }
+    },
+    {
+      "clock_sec": 13.196,
+      "positions_rad": {
+        "left_j1": 0.8752552021848593,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.252300471210584e-06,
+        "right_shoulder_pan_joint": -0.8752099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.61256278695821e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143692063,
+        "left_j2": -0.0002882926870041249,
+        "left_j3": 0.00027934570714000407,
+        "left_j6": 9.596061902085508e-06,
+        "left_j4": 3.04530584881458e-05,
+        "left_j5": 0.00018013997282560542,
+        "right_shoulder_pan_joint": 0.4912425481851523,
+        "right_shoulder_lift_joint": -0.0015591512952605403,
+        "right_elbow_joint": 0.001193307122852638,
+        "right_wrist_1_joint": 0.0006019094306149753,
+        "right_wrist_2_joint": 0.002857083146782293,
+        "right_wrist_3_joint": -3.097039592025865e-05
+      }
+    },
+    {
+      "clock_sec": 13.306,
+      "positions_rad": {
+        "left_j1": 0.8202552021848593,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105508e-06,
+        "right_shoulder_pan_joint": -0.8202099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.6125627869599065e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369227,
+        "left_j2": -0.0002882926870044044,
+        "left_j3": 0.00027934570714021044,
+        "left_j6": 9.596061902085213e-06,
+        "left_j4": 3.045305848770925e-05,
+        "left_j5": 0.00018013997282583901,
+        "right_shoulder_pan_joint": 0.49124254818515145,
+        "right_shoulder_lift_joint": -0.001559151295260533,
+        "right_elbow_joint": 0.0011933071228533228,
+        "right_wrist_1_joint": 0.0006019094306161834,
+        "right_wrist_2_joint": 0.002857083146788015,
+        "right_wrist_3_joint": -3.0970395920257886e-05
+      }
+    },
+    {
+      "clock_sec": 13.406,
+      "positions_rad": {
+        "left_j1": 0.7702552021848593,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.25230047121055e-06,
+        "right_shoulder_pan_joint": -0.7702099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786958991e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369207,
+        "left_j2": -0.000288292687004488,
+        "left_j3": 0.0002793457071404593,
+        "left_j6": 9.596061902081338e-06,
+        "left_j4": 3.045305848813979e-05,
+        "left_j5": 0.00018013997282629202,
+        "right_shoulder_pan_joint": 0.491242548185148,
+        "right_shoulder_lift_joint": -0.0015591512952610462,
+        "right_elbow_joint": 0.0011933071228527772,
+        "right_wrist_1_joint": 0.0006019094306174094,
+        "right_wrist_2_joint": 0.0028570831467893214,
+        "right_wrist_3_joint": -3.097039592025959e-05
+      }
+    },
+    {
+      "clock_sec": 13.516,
+      "positions_rad": {
+        "left_j1": 0.7152552021848592,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105506e-06,
+        "right_shoulder_pan_joint": -0.7152099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786958427e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369219,
+        "left_j2": -0.00028829268700410985,
+        "left_j3": 0.00027934570714012365,
+        "left_j6": 9.596061902086126e-06,
+        "left_j4": 3.045305848806975e-05,
+        "left_j5": 0.0001801399728260432,
+        "right_shoulder_pan_joint": 0.49124254818514945,
+        "right_shoulder_lift_joint": -0.001559151295260638,
+        "right_elbow_joint": 0.0011933071228535275,
+        "right_wrist_1_joint": 0.0006019094306148834,
+        "right_wrist_2_joint": 0.0028570831467890074,
+        "right_wrist_3_joint": -3.0970395920257316e-05
+      }
+    },
+    {
+      "clock_sec": 13.626,
+      "positions_rad": {
+        "left_j1": 0.6602552021848592,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105944e-06,
+        "right_shoulder_pan_joint": -0.6602099807427566,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786959266e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369222,
+        "left_j2": -0.0002882926870044636,
+        "left_j3": 0.0002793457071403418,
+        "left_j6": 9.596061902080103e-06,
+        "left_j4": 3.0453058488090308e-05,
+        "left_j5": 0.00018013997282615004,
+        "right_shoulder_pan_joint": 0.49124254818514596,
+        "right_shoulder_lift_joint": -0.0015591512952606674,
+        "right_elbow_joint": 0.0011933071228526517,
+        "right_wrist_1_joint": 0.0006019094306174765,
+        "right_wrist_2_joint": 0.002857083146780937,
+        "right_wrist_3_joint": -3.09703959202541e-05
+      }
+    },
+    {
+      "clock_sec": 13.726,
+      "positions_rad": {
+        "left_j1": 0.6102552021848594,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105472e-06,
+        "right_shoulder_pan_joint": -0.6102099807427566,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786956579e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369225,
+        "left_j2": -0.0002882926870044775,
+        "left_j3": 0.00027934570714073645,
+        "left_j6": 9.596061902082897e-06,
+        "left_j4": 3.045305848514506e-05,
+        "left_j5": 0.0001801399728261354,
+        "right_shoulder_pan_joint": 0.4912425481851477,
+        "right_shoulder_lift_joint": -0.001559151295259474,
+        "right_elbow_joint": 0.0011933071228524834,
+        "right_wrist_1_joint": 0.0006019094306174901,
+        "right_wrist_2_joint": 0.002857083146780729,
+        "right_wrist_3_joint": -3.097039592025605e-05
+      }
+    },
+    {
+      "clock_sec": 13.836,
+      "positions_rad": {
+        "left_j1": 0.5552552021848592,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105906e-06,
+        "right_shoulder_pan_joint": -0.5552099807427565,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786959215e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369238,
+        "left_j2": -0.00028829268700408903,
+        "left_j3": 0.0002793457071402894,
+        "left_j6": 9.596061902084508e-06,
+        "left_j4": 3.0453058484655573e-05,
+        "left_j5": 0.000180139972826093,
+        "right_shoulder_pan_joint": 0.4912425481851439,
+        "right_shoulder_lift_joint": -0.0015591512952596496,
+        "right_elbow_joint": 0.00119330712285199,
+        "right_wrist_1_joint": 0.0006019094306165903,
+        "right_wrist_2_joint": 0.0028570831467929136,
+        "right_wrist_3_joint": -3.0970395920257764e-05
+      }
+    },
+    {
+      "clock_sec": 13.946,
+      "positions_rad": {
+        "left_j1": 0.5002552021848594,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.252300471210541e-06,
+        "right_shoulder_pan_joint": -0.5002099807427565,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.6125627869572305e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143692135,
+        "left_j2": -0.00028829268700391935,
+        "left_j3": 0.00027934570713986415,
+        "left_j6": 9.596061902082897e-06,
+        "left_j4": 3.0453058488466682e-05,
+        "left_j5": 0.00018013997282614828,
+        "right_shoulder_pan_joint": 0.491242548185144,
+        "right_shoulder_lift_joint": -0.0015591512952597003,
+        "right_elbow_joint": 0.0011933071228526146,
+        "right_wrist_1_joint": 0.0006019094306177348,
+        "right_wrist_2_joint": 0.0028570831467885005,
+        "right_wrist_3_joint": -3.097039592025824e-05
+      }
+    },
+    {
+      "clock_sec": 14.056,
+      "positions_rad": {
+        "left_j1": 0.4452552021848593,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105304e-06,
+        "right_shoulder_pan_joint": -0.4452099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786956471e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369249,
+        "left_j2": -0.0002882926870039937,
+        "left_j3": 0.0002793457071399849,
+        "left_j6": 9.596061902086607e-06,
+        "left_j4": 3.0453058487889758e-05,
+        "left_j5": 0.00018013997282607976,
+        "right_shoulder_pan_joint": 0.4912425481851503,
+        "right_shoulder_lift_joint": -0.0015591512952596617,
+        "right_elbow_joint": 0.0011933071228518468,
+        "right_wrist_1_joint": 0.0006019094306162541,
+        "right_wrist_2_joint": 0.002857083146786155,
+        "right_wrist_3_joint": -3.097039592025754e-05
+      }
+    },
+    {
+      "clock_sec": 14.156,
+      "positions_rad": {
+        "left_j1": 0.39525520218485927,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105666e-06,
+        "right_shoulder_pan_joint": -0.39520998074275676,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786956768e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369211,
+        "left_j2": -0.0002882926870041763,
+        "left_j3": 0.0002793457071404236,
+        "left_j6": 9.59606190208008e-06,
+        "left_j4": 3.0453058488585263e-05,
+        "left_j5": 0.00018013997282594925,
+        "right_shoulder_pan_joint": 0.4912425481851497,
+        "right_shoulder_lift_joint": -0.0015591512952601821,
+        "right_elbow_joint": 0.0011933071228529418,
+        "right_wrist_1_joint": 0.0006019094306166301,
+        "right_wrist_2_joint": 0.002857083146790308,
+        "right_wrist_3_joint": -3.0970395920258204e-05
+      }
+    },
+    {
+      "clock_sec": 14.266,
+      "positions_rad": {
+        "left_j1": 0.3402552021848592,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105662e-06,
+        "right_shoulder_pan_joint": -0.3402099807427567,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786957179e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369219,
+        "left_j2": -0.0002882926870038729,
+        "left_j3": 0.0002793457071401699,
+        "left_j6": 9.596061902078814e-06,
+        "left_j4": 3.0453058488249472e-05,
+        "left_j5": 0.0001801399728260104,
+        "right_shoulder_pan_joint": 0.4912425481851507,
+        "right_shoulder_lift_joint": -0.0015591512952608441,
+        "right_elbow_joint": 0.0011933071228527234,
+        "right_wrist_1_joint": 0.0006019094306152872,
+        "right_wrist_2_joint": 0.0028570831467807836,
+        "right_wrist_3_joint": -3.0970395920257215e-05
+      }
+    },
+    {
+      "clock_sec": 14.376,
+      "positions_rad": {
+        "left_j1": 0.28525520218485917,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105698e-06,
+        "right_shoulder_pan_joint": -0.2852099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786956325e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369185,
+        "left_j2": -0.0002882926870045249,
+        "left_j3": 0.00027934570714069004,
+        "left_j6": 9.596061902081833e-06,
+        "left_j4": 3.0453058487424608e-05,
+        "left_j5": 0.00018013997282613142,
+        "right_shoulder_pan_joint": 0.4912425481851503,
+        "right_shoulder_lift_joint": -0.0015591512952608825,
+        "right_elbow_joint": 0.0011933071228532293,
+        "right_wrist_1_joint": 0.0006019094306166377,
+        "right_wrist_2_joint": 0.002857083146786105,
+        "right_wrist_3_joint": -3.097039592025737e-05
+      }
+    },
+    {
+      "clock_sec": 14.476,
+      "positions_rad": {
+        "left_j1": 0.23525520218485912,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105546e-06,
+        "right_shoulder_pan_joint": -0.23520998074275679,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.6125627869546774e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369187,
+        "left_j2": -0.00028829268700387425,
+        "left_j3": 0.00027934570714032217,
+        "left_j6": 9.596061902083564e-06,
+        "left_j4": 3.0453058488844784e-05,
+        "left_j5": 0.0001801399728260247,
+        "right_shoulder_pan_joint": 0.49124254818515245,
+        "right_shoulder_lift_joint": -0.0015591512952594744,
+        "right_elbow_joint": 0.0011933071228528245,
+        "right_wrist_1_joint": 0.000601909430616873,
+        "right_wrist_2_joint": 0.0028570831467896202,
+        "right_wrist_3_joint": -3.097039592025565e-05
+      }
+    },
+    {
+      "clock_sec": 14.586,
+      "positions_rad": {
+        "left_j1": 0.18025520218485908,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.252300471210546e-06,
+        "right_shoulder_pan_joint": -0.1802099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.57079288220379,
+        "right_wrist_3_joint": -4.612562786959859e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369168,
+        "left_j2": -0.00028829268700420694,
+        "left_j3": 0.00027934570713991776,
+        "left_j6": 9.596061902082368e-06,
+        "left_j4": 3.045305848828476e-05,
+        "left_j5": 0.0001801399728261366,
+        "right_shoulder_pan_joint": 0.49124254818515073,
+        "right_shoulder_lift_joint": -0.0015591512952605503,
+        "right_elbow_joint": 0.0011933071228529013,
+        "right_wrist_1_joint": 0.0006019094306157806,
+        "right_wrist_2_joint": 0.0028570831467860506,
+        "right_wrist_3_joint": -3.0970395920255216e-05
+      }
+    },
+    {
+      "clock_sec": 14.696,
+      "positions_rad": {
+        "left_j1": 0.1252552021848591,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105304e-06,
+        "right_shoulder_pan_joint": -0.1252099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.6125627869586056e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.49513711143691735,
+        "left_j2": -0.00028829268700440415,
+        "left_j3": 0.0002793457071410154,
+        "left_j6": 9.596061902084367e-06,
+        "left_j4": 3.0453058487875162e-05,
+        "left_j5": 0.00018013997282606477,
+        "right_shoulder_pan_joint": 0.4912425481851515,
+        "right_shoulder_lift_joint": -0.0015591512952601854,
+        "right_elbow_joint": 0.0011933071228531081,
+        "right_wrist_1_joint": 0.0006019094306169569,
+        "right_wrist_2_joint": 0.0028570831467904707,
+        "right_wrist_3_joint": -3.097039592025996e-05
+      }
+    },
+    {
+      "clock_sec": 14.806000000000001,
+      "positions_rad": {
+        "left_j1": 0.07025520218485913,
+        "left_j2": -1.1967819823754209,
+        "left_j3": 1.2036143839722782,
+        "left_j4": -1.4992270750039227,
+        "left_j5": -1.4999915984787169,
+        "left_j6": -1.2523004712105963e-06,
+        "right_shoulder_pan_joint": -0.0702099807427568,
+        "right_shoulder_lift_joint": -1.5678602898605916,
+        "right_elbow_joint": 1.5748518487857033,
+        "right_wrist_1_joint": -1.568986384792786,
+        "right_wrist_2_joint": -1.5707928822037898,
+        "right_wrist_3_joint": -4.612562786956435e-08
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4951371114369198,
+        "left_j2": -0.0002882926870041213,
+        "left_j3": 0.000279345707140735,
+        "left_j6": 9.59606190208312e-06,
+        "left_j4": 3.0453058487347393e-05,
+        "left_j5": 0.0001801399728260644,
+        "right_shoulder_pan_joint": 0.49124254818515384,
+        "right_shoulder_lift_joint": -0.001559151295260684,
+        "right_elbow_joint": 0.0011933071228524515,
+        "right_wrist_1_joint": 0.0006019094306154111,
+        "right_wrist_2_joint": 0.0028570831467808634,
+        "right_wrist_3_joint": -3.097039592025793e-05
+      }
+    },
+    {
+      "clock_sec": 14.916,
+      "positions_rad": {
+        "left_j1": 0.015376596652046402,
+        "left_j2": -1.1967874773619123,
+        "left_j3": 1.2036178213868112,
+        "left_j4": -1.4992265003602678,
+        "left_j5": -1.4999894331437547,
+        "left_j6": -1.1176917211620993e-06,
+        "right_shoulder_pan_joint": -0.015398541191031184,
+        "right_shoulder_lift_joint": -1.5678827303426266,
+        "right_elbow_joint": 1.5748624477908253,
+        "right_wrist_1_joint": -1.568978416100858,
+        "right_wrist_2_joint": -1.5707656773447094,
+        "right_wrist_3_joint": -3.6299669447604843e-07
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.4763159746827409,
+        "left_j2": -0.0010441361013781034,
+        "left_j3": 0.0006277397034597592,
+        "left_j6": 2.48728673170616e-05,
+        "left_j4": 0.00010239875330434476,
+        "left_j5": 0.00040045105967187824,
+        "right_shoulder_pan_joint": 0.4637206437664651,
+        "right_shoulder_lift_joint": -0.0041684212108001936,
+        "right_elbow_joint": 0.0019259172079748301,
+        "right_wrist_1_joint": 0.0014164242646678062,
+        "right_wrist_2_joint": 0.005067826887326378,
+        "right_wrist_3_joint": -5.867860905534368e-05
+      }
+    },
+    {
+      "clock_sec": 15.048,
+      "positions_rad": {
+        "left_j1": -0.0006284385905195359,
+        "left_j2": -1.196933952587978,
+        "left_j3": 1.2035925092919626,
+        "left_j4": -1.4992309821995922,
+        "left_j5": -1.4999879255069277,
+        "left_j6": -8.288650093986384e-07,
+        "right_shoulder_pan_joint": 1.7876152023107047e-05,
+        "right_shoulder_lift_joint": -1.567912414542207,
+        "right_elbow_joint": 1.5748608806162252,
+        "right_wrist_1_joint": -1.5689700204355972,
+        "right_wrist_2_joint": -1.570763124204797,
+        "right_wrist_3_joint": -5.180486129259983e-07
+      },
+      "velocities_rad_sec": {
+        "left_j1": 0.02054250039215004,
+        "left_j2": 0.003531176531018136,
+        "left_j3": 0.0007369459210817499,
+        "left_j6": -1.7543747214048754e-05,
+        "left_j4": 0.00017491259917773306,
+        "left_j5": -0.0002103956355649607,
+        "right_shoulder_pan_joint": 0.00022589504917133843,
+        "right_shoulder_lift_joint": 0.0025921676024729017,
+        "right_elbow_joint": 0.0005632079834679752,
+        "right_wrist_1_joint": 6.074043955398603e-05,
+        "right_wrist_2_joint": -0.0012785199064886182,
+        "right_wrist_3_joint": 1.7097272684854784e-05
+      }
+    },
+    {
+      "clock_sec": 15.156,
+      "positions_rad": {
+        "left_j1": 4.673765847750522e-05,
+        "left_j2": -1.1968324796829442,
+        "left_j3": 1.2036219313327545,
+        "left_j4": -1.4992256851666552,
+        "left_j5": -1.4999920306938055,
+        "left_j6": -1.1822976014046371e-06,
+        "right_shoulder_pan_joint": -3.4621450485989886e-07,
+        "right_shoulder_lift_joint": -1.5678898082614832,
+        "right_elbow_joint": 1.574851331383133,
+        "right_wrist_1_joint": -1.5689799286030912,
+        "right_wrist_2_joint": -1.5707995539444266,
+        "right_wrist_3_joint": -8.079625908498884e-09
+      },
+      "velocities_rad_sec": {
+        "left_j1": -0.000991749884401594,
+        "left_j2": -0.0006724247950566882,
+        "left_j3": -0.00024150322892396397,
+        "left_j6": 1.327828076118291e-06,
+        "left_j4": -5.387756097574364e-05,
+        "left_j5": 1.228880245501414e-05,
+        "right_shoulder_pan_joint": 4.176526877725598e-05,
+        "right_shoulder_lift_joint": -5.47451068149577e-05,
+        "right_elbow_joint": -4.116276478070268e-05,
+        "right_wrist_1_joint": -2.584865246231935e-05,
+        "right_wrist_2_joint": -1.6410236882947584e-05,
+        "right_wrist_3_joint": 2.920293557487802e-07
+      }
+    },
+    {
+      "clock_sec": 15.266,
+      "positions_rad": {
+        "left_j1": -3.2105414220847928e-06,
+        "left_j2": -1.1968542426042306,
+        "left_j3": 1.2036130993554364,
+        "left_j4": -1.4992271854667292,
+        "left_j5": -1.4999916668581321,
+        "left_j6": -1.1431894276207532e-06,
+        "right_shoulder_pan_joint": -2.5644430440530463e-08,
+        "right_shoulder_lift_joint": -1.567888598368523,
+        "right_elbow_joint": 1.574851832528959,
+        "right_wrist_1_joint": -1.568979848401226,
+        "right_wrist_2_joint": -1.5707999919003581,
+        "right_wrist_3_joint": -1.3488313308483572e-10
+      },
+      "velocities_rad_sec": {
+        "left_j1": 3.183768693246363e-05,
+        "left_j2": 0.00010857268973468278,
+        "left_j3": 4.2540620347753346e-05,
+        "left_j6": -1.0998753877183921e-07,
+        "left_j4": 1.0007921217349124e-05,
+        "left_j5": -5.970351718711481e-07,
+        "right_shoulder_pan_joint": -1.530094500879697e-06,
+        "right_shoulder_lift_joint": -1.3127569711130967e-06,
+        "right_elbow_joint": -5.797783018196877e-07,
+        "right_wrist_1_joint": -1.891546136103184e-07,
+        "right_wrist_2_joint": -4.2719101231963473e-07,
+        "right_wrist_3_joint": 7.857232078264741e-09
+      }
+    },
+    {
+      "clock_sec": 15.376,
+      "positions_rad": {
+        "left_j1": 2.3080377856421634e-07,
+        "left_j2": -1.1968504488915772,
+        "left_j3": 1.2036147561595707,
+        "left_j4": -1.4992268902201629,
+        "left_j5": -1.4999916947696073,
+        "left_j6": -1.1473404990034926e-06,
+        "right_shoulder_pan_joint": 2.9771810012102175e-09,
+        "right_shoulder_lift_joint": -1.5678887266571628,
+        "right_elbow_joint": 1.5748517613121134,
+        "right_wrist_1_joint": -1.568979881983982,
+        "right_wrist_2_joint": -1.5707999966951496,
+        "right_wrist_3_joint": -5.82738601867181e-12
+      },
+      "velocities_rad_sec": {
+        "left_j1": 2.584230060221756e-07,
+        "left_j2": -1.6803090189277855e-05,
+        "left_j3": -6.732064466680342e-06,
+        "left_j6": 1.1176502453028574e-08,
+        "left_j4": -1.628459880322847e-06,
+        "left_j5": 1.3707650149100709e-08,
+        "right_shoulder_pan_joint": -1.506349960918162e-08,
+        "right_shoulder_lift_joint": 2.604947180777699e-07,
+        "right_elbow_joint": 1.4133282037637117e-07,
+        "right_wrist_1_joint": 6.05347132869692e-08,
+        "right_wrist_2_joint": -4.291332962730533e-09,
+        "right_wrist_3_joint": 9.164110495029059e-11
+      }
+    },
+    {
+      "clock_sec": 15.476,
+      "positions_rad": {
+        "left_j1": -1.83591133249277e-08,
+        "left_j2": -1.1968510916835224,
+        "left_j3": 1.2036144690783208,
+        "left_j4": -1.499226943397493,
+        "left_j5": -1.4999916929177681,
+        "left_j6": -1.146849584064764e-06,
+        "right_shoulder_pan_joint": -2.3531106835606347e-10,
+        "right_shoulder_lift_joint": -1.5678887196882407,
+        "right_elbow_joint": 1.5748517653025587,
+        "right_wrist_1_joint": -1.5689798800899688,
+        "right_wrist_2_joint": -1.5707999970778774,
+        "right_wrist_3_joint": 1.8557678208999443e-13
+      },
+      "velocities_rad_sec": {
+        "left_j1": -5.116167957190238e-07,
+        "left_j2": 2.3362136321835763e-06,
+        "left_j3": 8.827156728950584e-07,
+        "left_j6": -1.1930089954733166e-09,
+        "left_j4": 2.470039908100217e-07,
+        "left_j5": 3.84093380996685e-09,
+        "right_shoulder_pan_joint": 5.013277633927133e-09,
+        "right_shoulder_lift_joint": -2.1427051952493413e-08,
+        "right_elbow_joint": -1.1953006982564217e-08,
+        "right_wrist_1_joint": -5.491785565358503e-09,
+        "right_wrist_2_joint": 2.636452378932379e-10,
+        "right_wrist_3_joint": -8.715384695400263e-13
+      }
+    },
+    {
+      "clock_sec": 15.586,
+      "positions_rad": {
+        "left_j1": 2.4084070008200766e-09,
+        "left_j2": -1.1968509643155054,
+        "left_j3": 1.2036145249718735,
+        "left_j4": -1.4992269322058138,
+        "left_j5": -1.4999916930073376,
+        "left_j6": -1.1469279271210645e-06,
+        "right_shoulder_pan_joint": 1.0333899335746942e-11,
+        "right_shoulder_lift_joint": -1.5678887200543026,
+        "right_elbow_joint": 1.5748517650864338,
+        "right_wrist_1_joint": -1.5689798801997152,
+        "right_wrist_2_joint": -1.5707999970583222,
+        "right_wrist_3_joint": -1.437530249497642e-14
+      },
+      "velocities_rad_sec": {
+        "left_j1": 5.399356693386057e-08,
+        "left_j2": -3.552547897564501e-07,
+        "left_j3": -1.327040846991246e-07,
+        "left_j6": 1.7944429919793846e-10,
+        "left_j4": -3.788271770478493e-08,
+        "left_j5": -6.266158057570467e-10,
+        "right_shoulder_pan_joint": -5.349158640967672e-10,
+        "right_shoulder_lift_joint": 1.0244015275904453e-09,
+        "right_elbow_joint": 5.931465643503988e-10,
+        "right_wrist_1_joint": 2.8925761204294255e-10,
+        "right_wrist_2_joint": -4.7661743305700284e-11,
+        "right_wrist_3_joint": 6.076851902688023e-13
+      }
+    },
+    {
+      "clock_sec": 15.696,
+      "positions_rad": {
+        "left_j1": -3.861518467479693e-10,
+        "left_j2": -1.1968509843424828,
+        "left_j3": 1.2036145161816876,
+        "left_j4": -1.4992269339804354,
+        "left_j5": -1.4999916930044461,
+        "left_j6": -1.1469164259368948e-06,
+        "right_shoulder_pan_joint": -1.542187850433372e-13,
+        "right_shoulder_lift_joint": -1.5678887200521934,
+        "right_elbow_joint": 1.5748517650883553,
+        "right_wrist_1_joint": -1.5689798801982136,
+        "right_wrist_2_joint": -1.5707999970593767,
+        "right_wrist_3_joint": 2.865678277695926e-16
+      },
+      "velocities_rad_sec": {
+        "left_j1": -5.779411163549129e-09,
+        "left_j2": 5.4315476933767804e-08,
+        "left_j3": 2.0082672491566316e-08,
+        "left_j6": -2.8250511167182185e-11,
+        "left_j4": 5.820062919045569e-09,
+        "left_j5": 8.702646095091862e-11,
+        "right_shoulder_pan_joint": 2.808754032126061e-11,
+        "right_shoulder_lift_joint": -2.0495369739050308e-11,
+        "right_elbow_joint": -1.3163354764160553e-11,
+        "right_wrist_1_joint": -7.510604617896647e-12,
+        "right_wrist_2_joint": 2.6236382141602792e-12,
+        "right_wrist_3_joint": -3.303441264167778e-14
+      }
+    },
+    {
+      "clock_sec": 15.806000000000001,
+      "positions_rad": {
+        "left_j1": 6.333964214975197e-11,
+        "left_j2": -1.1968509811927917,
+        "left_j3": 1.2036145175616235,
+        "left_j4": -1.4992269337002577,
+        "left_j5": -1.499991693004461,
+        "left_j6": -1.1469182047668805e-06,
+        "right_shoulder_pan_joint": -1.6902246038410485e-14,
+        "right_shoulder_lift_joint": -1.567888720051331,
+        "right_elbow_joint": 1.574851765088811,
+        "right_wrist_1_joint": -1.568979880198027,
+        "right_wrist_2_joint": -1.5707999970593582,
+        "right_wrist_3_joint": 1.210136695007792e-17
+      },
+      "velocities_rad_sec": {
+        "left_j1": 7.155471353769474e-10,
+        "left_j2": -8.32567324971331e-09,
+        "left_j3": -3.052035180996992e-09,
+        "left_j6": 4.435694317513662e-12,
+        "left_j4": -8.961567165949342e-10,
+        "left_j5": -1.2223696798033535e-11,
+        "right_shoulder_pan_joint": -7.08767340049803e-13,
+        "right_shoulder_lift_joint": -1.2554666913679004e-12,
+        "right_elbow_joint": -6.384636221992779e-13,
+        "right_wrist_1_joint": -2.342045595386813e-13,
+        "right_wrist_2_joint": -8.15753273251219e-14,
+        "right_wrist_3_joint": 1.1104619870477154e-15
+      }
+    },
+    {
+      "clock_sec": 15.916,
+      "positions_rad": {
+        "left_j1": -1.0183073597285181e-11,
+        "left_j2": -1.19685098168848,
+        "left_j3": 1.2036145173449253,
+        "left_j4": -1.4992269337444577,
+        "left_j5": -1.4999916930044659,
+        "left_j6": -1.1469179249196338e-06,
+        "right_shoulder_pan_joint": 1.7699251946660983e-15,
+        "right_shoulder_lift_joint": -1.5678887200514047,
+        "right_elbow_joint": 1.5748517650887701,
+        "right_wrist_1_joint": -1.5689798801980466,
+        "right_wrist_2_joint": -1.570799997059358,
+        "right_wrist_3_joint": -1.867055492623925e-18
+      },
+      "velocities_rad_sec": {
+        "left_j1": -1.0405733656439117e-10,
+        "left_j2": 1.2770244892979883e-09,
+        "left_j3": 4.6456707271229334e-10,
+        "left_j6": -6.891513377254399e-13,
+        "left_j4": 1.3815817825823515e-10,
+        "left_j5": 1.8056953889306473e-12,
+        "right_shoulder_pan_joint": -2.3916940188582945e-14,
+        "right_shoulder_lift_joint": 1.6307249952990515e-13,
+        "right_elbow_joint": 7.50978183283988e-14,
+        "right_wrist_1_joint": 5.699675297506782e-14,
+        "right_wrist_2_joint": 4.171712437626288e-14,
+        "right_wrist_3_joint": 5.278748901639312e-18
+      }
+    },
+    {
+      "clock_sec": 16.026,
+      "positions_rad": {
+        "left_j1": 1.6068533260345813e-12,
+        "left_j2": -1.1968509816104425,
+        "left_j3": 1.2036145173789692,
+        "left_j4": -1.4992269337374842,
+        "left_j5": -1.4999916930044657,
+        "left_j6": -1.1469179690886696e-06,
+        "right_shoulder_pan_joint": -1.096914890767496e-16,
+        "right_shoulder_lift_joint": -1.5678887200514011,
+        "right_elbow_joint": 1.574851765088771,
+        "right_wrist_1_joint": -1.5689798801980466,
+        "right_wrist_2_joint": -1.570799997059358,
+        "right_wrist_3_joint": 8.57380497994503e-20
+      },
+      "velocities_rad_sec": {
+        "left_j1": 1.6669963751559813e-11,
+        "left_j2": -1.957995255185381e-10,
+        "left_j3": -7.069669159247461e-11,
+        "left_j6": 1.0620073265733366e-13,
+        "left_j4": -2.1309666414673295e-11,
+        "left_j5": -2.7981975514710937e-13,
+        "right_shoulder_pan_joint": 2.0141350048645732e-15,
+        "right_shoulder_lift_joint": -1.4255698067157388e-14,
+        "right_elbow_joint": 1.688361214063932e-14,
+        "right_wrist_1_joint": 4.15783954150658e-14,
+        "right_wrist_2_joint": 3.596070072620396e-14,
+        "right_wrist_3_joint": -3.4349640648205242e-18
+      }
+    },
+    {
+      "clock_sec": 16.126,
+      "positions_rad": {
+        "left_j1": -2.074383332001014e-13,
+        "left_j2": -1.1968509816229864,
+        "left_j3": 1.2036145173735338,
+        "left_j4": -1.4992269337386146,
+        "left_j5": -1.4999916930044663,
+        "left_j6": -1.1469179619837007e-06,
+        "right_shoulder_pan_joint": -1.511818909250806e-18,
+        "right_shoulder_lift_joint": -1.5678887200514011,
+        "right_elbow_joint": 1.574851765088771,
+        "right_wrist_1_joint": -1.5689798801980466,
+        "right_wrist_2_joint": -1.570799997059358,
+        "right_wrist_3_joint": -6.336740101842703e-21
+      },
+      "velocities_rad_sec": {
+        "left_j1": -6.844232568082557e-12,
+        "left_j2": 1.831327453522672e-11,
+        "left_j3": 4.944429438192016e-12,
+        "left_j6": -9.427517381809216e-15,
+        "left_j4": 2.4389458318137135e-12,
+        "left_j5": 5.517740011278646e-14,
+        "right_shoulder_pan_joint": 2.3334704712667653e-16,
+        "right_shoulder_lift_joint": -1.4526964023298906e-14,
+        "right_elbow_joint": 1.600492520222462e-14,
+        "right_wrist_1_joint": 4.1645295248250355e-14,
+        "right_wrist_2_joint": 3.962268848770267e-14,
+        "right_wrist_3_joint": 2.792839447987766e-19
+      }
+    },
+    {
+      "clock_sec": 16.236,
+      "positions_rad": {
+        "left_j1": 3.179535465292401e-14,
+        "left_j2": -1.1968509816207555,
+        "left_j3": 1.2036145173744734,
+        "left_j4": -1.4992269337384065,
+        "left_j5": -1.4999916930044659,
+        "left_j6": -1.146917963240469e-06,
+        "right_shoulder_pan_joint": 1.322901861010283e-19,
+        "right_shoulder_lift_joint": -1.5678887200514011,
+        "right_elbow_joint": 1.574851765088771,
+        "right_wrist_1_joint": -1.5689798801980466,
+        "right_wrist_2_joint": -1.570799997059358,
+        "right_wrist_3_joint": -1.59886292603521e-21
+      },
+      "velocities_rad_sec": {
+        "left_j1": 1.1080111614114106e-12,
+        "left_j2": -2.704204585111564e-12,
+        "left_j3": -6.980737148038644e-13,
+        "left_j6": 1.388139867841965e-15,
+        "left_j4": -3.5715785335552387e-13,
+        "left_j5": 1.1949646542531989e-14,
+        "right_shoulder_pan_joint": -1.2491066003231174e-16,
+        "right_shoulder_lift_joint": -1.549102065572515e-14,
+        "right_elbow_joint": 1.689318898255711e-14,
+        "right_wrist_1_joint": 4.08735066191235e-14,
+        "right_wrist_2_joint": 3.597586449490192e-14,
+        "right_wrist_3_joint": -4.57481014505641e-19
+      }
+    },
+    {
+      "clock_sec": 16.346,
+      "positions_rad": {
+        "left_j1": -4.850409070634605e-15,
+        "left_j2": -1.1968509816211048,
+        "left_j3": 1.2036145173743265,
+        "left_j4": -1.4992269337384392,
+        "left_j5": -1.4999916930044659,
+        "left_j6": -1.1469179630436885e-06,
+        "right_shoulder_pan_joint": 2.5430198247948115e-19,
+        "right_shoulder_lift_joint": -1.5678887200514011,
+        "right_elbow_joint": 1.574851765088771,
+        "right_wrist_1_joint": -1.5689798801980466,
+        "right_wrist_2_joint": -1.570799997059358,
+        "right_wrist_3_joint": 9.060313678462058e-22
+      },
+      "velocities_rad_sec": {
+        "left_j1": -1.7942040226207494e-13,
+        "left_j2": 4.0071437226205804e-13,
+        "left_j3": 1.039744351829403e-13,
+        "left_j6": -2.0095399243975574e-16,
+        "left_j4": 6.155106535211987e-14,
+        "left_j5": 1.2373892080492951e-14,
+        "right_shoulder_pan_joint": 2.876544355283846e-16,
+        "right_shoulder_lift_joint": -1.4281306125253323e-14,
+        "right_elbow_joint": 1.468823143217887e-14,
+        "right_wrist_1_joint": 4.100055433717423e-14,
+        "right_wrist_2_joint": 3.6911098522153655e-14,
+        "right_wrist_3_joint": 9.55898172295713e-19
+      }
+    }
+  ],
+  "obstacle": {
+    "body": "demo_obstacle",
+    "geom": "demo_obstacle_geom",
+    "xyz_m": [
+      -0.45,
+      0.72,
+      0.5
+    ],
+    "size_m": [
+      0.16,
+      0.16,
+      1.0
+    ],
+    "fixed": true,
+    "present": false
+  },
+  "obstacle_configuration_sha256": "3aac23de2b9b2f7b21277d56a2107e0c176fa5c76ad0711bf77dc60dc74e8aa6",
+  "recording": {
+    "video_start_clock_sec": 4.849999999,
+    "frames": 326,
+    "fps": 24,
+    "playback_duration_sec": 13.583333333333334,
+    "wall_seconds": 13.58387648200005,
+    "maximum_capture_gap_sec": 0.05329275500116637,
+    "kind": "Actual owned MuJoCo X11 client pixels; no overlays or speed changes",
+    "video": "approach-contact-stop.mp4",
+    "errors": [],
+    "directory": "runtime/demos/contact-ab-control"
+  },
+  "mujoco_gpu_process_seen": true,
+  "rviz_gpu_process_seen": true,
+  "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "logical_cpus": 24,
+    "memory_total_bytes": 33404817408,
+    "kernel": "6.8.0-147-generic",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+  },
+  "graphics": {
+    "owned_gpu_processes": [
+      "|    0   N/A  N/A          109697      G   ...os2_control/ros2_control_node        141MiB |",
+      "|    0   N/A  N/A          109711      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |"
+    ],
+    "opengl": "name of display: :1\ndisplay: :1  screen: 0\ndirect rendering: Yes\nMemory info (GL_NVX_gpu_memory_info):\n    Dedicated video memory: 6144 MB\n    Total available memory: 6144 MB\n    Currently available dedicated video memory: 4838 MB\nOpenGL vendor string: NVIDIA Corporation\nOpenGL renderer string: NVIDIA GeForce RTX 3050/PCIe/SSE2\nOpenGL core profile version string: 4.6.0 NVIDIA 580.178.04\nOpenGL core profile shading language version string: 4.60 NVIDIA\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6.0 NVIDIA 580.178.04\nOpenGL shading language version string: 4.60 NVIDIA\nOpenGL context flags: (none)\nOpenGL profile mask: (none)\n\nOpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 580.178.04\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+    "nvidia_smi": "Tue Oct 20 14:38:38 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050        Off |   00000000:01:00.0  On |                  N/A |\n| 34%   44C    P3             21W /   70W |     933MiB /   6144MiB |     38%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1655      G   /usr/lib/xorg/Xorg                       95MiB |\n|    0   N/A  N/A            2772      G   /usr/lib/xorg/Xorg                      381MiB |\n|    0   N/A  N/A            2933      G   /usr/bin/gnome-shell                     63MiB |\n|    0   N/A  N/A            3513      G   ...rack-uuid=3190708988185955192        161MiB |\n|    0   N/A  N/A          109697      G   ...os2_control/ros2_control_node        141MiB |\n|    0   N/A  N/A          109711      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |\n+-----------------------------------------------------------------------------------------+\n"
+  },
+  "physics": {
+    "schema_version": 1,
+    "run_id": "20261020T053818.458816Z-992e4397",
+    "monitor_source_sha256": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+    "mujoco_version": "3.12.0",
+    "pid": 109697,
+    "complete": true,
+    "steps": 9677,
+    "engine_steps": 9677,
+    "timestep_sec": 0.002,
+    "integrator": 3,
+    "first_contact_evaluation_time_sec": 0,
+    "last_state_time_sec": 19.354000000000152,
+    "simulated_sec": 19.354000000000152,
+    "wall_span_sec": 19.35281502,
+    "paced_real_time_factor": 1.0000612303687564,
+    "contact_steps": 0,
+    "contacts": 0,
+    "active_contacts": 0,
+    "invalid_values": 0,
+    "time_discontinuities": 0,
+    "pair_overflow": 0,
+    "physics_step": {
+      "count": 9677,
+      "mean_sec": 1.0148088973855556e-05,
+      "max_sec": 5.8131e-05,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 3e-05,
+      "p99_upper_sec": 3e-05,
+      "overflow_count": 0
+    },
+    "monitor_step": {
+      "count": 9677,
+      "mean_sec": 9.744187248113984e-08,
+      "max_sec": 5.408e-06,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 1e-05,
+      "p99_upper_sec": 1e-05,
+      "overflow_count": 0
+    },
+    "pairs": [],
+    "stop_enabled": true,
+    "stop_latched": false,
+    "stop_step": 0,
+    "stop_time_sec": 0,
+    "hold_ticks": 0,
+    "hold_time_sec": 0,
+    "stopped_qpos": []
+  },
+  "physics_report_sha256": "a354f3d1355c35ac805bd175675285b4e683d9ae0d30aa40a3494a096717df42",
+  "physics_checks_passed": true,
+  "contact_demo_model_sha256": "415c273cb8415514b765e0e16bdbe59a48a70471c220c65eed9f2906b3ea2cf6",
+  "control_no_contact_checks_passed": true,
+  "shutdown_failures": [],
+  "shutdown_timed_out": false,
+  "launch_return_code": 0,
+  "launch_started": true,
+  "process_group_gone": true
+}

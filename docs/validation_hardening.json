@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "validated_utc": "2026-10-19T07:40:12.525331+00:00",
+  "base_commit": "b972f0bcbbac6a77201eeb85991dafd3b77c8c3e",
+  "validation_code_sha256": {
+    "robot_config.py": "4d6e835996ac3897626b5a337481bac90ae93ffe47a085570af34fff09c167bf",
+    "model_integrity.py": "907e80bc0690dbde9be058f1a2683e1c5ebe597060861399bdda3703b9386b5a",
+    "prepare_robot.py": "55b817ec3aa5bfc2c1b134c126d6625584ffb25230fbb13800e49b869609f658",
+    "verify_robot.py": "b0dd5eb36cb073b15924e0af588c33f226da282c23931182c0b29c07a3f7e2b3",
+    "verification_runner.py": "2e2e4232dbccc1d8add63b21169062d4fa127265dd14bdeaa92ee5fc2bf6d217",
+    "verification_reports.py": "6ed996b6c69ec70159b95b072e20a664ef01fa2f6e45e72724f4de0061e116e9",
+    "capture_robot_images.py": "3284741569430fe20999c477baf710734c52e85baa09470092ac69040d5e44c8",
+    "tests/test_model_integrity.py": "42f56a73909a9889829ad7c933de26df9e366a3c60b7915b4a9269cbf3a8993b",
+    "tests/test_verification_reports.py": "23183a7aee790788134ebf9e96cae9f7bacff0f6eb44d734218126173900777a",
+    "tests/test_robot_profiles.py": "ef645675539159dd022d66b760ca4a7c3101b7021c9478b6b24a4becaaba82c1",
+    "tests/test_collada_visuals.py": "d4117eac199d8bf298681f3558e2b87674bee2a53d348957605ce8a2ec750783"
+  },
+  "unit_tests": {
+    "command": ".venv/bin/python -B -m unittest discover -s tests -v",
+    "passed": 34,
+    "skipped": 0,
+    "failed": 0,
+    "ros_lifecycle_and_gui_tests": "mocked; separate from real headless integration"
+  },
+  "headless_integration": {
+    "fr5": {
+      "schema_version": 2,
+      "run_id": "20261019T073848.207471Z-599ffbc7",
+      "robot_id": "fr5",
+      "ros_domain_id": 94,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T07:38:48.207553+00:00",
+      "completed_utc": "2026-10-19T07:38:57.420833+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T073848.207471Z-599ffbc7/launch.log",
+      "robot": "FAIRINO FR5 V6",
+      "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+      "model_manifest_sha256": "db03aa8c895af03fb8a0efdf795a36b184f4eab2775303488da61eae0ecab39e",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "validated_utc": "2026-10-19T07:38:57.033543+00:00",
+      "joints": [
+        "j1",
+        "j2",
+        "j3",
+        "j4",
+        "j5",
+        "j6"
+      ],
+      "controllers": {
+        "fairino5_controller": "active",
+        "joint_state_broadcaster": "active"
+      },
+      "direct_tracking_error_rad": [
+        2.795416040923815e-06,
+        0.0031489045290082895,
+        0.003614453228323544,
+        0.0007730512384231947,
+        8.307502089799357e-06,
+        -1.1467221675582623e-06
+      ],
+      "moveit_trajectory_points": 49,
+      "moveit_tracking_error_rad": [
+        -1.168721477234902e-06,
+        0.0032538190704793912,
+        0.0036128671112214406,
+        0.0007670749302972624,
+        7.778148039649935e-06,
+        -1.8854270378981797e-06
+      ],
+      "final_joint_positions_rad": [
+        -0.20224561901169896,
+        -1.099408486710207,
+        1.102581887863458,
+        -1.3969189059261213,
+        -1.4988198404299435,
+        0.09792292576714727
+      ],
+      "joint_state_messages": 815,
+      "clock_messages": 4174,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 8.353999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base_link",
+        "forearm_link",
+        "shoulder_link",
+        "upperarm_link",
+        "wrist1_link",
+        "wrist2_link",
+        "wrist3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    },
+    "fr10": {
+      "schema_version": 2,
+      "run_id": "20261019T073848.116195Z-3261aa57",
+      "robot_id": "fr10",
+      "ros_domain_id": 95,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T07:38:48.116305+00:00",
+      "completed_utc": "2026-10-19T07:38:54.039634+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T073848.116195Z-3261aa57/launch.log",
+      "robot": "FAIRINO FR10 V6",
+      "robot_profile_sha256": "02cb60aa46b97a581f3af472769305b9c11712fea947c4ea33a33ff4ed8d0b62",
+      "model_manifest_sha256": "cb8b0c80b3e5528290648294b6800c8d2d7e5179aa7fded67d01d7cfbb83d4cc",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "validated_utc": "2026-10-19T07:38:53.653131+00:00",
+      "joints": [
+        "j1",
+        "j2",
+        "j3",
+        "j4",
+        "j5",
+        "j6"
+      ],
+      "controllers": {
+        "joint_state_broadcaster": "active",
+        "fairino10_controller": "active"
+      },
+      "direct_tracking_error_rad": [
+        -5.581672233856416e-06,
+        -4.1471327117292844e-05,
+        0.0014411834029504078,
+        0.0003997920568590274,
+        3.7050976633423716e-06,
+        -7.343254572388517e-07
+      ],
+      "moveit_trajectory_points": 17,
+      "moveit_tracking_error_rad": [
+        -0.00022663729037200597,
+        -0.00035200180671624004,
+        0.0014325209818393247,
+        0.000392469058823508,
+        3.664422212557028e-06,
+        -2.915025687291739e-06
+      ],
+      "final_joint_positions_rad": [
+        -0.1990077253100932,
+        -1.0986250089905178,
+        1.1014157202210821,
+        -1.4015173549660622,
+        -1.4973908724529759,
+        0.09894697629427678
+      ],
+      "joint_state_messages": 492,
+      "clock_messages": 2530,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 5.063999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base_link",
+        "forearm_link",
+        "shoulder_link",
+        "upperarm_link",
+        "wrist1_link",
+        "wrist2_link",
+        "wrist3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    },
+    "ur5e": {
+      "schema_version": 2,
+      "run_id": "20261019T073847.778820Z-d2b42378",
+      "robot_id": "ur5e",
+      "ros_domain_id": 96,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-19T07:38:47.778911+00:00",
+      "completed_utc": "2026-10-19T07:38:56.174151+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "runtime/validation/runs/20261019T073847.778820Z-d2b42378/launch.log",
+      "robot": "Universal Robots UR5e",
+      "robot_profile_sha256": "944b2e8d3c734125f23a251a857670028f15d33b187f5f9874d99dcf69b60687",
+      "model_manifest_sha256": "2fe217a621921cfb17487d9604d725b0e01250e230da4f6cdd435a6fd3376526",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "validated_utc": "2026-10-19T07:38:55.787826+00:00",
+      "joints": [
+        "shoulder_pan_joint",
+        "shoulder_lift_joint",
+        "elbow_joint",
+        "wrist_1_joint",
+        "wrist_2_joint",
+        "wrist_3_joint"
+      ],
+      "controllers": {
+        "joint_state_broadcaster": "active",
+        "ur5e_controller": "active"
+      },
+      "direct_tracking_error_rad": [
+        1.0108177822543141e-07,
+        0.0029114350710788273,
+        0.004052020041063642,
+        0.0018202894128689362,
+        2.942057109045493e-07,
+        -4.303948629107556e-09
+      ],
+      "moveit_trajectory_points": 42,
+      "moveit_tracking_error_rad": [
+        -1.1479106671041794e-06,
+        0.0036082560112737916,
+        0.004043128537285279,
+        0.00177761243317609,
+        -1.926089263637465e-06,
+        -1.9773719728277683e-07
+      ],
+      "final_joint_positions_rad": [
+        -0.2016659543464831,
+        -1.4484101952924353,
+        1.4525013815856456,
+        -1.5000384072671984,
+        -1.5687210705595083,
+        0.09902459455868334
+      ],
+      "joint_state_messages": 739,
+      "clock_messages": 3751,
+      "clock_start_sec": 0.002,
+      "clock_end_sec": 7.503999999,
+      "clock_monotonic": true,
+      "clock_publisher_qos": [
+        {
+          "reliability": "RELIABLE",
+          "durability": "VOLATILE"
+        }
+      ],
+      "tf_child_frames": [
+        "base",
+        "base_link",
+        "base_link_inertia",
+        "flange",
+        "forearm_link",
+        "ft_frame",
+        "shoulder_link",
+        "tool0",
+        "upper_arm_link",
+        "wrist_1_link",
+        "wrist_2_link",
+        "wrist_3_link"
+      ],
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true
+    }
+  },
+  "actual_cli_failure_probe": {
+    "schema_version": 2,
+    "run_id": "20261019T073848.639325Z-1bff306d",
+    "robot_id": "missing_model",
+    "ros_domain_id": 97,
+    "status": "failed",
+    "stage": "complete",
+    "started_utc": "2026-10-19T07:38:48.639472+00:00",
+    "completed_utc": "2026-10-19T07:38:48.640705+00:00",
+    "motion_checks_passed": false,
+    "shutdown_clean": true,
+    "error": {
+      "type": "ValueError",
+      "message": "Unknown robot missing_model; see config/robots"
+    },
+    "cleanup_errors": [],
+    "log_path": "runtime/validation/runs/20261019T073848.639325Z-1bff306d/launch.log",
+    "failure_stage": "preflight",
+    "shutdown_failures": [],
+    "shutdown_timed_out": false,
+    "launch_return_code": null,
+    "launch_started": false,
+    "process_group_gone": true
+  },
+  "not_run": [
+    "Desktop GUI rendering/capture and physical window-button interactions",
+    "Real hardware; CI workflow execution"
+  ]
+}

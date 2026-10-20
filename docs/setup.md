@@ -42,22 +42,32 @@ python3 -m pip install --target .venv/lib/python3.10/site-packages -r requiremen
 모델 변환과 기준 렌더는 `.venv/bin/python`, 로봇팔의 ROS 자동 검증은
 `source ./manipulation_env.sh`를 적용한 시스템 `python3`로 실행합니다.
 
-### 로컬 ROS 런타임과 모델 빌드
+### 패키지 설치(선택)
 
-검증한 deb 버전을 프로젝트 안에 내려받고, 종료 수정 런타임과 모델별 패키지를 빌드합니다.
+기존 루트 스크립트는 설치 없이 실행됩니다. 설치형 CLI가 필요하면 다음을 실행합니다.
 
 ```bash
-mkdir -p external runtime/debs
-cd runtime/debs
-apt download libglfw3 libglfw3-dev \
-  ros-humble-mujoco-vendor=0.1.1-1jammy.20260907.141308 \
-  ros-humble-mujoco-ros2-control=0.1.2-1jammy.20260908.125234 \
-  ros-humble-mujoco-ros2-control-msgs=0.1.2-1jammy.20260907.213024 \
-  ros-humble-mujoco-ros2-control-plugins=0.1.2-1jammy.20260907.225305 \
-  ros-humble-ros2-control-cmake=0.2.1-1jammy.20260304.202614
-cd ../..
+.venv/bin/python -m pip install --no-deps -e .
+# 저장소 밖에서 호출할 때
+MUJOCO_ROS2_WORKSPACE="$PWD" .venv/bin/manipulation-prepare --list
+```
+
+빌드 도구가 없는 초기 가상환경은 먼저 pip를 준비합니다. ROS 시스템 Python의 setuptools를
+변경할 필요는 없습니다. 배포용 `python -m build` 검증은 별도 가상환경에서 수행합니다.
+
+### 로컬 ROS 런타임과 모델 빌드
+
+소스·패키지·검증한 deb 잠금은 [config/build.yaml](../config/build.yaml)에 모았습니다.
+빌드 계획을 먼저 확인하고, 필요한 deb를 다운로드하여 빌드합니다.
+
+```bash
+python3 build_workspace.py --dry-run
+python3 build_workspace.py --download-debs
+# 또는 기존 명령: 캐시된 deb를 사용
 bash build_runtime.sh
 bash build_robot_packages.sh
+# 모델 하나와 장면을 선택
+bash build_robot_packages.sh --robots fr5 --scene pedestal
 ```
 
 `build_runtime.sh`는 deb를 `runtime/root`에 추출하고 `mujoco_ros2_control` 0.1.2에
@@ -88,15 +98,24 @@ FR5·FR10·UR5e 모델을 생성합니다.
 
 `home_rad`, `servo.kp`, `servo.kv`와 검증 목표 배열은 프로필의 `joints` 순서와 길이를 따릅니다.
 변환기는 관절 이름으로 MuJoCo 초기 자세와 구동기를 연결합니다.
-프로필 수정 후 모델을 재생성해야 하며, 실행 중인 모델은 종료하고 다시 실행해야 합니다.
+프로필·작업장면·빌드 명세·패키지 생성기·원본 URDF/SRDF·메시·Xacro 의존 파일·공통 제어 설정·requirements 변경 후 모델을 재생성해야 합니다.
+실행 중인 모델은 종료하고 다시 실행합니다. 제조사 체크아웃에 추적 파일 변경이 있으면 덮어쓰지 않고 중단합니다.
+새 무결성 명세가 없는 기존 생성 모델은 한 번 재생성해야 합니다.
+
+생성기는 임시 디렉터리에서 컴파일·물리 검증을 완료한 뒤 출력 파일을 교체하고 `source.json`을 마지막에 게시합니다.
+임시 생성·컴파일·물리 검증 단계에서 실패하면 이전 모델을 보존합니다. 게시 도중 I/O 오류로 일부 파일만 바뀌면 기존 명세와 해시가 달라 실행이 거부됩니다.
+파일 묶음 전체가 하나의 원자적 연산으로 교체되는 것은 아니므로 실행 중인 모델을 재생성하지 않습니다.
+`source.json`에는 입력·출력 SHA-256과 생성 Python/패키지 버전을 기록합니다.
+ROS 시스템 Python과 생성용 가상환경은 다르므로 실행 시 두 환경의 패키지 버전을 직접 비교하지 않습니다.
+의존성 명세 파일 변경은 해시로 검사하며, 같은 명세 안의 설치 환경 차이는 기록된 생성 환경을 기준으로 별도 확인합니다.
 
 | 생성 위치 | 내용 |
 |---|---|
 | `models/<모델>/<모델>.xml` | MuJoCo 형상·관성·충돌·위치 서보 |
 | `models/<모델>/<모델>.ros2_control.urdf` | ROS 모델과 MuJoCo 하드웨어 인터페이스 |
-| `runtime/generated/<모델>/controllers.yaml` | 모델의 관절·제어기 이름을 반영한 ros2_control 설정 |
-| `runtime/generated/<모델>/moveit_controllers.yaml` | 같은 프로필에서 생성한 MoveIt 제어기 연결 |
-| `runtime/generated/ur5e/visual_meshes/` | 원본 DAE에서 변환한 재질별 OBJ |
+| `runtime/generated/default/<모델>/controllers.yaml` | 모델의 관절·제어기 이름을 반영한 ros2_control 설정 |
+| `runtime/generated/default/<모델>/moveit_controllers.yaml` | 같은 프로필에서 생성한 MoveIt 제어기 연결 |
+| `models/ur5e/visual_meshes/` | 원본 DAE에서 변환한 재질별 OBJ |
 | `models/<모델>/source.json` | 제조사 출처와 모델 생성 정보 |
 
 생성 XML/URDF에는 해당 PC의 경로가 포함됩니다.
@@ -106,22 +125,15 @@ FR5·FR10·UR5e 모델을 생성합니다.
 
 ## 공통 코드 구성
 
-| 파일 | 역할 |
-|---|---|
-| [robot_config.py](../robot_config.py) / [config/robots](../config/robots) | 프로필 검사, 생성 모델 해시 확인과 제어기 설정 생성 |
-| [prepare_robot.py](../prepare_robot.py) / [collada_visuals.py](../collada_visuals.py) | URDF/MJCF 변환과 UR 시각 모델 변환 |
-| [run_sim.sh](../run_sim.sh) / [manipulation_env.sh](../manipulation_env.sh) | 모델 선택과 공통 ROS 환경 |
-| [manipulation.launch.py](../manipulation.launch.py) | MuJoCo·ros2_control·MoveIt·RViz 및 종료 처리 |
-| [controller_defaults.yaml](../config/controller_defaults.yaml) | 공통 위치 명령·궤적 제어 설정 |
-| [verify_robot.py](../verify_robot.py) / [tests](../tests) | 실제 ROS 동작·종료와 모델 변환 검사 |
-| [capture_robot_images.py](../capture_robot_images.py) / [docs/robots](robots/README.md) | 기준 렌더·GUI 촬영과 모델별 자료 |
-| [build_robot_packages.sh](../build_robot_packages.sh) / [build_runtime.sh](../build_runtime.sh) | 제조사 패키지와 패치 런타임 빌드 |
-| [ur5e_moveit_config](../packages/ur5e_moveit_config) | 공식 Xacro, `tool0` 계획 체인, KDL·RViz 설정 |
-| [종료 패치](../patches/mujoco_ros2_control-0.1.2-shutdown.patch) / [플러그인 수명 처리](../native/moveit_plugin_lifetime.c) | UI 자원 해제 순서와 MoveIt 종료 우회 처리 |
+정식 구현은 [src/mujoco_ros2_manipulation](../src/mujoco_ros2_manipulation)에 있습니다.
+루트 Python·빌드 셸은 호환 진입점입니다. 폴더별 책임, 빌드 명세와 장면별 출력 경로는
+[구조 설명](architecture.md)에 정리했습니다.
 
 `manipulation_env.sh`는 기존 다른 워크스페이스의 환경 대신 `/opt/ros/humble`과
 프로젝트의 로컬 런타임·빌드 패키지를 로드합니다. 셸 초기 설정 파일은 수정하지 않습니다.
 공통 도메인은 `MANIPULATION_ROS_DOMAIN_ID`로 지정하며 기본값은 89입니다.
+미들웨어 기본값은 `rmw_cyclonedds_cpp`이며 `MANIPULATION_RMW_IMPLEMENTATION`으로 변경할 수 있습니다.
+모든 참여 터미널에서 같은 환경을 source합니다.
 
 FR5의 기존 `prepare_fr5.py`, `run_fr5.sh`, `fr5.launch.py`, `fr5_env.sh`,
 `verify_fr5.py`, `build_fr5_runtime.sh`는 호환 진입점으로 유지합니다.

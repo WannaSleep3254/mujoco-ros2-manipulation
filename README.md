@@ -87,7 +87,7 @@ ros2 topic echo /joint_states sensor_msgs/msg/JointState --once
 ```
 
 실행 중인 모델을 종료한 뒤 다시 실행해야 변경이 반영됩니다.
-실행기와 검증기는 프로필 해시가 다른 오래된 생성 모델의 사용을 차단합니다.
+실행기와 검증기는 프로필·생성기·원본 입력·출력 해시가 다른 오래되거나 변경된 생성 모델을 차단합니다.
 `use_sim_time`은 시간 기준을 정하는 옵션이며, 모델이나 실제 로봇을 선택하는 옵션은 아닙니다.
 
 ## 검증 환경과 결과
@@ -134,27 +134,82 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [의존성 업데이트](docs/dependency_updates.md) | Dependabot 주간 검사, ROS 호환성 제한, 보안 업데이트와 사본 반영 절차 |
 | [모델별 자료](docs/robots/README.md) | FR5·FR10·UR5e 설정, 좌표계, 실제 GUI 스크린샷 |
 | [검증 안내](docs/verification.md) | 연속 명령의 완료 확인, 자동 검증, JSON·로그 해석 |
+| [CI 통합·병합 경로](docs/integration.md) | 보호된 main에 CI와 선행 PR을 함께 반영하는 절차 |
 | [문제 해결](docs/troubleshooting.md) | 종료 오류 원인·수정 근거, Python 환경과 모델 재생성 |
 | [자료 촬영과 재생성](docs/robots/capture.md) | 기준 렌더, GUI 촬영, 출처·해시 갱신 |
 | [초기 1관절 데모](docs/single_joint_demo.md) | Python 브리지, ROS 토픽 제어, rqt 및 초기 검증 기록 |
+| [양팔 접촉 자동 정지](docs/contact_stop.md) | 접촉 후 물리 고정, 양팔 목표 취소·제어기 비활성화와 재시작 복구 |
+| [공동 장면 접촉·GUI·성능](docs/workcell_diagnostics.md) | 매 물리 스텝 접촉 기록, 현재 PC의 headless·GUI 측정과 스크린샷 |
 | [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md) | 작업장면 설정 분리, 고정 베이스, FR5·UR5e 공동 제어와 단계별 완료 기준 |
+
+## 패키지·빌드·작업장면
+
+정식 구현은 `src/mujoco_ros2_manipulation`에 있고 루트 명령은 호환성을 유지합니다.
+제조사/런타임 소스와 deb 잠금은 `config/build.yaml`, 로봇 설정은 `config/robots`,
+설치 자세·고정 형상은 `config/scenes`에서 관리합니다.
+
+```bash
+python3 build_workspace.py --dry-run --robots fr5
+.venv/bin/python prepare_robot.py --robot fr5 --scene pedestal
+bash run_sim.sh robot:=fr5 scene:=pedestal
+```
+
+기본 바닥과 40cm 받침대 장면을 제공합니다. 같은 형상을 MuJoCo·ROS·MoveIt이 공유합니다.
+[구조 설명](docs/architecture.md)에 설치형 CLI, 출력 경로, CI와 지원 범위를 정리했습니다.
+[개발 검사](CONTRIBUTING.md) · [GitHub Actions](.github/workflows/ci.yml)
+
+## 두 로봇 공동 실행
+
+```bash
+python3 build_workspace.py --component models --workcell fr5_ur5e
+bash run_scene.sh workcell:=fr5_ur5e
+# 독립 자동 검증
+source ./manipulation_env.sh
+python3 verify_scene.py --workcell fr5_ur5e --domain 93
+```
+
+물리 엔진·시계·전체 상태 하나와 팔별 궤적 제어기 두 개를 사용합니다.
+[공동 작업장면 안내](docs/workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
+
+### 충돌 때문에 멈췄는지 확인하는 대조 시연
+
+[![왼쪽은 접촉으로 양팔 정지, 오른쪽 무장애물 대조군은 같은 명령을 계속 실행](docs/workcells/fr5_ur5e/contact_stop/comparison/outbound.png)](docs/workcells/fr5_ur5e/contact_stop/comparison/comparison.mp4)
+
+[나란히 비교 영상 (MP4, 11초)](docs/workcells/fr5_ur5e/contact_stop/comparison/comparison.mp4) ·
+[재현 명령·검증 근거·CI 결과](docs/contact_comparison.md)
+
+**동일한 8초 왕복 명령을 두 독립 실행에 적용**했습니다. 왼쪽은 약 2.01초에 기둥과 접촉해 양팔이 멈추고,
+오른쪽은 장애물이 없어 남은 약 6초의 이동·복귀를 끝까지 수행합니다.
+접촉 실행은 양팔 `CANCELED`, 대조군은 양팔 `SUCCEEDED`입니다. 명령 해시가 같고,
+양팔 자동 정지 기능은 두 실행 모두 켜져 있습니다.
+
+```bash
+source ./manipulation_env.sh
+python3 verify_contact_demo.py --gui
+python3 verify_contact_demo.py --gui --control
+```
+
+첫 관절 목표는 ±2rad(약 115°)까지 4초 이동 후 4초 복귀입니다.
+접촉 시점에 약 6초의 명령이 남아 있으므로 목표 도달과 접촉 정지를 구분할 수 있습니다.
+기본 실행은 양팔 동시 정지를 유지합니다. 이전 단독 영상은 [과거 시연 기록](docs/contact_stop.md#고정-장애물-접촉-시연)에 보존합니다.
 
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
 서보 게인과 모터 감쇠는 예제 설정이며, 충돌 형상은 제조사 STL의 convex hull 근사입니다.
-MuJoCo의 바닥은 아직 MoveIt 계획 장면에 등록하지 않았습니다.
+바닥·고정 받침대는 합성 URDF를 통해 MuJoCo와 MoveIt의 충돌 모델에 함께 반영합니다.
 
 | 순서 | 다음 작업 |
 |---|---|
-| 1 | 작업장면 설정 분리, 고정 베이스 + FR5, 바닥·장애물의 MuJoCo·MoveIt 일치 |
-| 2 | FR5·UR5e 공동 배치, 팔별 궤적 제어와 공동 충돌 회피 |
+| 완료 | 단일 로봇 작업장면 분리, 고정 받침대·공유 충돌 형상, 패키지 구조·CI·빌드 명세 통합 |
+| 구현 | FR5·UR5e 공동 배치, 팔별 제어·계획, 관절 공간 공동 계획과 충돌 목표 거부 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |
 
 [베이스·다중 로봇 작업계획](docs/plans/base_and_multi_robot.md)에 변경할 파일, 설정 초안, 검증 기준과 구현 순서를 정리했습니다.
-고정 베이스와 다중 로봇 기능은 아직 구현 전입니다.
+고정 받침대, FR5·UR5e 공동 장면, 매 물리 스텝 접촉 감시·자동 정지와 고정 장애물 접촉 시연을 지원합니다.
+CAD 메시 입력과 추가 작업·성능 비교는 후속 범위입니다.
 
 실제 로봇 연결은 아직 검증하지 않았습니다.
 제조사 모델과 연동 패키지의 고정 커밋·라이선스는 [출처 안내](docs/setup.md#소스-버전과-출처)에 기록했습니다.

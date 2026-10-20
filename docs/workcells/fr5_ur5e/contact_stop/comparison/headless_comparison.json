@@ -1,0 +1,25 @@
+{
+  "contact_run_id": "20261020T053939.172242Z-7447feab",
+  "control_run_id": "20261020T053951.312109Z-8a8ee961",
+  "command_sha256": "c2c5057aa958f54bc01b23f3d97a5db17fd8bf3f8fe18632dad2b6784d23667a",
+  "identical_commands": true,
+  "commanded_motion_duration_sec": 8.0,
+  "native_contact_motion_elapsed_sec": 2.0119999999998557,
+  "remaining_command_sec_at_contact": 5.988000000000145,
+  "control_additional_outbound_rad": {
+    "left": 1.0063520430283335,
+    "right": 1.0026606753741434
+  },
+  "contact_goal_statuses": [
+    5,
+    5
+  ],
+  "control_goal_statuses": [
+    4,
+    4
+  ],
+  "control_returned_to_start": true,
+  "control_contacts": 0,
+  "contact_post_stop_drift_rad": 0,
+  "additional_contact_physics_steps": 0
+}

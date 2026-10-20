@@ -76,3 +76,11 @@ GUI의 엔진은 로컬 ROS 런타임 MuJoCo 3.12.0입니다. 초기 자세 렌�
 
 원본 제조사 메시·로컬 XML/URDF·ROS 빌드·실행 로그는 Git에서 제외하고,
 모델별 안내·검증 요약·PNG·촬영 메타데이터를 저장소에 포함합니다.
+
+## 추가 작업장면
+
+`capture_robot_images.py --robot fr5 --scene pedestal`로 장면별 기준 렌더를 생성합니다.
+추가 장면의 자료 위치는 `docs/scenes/pedestal/fr5/`이고 GUI 검증 시
+`verify_robot.py --robot fr5 --scene pedestal --gui --screenshot-dir docs/scenes/pedestal/fr5/images`를 사용합니다.
+수집도 같은 `--scene pedestal --collect` 조합을 사용합니다. 기준 렌더와 GUI 자료의 모델 명세 해시가
+현재 검증 보고서와 같아야 수집됩니다. 기존 보관 자료는 해당 버전 기록으로 유지합니다.

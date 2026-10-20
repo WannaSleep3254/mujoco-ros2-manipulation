@@ -1,0 +1,69 @@
+diff --git a/mujoco_ros2_control/src/mujoco_simulation.cpp b/mujoco_ros2_control/src/mujoco_simulation.cpp
+--- a/mujoco_ros2_control/src/mujoco_simulation.cpp
++++ b/mujoco_ros2_control/src/mujoco_simulation.cpp
+@@ -21,6 +21,7 @@
+ #include "array_safety.h"
+ #include "mujoco_ros2_control/sim_display_text.hpp"
+ #include "render_loop_exit.hpp"
++#include "step_monitor.hpp"
+ 
+ #include <unistd.h>
+ #include <cerrno>
+@@ -1428,6 +1429,7 @@
+ // simulate in background thread (while rendering in main thread)
+ void MujocoSimulation::physics_loop()
+ {
++  manipulation::StepMonitor monitor;
+   // cpu-sim synchronization point
+   std::chrono::time_point<mj::Simulate::Clock> syncCPU;
+   mjtNum syncSim = 0;
+@@ -1526,7 +1528,7 @@
+             apply_staged_control_inputs();
+             pre_step_callback_(mj_data_);
+             // run single step, let next iteration deal with timing
+-            mj_step(mj_model_, mj_data_);
++            monitor.step(mj_model_, mj_data_);
+ 
+             // Publish the per-step control state before the clock tick,
+             // so consumers woken by this tick read state synchronous with that sim time.
+@@ -1578,7 +1580,7 @@
+               apply_staged_control_inputs();
+               pre_step_callback_(mj_data_);
+               // call mj_step
+-              mj_step(mj_model_, mj_data_);
++              monitor.step(mj_model_, mj_data_);
+ 
+               // Publish the per-step control state before the clock tick (see above)
+               publish_control_state();
+@@ -1635,7 +1637,7 @@
+           if (pending_steps_.load() > 0)
+           {
+             pre_step_callback_(mj_data_);
+-            mj_step(mj_model_, mj_data_);
++            monitor.step(mj_model_, mj_data_);
+             publish_control_state();
+             publish_clock();
+ 
+@@ -1684,6 +1686,7 @@
+       }
+     }  // release std::lock_guard<std::mutex>
+   }
++  monitor.finish(step_count_.load());
+ }
+ 
+ void MujocoSimulation::publish_clock()
+diff --git a/mujoco_ros2_control/CMakeLists.txt b/mujoco_ros2_control/CMakeLists.txt
+--- a/mujoco_ros2_control/CMakeLists.txt
++++ b/mujoco_ros2_control/CMakeLists.txt
+@@ -210,6 +210,11 @@
+ # PLUGINLIB_EXPORT_CLASS static constructors will have run before the ClassLoaders exist. This
+ # can cause problems when pluginlib calls dlopen, as a previously-loaded handle will be
+ # returned that will prevent registration of a factory for the transmission type.
++if(NOT MANIPULATION_MONITOR_INCLUDE_DIR OR NOT MANIPULATION_MONITOR_SHA256)
++  message(FATAL_ERROR "Build with the workspace monitor include directory and SHA-256")
++endif()
++target_include_directories(mujoco_ros2_control PRIVATE "${MANIPULATION_MONITOR_INCLUDE_DIR}")
++target_compile_definitions(mujoco_ros2_control PRIVATE MANIPULATION_MONITOR_SHA256="${MANIPULATION_MONITOR_SHA256}")
+ target_include_directories(mujoco_ros2_control PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+   $<INSTALL_INTERFACE:include>

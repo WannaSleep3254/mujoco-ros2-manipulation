@@ -2,6 +2,8 @@
 unset AMENT_PREFIX_PATH COLCON_PREFIX_PATH CMAKE_PREFIX_PATH LD_LIBRARY_PATH PYTHONPATH
 task_manipulation_env_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "${task_manipulation_env_root}/ros2_env.sh"
+# Match the tested local middleware instead of inheriting the host default.
+export RMW_IMPLEMENTATION="${MANIPULATION_RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
 export ROS_DOMAIN_ID="${MANIPULATION_ROS_DOMAIN_ID:-89}"
 export ROS_LOG_DIR=/tmp/manipulation_ros2_logs
 task_manipulation_env_runtime="${task_manipulation_env_root}/runtime/root/opt/ros/humble"
@@ -11,4 +13,6 @@ export PYTHONPATH="${task_manipulation_env_runtime}/local/lib/python3.10/dist-pa
 if [[ -f "${task_manipulation_env_root}/ros_ws/install/local_setup.bash" ]]; then
   source "${task_manipulation_env_root}/ros_ws/install/local_setup.bash"
 fi
+export MUJOCO_ROS2_WORKSPACE="${task_manipulation_env_root}"
+export PYTHONPATH="${task_manipulation_env_root}/src:${PYTHONPATH:-}"
 unset task_manipulation_env_root task_manipulation_env_runtime

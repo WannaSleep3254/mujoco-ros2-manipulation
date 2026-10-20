@@ -1,0 +1,254 @@
+diff --git a/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp b/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
+--- a/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
++++ b/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_simulation.hpp
+@@ -48,6 +48,7 @@
+ #include <mujoco_ros2_control_plugins/mujoco_ros2_control_plugins_base.hpp>
+ #include <sensor_msgs/msg/joint_state.hpp>
+ #include <std_srvs/srv/trigger.hpp>
++#include <std_msgs/msg/bool.hpp>
+ 
+ namespace mujoco_ros2_control
+ {
+@@ -529,6 +530,11 @@
+ 
+   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr close_window_service_;
+ 
++  std::atomic<bool> contact_stop_latched_{false};
++  std::atomic<bool> contact_test_requested_{false};
++  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr contact_stop_publisher_;
++  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr contact_status_service_, contact_test_service_;
++
+   // Primary simulate object
+   std::unique_ptr<mujoco::Simulate> sim_;
+ 
+diff --git a/mujoco_ros2_control/src/mujoco_simulation.cpp b/mujoco_ros2_control/src/mujoco_simulation.cpp
+--- a/mujoco_ros2_control/src/mujoco_simulation.cpp
++++ b/mujoco_ros2_control/src/mujoco_simulation.cpp
+@@ -699,6 +699,30 @@
+       qos_services, step_simulation_cb_group_);
+   RCLCPP_INFO(get_logger(), "Created step_simulation service at: %s/step_simulation", node_->get_fully_qualified_name());
+ 
++  contact_stop_publisher_ = node_->create_publisher<std_msgs::msg::Bool>(
++      "~/contact_stop", rclcpp::QoS(1).reliable().transient_local());
++  contact_stop_publisher_->publish(std_msgs::msg::Bool{});
++  contact_status_service_ = node_->create_service<std_srvs::srv::Trigger>(
++      "~/contact_stop_status", [this](const std_srvs::srv::Trigger::Request::SharedPtr,
++                                    std_srvs::srv::Trigger::Response::SharedPtr response) {
++        const char* enabled = std::getenv("MANIPULATION_CONTACT_STOP");
++        response->success = enabled && std::string(enabled) == "1";
++        response->message = contact_stop_latched_.load() ? "latched; restart required" : "ready";
++      });
++  const char* contact_test = std::getenv("MANIPULATION_ENABLE_CONTACT_TEST");
++  if (contact_test && std::string(contact_test) == "1") {
++    contact_test_service_ = node_->create_service<std_srvs::srv::Trigger>(
++        "~/inject_test_contact", [this](const std_srvs::srv::Trigger::Request::SharedPtr,
++                                      std_srvs::srv::Trigger::Response::SharedPtr response) {
++          const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
++          if (!mj_model_ || mj_name2id(mj_model_, mjOBJ_BODY, "contact_stop_test_probe") < 0) {
++            response->success = false; response->message = "Isolated contact test model not ready"; return;
++          }
++          response->success = !contact_stop_latched_.load() && !contact_test_requested_.exchange(true);
++          response->message = response->success ? "Test obstacle queued" : "Already latched or queued";
++        });
++  }
++
+   close_window_service_ = node_->create_service<std_srvs::srv::Trigger>(
+       "~/close_window",
+       [this](const std_srvs::srv::Trigger::Request::SharedPtr,
+@@ -942,11 +966,18 @@
+     const std::shared_ptr<mujoco_ros2_control_msgs::srv::ResetWorld::Request> request,
+     std::shared_ptr<mujoco_ros2_control_msgs::srv::ResetWorld::Response> response)
+ {
++  if (contact_stop_latched_.load()) {
++    response->success = false;
++    response->message = "Contact stop latched; restart the workcell";
++    return;
++  }
++
+   RCLCPP_INFO_EXPRESSION(get_logger(), !request->keyframe.empty(), "Reset world service called with keyframe: '%s'",
+                          request->keyframe.c_str());
+   RCLCPP_INFO_EXPRESSION(get_logger(), request->keyframe.empty(),
+                          "Reset world service called. Resetting to initial keyframe...");
+   const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
++  if (contact_stop_latched_.load()) { response->success = false; response->message = "Contact stop latched"; return; }
+ 
+   // Validate every override before touching any state, so an invalid entry leaves the world
+   // un-reset. Validation only checks names and shapes against the model; free-joint frame_ids
+@@ -992,6 +1023,12 @@
+ void MujocoSimulation::set_pause_callback(const std::shared_ptr<mujoco_ros2_control_msgs::srv::SetPause::Request> request,
+                                           std::shared_ptr<mujoco_ros2_control_msgs::srv::SetPause::Response> response)
+ {
++  if (contact_stop_latched_.load()) {
++    response->success = false;
++    response->message = "Contact stop latched; restart the workcell";
++    return;
++  }
++
+   const bool currently_paused = !sim_->run;
+   if (currently_paused == request->paused)
+   {
+@@ -1032,6 +1069,12 @@
+     const std::shared_ptr<mujoco_ros2_control_msgs::srv::StepSimulation::Request> request,
+     std::shared_ptr<mujoco_ros2_control_msgs::srv::StepSimulation::Response> response)
+ {
++  if (contact_stop_latched_.load()) {
++    response->success = false;
++    response->message = "Contact stop latched; restart the workcell";
++    return;
++  }
++
+   if (sim_->run)
+   {
+     response->success = false;
+@@ -1279,6 +1322,7 @@
+     const std::vector<mujoco_ros2_control_msgs::msg::FreeJointState>& free_joints, std::string& error_message)
+ {
+   const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
++  if (contact_stop_latched_.load()) { error_message = "Contact stop latched"; return false; }
+ 
+   // Nothing to write, and nothing worth republishing a snapshot for.
+   if (free_joints.empty())
+@@ -1330,6 +1374,7 @@
+ void MujocoSimulation::overwrite_physics_data(mjData* source)
+ {
+   const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
++  if (contact_stop_latched_.load()) { return; }
+   mj_copyData(mj_data_, mj_model_, source);
+   refresh_data_snapshot();
+   publish_control_state();
+@@ -1373,6 +1418,7 @@
+ void MujocoSimulation::apply_control_data(mjData* control_data)
+ {
+   const std::lock_guard<std::mutex> lock(control_staging_mutex_);
++  if (contact_stop_latched_.load()) return;
+   mju_copy(ctrl_staged_.data(), control_data->ctrl, static_cast<int>(mj_model_->nu));
+   mju_copy(qfrc_applied_staged_.data(), control_data->qfrc_applied, static_cast<int>(mj_model_->nv));
+   control_inputs_staged_ = true;
+@@ -1416,6 +1462,7 @@
+ void MujocoSimulation::apply_staged_control_inputs()
+ {
+   const std::lock_guard<std::mutex> lock(control_staging_mutex_);
++  if (contact_stop_latched_.load()) return;
+ 
+   // Only apply ctrl / qfrc_applied once the hw interface has staged control inputs,
+   // so that initial or reset values in mj_data_ are not overwritten with zeros.
+@@ -1430,6 +1477,29 @@
+ void MujocoSimulation::physics_loop()
+ {
+   manipulation::StepMonitor monitor;
++  auto advance = [this, &monitor]() {
++    if (contact_test_requested_.exchange(false) && !monitor.latched()) {
++      const int body = mj_name2id(mj_model_, mjOBJ_BODY, "contact_stop_test_probe");
++      const int target = mj_name2id(mj_model_, mjOBJ_BODY, "left_forearm_link");
++      const int mocap = body < 0 ? -1 : mj_model_->body_mocapid[body];
++      if (mocap < 0 || target < 0) throw std::runtime_error("Invalid contact test fixture");
++      int geom = -1;
++      for (int i = 0; i < mj_model_->ngeom; ++i)
++        if (mj_model_->geom_bodyid[i] == target && mj_model_->geom_contype[i]) { geom = i; break; }
++      if (geom < 0) throw std::runtime_error("Contact test target has no collision geometry");
++      std::copy_n(mj_data_->geom_xpos + 3 * geom, 3, mj_data_->mocap_pos + 3 * mocap);
++      mj_data_->mocap_pos[3 * mocap] += 0.02;  // Avoid a degenerate, exactly coincident convex-mesh center.
++      mj_forward(mj_model_, mj_data_);  // Refresh mocap geometry even in the paused single-step path.
++      RCLCPP_INFO(get_logger(), "Contact test obstacle injected; contacts=%d", mj_data_->ncon);
++    }
++    const bool integrated = monitor.step(mj_model_, mj_data_);
++    if (monitor.latched() && !contact_stop_latched_.exchange(true)) {
++      std_msgs::msg::Bool state; state.data = true;
++      contact_stop_publisher_->publish(state);
++      RCLCPP_WARN(get_logger(), "CONTACT STOP latched: whole world frozen; restart required");
++    }
++    return integrated;
++  };
+   // cpu-sim synchronization point
+   std::chrono::time_point<mj::Simulate::Clock> syncCPU;
+   mjtNum syncSim = 0;
+@@ -1455,10 +1525,14 @@
+       // lock the sim mutex during the update
+       const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+ 
++      if (mj_model_ && monitor.latched()) {
++        monitor.restore(mj_model_, mj_data_);
++        sim_->run = true;  // Clock-only ticks keep ROS cancellation alive even after a paused contact.
++      }
+       // Detect if a reset occurred via the UI (Sync() processed pending_.reset)
+       // This is detected by simulation time jumping backwards to near-zero
+       // The render loop's Sync() calls mj_resetData() which resets time to 0
+-      if (mj_model_ && mj_data_ && prevSimTime > 0.1 && mj_data_->time < 0.01)
++      if (!monitor.latched() && mj_model_ && mj_data_ && prevSimTime > 0.1 && mj_data_->time < 0.01)
+       {
+         RCLCPP_DEBUG(get_logger(), "UI reset detected (time jumped from %.3f to %.3f), applying initial state...",
+                      prevSimTime, mj_data_->time);
+@@ -1528,7 +1602,7 @@
+             apply_staged_control_inputs();
+             pre_step_callback_(mj_data_);
+             // run single step, let next iteration deal with timing
+-            monitor.step(mj_model_, mj_data_);
++            const bool physical_step = advance();
+ 
+             // Publish the per-step control state before the clock tick,
+             // so consumers woken by this tick read state synchronous with that sim time.
+@@ -1544,7 +1618,7 @@
+             else
+             {
+               stepped = true;
+-              step_count_.fetch_add(1);
++              if (physical_step) step_count_.fetch_add(1);
+             }
+           }
+ 
+@@ -1580,7 +1654,7 @@
+               apply_staged_control_inputs();
+               pre_step_callback_(mj_data_);
+               // call mj_step
+-              monitor.step(mj_model_, mj_data_);
++              const bool physical_step = advance();
+ 
+               // Publish the per-step control state before the clock tick (see above)
+               publish_control_state();
+@@ -1595,7 +1669,7 @@
+               else
+               {
+                 stepped = true;
+-                step_count_.fetch_add(1);
++                if (physical_step) step_count_.fetch_add(1);
+               }
+ 
+               // break if reset
+@@ -1637,7 +1711,7 @@
+           if (pending_steps_.load() > 0)
+           {
+             pre_step_callback_(mj_data_);
+-            monitor.step(mj_model_, mj_data_);
++            const bool physical_step = advance();
+             publish_control_state();
+             publish_clock();
+ 
+@@ -1653,7 +1727,7 @@
+             {
+               sim_->AddToHistory();
+               pending_steps_.fetch_sub(1);
+-              step_count_.fetch_add(1);
++              if (physical_step) step_count_.fetch_add(1);
+               steps_cv_.notify_all();
+               update_sim_display();
+             }
+@@ -1729,14 +1803,17 @@
+   // Actual speed: measured_slowdown = CPU_time / sim_time, so speed = 100 / slowdown.
+   // Falls back to 0 while paused (slowdown stays at its last measured value but we
+   // suppress the display when there is no forward progress).
+-  const double actual_pct = sim_->run ? (100.0 / sim_->measured_slowdown) : 0.0;
++  const double actual_pct = (sim_->run && !contact_stop_latched_.load()) ? (100.0 / sim_->measured_slowdown) : 0.0;
+ 
+   // mj_data_ is owned by this (the physics) thread, so reading time/ncon needs no extra locking.
+   // Contacts surface why the sim slows down: a spike here usually explains a drop in actual speed.
+   const auto [title, content] =
+-      compose_sim_display_text(sim_->run, step_count_.load(), mj_data_->time, desired_pct, actual_pct, mj_data_->ncon);
++      compose_sim_display_text(sim_->run && !contact_stop_latched_.load(), step_count_.load(), mj_data_->time, desired_pct, actual_pct, mj_data_->ncon);
+ 
+   sim_->user_texts_new_.clear();
++  if (contact_stop_latched_.load())
++    sim_->user_texts_new_.emplace_back(mjFONT_BIG, mjGRID_TOPLEFT,
++        "CONTACT STOP", "Both arms frozen - restart required");
+   sim_->user_texts_new_.emplace_back(mjFONT_NORMAL, mjGRID_TOPRIGHT, title, content);
+ 
+   // Publish only after the vector is fully written; the release store pairs with

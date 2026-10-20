@@ -1,0 +1,74 @@
+schema_version: 1
+platform:
+  os: ubuntu
+  version: '22.04'
+  ros_distro: humble
+  architecture: amd64
+repositories:
+  fairino:
+    path: external/frcobot_ros2
+    url: https://github.com/FAIR-INNOVATION/frcobot_ros2.git
+    commit: fcf0c7f0d60d949d8a9a4238f929a44d07f60379
+  ur_description:
+    path: external/ur_description
+    url: https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
+    commit: 65fa221f6d9e1904b30b6a05ae39cb24a0c40fac
+  mujoco_ros2_control:
+    path: external/mujoco_ros2_control
+    url: https://github.com/ros-controls/mujoco_ros2_control.git
+    commit: 178b1c39e5010185116bc89b4e94cbb25b825f61
+packages:
+  fairino_description:
+    repository: fairino
+    path: fairino_description
+  fairino5_v6_moveit2_config:
+    repository: fairino
+    path: fairino5_v6_moveit2_config
+  fairino10_v6_moveit2_config:
+    repository: fairino
+    path: fairino10_v6_moveit2_config
+  ur_description:
+    repository: ur_description
+    path: .
+  ur5e_moveit_config:
+    path: packages/ur5e_moveit_config
+  mujoco_ros2_control:
+    repository: mujoco_ros2_control
+    path: mujoco_ros2_control
+runtime:
+  repository: mujoco_ros2_control
+  package: mujoco_ros2_control
+  patch: patches/mujoco_ros2_control-0.1.2-shutdown.patch
+  contact_stop_patch: patches/mujoco_ros2_control-contact-stop.patch
+  monitor_patch: patches/mujoco_ros2_control-step-monitor.patch
+  debs:
+  - package: libglfw3-dev
+    version: 3.3.6-1
+    architecture: amd64
+    file: libglfw3-dev_3.3.6-1_amd64.deb
+    sha256: 2b2a68725a34dd69bcce045282806f1d1ffa6c43376aa1023058683f51a31b02
+  - package: libglfw3
+    version: 3.3.6-1
+    architecture: amd64
+    file: libglfw3_3.3.6-1_amd64.deb
+    sha256: a7fe08d4ded1c376e8b008fdeef220b8a0335258a05c542982424cdb43b61af3
+  - package: ros-humble-mujoco-ros2-control-msgs
+    version: 0.1.2-1jammy.20260907.213024
+    architecture: amd64
+    file: ros-humble-mujoco-ros2-control-msgs_0.1.2-1jammy.20260907.213024_amd64.deb
+    sha256: aacba9448497f278c88be9da2366227f7eb89cea8300d97e798fd17a948c4d8b
+  - package: ros-humble-mujoco-ros2-control-plugins
+    version: 0.1.2-1jammy.20260907.225305
+    architecture: amd64
+    file: ros-humble-mujoco-ros2-control-plugins_0.1.2-1jammy.20260907.225305_amd64.deb
+    sha256: 12124c8561704104ce5c6aa4fbb539b6ed33b4bf43a43289f3ec3ba32e10c921
+  - package: ros-humble-mujoco-vendor
+    version: 0.1.1-1jammy.20260907.141308
+    architecture: amd64
+    file: ros-humble-mujoco-vendor_0.1.1-1jammy.20260907.141308_amd64.deb
+    sha256: 219005331ed39b9b9ec9901569d012a774364cdd1f19059416298633800a7591
+  - package: ros-humble-ros2-control-cmake
+    version: 0.2.1-1jammy.20260304.202614
+    architecture: amd64
+    file: ros-humble-ros2-control-cmake_0.2.1-1jammy.20260304.202614_amd64.deb
+    sha256: 0cc7ca1fe038de8c1b06a9ea0f4b702f4aad95d9cdd448953fe0fc3bb438753c

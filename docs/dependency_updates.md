@@ -70,7 +70,7 @@ NumPy 2.0에는 C ABI 변경이 있으므로 NumPy 1.x 대상으로 빌드된 �
 운영 가상환경을 바로 업그레이드하지 않습니다.
 
 ```bash
-.venv/bin/python -B -m unittest discover -s tests -v
+PYTHONPATH=src .venv/bin/python -B -m unittest discover -s tests -t . -v
 ```
 
 제조사 소스·생성 모델이 없어서 건너뛴 검사는 성공한 검사와 구분해 기록합니다.

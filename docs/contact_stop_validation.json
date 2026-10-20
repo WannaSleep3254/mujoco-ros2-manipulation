@@ -1,0 +1,1053 @@
+{
+  "schema_version": 1,
+  "collected_utc": "2026-10-20T02:41:45.507521+00:00",
+  "base_commit": "004a54054c0ef0afeca72bb0e171196541b23f2e",
+  "source_sha256": {
+    "native/step_monitor.hpp": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+    "native/step_monitor_probe.cpp": "12d7f337a4b548377d3da02be9bc7703c4711204b7e9c819f0c2f0ca3cd1cabd",
+    "patches/mujoco_ros2_control-contact-stop.patch": "bf05c85f767aebaaff01f9c846edb45bb91e0f0c119d50e021d7ab7fefcbe6ac",
+    "config/build.yaml": "1260388c49ebf29d171e66ece5b731b4b37be55717e5fa4aa4130d5c5aebd84a",
+    "src/mujoco_ros2_manipulation/build.py": "d58a9d02dcee8118a53a6f4e7777786cf8b2d662c287d6e262744e7df5348326",
+    "src/mujoco_ros2_manipulation/verification/runner.py": "dcfb16678d0bf187e9e30fc5a94f536ae82b9244b7c903659fad6047dcb0ef0c",
+    "src/mujoco_ros2_manipulation/verification/diagnostics.py": "199bcd284d350329f5bf83a0945c79c3b1abf6df0e022a565e39c7512b159fed",
+    "src/mujoco_ros2_manipulation/workcells/launch.py": "c327a5b627d967ca7cb1cf7d49d56f4fcd92abfcf7b131f44536aaebb9c274f9",
+    "src/mujoco_ros2_manipulation/workcells/contact_policy.py": "a3701349477f2cfea653e15c828ccb42a943e96dd109e34c76be004baadc10c5",
+    "src/mujoco_ros2_manipulation/workcells/contact_guard.py": "75b501a50929dccfafddde3ecbbf6a589639c60eee058a7212c5a43aeee64b95",
+    "src/mujoco_ros2_manipulation/workcells/verify.py": "a5ed986fc88bfb5e0c8dad29c2a7fccc7595e4eeca206e210d9edae6cafb6136",
+    "src/mujoco_ros2_manipulation/workcells/verify_contact_stop.py": "64904deb36be2f8775c44d69dc60d2eee1dd87de1c02060a09d166e4250bcd49",
+    "tests/unit/test_contact_stop.py": "371b9801a7373b80a12ff5c89bf300da324aa766812216fc6046273416bdc563",
+    "tests/unit/test_runtime_patches.py": "71e9ea253c10d88980c6dce818af037e04c34869f91e58eb5333462c29a69bf1",
+    "tests/unit/test_diagnostics.py": "f27dd768f7df6d08eb942d2390d8cece1abecb9bae948f6e412d973d92c277ff",
+    "tests/unit/test_verification_reports.py": "8981b39fcf563f3fe8017bcb364cd2d70248106f6756dc6e6f785c63696bde11",
+    "tests/model/test_step_monitor.py": "44d0b70867b99e63976b85f8734f718d135b4979c9b087eaaa2b7111401a01b7",
+    ".github/workflows/ci.yml": "80ec02a7442bf25cd6a628705f0fe57c488168e41c3fbd745c2b158075cd9ead",
+    "pyproject.toml": "e9de8692059b03e0b1a9f227b09fdeabc63ca0776baa15a837d29d905a8abb16"
+  },
+  "native_library_sha256": "c106221b18b9a00b5e7faec90e2fc3292847a0cc6e0d8d970201312039f573a4",
+  "unit_model_tests": {
+    "total": 75,
+    "failures": 0,
+    "skipped": 0,
+    "log_sha256": "7f84a7f940199d7ee4b89dee0710a1e927683ae24df5d00e32a7032c9b4771a3"
+  },
+  "fault_runs": [
+    {
+      "schema_version": 2,
+      "run_id": "20261020T023857.555006Z-9b9145e7",
+      "robot_id": "contact_stop_fr5_ur5e",
+      "ros_domain_id": 111,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-20T02:38:57.555169+00:00",
+      "completed_utc": "2026-10-20T02:39:01.789807+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T023857.555006Z-9b9145e7/launch.log",
+      "scene_id": "default",
+      "robot": "FR5 + UR5e 공동 작업장면",
+      "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "workcell_id": "fr5_ur5e",
+      "paused_contact": false,
+      "contact_stop_test": true,
+      "both_arms_moving_before_contact_rad": {
+        "left": 0.010229682308969295,
+        "right": 0.010312231694435058
+      },
+      "guard_observed_wall_sec": 0.003723906000232091,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ],
+      "verifier_cancel_requests": 0,
+      "new_goals_rejected": true,
+      "direct_commands_ignored": true,
+      "reset_resume_step_rejected": true,
+      "reactivation_watchdog_passed": true,
+      "post_stop_drift_rad": 0.0,
+      "clock_advance_after_stop_sec": 1.4039999989999998,
+      "stopped_positions_rad": {
+        "left_j1": 0.010433223171200209,
+        "left_j2": -1.196478912508204,
+        "left_j3": 1.207178178839383,
+        "left_j4": -1.5005360435563522,
+        "left_j5": -1.5000052274366538,
+        "left_j6": -1.4479259762086775e-07,
+        "right_shoulder_pan_joint": 0.010480198915150793,
+        "right_shoulder_lift_joint": -1.567888376199964,
+        "right_elbow_joint": 1.5748516521347407,
+        "right_wrist_1_joint": -1.56897999444131,
+        "right_wrist_2_joint": -1.5708001855056841,
+        "right_wrist_3_joint": 2.5025279487108665e-09
+      },
+      "contact_guard": {
+        "latched": true,
+        "phase": "stopped",
+        "controllers": {
+          "right_controller": "inactive",
+          "joint_state_broadcaster": "active",
+          "left_controller": "inactive"
+        },
+        "deactivation_requests": 2,
+        "error": ""
+      },
+      "simulated_clock_continues_while_physics_frozen": true,
+      "physics": {
+        "schema_version": 1,
+        "run_id": "20261020T023857.555006Z-9b9145e7",
+        "monitor_source_sha256": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+        "mujoco_version": "3.12.0",
+        "pid": 44509,
+        "complete": true,
+        "steps": 808,
+        "engine_steps": 808,
+        "timestep_sec": 0.002,
+        "integrator": 3,
+        "first_contact_evaluation_time_sec": 0,
+        "last_state_time_sec": 1.6160000000000012,
+        "simulated_sec": 1.6160000000000012,
+        "wall_span_sec": 1.614364333,
+        "paced_real_time_factor": 1.001013195699735,
+        "contact_steps": 1,
+        "contacts": 1,
+        "active_contacts": 1,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "physics_step": {
+          "count": 808,
+          "mean_sec": 7.369131188118818e-06,
+          "max_sec": 3.7218e-05,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 2e-05,
+          "p99_upper_sec": 3e-05,
+          "overflow_count": 0
+        },
+        "monitor_step": {
+          "count": 808,
+          "mean_sec": 7.582920792079184e-08,
+          "max_sec": 8.66e-06,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 1e-05,
+          "p99_upper_sec": 1e-05,
+          "overflow_count": 0
+        },
+        "pairs": [
+          {
+            "geom_ids": [
+              7,
+              44
+            ],
+            "geoms": [
+              "<unnamed>",
+              "contact_stop_test_geom"
+            ],
+            "bodies": [
+              "left_forearm_link",
+              "contact_stop_test_probe"
+            ],
+            "occurrences": 1,
+            "active": 1,
+            "first_sec": 1.6140000000000012,
+            "last_sec": 1.6140000000000012,
+            "min_distance_m": -0.10796719629817551,
+            "max_normal_force_N": 4309.64028713868
+          }
+        ],
+        "stop_enabled": true,
+        "stop_latched": true,
+        "stop_step": 808,
+        "stop_time_sec": 1.6160000000000012,
+        "hold_ticks": 871,
+        "hold_time_sec": 3.3579999999998518,
+        "stopped_qpos": [
+          0.010433223171200209,
+          -1.196478912508204,
+          1.207178178839383,
+          -1.5005360435563522,
+          -1.5000052274366538,
+          -1.4479259762086775e-07,
+          0.010480198915150793,
+          -1.567888376199964,
+          1.5748516521347407,
+          -1.56897999444131,
+          -1.5708001855056841,
+          2.5025279487108665e-09
+        ]
+      },
+      "physics_report_sha256": "6c0b90a75b164a39151f8cbab17d38d28c43be54d5830fa1da5bc0cb9da1d5d0",
+      "contact_test_model_sha256": "fb8c6161b29a316f0437c4fbf13355b7eb9ff3c5d30213cea733d54a5480f879",
+      "physics_checks_passed": true,
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true,
+      "contact_evaluation_to_latch_sim_sec": 0.0020000000000000018
+    },
+    {
+      "schema_version": 2,
+      "run_id": "20261020T023853.087294Z-fc66ebdb",
+      "robot_id": "contact_stop_fr5_ur5e",
+      "ros_domain_id": 112,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-20T02:38:53.087396+00:00",
+      "completed_utc": "2026-10-20T02:38:57.278898+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T023853.087294Z-fc66ebdb/launch.log",
+      "scene_id": "default",
+      "robot": "FR5 + UR5e 공동 작업장면",
+      "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+      "gui": false,
+      "stop_mode": "interrupt",
+      "workcell_id": "fr5_ur5e",
+      "paused_contact": true,
+      "contact_stop_test": true,
+      "both_arms_moving_before_contact_rad": {
+        "left": 0.010190470439134684,
+        "right": 0.010339996523068369
+      },
+      "guard_observed_wall_sec": 0.012575187000038568,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ],
+      "verifier_cancel_requests": 0,
+      "new_goals_rejected": true,
+      "direct_commands_ignored": true,
+      "reset_resume_step_rejected": true,
+      "reactivation_watchdog_passed": true,
+      "post_stop_drift_rad": 0.0,
+      "clock_advance_after_stop_sec": 1.401999999,
+      "stopped_positions_rad": {
+        "left_j1": 0.01043324780017547,
+        "left_j2": -1.1964788866044667,
+        "left_j3": 1.207178207177837,
+        "left_j4": -1.5005360481216092,
+        "left_j5": -1.500005227337137,
+        "left_j6": -1.44786435143558e-07,
+        "right_shoulder_pan_joint": 0.010480198796555575,
+        "right_shoulder_lift_joint": -1.5678883755065147,
+        "right_elbow_joint": 1.5748516525208271,
+        "right_wrist_1_joint": -1.568979994293562,
+        "right_wrist_2_joint": -1.5708001855390343,
+        "right_wrist_3_joint": 2.503081075323488e-09
+      },
+      "contact_guard": {
+        "latched": true,
+        "phase": "stopped",
+        "controllers": {
+          "joint_state_broadcaster": "active",
+          "left_controller": "inactive",
+          "right_controller": "inactive"
+        },
+        "deactivation_requests": 2,
+        "error": ""
+      },
+      "simulated_clock_continues_while_physics_frozen": true,
+      "physics": {
+        "schema_version": 1,
+        "run_id": "20261020T023853.087294Z-fc66ebdb",
+        "monitor_source_sha256": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+        "mujoco_version": "3.12.0",
+        "pid": 44292,
+        "complete": true,
+        "steps": 788,
+        "engine_steps": 788,
+        "timestep_sec": 0.002,
+        "integrator": 3,
+        "first_contact_evaluation_time_sec": 0,
+        "last_state_time_sec": 1.5760000000000012,
+        "simulated_sec": 1.5760000000000012,
+        "wall_span_sec": 1.585026657,
+        "paced_real_time_factor": 0.994305044044443,
+        "contact_steps": 1,
+        "contacts": 1,
+        "active_contacts": 1,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "physics_step": {
+          "count": 788,
+          "mean_sec": 1.1656101522842663e-05,
+          "max_sec": 2.8528e-05,
+          "p50_upper_sec": 2e-05,
+          "p95_upper_sec": 2e-05,
+          "p99_upper_sec": 3e-05,
+          "overflow_count": 0
+        },
+        "monitor_step": {
+          "count": 788,
+          "mean_sec": 1.0747208121827387e-07,
+          "max_sec": 9.842e-06,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 1e-05,
+          "p99_upper_sec": 1e-05,
+          "overflow_count": 0
+        },
+        "pairs": [
+          {
+            "geom_ids": [
+              7,
+              44
+            ],
+            "geoms": [
+              "<unnamed>",
+              "contact_stop_test_geom"
+            ],
+            "bodies": [
+              "left_forearm_link",
+              "contact_stop_test_probe"
+            ],
+            "occurrences": 1,
+            "active": 1,
+            "first_sec": 1.5740000000000012,
+            "last_sec": 1.5740000000000012,
+            "min_distance_m": -0.10796710429740389,
+            "max_normal_force_N": 4309.679621838481
+          }
+        ],
+        "stop_enabled": true,
+        "stop_latched": true,
+        "stop_step": 788,
+        "stop_time_sec": 1.5760000000000012,
+        "hold_ticks": 878,
+        "hold_time_sec": 3.3319999999998546,
+        "stopped_qpos": [
+          0.01043324780017547,
+          -1.1964788866044667,
+          1.207178207177837,
+          -1.5005360481216092,
+          -1.500005227337137,
+          -1.44786435143558e-07,
+          0.010480198796555575,
+          -1.5678883755065147,
+          1.5748516525208271,
+          -1.568979994293562,
+          -1.5708001855390343,
+          2.503081075323488e-09
+        ]
+      },
+      "physics_report_sha256": "2f6dbbc85879454c54578b728ef81af23dbabb58fabbf0385ff3048977dcf49f",
+      "contact_test_model_sha256": "fb8c6161b29a316f0437c4fbf13355b7eb9ff3c5d30213cea733d54a5480f879",
+      "physics_checks_passed": true,
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true,
+      "contact_evaluation_to_latch_sim_sec": 0.0020000000000000018
+    },
+    {
+      "schema_version": 2,
+      "run_id": "20261020T023843.130401Z-f950e370",
+      "robot_id": "contact_stop_fr5_ur5e",
+      "ros_domain_id": 114,
+      "status": "passed",
+      "stage": "complete",
+      "started_utc": "2026-10-20T02:38:43.130499+00:00",
+      "completed_utc": "2026-10-20T02:38:52.801787+00:00",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "error": null,
+      "cleanup_errors": [],
+      "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T023843.130401Z-f950e370/launch.log",
+      "scene_id": "default",
+      "robot": "FR5 + UR5e 공동 작업장면",
+      "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+      "gui": true,
+      "stop_mode": "interrupt",
+      "workcell_id": "fr5_ur5e",
+      "paused_contact": false,
+      "contact_stop_test": true,
+      "both_arms_moving_before_contact_rad": {
+        "left": 0.010202882924406752,
+        "right": 0.010368841861287975
+      },
+      "guard_observed_wall_sec": 0.003916832999948383,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ],
+      "verifier_cancel_requests": 0,
+      "new_goals_rejected": true,
+      "direct_commands_ignored": true,
+      "reset_resume_step_rejected": true,
+      "reactivation_watchdog_passed": true,
+      "post_stop_drift_rad": 0.0,
+      "clock_advance_after_stop_sec": 1.4019999989999996,
+      "stopped_positions_rad": {
+        "left_j1": 0.01043327005917563,
+        "left_j2": -1.1964788470074441,
+        "left_j3": 1.2071782209949062,
+        "left_j4": -1.5005360430020243,
+        "left_j5": -1.5000052276166602,
+        "left_j6": -1.4481907075077253e-07,
+        "right_shoulder_pan_joint": 0.010480201551365009,
+        "right_shoulder_lift_joint": -1.567888387688611,
+        "right_elbow_joint": 1.5748516456657884,
+        "right_wrist_1_joint": -1.5689799974363186,
+        "right_wrist_2_joint": -1.5708001854061266,
+        "right_wrist_3_joint": 2.5019187310788502e-09
+      },
+      "contact_guard": {
+        "latched": true,
+        "phase": "stopped",
+        "controllers": {
+          "joint_state_broadcaster": "active",
+          "right_controller": "inactive",
+          "left_controller": "inactive"
+        },
+        "deactivation_requests": 2,
+        "error": ""
+      },
+      "simulated_clock_continues_while_physics_frozen": true,
+      "mujoco_gpu_process_seen": true,
+      "rviz_gpu_process_seen": true,
+      "host": {
+        "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+        "logical_cpus": 24,
+        "memory_total_bytes": 33404817408,
+        "kernel": "6.8.0-147-generic",
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+      },
+      "graphics": {
+        "owned_gpu_processes": [
+          "|    0   N/A  N/A           44023      G   ...os2_control/ros2_control_node        141MiB |",
+          "|    0   N/A  N/A           44037      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |"
+        ],
+        "opengl": "name of display: :1\ndisplay: :1  screen: 0\ndirect rendering: Yes\nMemory info (GL_NVX_gpu_memory_info):\n    Dedicated video memory: 6144 MB\n    Total available memory: 6144 MB\n    Currently available dedicated video memory: 4807 MB\nOpenGL vendor string: NVIDIA Corporation\nOpenGL renderer string: NVIDIA GeForce RTX 3050/PCIe/SSE2\nOpenGL core profile version string: 4.6.0 NVIDIA 580.178.04\nOpenGL core profile shading language version string: 4.60 NVIDIA\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6.0 NVIDIA 580.178.04\nOpenGL shading language version string: 4.60 NVIDIA\nOpenGL context flags: (none)\nOpenGL profile mask: (none)\n\nOpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 580.178.04\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+        "nvidia_smi": "Tue Oct 20 11:38:48 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050        Off |   00000000:01:00.0  On |                  N/A |\n| 34%   46C    P3             22W /   70W |     963MiB /   6144MiB |     28%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1655      G   /usr/lib/xorg/Xorg                       95MiB |\n|    0   N/A  N/A            2772      G   /usr/lib/xorg/Xorg                      456MiB |\n|    0   N/A  N/A            2933      G   /usr/bin/gnome-shell                     55MiB |\n|    0   N/A  N/A            3513      G   ...rack-uuid=3190708988185955192        125MiB |\n|    0   N/A  N/A           44023      G   ...os2_control/ros2_control_node        141MiB |\n|    0   N/A  N/A           44037      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |\n+-----------------------------------------------------------------------------------------+\n"
+      },
+      "screenshots": {
+        "captured_utc": "2026-10-20T02:38:52.247409+00:00",
+        "robot_id": "fr5_ur5e",
+        "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+        "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+        "pose": "After verified MoveIt trajectory execution",
+        "images": [
+          {
+            "file": "docs/workcells/fr5_ur5e/contact_stop/images/mujoco_gui.png",
+            "size_px": [
+              1850,
+              950
+            ],
+            "application": "ros2_control_node",
+            "kind": "X11 client-window screenshot",
+            "sha256": "976b0d460c1a72cfe03c560fa1867c621b64116e6bd43f805f0382bfc0b3b704",
+            "camera_wheel_up_steps": 0
+          },
+          {
+            "file": "docs/workcells/fr5_ur5e/contact_stop/images/rviz.png",
+            "size_px": [
+              1850,
+              950
+            ],
+            "application": "rviz2",
+            "kind": "X11 client-window screenshot",
+            "sha256": "b348c15fc328f474dbce11778baae144986617346c2b7f3bf15b0a7b0562e6ab",
+            "camera_wheel_up_steps": 0
+          }
+        ]
+      },
+      "physics": {
+        "schema_version": 1,
+        "run_id": "20261020T023843.130401Z-f950e370",
+        "monitor_source_sha256": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+        "mujoco_version": "3.12.0",
+        "pid": 44023,
+        "complete": true,
+        "steps": 758,
+        "engine_steps": 758,
+        "timestep_sec": 0.002,
+        "integrator": 3,
+        "first_contact_evaluation_time_sec": 0,
+        "last_state_time_sec": 1.5160000000000011,
+        "simulated_sec": 1.5160000000000011,
+        "wall_span_sec": 1.514686019,
+        "paced_real_time_factor": 1.0008674939779723,
+        "contact_steps": 1,
+        "contacts": 1,
+        "active_contacts": 1,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "physics_step": {
+          "count": 758,
+          "mean_sec": 1.0301383905013192e-05,
+          "max_sec": 4.4628e-05,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 2e-05,
+          "p99_upper_sec": 3e-05,
+          "overflow_count": 0
+        },
+        "monitor_step": {
+          "count": 758,
+          "mean_sec": 1.0083377308707113e-07,
+          "max_sec": 8.495e-06,
+          "p50_upper_sec": 1e-05,
+          "p95_upper_sec": 1e-05,
+          "p99_upper_sec": 1e-05,
+          "overflow_count": 0
+        },
+        "pairs": [
+          {
+            "geom_ids": [
+              7,
+              44
+            ],
+            "geoms": [
+              "<unnamed>",
+              "contact_stop_test_geom"
+            ],
+            "bodies": [
+              "left_forearm_link",
+              "contact_stop_test_probe"
+            ],
+            "occurrences": 1,
+            "active": 1,
+            "first_sec": 1.5140000000000011,
+            "last_sec": 1.5140000000000011,
+            "min_distance_m": -0.10796720218207853,
+            "max_normal_force_N": 4309.644470343874
+          }
+        ],
+        "stop_enabled": true,
+        "stop_latched": true,
+        "stop_step": 758,
+        "stop_time_sec": 1.5160000000000011,
+        "hold_ticks": 3227,
+        "hold_time_sec": 7.969999999999344,
+        "stopped_qpos": [
+          0.01043327005917563,
+          -1.1964788470074441,
+          1.2071782209949062,
+          -1.5005360430020243,
+          -1.5000052276166602,
+          -1.4481907075077253e-07,
+          0.010480201551365009,
+          -1.567888387688611,
+          1.5748516456657884,
+          -1.5689799974363186,
+          -1.5708001854061266,
+          2.5019187310788502e-09
+        ]
+      },
+      "physics_report_sha256": "234ccb7b45e094ef16cbb90bedf4b998269e368209d4dd4de6a03c11ffc92fc2",
+      "contact_test_model_sha256": "fb8c6161b29a316f0437c4fbf13355b7eb9ff3c5d30213cea733d54a5480f879",
+      "physics_checks_passed": true,
+      "shutdown_failures": [],
+      "shutdown_timed_out": false,
+      "launch_return_code": 0,
+      "launch_started": true,
+      "process_group_gone": true,
+      "contact_evaluation_to_latch_sim_sec": 0.0020000000000000018
+    }
+  ],
+  "normal_workcell_run": {
+    "schema_version": 2,
+    "run_id": "20261020T023902.064302Z-fcda80ae",
+    "robot_id": "workcell_fr5_ur5e",
+    "ros_domain_id": 113,
+    "status": "passed",
+    "stage": "complete",
+    "started_utc": "2026-10-20T02:39:02.064393+00:00",
+    "completed_utc": "2026-10-20T02:39:35.511409+00:00",
+    "motion_checks_passed": true,
+    "shutdown_clean": true,
+    "error": null,
+    "cleanup_errors": [],
+    "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T023902.064302Z-fcda80ae/launch.log",
+    "scene_id": "default",
+    "robot": "FR5 + UR5e 공동 작업장면",
+    "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+    "model_manifest_sha256": "7fd632e4a1bd27b3f13fb9b0364b148c11e41fc233659c49f0fd3e1e968abe7f",
+    "gui": false,
+    "stop_mode": "interrupt",
+    "host": {
+      "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+      "logical_cpus": 24,
+      "memory_total_bytes": 33404817408,
+      "kernel": "6.8.0-147-generic",
+      "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+    },
+    "performance": {
+      "kind": "paced stationary holding after verified motion",
+      "requested_wall_sec": 10.0,
+      "warmup_wall_sec": 5,
+      "joint_state_received_hz": 100.09862912925387,
+      "clock_received_hz": 499.99315249377554,
+      "wall_sec": 10.000136952000048,
+      "simulated_sec": 10.000000000000004,
+      "real_time_factor": 0.9999863049875515,
+      "cpu_core_equivalents": 0.1329981785633443,
+      "rss_sum_peak_bytes": 470994944,
+      "sample_count": 51,
+      "process_ids": [
+        44698,
+        44726,
+        44728,
+        44736,
+        44738
+      ],
+      "cpu_scope": "launch process group, excludes verifier; 1.0 = one full CPU core",
+      "memory_scope": "sum of process RSS; shared pages can be counted more than once"
+    },
+    "planning_performance": {
+      "attempts": 20,
+      "successes": 20,
+      "median_wall_sec": 0.01938592349983992,
+      "p95_wall_sec": 0.02152758200008975,
+      "samples_wall_sec": [
+        0.020890753000003315,
+        0.013373853000302915,
+        0.015208000999791693,
+        0.009424010000202543,
+        0.020208418000038364,
+        0.02152758200008975,
+        0.019825571999717795,
+        0.01895643799980462,
+        0.017186931000196637,
+        0.0203778869999951,
+        0.018685680000089633,
+        0.02051925299974755,
+        0.02245656900004178,
+        0.009755267999935313,
+        0.00976042199999938,
+        0.020898249999845575,
+        0.018589983999845572,
+        0.010263258000122732,
+        0.021149004000108107,
+        0.019815408999875217
+      ],
+      "scope": "20 service round trips, same full start and goal states, no execution",
+      "random_seed": "OMPL default; not fixed by this benchmark",
+      "target_rad": {
+        "left_j1": 0.1,
+        "left_j2": -1.1,
+        "left_j3": 1.1,
+        "left_j4": -1.4,
+        "left_j5": -1.5,
+        "left_j6": 0.1,
+        "right_shoulder_pan_joint": 0.1,
+        "right_shoulder_lift_joint": -1.45,
+        "right_elbow_joint": 1.45,
+        "right_wrist_1_joint": -1.5,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.1
+      },
+      "start_rad": {
+        "left_j1": 0.2061910896615562,
+        "left_j2": -1.1936263082508045,
+        "left_j3": 1.2049832340214317,
+        "left_j4": -1.4979609407499033,
+        "left_j5": -1.4994850597766498,
+        "left_j6": -0.001869368104220825,
+        "right_shoulder_pan_joint": 0.20582478733519863,
+        "right_shoulder_lift_joint": -1.564103957964993,
+        "right_elbow_joint": 1.5770994783456906,
+        "right_wrist_1_joint": -1.568571547821267,
+        "right_wrist_2_joint": -1.571441602947698,
+        "right_wrist_3_joint": 0.0013206768897492407
+      }
+    },
+    "planning_wall_timings": [
+      {
+        "group": "left_arm",
+        "wall_sec": 0.01742156199998135,
+        "error_code": 1
+      },
+      {
+        "group": "right_arm",
+        "wall_sec": 0.007029722999959631,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.012431923000349343,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.03611657700002979,
+        "error_code": 99999
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.020890753000003315,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.013373853000302915,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.015208000999791693,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.009424010000202543,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.020208418000038364,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.02152758200008975,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.019825571999717795,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.01895643799980462,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.017186931000196637,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.0203778869999951,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.018685680000089633,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.02051925299974755,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.02245656900004178,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.009755267999935313,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.00976042199999938,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.020898249999845575,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.018589983999845572,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.010263258000122732,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.021149004000108107,
+        "error_code": 1
+      },
+      {
+        "group": "both_arms",
+        "wall_sec": 0.019815408999875217,
+        "error_code": 1
+      }
+    ],
+    "workcell_id": "fr5_ur5e",
+    "contact_guard": {
+      "latched": false,
+      "phase": "ready",
+      "controllers": {
+        "right_controller": "active",
+        "joint_state_broadcaster": "active",
+        "left_controller": "active"
+      },
+      "deactivation_requests": 0,
+      "error": ""
+    },
+    "rmw_implementation": "rmw_cyclonedds_cpp",
+    "joints": [
+      "left_j1",
+      "left_j2",
+      "left_j3",
+      "left_j4",
+      "left_j5",
+      "left_j6",
+      "right_shoulder_pan_joint",
+      "right_shoulder_lift_joint",
+      "right_elbow_joint",
+      "right_wrist_1_joint",
+      "right_wrist_2_joint",
+      "right_wrist_3_joint"
+    ],
+    "controllers": [
+      "joint_state_broadcaster",
+      "left_controller",
+      "right_controller"
+    ],
+    "clock_publishers": 1,
+    "joint_state_publishers": 1,
+    "isolated_arms": [
+      {
+        "instance": "left",
+        "other_arm_drift_rad": 2.833730128329898e-06,
+        "tracking_error_rad": [
+          8.909676542728784e-05,
+          0.003159888245587661,
+          0.003617082806173233,
+          0.0007735318951873627,
+          7.749885921226607e-06,
+          -1.193269406537202e-06,
+          -2.833730128329898e-06,
+          -4.6598407332787417e-07,
+          -3.538864179475354e-08,
+          1.2375873925662972e-07,
+          -3.040604392712254e-07,
+          4.1693193249685725e-09
+        ]
+      },
+      {
+        "instance": "right",
+        "other_arm_drift_rad": 8.909676542734335e-05,
+        "tracking_error_rad": [
+          -8.909676542734335e-05,
+          -1.0869866645446535e-05,
+          -2.565431825862774e-06,
+          -4.6563362232632244e-07,
+          5.571096126644193e-07,
+          4.635144346686024e-08,
+          2.3067348000893606e-06,
+          0.0029069960362231306,
+          0.0040528193452769035,
+          0.001821478692271672,
+          5.553340957309416e-06,
+          -7.767082286746844e-08
+        ]
+      }
+    ],
+    "arm_plans": [
+      {
+        "instance": "left",
+        "trajectory_points": 22,
+        "collision_samples": 50
+      },
+      {
+        "instance": "right",
+        "trajectory_points": 24,
+        "collision_samples": 57
+      }
+    ],
+    "joint_plan_points": 24,
+    "joint_plan_collision_samples": 56,
+    "collision_samples_total": 347,
+    "interpolation_max_step_rad": 0.025,
+    "interpolation_max_dt_sec": 0.05,
+    "common_start_sec": 12.124,
+    "future_goal_acceptance_margins_sec": [
+      0.75,
+      0.4859999999999989
+    ],
+    "observed_start_sec": {
+      "right": 12.194,
+      "left": 12.204
+    },
+    "observed_start_skew_sec": 0.009999999999999787,
+    "observed_start_tolerance_sec": 0.1,
+    "collision_probe_rad": {
+      "left_j1": -0.2,
+      "left_j2": -1.1,
+      "left_j3": 1.1,
+      "left_j4": -1.4,
+      "left_j5": -1.5,
+      "left_j6": 0.1,
+      "right_shoulder_pan_joint": -0.2,
+      "right_shoulder_lift_joint": -1.45,
+      "right_elbow_joint": 1.45,
+      "right_wrist_1_joint": -1.5,
+      "right_wrist_2_joint": -1.5708,
+      "right_wrist_3_joint": 0.1
+    },
+    "cross_arm_contacts": [
+      [
+        "left_wrist2_link",
+        "right_wrist_2_link"
+      ],
+      [
+        "right_wrist_3_link",
+        "left_wrist2_link"
+      ]
+    ],
+    "collision_goal_rejected": true,
+    "peer_rejection_cancels_other_arm": true,
+    "active_cancellation_stops_both_arms": true,
+    "movement_before_active_cancel_rad": {
+      "left": 0.007763304160179396,
+      "right": 0.00809537951346928
+    },
+    "tf_child_frames": [
+      "left_base_link",
+      "left_forearm_link",
+      "left_shoulder_link",
+      "left_upperarm_link",
+      "left_world",
+      "left_wrist1_link",
+      "left_wrist2_link",
+      "left_wrist3_link",
+      "right_base",
+      "right_base_link",
+      "right_base_link_inertia",
+      "right_flange",
+      "right_forearm_link",
+      "right_ft_frame",
+      "right_shoulder_link",
+      "right_tool0",
+      "right_upper_arm_link",
+      "right_workcell_source_root",
+      "right_world",
+      "right_wrist_1_link",
+      "right_wrist_2_link",
+      "right_wrist_3_link",
+      "workcell_floor",
+      "workcell_left_pedestal",
+      "workcell_right_pedestal"
+    ],
+    "final_joint_positions_rad": [
+      0.20620132652981527,
+      -1.1935336383959771,
+      1.2050214762761158,
+      -1.4979520172176959,
+      -1.4994850094546541,
+      -0.0018694204851729002,
+      0.20581643520758436,
+      -1.5640902508473424,
+      1.5771075506700418,
+      -1.5685676601160061,
+      -1.571442377080311,
+      0.0013206865336835684
+    ],
+    "physics": {
+      "schema_version": 1,
+      "run_id": "20261020T023902.064302Z-fcda80ae",
+      "monitor_source_sha256": "df37b77356e36eedae34962aa1088196f5f0fe58009ca1d7c99c39de8a09f6cf",
+      "mujoco_version": "3.12.0",
+      "pid": 44726,
+      "complete": true,
+      "steps": 16278,
+      "engine_steps": 16278,
+      "timestep_sec": 0.002,
+      "integrator": 3,
+      "first_contact_evaluation_time_sec": 0,
+      "last_state_time_sec": 32.55599999999382,
+      "simulated_sec": 32.55599999999382,
+      "wall_span_sec": 32.554867356,
+      "paced_real_time_factor": 1.0000347918479113,
+      "contact_steps": 0,
+      "contacts": 0,
+      "active_contacts": 0,
+      "invalid_values": 0,
+      "time_discontinuities": 0,
+      "pair_overflow": 0,
+      "physics_step": {
+        "count": 16278,
+        "mean_sec": 7.3658697628701166e-06,
+        "max_sec": 9.2418e-05,
+        "p50_upper_sec": 1e-05,
+        "p95_upper_sec": 2e-05,
+        "p99_upper_sec": 3e-05,
+        "overflow_count": 0
+      },
+      "monitor_step": {
+        "count": 16278,
+        "mean_sec": 6.352610885858033e-08,
+        "max_sec": 2.603e-06,
+        "p50_upper_sec": 1e-05,
+        "p95_upper_sec": 1e-05,
+        "p99_upper_sec": 1e-05,
+        "overflow_count": 0
+      },
+      "pairs": [],
+      "stop_enabled": true,
+      "stop_latched": false,
+      "stop_step": 0,
+      "stop_time_sec": 0,
+      "hold_ticks": 0,
+      "hold_time_sec": 0,
+      "stopped_qpos": []
+    },
+    "physics_report_sha256": "84a327899aeb5ea9063bd29afff0c78a0e04a7e6f27e94a3c3b518dc5f0ee38e",
+    "physics_checks_passed": true,
+    "shutdown_failures": [],
+    "shutdown_timed_out": false,
+    "launch_return_code": 0,
+    "launch_started": true,
+    "process_group_gone": true
+  },
+  "single_model_regressions": [
+    {
+      "run_id": "20261020T023935.771029Z-e769a690",
+      "robot_id": "fr5",
+      "scene_id": "default",
+      "status": "passed",
+      "model_manifest_sha256": "ec40dcd4ca65474020c3afa559e07c6bbc5ff95c21fde31739c6216d14c0053c",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    },
+    {
+      "run_id": "20261020T023945.135769Z-13c56f6b",
+      "robot_id": "fr10",
+      "scene_id": "default",
+      "status": "passed",
+      "model_manifest_sha256": "589a13956bbdc7dc63949555812778544939f4eb7495c7712fdc56a99ba22ea1",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    },
+    {
+      "run_id": "20261020T023951.311203Z-a2f26292",
+      "robot_id": "ur5e",
+      "scene_id": "default",
+      "status": "passed",
+      "model_manifest_sha256": "c65e5cadb0fc12760212310f2644063f7fac18f559eff2b6ac68f4cedf23bd1d",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    },
+    {
+      "run_id": "20261020T023959.915688Z-2634a26d",
+      "robot_id": "fr5",
+      "scene_id": "pedestal",
+      "status": "passed",
+      "model_manifest_sha256": "24f70decd8ef0862ce4ba37bddb68c113f734ea53e8d3ad0287dfd0ec124647b",
+      "shutdown_clean": true,
+      "process_group_gone": true
+    }
+  ]
+}

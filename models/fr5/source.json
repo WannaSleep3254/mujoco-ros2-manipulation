@@ -1,9 +1,11 @@
 {
-  "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2",
+  "scene_id": "default",
+  "scene_sha256": "7d40b3520bfc3fd316a8320b1d32c1b28fcdf2caaefa5f0f82bbd9e6cea0fa39",
+  "source_repository": "https://github.com/FAIR-INNOVATION/frcobot_ros2.git",
   "source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
   "robot": "FAIRINO FR5 V6",
   "robot_id": "fr5",
-  "robot_profile_sha256": "0d086ad3a990a1d27e2586e48ff4594dde563396ffaa98b8ea12ed12b642adde",
+  "robot_profile_sha256": "532a7eb981880b06c0ef0c1b8e918bddaffe2fe28d3f8da96d20438172141acb",
   "joints": [
     "j1",
     "j2",
@@ -88,6 +90,47 @@
   "contacts_at_settled_home": 0,
   "collision_geometry": "MuJoCo convex hulls of manufacturer STL meshes",
   "mujoco_visual_geometry": "original",
+  "converted_visual_assets": [],
   "tip_frame": "wrist3_link",
-  "gripper": "not included"
+  "gripper": "not included",
+  "integrity": {
+    "schema_version": 1,
+    "inputs": {
+      "manufacturer_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
+      "files": {
+        "config/build.yaml": "1260388c49ebf29d171e66ece5b731b4b37be55717e5fa4aa4130d5c5aebd84a",
+        "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+        "config/scenes/default.yaml": "b3d5046749a7e4489f30f4143a44ed585d5e11fb3e2efc0ec9d0521e0aca570f",
+        "external/frcobot_ros2/fairino5_v6_moveit2_config/config/fairino5_v6_robot.srdf": "0d35745c91f946e33d5f6d7db49c43c1253ca1b8c45498029715d2b4524feb14",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/base_link.STL": "ce96425ae7401b8a7262a1c1fd40c8b02bbf152a975d33debcb3ed4369e3938e",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/forearm_link.STL": "28387d67b50263ffe67cf8a6a1f2f7f11a12bd2bedc65340f920c5311eb1ef92",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/shoulder_link.STL": "c4cc46eea722cab4b57779f0c2cc99091cb0c698a31fc58736c120a0e6dd1324",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/upperarm_link.STL": "407e0b0f98eb569b9255b6d3258a7c3ba8b0d8b48c8f3c073bd0d9e59ad5faf0",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/wrist1_link.STL": "0f6f96c39bd237f2ff5beeab4179074900cba0d73664dc0bab682d151b777ac6",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/wrist2_link.STL": "63c43f1f17a86a1d74b07a172185d1cb3ff4133143511832a2bcd31b2b6a9bdf",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/wrist3_link.STL": "4c4d1706c0a1895d59d70af0f444e72bb80abdb526f1a22f24cd4ad3adfa00fb",
+        "external/frcobot_ros2/fairino_description/urdf/fairino5_v6.urdf": "bf875243b954bba414a6fba876272e78deee8defbfa0cfc26b82f6d586bacb9e",
+        "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",
+        "src/mujoco_ros2_manipulation/build.py": "d58a9d02dcee8118a53a6f4e7777786cf8b2d662c287d6e262744e7df5348326",
+        "src/mujoco_ros2_manipulation/model_build/collada.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
+        "src/mujoco_ros2_manipulation/model_build/integrity.py": "23d6f8cfe4366ba3865a0c82401a52303f863b6409451e8c81c03501f5684f89",
+        "src/mujoco_ros2_manipulation/model_build/prepare.py": "7ed4f9cfdaa65adb3088ab875bc2128ae98ec963b967b49630a9036035cb1173",
+        "src/mujoco_ros2_manipulation/paths.py": "191d9ff85d65cb2b50413666019a4258955fbfd42f94809d858ca5b81c9b8511",
+        "src/mujoco_ros2_manipulation/profiles.py": "090751865d8aa3ef88374610dbc0ffb6733a5f97367963feb13042df54f873a2",
+        "src/mujoco_ros2_manipulation/scenes.py": "70dbce78c7c758f6b588ff6fdbe0f242c9970cf1a0c7cb01e37a4a301bb0175f"
+      }
+    },
+    "outputs": {
+      "fr5.xml": "62bf211b01ab1c61708a9e3eef6ced0be2b4cec3692d94b6ddc52abaa27d2060",
+      "fr5.ros2_control.urdf": "18ca958687fad03a6b4a696639c9e8bd8eca3d26df114ca72eb784a05704a69c"
+    }
+  },
+  "generator_environment": {
+    "python_version": "3.10.12",
+    "packages": {
+      "mujoco": "3.14.0",
+      "numpy": "1.26.4",
+      "PyYAML": "5.4.1"
+    }
+  }
 }

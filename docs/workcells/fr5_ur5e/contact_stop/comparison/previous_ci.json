@@ -1,0 +1,100 @@
+{
+  "commit": "d515e41d736f3b42ecdd4f0fbf6991ab8c3a2ba1",
+  "run_id": 39366974900,
+  "artifact_id": 12240042125,
+  "records": [
+    {
+      "run_id": "20261020T035939.422040Z-0c0aa7e2",
+      "robot_id": "workcell_fr5_ur5e",
+      "status": "passed",
+      "shutdown_clean": true,
+      "natural_fixed_obstacle_contact": null,
+      "contact_injection_requests": null,
+      "goal_terminal_statuses": null,
+      "post_stop_drift_rad": null
+    },
+    {
+      "run_id": "20261020T040015.305074Z-8e78af2f",
+      "robot_id": "workcell_fr5_ur5e",
+      "status": "passed",
+      "shutdown_clean": true,
+      "natural_fixed_obstacle_contact": null,
+      "contact_injection_requests": null,
+      "goal_terminal_statuses": null,
+      "post_stop_drift_rad": null
+    },
+    {
+      "run_id": "20261020T040051.389151Z-527df8d6",
+      "robot_id": "contact_stop_fr5_ur5e",
+      "status": "passed",
+      "shutdown_clean": true,
+      "natural_fixed_obstacle_contact": null,
+      "contact_injection_requests": null,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ],
+      "post_stop_drift_rad": 0.0
+    },
+    {
+      "run_id": "20261020T040057.648632Z-ff2be160",
+      "robot_id": "contact_stop_fr5_ur5e",
+      "status": "passed",
+      "shutdown_clean": true,
+      "natural_fixed_obstacle_contact": null,
+      "contact_injection_requests": null,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ],
+      "post_stop_drift_rad": 0.0
+    },
+    {
+      "run_id": "20261020T040104.097029Z-ebe7f7ae",
+      "robot_id": "visible_contact_fr5_ur5e",
+      "status": "passed",
+      "shutdown_clean": true,
+      "natural_fixed_obstacle_contact": true,
+      "contact_injection_requests": 0,
+      "goal_terminal_statuses": [
+        5,
+        5
+      ],
+      "post_stop_drift_rad": 0.0
+    }
+  ],
+  "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39366974900",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 118445913472,
+      "name": "ROS Humble (workcell, fr5_ur5e)",
+      "conclusion": "success"
+    },
+    {
+      "id": 118445913575,
+      "name": "ROS Humble (fr5, pedestal)",
+      "conclusion": "success"
+    },
+    {
+      "id": 118445913600,
+      "name": "ROS Humble (ur5e, default)",
+      "conclusion": "success"
+    },
+    {
+      "id": 118445913639,
+      "name": "ROS Humble (fr10, default)",
+      "conclusion": "success"
+    },
+    {
+      "id": 118445913645,
+      "name": "ROS Humble (fr5, default)",
+      "conclusion": "success"
+    },
+    {
+      "id": 118445913663,
+      "name": "Python package and unit tests",
+      "conclusion": "success"
+    }
+  ]
+}
