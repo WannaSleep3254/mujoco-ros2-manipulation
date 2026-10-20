@@ -141,6 +141,21 @@ jobs:
           done
           python3 scripts/compare_interference.py --summary-only \
             --output-dir runtime/validation/interference-comparison
+      - name: Path quality and departure timing against original detour
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_timing.py --prepare \
+            --bundle runtime/validation/interference-comparison-bundle.json \
+            --plan runtime/validation/timing-plan.json
+          for mode in baseline timing; do
+            python3 verify_timing.py --mode "$mode" --domain 135 \
+              --bundle runtime/validation/interference-comparison-bundle.json \
+              --plan runtime/validation/timing-plan.json
+          done
+          python3 scripts/compare_timing.py --summary-only \
+            --plan runtime/validation/timing-plan.json \
+            --output-dir runtime/validation/timing-comparison
       - name: Preserve reports on success or failure
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

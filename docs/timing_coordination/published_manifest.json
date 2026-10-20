@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "uncompressed_sha256": {
+    "gui-baseline.json.gz": "c3b8ed209bc8b6a0b7cb0590dc2900187b9bcb0993a83e8057f0580805e97f9e",
+    "gui-baseline.log.txt.gz": "00b65cffe1ae99b85aef08adfbc0695230a15f03641adebfc0fb98687b9f9051",
+    "gui-baseline-observations.json.gz": "4f8bc71b3f04ebe988ab13285dd86d544601a977c36084795aec74a36e42a52d",
+    "headless-baseline.json.gz": "c1359de9532ccb22db667445595af77c025865b0cea32d15381cfe106bd9e1af",
+    "headless-baseline.log.txt.gz": "13f95a10eacd992417e6e3bcb685df2a1158aee60165f0d8e79d1ad0a62f5873",
+    "headless-baseline-observations.json.gz": "9e21341bdf50ae21609dae842c2ad1728cba298a2110165f8a8644722a240be9",
+    "gui-timing.json.gz": "281405eb906ee2a29df4e9c9f3e5ac25849f44182dad8cc117c0a8b22c04387e",
+    "gui-timing.log.txt.gz": "8d12fb44b672c59202b49353383dcd1fd088a452aa12b494b143327e96477849",
+    "gui-timing-observations.json.gz": "51d2a266ff6c1807531495ad265f5ed7ff9a766b8740215ba44e1eaa0d23ce34",
+    "headless-timing.json.gz": "6dc454c3f06d9ddab11a71b2e4f5fde30bf2ed2aeecc3521aaeae785c61e0a70",
+    "headless-timing.log.txt.gz": "4e4c2efd25c36a7388cc0f84d1dddeb919d38ddbc209aa17ca62769bfd9249dc",
+    "headless-timing-observations.json.gz": "8eafe26f82e6bbc376ab1cd7183c209b306e143b42dff524ccb68de4a660ab4b",
+    "plan.json.gz": "f0a2a2910c28ba61fcf52482a2144fb6a07a94ba9288292ebe5a0a70a58d22ad",
+    "bundle.json.gz": "73884f7009d83218fcc477ab3bc360fba7dad920c4558975a5c3557698efe011",
+    "source-verification.json.gz": "3c992be1c03000cd32cfdb042a52442f96cd3691f0e630b4c9a2f4273545f68f",
+    "source-trajectories.json.gz": "51df29161fff43fd27adac47012bd2c46cb2de4de7d7220d6c22a95721fef6bc",
+    "source.log.txt.gz": "a784d1b1d7f05d804b6216486f2dda2c97b9f3a665baf54bd86ad8b05cff977b"
+  },
+  "files": {
+    "baseline-complete.png": {
+      "bytes": 163403,
+      "sha256": "8308d1056a0f98c4a6738cc439e948dffa4644fb827a8cd2254c3119a58b1d62"
+    },
+    "baseline.mp4": {
+      "bytes": 624736,
+      "sha256": "d89e6b3c9ddc0ed5475b10e6c3a85426c83be3b8684092e60a201cce515eebca"
+    },
+    "bundle.json.gz": {
+      "bytes": 581994,
+      "sha256": "6d48d7e9da09f83e1cfcfb17a95bc908f3a9fda3513a02bf824733ba24fd8095"
+    },
+    "comparison.json": {
+      "bytes": 12714,
+      "sha256": "59b7a386b0d348ad1e4a789a52419ee8db052a3e6770ef72a36d5b4a3881da03"
+    },
+    "comparison.mp4": {
+      "bytes": 699421,
+      "sha256": "5a97325e5d21a59541807d9e4dbc624239ba6c582f0d960fdff6dc3f4a419f9d"
+    },
+    "crossing.png": {
+      "bytes": 164398,
+      "sha256": "0b4e1bb32cd5a134f9700929b11a4753592934074572f041526f54b327d1a750"
+    },
+    "gui-baseline-observations.json.gz": {
+      "bytes": 341922,
+      "sha256": "06def7c2a47cf8d567c9cfb87164a9a0d0495e558193303f0e46b59ef1885fd7"
+    },
+    "gui-baseline.json.gz": {
+      "bytes": 4866,
+      "sha256": "9cdfe8da80f14f47d3b40421b92611da956fbd25abbfa5462abb025a88186321"
+    },
+    "gui-baseline.log.txt.gz": {
+      "bytes": 6191,
+      "sha256": "cfd71ab69aa1a0992773d4c6e8c85d0d62106baad2e0728b1ea863fc2bd3a2a1"
+    },
+    "gui-timing-observations.json.gz": {
+      "bytes": 104750,
+      "sha256": "ffa4981242a6112f3ad02a7be651af6002da0dffde54f1817dec1410251c40c1"
+    },
+    "gui-timing.json.gz": {
+      "bytes": 4848,
+      "sha256": "a73be44fe141b5ef283a9ee673857d5e2ba37900e291460ca8d513116ac69350"
+    },
+    "gui-timing.log.txt.gz": {
+      "bytes": 6203,
+      "sha256": "be3aa2de5a440d14a52649e000ba67183bd9a8a7218c7a360ea5de1b340ce802"
+    },
+    "headless-baseline-observations.json.gz": {
+      "bytes": 342418,
+      "sha256": "a2602925136253f2a683646451193dd2d4d64998218b12df587c3ac5beee1c12"
+    },
+    "headless-baseline.json.gz": {
+      "bytes": 3604,
+      "sha256": "f174363add63029f01ed9cc9f3c3ff57834edf958c13ff6483f91b0ef36021f2"
+    },
+    "headless-baseline.log.txt.gz": {
+      "bytes": 5079,
+      "sha256": "2942204daa8340dde3b0c2922a3059719761e78da786855e887cccde85d9c48d"
+    },
+    "headless-comparison.json": {
+      "bytes": 11894,
+      "sha256": "2f1bef770aef6845283ec227305703544867c6a7097aabe5ba3291fa96bdc53c"
+    },
+    "headless-timing-observations.json.gz": {
+      "bytes": 105270,
+      "sha256": "2138270eff89d451b8f9ee8b5ea06d4cc668f750a697866c10d7808c16f99a3e"
+    },
+    "headless-timing.json.gz": {
+      "bytes": 3583,
+      "sha256": "4097afb08ff1255609bc81006408483f19b23b325615a938f6878021e1c4a34d"
+    },
+    "headless-timing.log.txt.gz": {
+      "bytes": 5093,
+      "sha256": "0947b44f21fffc263ba717986b8980b1490f0a0990cc3a5df664ae6355ae6471"
+    },
+    "plan.json.gz": {
+      "bytes": 119480,
+      "sha256": "14c9bfc0445817ffae7eb423ad0b38aca0a229dd5cefc44a52a05217f144eb1d"
+    },
+    "source-trajectories.json.gz": {
+      "bytes": 580370,
+      "sha256": "0c6d11a028a47396da4d94d681023e837f62318d449f01d17046136e8948aa98"
+    },
+    "source-verification.json.gz": {
+      "bytes": 2865,
+      "sha256": "ba5ff6d98af378b0edabd83c5e53af5603b24ad90908771444e2f0f71bcb6ded"
+    },
+    "source.log.txt.gz": {
+      "bytes": 5387,
+      "sha256": "453ca8228bb3bb111bfefc4b908571ca37131ba678fa3a6d4206fd35305024b2"
+    },
+    "start.png": {
+      "bytes": 154836,
+      "sha256": "4ba062dddb1639a889f5fd34f4cb7088a04059c4226fdcee330776e6f5b00fbf"
+    },
+    "timing-complete.png": {
+      "bytes": 166131,
+      "sha256": "6c6024d3b9a537f571447516017ac63bb40a2db839505659b09b4d8e6f127723"
+    },
+    "timing.mp4": {
+      "bytes": 333455,
+      "sha256": "20791a9078ce305499f5b4ef8d9d62c5cfc5f86a629aa68fd37c58f7b93286f1"
+    }
+  }
+}

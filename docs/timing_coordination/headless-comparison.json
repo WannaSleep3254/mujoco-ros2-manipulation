@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "matched": true,
+  "bundle_sha256": "73884f7009d83218fcc477ab3bc360fba7dad920c4558975a5c3557698efe011",
+  "timing_plan_sha256": "f0a2a2910c28ba61fcf52482a2144fb6a07a94ba9288292ebe5a0a70a58d22ad",
+  "departure_delay_sec": 2.3,
+  "delayed_arm": "left",
+  "policy": {
+    "schema_version": 1,
+    "workcell": "fr5_ur5e",
+    "case": "dual_arm_crossing",
+    "min_inter_arm_distance_m": 0.02,
+    "tracking_reserve_m": 0.01,
+    "sample_dt_sec": 0.01,
+    "delay_step_sec": 0.1,
+    "max_delay_sec": 4.0
+  },
+  "reduction_fraction": {
+    "joint_travel": 0.9180405023069936,
+    "duration": 0.676211588580919
+  },
+  "runs": {
+    "baseline": {
+      "run_id": "20261020T095425.623950Z-2076b06f",
+      "report_sha256": "c1359de9532ccb22db667445595af77c025865b0cea32d15381cfe106bd9e1af",
+      "planned": {
+        "complete": true,
+        "samples": 3995,
+        "sample_dt_max_sec": 0.009999379921147522,
+        "duration_sec": 26.62834873,
+        "joint_total_variation_rad": 24.691739492294364,
+        "joint_travel_rad": {
+          "left_j1": 2.055338861541296,
+          "left_j2": 0.7820950382029692,
+          "left_j3": 0.7099197844297767,
+          "left_j4": 0.2569641996555483,
+          "left_j5": 2.5930550251856213,
+          "left_j6": 1.2966897152423986,
+          "right_shoulder_pan_joint": 4.4788734868399604,
+          "right_shoulder_lift_joint": 0.3456515235858597,
+          "right_elbow_joint": 0.5354840238678664,
+          "right_wrist_1_joint": 6.382019477098981,
+          "right_wrist_2_joint": 0.29695501857423046,
+          "right_wrist_3_joint": 4.958693338069857
+        },
+        "arm_joint_path_rad": {
+          "left": 3.810630076342032,
+          "right": 9.308336153102662
+        },
+        "tip_frame_path_m": {
+          "left": 1.7639862994478728,
+          "right": 2.2135096598022113
+        },
+        "minimum": {
+          "time_sec": 4.039749488141194,
+          "state_rad": {
+            "left_j1": -0.3289018813807828,
+            "left_j2": -1.0046019338304366,
+            "left_j3": 1.1884308615599104,
+            "left_j4": -1.367300667645559,
+            "left_j5": -1.1852960435367066,
+            "left_j6": 0.25595813160788305,
+            "right_shoulder_pan_joint": -0.03490555465792402,
+            "right_shoulder_lift_joint": -1.4092580234240055,
+            "right_elbow_joint": 1.3832541923714528,
+            "right_wrist_1_joint": -0.7241337547428485,
+            "right_wrist_2_joint": -1.532599063883351,
+            "right_wrist_3_joint": 0.7000846212531157
+          },
+          "distance_m": 0.030847953420143483,
+          "bodies": [
+            "left_wrist2_link",
+            "right_wrist_2_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09501322594184411,
+              -0.12960452141723441,
+              0.847731296293436
+            ],
+            [
+              0.11534524842565204,
+              -0.12426738117289463,
+              0.8703082762939037
+            ]
+          ],
+          "tips_m": [
+            [
+              0.055658354645416436,
+              -0.13295662091064483,
+              0.7999450217452668
+            ],
+            [
+              0.18991411468387198,
+              -0.12112100952761132,
+              0.8513727464648022
+            ]
+          ]
+        },
+        "distance_semantics": "Signed closest collision-geometry distance, sampled; not continuous-time certified"
+      },
+      "observed": {
+        "complete": true,
+        "samples": 2763,
+        "sample_dt_max_sec": 0.011999999000000372,
+        "duration_sec": 27.622,
+        "joint_total_variation_rad": 24.683500324714664,
+        "joint_travel_rad": {
+          "left_j1": 2.0553561216389187,
+          "left_j2": 0.7813248390783631,
+          "left_j3": 0.7078814826537283,
+          "left_j4": 0.2562089635385276,
+          "left_j5": 2.5930765825581057,
+          "left_j6": 1.2966724725578798,
+          "right_shoulder_pan_joint": 4.478832737684065,
+          "right_shoulder_lift_joint": 0.34659631594177664,
+          "right_elbow_joint": 0.5369457503625259,
+          "right_wrist_1_joint": 6.3747741591780605,
+          "right_wrist_2_joint": 0.2971966785615532,
+          "right_wrist_3_joint": 4.9586342209611605
+        },
+        "arm_joint_path_rad": {
+          "left": 3.810065012037053,
+          "right": 9.303465324675882
+        },
+        "tip_frame_path_m": {
+          "left": 1.7627248417193349,
+          "right": 2.2164944276634047
+        },
+        "minimum": {
+          "time_sec": 4.080000001,
+          "state_rad": {
+            "left_j1": -0.3295480427478706,
+            "left_j2": -1.0010625525414947,
+            "left_j3": 1.192060940809499,
+            "left_j4": -1.366449940532917,
+            "left_j5": -1.1840601752804722,
+            "left_j6": 0.25650800119470135,
+            "right_shoulder_pan_joint": -0.03602826297965091,
+            "right_shoulder_lift_joint": -1.4053507531133707,
+            "right_elbow_joint": 1.386902384026281,
+            "right_wrist_1_joint": -0.7216909711618177,
+            "right_wrist_2_joint": -1.5325268479116114,
+            "right_wrist_3_joint": 0.7011039469999772
+          },
+          "distance_m": 0.030745684574325038,
+          "bodies": [
+            "left_wrist2_link",
+            "right_wrist_2_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0922265604045969,
+              -0.12759847510741928,
+              0.8455387344583611
+            ],
+            [
+              0.1122824357592451,
+              -0.1224626130737287,
+              0.8682693724800621
+            ]
+          ],
+          "tips_m": [
+            [
+              0.055977626052859955,
+              -0.1335512127872742,
+              0.7955972426594815
+            ],
+            [
+              0.18948125615892053,
+              -0.12060087219883327,
+              0.8481956043509304
+            ]
+          ]
+        },
+        "distance_semantics": "Signed closest collision-geometry distance, sampled; not continuous-time certified"
+      },
+      "duration_sec": 26.62834873,
+      "goal_terminal_statuses": [
+        4,
+        4
+      ],
+      "physics_steps": 18424
+    },
+    "timing": {
+      "run_id": "20261020T095503.903018Z-55db9c07",
+      "report_sha256": "6dc454c3f06d9ddab11a71b2e4f5fde30bf2ed2aeecc3521aaeae785c61e0a70",
+      "planned": {
+        "complete": true,
+        "samples": 1497,
+        "sample_dt_max_sec": 0.009990672924683253,
+        "duration_sec": 8.621950734,
+        "joint_total_variation_rad": 2.0237225659550147,
+        "joint_travel_rad": {
+          "left_j1": 0.9990983090940855,
+          "left_j2": 0.00046213332144540153,
+          "left_j3": 0.0033433264042248556,
+          "left_j4": 0.000872214605100341,
+          "left_j5": 0.002263184581417388,
+          "left_j6": 0.004868162979371857,
+          "right_shoulder_pan_joint": 0.9991389230987981,
+          "right_shoulder_lift_joint": 0.0035108128935097405,
+          "right_elbow_joint": 0.0014502108567395755,
+          "right_wrist_1_joint": 0.002508494668174377,
+          "right_wrist_2_joint": 0.0022015751595607647,
+          "right_wrist_3_joint": 0.0040052182925865015
+        },
+        "arm_joint_path_rad": {
+          "left": 0.9991188139590176,
+          "right": 0.9991597458975142
+        },
+        "tip_frame_path_m": {
+          "left": 0.6953311413425278,
+          "right": 0.5515069467581531
+        },
+        "minimum": {
+          "time_sec": 4.580075667,
+          "state_rad": {
+            "left_j1": -0.44045199473873664,
+            "left_j2": -1.0994970768137073,
+            "left_j3": 1.1012309903304822,
+            "left_j4": -1.3983013896537935,
+            "left_j5": -1.5002032309000455,
+            "left_j6": 0.09938695640406776,
+            "right_shoulder_pan_joint": 0.1464354590285559,
+            "right_shoulder_lift_joint": -1.4480980803990535,
+            "right_elbow_joint": 1.4494201637540909,
+            "right_wrist_1_joint": -1.4976505536404092,
+            "right_wrist_2_joint": -1.5700622123153412,
+            "right_wrist_3_joint": 0.10060444321282605
+          },
+          "distance_m": 0.03314356297090096,
+          "bodies": [
+            "left_wrist2_link",
+            "right_wrist_2_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.06176298273011304,
+              -0.20910717995960193,
+              0.9535166995375228
+            ],
+            [
+              0.09472297713823202,
+              -0.2098926851639718,
+              0.9569104462276503
+            ]
+          ],
+          "tips_m": [
+            [
+              0.016259833885424888,
+              -0.20115623737304678,
+              0.9122992125195305
+            ],
+            [
+              0.13897062590225218,
+              -0.2101883271676738,
+              0.8770448108963222
+            ]
+          ]
+        },
+        "distance_semantics": "Signed closest collision-geometry distance, sampled; not continuous-time certified"
+      },
+      "observed": {
+        "complete": true,
+        "samples": 2763,
+        "sample_dt_max_sec": 0.011999999000000372,
+        "duration_sec": 27.622,
+        "joint_total_variation_rad": 2.023812771387252,
+        "joint_travel_rad": {
+          "left_j1": 0.9991620077584489,
+          "left_j2": 0.0004642078837622243,
+          "left_j3": 0.0033450107330452727,
+          "left_j4": 0.0008723050887804451,
+          "left_j5": 0.0022634201447773172,
+          "left_j6": 0.004868588396642365,
+          "right_shoulder_pan_joint": 0.9991444447884632,
+          "right_shoulder_lift_joint": 0.003530420942305046,
+          "right_elbow_joint": 0.0014513195843843807,
+          "right_wrist_1_joint": 0.0025057708172553372,
+          "right_wrist_2_joint": 0.002199307574260345,
+          "right_wrist_3_joint": 0.004005967675126676
+        },
+        "arm_joint_path_rad": {
+          "left": 0.9991832427204269,
+          "right": 0.9991678172690774
+        },
+        "tip_frame_path_m": {
+          "left": 0.6964500068863426,
+          "right": 0.552013444092903
+        },
+        "minimum": {
+          "time_sec": 4.6260000009999995,
+          "state_rad": {
+            "left_j1": -0.440141226418948,
+            "left_j2": -1.0962284853990856,
+            "left_j3": 1.1048369909397568,
+            "left_j4": -1.397538214804094,
+            "left_j5": -1.5001872754338508,
+            "left_j6": 0.0994011702316096,
+            "right_shoulder_pan_joint": 0.14667404697817968,
+            "right_shoulder_lift_joint": -1.444458848390777,
+            "right_elbow_joint": 1.4534661787826009,
+            "right_wrist_1_joint": -1.4958742142572674,
+            "right_wrist_2_joint": -1.5700612063711052,
+            "right_wrist_3_joint": 0.10061108365954538
+          },
+          "distance_m": 0.03062883216106166,
+          "bodies": [
+            "left_wrist2_link",
+            "right_wrist_2_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.06309253140403409,
+              -0.2094824163523085,
+              0.949060445107022
+            ],
+            [
+              0.09352112165358009,
+              -0.21020945132637336,
+              0.9524806315233165
+            ]
+          ],
+          "tips_m": [
+            [
+              0.017303583519457655,
+              -0.20141132607135606,
+              0.9081842291351983
+            ],
+            [
+              0.13852114361217505,
+              -0.21038416299857918,
+              0.8729728103002804
+            ]
+          ]
+        },
+        "distance_semantics": "Signed closest collision-geometry distance, sampled; not continuous-time certified"
+      },
+      "duration_sec": 8.621950734,
+      "goal_terminal_statuses": [
+        4,
+        4
+      ],
+      "physics_steps": 18083
+    }
+  }
+}

@@ -210,6 +210,18 @@ python3 verify_contact_demo.py --gui --control
 무회피 실행은 명령이 **3.24초 남은 상태**에서 실제 손목 접촉으로 멈췄습니다.
 단독 두 실행과 공동 회피는 접촉 없이 완료했습니다. 기존 위험 경로 전송 차단과 양팔 자동 정지는 유지합니다.
 
+## 거리·경로 평가와 타이밍 조정
+
+기존 공동 회피와 같은 시작·목표에서 **관절 경로를 유지하고 FR5 출발만 2.3초 지연**하는 방법을 비교했습니다.
+이번 사례의 관절 누적 이동량은 24.69 → 2.02rad, 궤적 시간은 26.63 → 8.62초입니다.
+두 방식 모두 양팔 성공·접촉 0이며, 새 실행의 수신 관절 자세에서 관측한 최소 간격은 약 30.6mm입니다.
+거리 평가는 실제 ROS와 같은 MuJoCo 3.12.0을 사용합니다.
+
+[![기존 큰 우회와 타이밍 조정 비교](docs/timing_coordination/crossing.png)](docs/timing_coordination/comparison.mp4)
+
+[실제 비교 영상](docs/timing_coordination/comparison.mp4) ·
+[정책·평가 지표·실행 방법·한계](docs/timing_coordination.md)
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
