@@ -1,0 +1,66 @@
+{
+  "source_gui_run_id": "20261020T074338.789840Z-eceb3d3f",
+  "trajectory_uncompressed_sha256": "e4abd9d2f1c67ee1a714383bf2a4f732a5ff9e5ed68a31a7981ded92e63ceaca",
+  "assets": {
+    "after.png": {
+      "sha256": "f03c50d795eada14e0a7ff517ef958f3c412a1d47264337cae275701bcb83f1f",
+      "bytes": 33371
+    },
+    "before.png": {
+      "sha256": "13fced14b92587f165f30bb80e8bb8690fbe667f8ad9f2ef09596aaefc2814e6",
+      "bytes": 34225
+    },
+    "coordinated-avoidance.mp4": {
+      "sha256": "7aacb76f63eeb0a8359861e61ffd736aaf7f4a82bdd6186bc0dc3abe18917a37",
+      "bytes": 542010
+    },
+    "default_settings_failure.json": {
+      "sha256": "ca13e13dd7f63db441340a75f0367c1d29f01230bebf8d05f34ec9d3d4c1c61f",
+      "bytes": 2670
+    },
+    "default_settings_failure.txt": {
+      "sha256": "1964b631e8b2edca0c2e0f64843c58521b402f5342ff57de91c8425fd211fc9b",
+      "bytes": 34581
+    },
+    "gui.json": {
+      "sha256": "aa5fa6f59e256618eaa3605744f2d00eb52f2273e0f92905b79c6cedfdcd1b19",
+      "bytes": 12669
+    },
+    "gui.txt": {
+      "sha256": "1cdfcc7e94650f760c86882d3b24a93ac06c550cab3be56d88f5a006d0497693",
+      "bytes": 37369
+    },
+    "headless_1.json": {
+      "sha256": "77047931a1afb54d99df25011b4ee8b3f0b8b09662949df65948b7c99b09f629",
+      "bytes": 8384
+    },
+    "headless_1.txt": {
+      "sha256": "597a9af6d6a12f535d49119dee96245a5f5f68f5c249409d784a97d0610d237c",
+      "bytes": 32883
+    },
+    "headless_2.json": {
+      "sha256": "b1002c92c5cf6abf02e26087c8f481abe6b92f78f692d907942489e4eaff6b9f",
+      "bytes": 8379
+    },
+    "headless_2.txt": {
+      "sha256": "11cb6708f1ce9176ff2c9b5d2260e6dfce1859ec9631d033eacc977c42534627",
+      "bytes": 32883
+    },
+    "recording.json": {
+      "sha256": "c70562d5d3530a44031efb5aaa48a85f384c96d6e976add72ebc2c56f4c03864",
+      "bytes": 427
+    },
+    "reference-collision.json": {
+      "sha256": "c93d94e20b9964d39b41b9fea425a0de2c6425713e14ef4c9c23650e60ac1848",
+      "bytes": 1289
+    },
+    "reference-collision.png": {
+      "sha256": "192080bafad10a801e137a75022dd71aac95ba841f9c52beaad1cfec1d273c8e",
+      "bytes": 51800
+    },
+    "trajectories.json.gz": {
+      "sha256": "3ed17be276a69483eec345ce7f57483acde4ddb4ffc7418782e9f91305fa5eba",
+      "bytes": 511608
+    }
+  }
+}

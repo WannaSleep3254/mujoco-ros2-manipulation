@@ -1,0 +1,311 @@
+{
+  "schema_version": 2,
+  "run_id": "20261020T074338.789840Z-eceb3d3f",
+  "robot_id": "interference_dual_arm_crossing_fr5_ur5e",
+  "ros_domain_id": 128,
+  "status": "passed",
+  "stage": "complete",
+  "started_utc": "2026-10-20T07:43:38.789916+00:00",
+  "completed_utc": "2026-10-20T07:44:14.519111+00:00",
+  "motion_checks_passed": true,
+  "shutdown_clean": true,
+  "error": null,
+  "cleanup_errors": [],
+  "log_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T074338.789840Z-eceb3d3f/launch.log",
+  "scene_id": "default",
+  "robot": "FR5 + UR5e \uacf5\ub3d9 \uc791\uc5c5\uc7a5\uba74",
+  "robot_profile_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+  "model_manifest_sha256": "fe711db4041ca76e098b72fccd6ee6419d7f2bdc3d314e70624ade5e70fb73b8",
+  "gui": true,
+  "stop_mode": "interrupt",
+  "workcell_id": "fr5_ur5e",
+  "interference_case": "dual_arm_crossing",
+  "case_file_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+  "initial_commanded_rad": {
+    "left_j1": -0.6972927322755567,
+    "left_j2": -1.0982649901672268,
+    "left_j3": 1.0990219856435435,
+    "left_j4": -1.3999455722919665,
+    "left_j5": -1.4973373631243594,
+    "left_j6": 0.10022386054648086,
+    "right_shoulder_pan_joint": -0.6984611192052251,
+    "right_shoulder_lift_joint": -1.4502125844378024,
+    "right_elbow_joint": 1.4499996883398854,
+    "right_wrist_1_joint": -1.5019764804253355,
+    "right_wrist_2_joint": -1.5690348026395775,
+    "right_wrist_3_joint": 0.0976234230347909
+  },
+  "initial_measured_rad": {
+    "left_j1": -0.69730004836851,
+    "left_j2": -1.095006632304722,
+    "left_j3": 1.1026349566276208,
+    "left_j4": -1.3991787398393647,
+    "left_j5": -1.497329482139188,
+    "left_j6": 0.10022193629424045,
+    "right_shoulder_pan_joint": -0.6984627702881435,
+    "right_shoulder_lift_joint": -1.4465937530987332,
+    "right_elbow_joint": 1.4540423680445305,
+    "right_wrist_1_joint": -1.5002010397429966,
+    "right_wrist_2_joint": -1.5690366236371835,
+    "right_wrist_3_joint": 0.09762326730070194
+  },
+  "goal_constraint_rad": {
+    "left_j1": 0.3,
+    "left_j2": -1.1,
+    "left_j3": 1.1,
+    "left_j4": -1.4,
+    "left_j5": -1.5,
+    "left_j6": 0.1,
+    "right_shoulder_pan_joint": 0.3,
+    "right_shoulder_lift_joint": -1.45,
+    "right_elbow_joint": 1.45,
+    "right_wrist_1_joint": -1.5,
+    "right_wrist_2_joint": -1.5708,
+    "right_wrist_3_joint": 0.1
+  },
+  "independent_arm_checks": {
+    "left": {
+      "samples": 632,
+      "invalid_samples": 0,
+      "inter_arm_collision_samples": 0,
+      "first_collision": null
+    },
+    "right": {
+      "samples": 632,
+      "invalid_samples": 0,
+      "inter_arm_collision_samples": 0,
+      "first_collision": null
+    }
+  },
+  "parallel_reference": {
+    "samples": 947,
+    "invalid_samples": 51,
+    "inter_arm_collision_samples": 51,
+    "first_collision": {
+      "time_from_start_sec": 3.0386806731898734,
+      "state_rad": {
+        "left_j1": -0.2356137928188206,
+        "left_j2": -1.0990890876290926,
+        "left_j3": 1.0995870975268291,
+        "left_j4": -1.4013570327696043,
+        "left_j5": -1.4986945730070267,
+        "left_j6": 0.10088851263573809,
+        "right_shoulder_pan_joint": -0.23780387573953077,
+        "right_shoulder_lift_joint": -1.4506399457842938,
+        "right_elbow_joint": 1.449222435563433,
+        "right_wrist_1_joint": -1.5023027241199751,
+        "right_wrist_2_joint": -1.5698960538635607,
+        "right_wrist_3_joint": 0.09865081103446227
+      },
+      "contacts": [
+        [
+          "left_wrist2_link",
+          "right_wrist_2_link"
+        ]
+      ],
+      "inter_arm": true
+    }
+  },
+  "reference_duration_sec": 6.317257189,
+  "unsafe_goals_dispatched": 0,
+  "parallel_dispatch_gate_passed": true,
+  "coordinated_execution": {
+    "label": "avoidance",
+    "duration_sec": 21.898262216,
+    "collision_check": {
+      "samples": 2190,
+      "invalid_samples": 0,
+      "inter_arm_collision_samples": 0,
+      "first_collision": null
+    },
+    "common_start_sec": 10.401999999000001,
+    "goal_terminal_statuses": [
+      4,
+      4
+    ],
+    "tracking_error_rad": [
+      3.712838513303396e-07,
+      0.0032585096529420543,
+      0.003612282319476634,
+      0.0007669840245874138,
+      7.729903476638711e-06,
+      -1.8456176848202777e-06,
+      5.266421496119555e-07,
+      0.0036357757313369987,
+      0.004042612864395556,
+      0.0017733864456570547,
+      5.402536005227887e-07,
+      1.7331614346471902e-07
+    ],
+    "movement_rad": {
+      "left": 0.9944231628798874,
+      "right": 0.996102412908991
+    }
+  },
+  "setup_execution": {
+    "label": "setup",
+    "duration_sec": 5.285683223,
+    "collision_check": {
+      "samples": 530,
+      "invalid_samples": 0,
+      "inter_arm_collision_samples": 0,
+      "first_collision": null
+    },
+    "common_start_sec": 1.4260000000000002,
+    "goal_terminal_statuses": [
+      4,
+      4
+    ],
+    "tracking_error_rad": [
+      -7.316092953346676e-06,
+      0.003258357862504724,
+      0.0036129709840773128,
+      0.0007668324526017845,
+      7.880985171349053e-06,
+      -1.9242522404094853e-06,
+      -1.6510829183857822e-06,
+      0.0036188313390692617,
+      0.0040426797046451135,
+      0.0017754406823389246,
+      -1.8209976060390431e-06,
+      -1.5573408895797058e-07
+    ],
+    "movement_rad": {
+      "left": 0.697268561646178,
+      "right": 0.698419632173784
+    }
+  },
+  "planning_wall_timings": [
+    {
+      "group": "both_arms",
+      "wall_sec": 0.043023616999562364,
+      "error_code": 1
+    },
+    {
+      "group": "left_arm",
+      "wall_sec": 0.027074090001406148,
+      "error_code": 1
+    },
+    {
+      "group": "right_arm",
+      "wall_sec": 0.03752080499907606,
+      "error_code": 1
+    },
+    {
+      "group": "both_arms",
+      "wall_sec": 0.1356588599992392,
+      "error_code": 1
+    }
+  ],
+  "interpolation": "controller splines: linear/cubic/quintic according to available derivatives",
+  "planning_parameters": {
+    "path_tolerance": 0.001,
+    "resample_dt": 0.02,
+    "longest_valid_segment_fraction": 0.001
+  },
+  "interpolation_max_dt_sec": 0.02,
+  "interpolation_max_step_rad": 0.025,
+  "trajectories_path": "/home/sea21jk/projects/isaac_sim_setup/runtime/validation/runs/20261020T074338.789840Z-eceb3d3f/trajectories.json",
+  "trajectories_sha256": "e4abd9d2f1c67ee1a714383bf2a4f732a5ff9e5ed68a31a7981ded92e63ceaca",
+  "contact_guard": {
+    "latched": false,
+    "reason": "",
+    "phase": "ready",
+    "controllers": {
+      "left_controller": "active",
+      "joint_state_broadcaster": "active",
+      "right_controller": "active"
+    },
+    "deactivation_requests": 0,
+    "error": ""
+  },
+  "recording": {
+    "directory": "runtime/validation/interference_gui_20261020",
+    "video_start_clock_sec": 9.401999999000001,
+    "frames": 578,
+    "captures": 576,
+    "fps": 24,
+    "wall_sec": 24.106282892997115,
+    "playback_sec": 24.083333333333332,
+    "maximum_capture_gap_sec": 0.08828698100114707,
+    "kind": "Actual owned MuJoCo X11 pixels; no overlays or speed changes; repeated captured frames preserve wall time",
+    "video": "coordinated-avoidance.mp4",
+    "camera_wheel_down_steps": 6,
+    "errors": []
+  },
+  "mujoco_gpu_process_seen": true,
+  "rviz_gpu_process_seen": true,
+  "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "logical_cpus": 24,
+    "memory_total_bytes": 33404817408,
+    "kernel": "6.8.0-147-generic",
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.35"
+  },
+  "graphics": {
+    "owned_gpu_processes": [
+      "|    0   N/A  N/A          160240      G   ...os2_control/ros2_control_node        141MiB |",
+      "|    0   N/A  N/A          160254      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |"
+    ],
+    "opengl": "name of display: :1\ndisplay: :1  screen: 0\ndirect rendering: Yes\nMemory info (GL_NVX_gpu_memory_info):\n    Dedicated video memory: 6144 MB\n    Total available memory: 6144 MB\n    Currently available dedicated video memory: 4805 MB\nOpenGL vendor string: NVIDIA Corporation\nOpenGL renderer string: NVIDIA GeForce RTX 3050/PCIe/SSE2\nOpenGL core profile version string: 4.6.0 NVIDIA 580.178.04\nOpenGL core profile shading language version string: 4.60 NVIDIA\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\n\nOpenGL version string: 4.6.0 NVIDIA 580.178.04\nOpenGL shading language version string: 4.60 NVIDIA\nOpenGL context flags: (none)\nOpenGL profile mask: (none)\n\nOpenGL ES profile version string: OpenGL ES 3.2 NVIDIA 580.178.04\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\n\n",
+    "nvidia_smi": "Tue Oct 20 16:44:13 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 3050        Off |   00000000:01:00.0  On |                  N/A |\n| 34%   44C    P3             21W /   70W |     968MiB /   6144MiB |     41%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1655      G   /usr/lib/xorg/Xorg                       95MiB |\n|    0   N/A  N/A            2772      G   /usr/lib/xorg/Xorg                      407MiB |\n|    0   N/A  N/A            2933      G   /usr/bin/gnome-shell                     58MiB |\n|    0   N/A  N/A            3513      G   ...rack-uuid=3190708988185955192        129MiB |\n|    0   N/A  N/A          120022      G   ...rack-uuid=3190708988185955192         37MiB |\n|    0   N/A  N/A          160240      G   ...os2_control/ros2_control_node        141MiB |\n|    0   N/A  N/A          160254      G   /opt/ros/humble/lib/rviz2/rviz2           6MiB |\n+-----------------------------------------------------------------------------------------+\n"
+  },
+  "physics": {
+    "schema_version": 1,
+    "run_id": "20261020T074338.789840Z-eceb3d3f",
+    "monitor_source_sha256": "11ea5c7004d01300fc14a2ed21dcbf09f30d398e65fd395c36332c416c82e2f3",
+    "mujoco_version": "3.12.0",
+    "pid": 160240,
+    "complete": true,
+    "steps": 17202,
+    "engine_steps": 17202,
+    "timestep_sec": 0.002,
+    "integrator": 3,
+    "first_contact_evaluation_time_sec": 0,
+    "last_state_time_sec": 34.40399999999608,
+    "simulated_sec": 34.40399999999608,
+    "wall_span_sec": 34.402142191,
+    "paced_real_time_factor": 1.0000540027125568,
+    "contact_steps": 0,
+    "contacts": 0,
+    "active_contacts": 0,
+    "invalid_values": 0,
+    "time_discontinuities": 0,
+    "pair_overflow": 0,
+    "physics_step": {
+      "count": 17202,
+      "mean_sec": 1.2069709103592592e-05,
+      "max_sec": 8.1098e-05,
+      "p50_upper_sec": 2e-05,
+      "p95_upper_sec": 3e-05,
+      "p99_upper_sec": 4e-05,
+      "overflow_count": 0
+    },
+    "monitor_step": {
+      "count": 17202,
+      "mean_sec": 1.100068596674815e-07,
+      "max_sec": 1.566e-06,
+      "p50_upper_sec": 1e-05,
+      "p95_upper_sec": 1e-05,
+      "p99_upper_sec": 1e-05,
+      "overflow_count": 0
+    },
+    "pairs": [],
+    "stop_enabled": true,
+    "stop_latched": false,
+    "stop_reason": "",
+    "stop_step": 0,
+    "stop_time_sec": 0,
+    "hold_ticks": 0,
+    "hold_time_sec": 0,
+    "stopped_qpos": []
+  },
+  "physics_report_sha256": "6365f87c4685e89875107254679aad2cf5de0b1279f8ceb30668e136ae35938a",
+  "physics_checks_passed": true,
+  "shutdown_failures": [],
+  "expected_process_exits": [],
+  "shutdown_timed_out": false,
+  "launch_return_code": 0,
+  "launch_started": true,
+  "process_group_gone": true
+}

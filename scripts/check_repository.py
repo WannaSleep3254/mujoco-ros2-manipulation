@@ -36,6 +36,11 @@ def main():
     from mujoco_ros2_manipulation.workcells.config import load_workcell
     for path in (ROOT / 'config/workcells').glob('*.yaml'):
         load_workcell(path.stem)
+    from mujoco_ros2_manipulation.workcells.interference import load_case
+    import yaml
+    for path in (ROOT / 'config/scenarios').glob('*.yaml'):
+        case = yaml.safe_load(path.read_text())
+        load_case(load_workcell(case['workcell']), path.stem)
     profiles = list_profiles()
     for path in (ROOT / 'config/scenes').glob('*.yaml'):
         load_scene(path.stem, ROOT)

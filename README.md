@@ -193,6 +193,17 @@ python3 verify_contact_demo.py --gui --control
 접촉 시점에 약 6초의 명령이 남아 있으므로 목표 도달과 접촉 정지를 구분할 수 있습니다.
 기본 실행은 양팔 동시 정지를 유지합니다. 이전 단독 영상은 [과거 시연 기록](docs/contact_stop.md#고정-장애물-접촉-시연)에 보존합니다.
 
+## 양팔 간섭 회피 사례
+
+팔별 계획은 각각 안전하지만 동시에 실행하면 손목이 간섭하는 사례를 추가했습니다.
+위험한 참조 궤적은 전송 전에 차단하고, 같은 시작·목표 조건의 양팔 공동 계획만 실행합니다.
+[검증 절차·원본 보고서](docs/interference_avoidance.md) · [실제 GUI 회피 영상](docs/interference_avoidance/coordinated-avoidance.mp4)
+
+```bash
+source ./manipulation_env.sh
+python3 verify_interference.py --gui --domain 126
+```
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
@@ -205,7 +216,8 @@ python3 verify_contact_demo.py --gui --control
 | 구현 | FR5·UR5e 공동 배치, 팔별 제어·계획, 관절 공간 공동 계획과 충돌 목표 거부 |
 | 검증 추가 | [핵심 프로세스 크래시 시 자동 전체 종료](docs/process_crash.md) |
 | 검증 추가 | [시계 누락·반복 감시와 양팔 위치 고정](docs/clock_stop.md) |
-| 2 | 크래시 후 위치 유지 검증, 전용 양팔 간섭 회피 사례 |
+| 검증 추가 | [양팔 간섭 참조 경로 차단·공동 회피 전용 사례](docs/interference_avoidance.md) |
+| 2 | 크래시 후 위치 유지 검증, 끝단 Pose/IK 사례 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |
