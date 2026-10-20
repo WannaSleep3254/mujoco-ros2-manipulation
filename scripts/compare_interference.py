@@ -20,7 +20,7 @@ def compose(reports, directory):
     fps, leading = 24, 0.5
     span = reports[0]["comparison_duration_sec"]
     count = int((leading + span) * fps)
-    panel_w, panel_h, title_h = 900, 638, 96
+    panel_w, panel_h, title_h = 900, 558, 96
     size = (panel_w * 2, (panel_h + title_h) * 2 + 54)
     fontpath = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
     font = ImageFont.truetype(fontpath, 26)
@@ -92,7 +92,7 @@ def compose(reports, directory):
                         "Source recording ended or camera dimensions changed"
                     )
                 # Fixed editorial crop and scale only; never move, synthesize or mask robot pixels.
-                crop = frame[160:500, 480:960]
+                crop = frame[190:500, 520:1020]
                 x = (panel % 2) * panel_w
                 y = (panel // 2) * (panel_h + title_h)
                 canvas[
@@ -131,7 +131,7 @@ def compose(reports, directory):
         frames=count,
         fps=fps,
         duration_sec=count / fps,
-        camera_crop_xyxy=[480, 160, 960, 500],
+        camera_crop_xyxy=[520, 190, 1020, 500],
         scale_to_panel=[panel_w, panel_h],
         source_size=[1440, 900],
         sources=sources,

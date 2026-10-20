@@ -9,8 +9,8 @@
   "bundle_original_sha256": "050c93747beb5bd9e850386e666050076e39512fc9c471923ff07e9c39852c2b",
   "files": {
     "avoidance-complete.png": {
-      "bytes": 423673,
-      "sha256": "f75d7f032a6f41a54404c8b6e900ae531f31a6c577c8e9dc013027f1c8e65f21"
+      "bytes": 405774,
+      "sha256": "4e055fb93a4af8340738dad8c153b4b4e50f00e847b772d3244c5df1c7872cbe"
     },
     "avoidance.json.gz": {
       "bytes": 122142,
@@ -41,16 +41,16 @@
       "sha256": "3dc8857d79262deb0475fb4ed81ffc94db84b2815706dcc0a66e39ff4e043bab"
     },
     "comparison.json": {
-      "bytes": 2997,
-      "sha256": "1785642c22aa0a46ed5964529e751e266aa5fede766d6972933a7fcc3a2a3d63"
+      "bytes": 2998,
+      "sha256": "0530eba2f9ec5a7f27b9e72030214f4cf8da0bd0b149db41dceeb8bbd43b0c73"
     },
     "comparison.mp4": {
-      "bytes": 1164601,
-      "sha256": "d37f530d13b2d3ce82a2420093b320e220002b52a720f008ccb3d0c48a7d9f4a"
+      "bytes": 1116631,
+      "sha256": "4afefd6ac740464a315cfa46a67b1a3f4fd3de8079fad4d0c22e3c017e9f319a"
     },
     "contact.png": {
-      "bytes": 453053,
-      "sha256": "4f1350ae046ff982b493c871670635242d1fef58ffc9a92aa7df786c9ec8349e"
+      "bytes": 434093,
+      "sha256": "13c3780c663eb96b9bf1b3dedddb1458d71f31a52840666982280ee42e431c23"
     },
     "headless-avoidance.json.gz": {
       "bytes": 118699,
@@ -85,8 +85,8 @@
       "sha256": "f65420809437973f12dc2dd0705685c7f874d0f5d83e010c0774ea7da4300912"
     },
     "normal-complete.png": {
-      "bytes": 458183,
-      "sha256": "aa44b81bb292c38ce3877fa32bca5b123508257ca61ef114f24c97e86f3bda1f"
+      "bytes": 439169,
+      "sha256": "158b6bd909a2506aa370e9b086ec71deaab53f4c31ece9de5a82c3c24dbef610"
     },
     "right.json.gz": {
       "bytes": 79646,
@@ -101,8 +101,8 @@
       "sha256": "572c67a289138bf3721d544ef72c30c3d425f49c5ff82a03ad5538b8b922b35d"
     },
     "start.png": {
-      "bytes": 421130,
-      "sha256": "4e0029f7aa89edd26af02260ab2e7340591fece5da83d6228e8c672222c838ca"
+      "bytes": 405159,
+      "sha256": "f695659339f335303e279cc54dd17e122a93a6868254a7672f4b0288852acf0a"
     }
   },
   "compressed_reports_original_sha256": {

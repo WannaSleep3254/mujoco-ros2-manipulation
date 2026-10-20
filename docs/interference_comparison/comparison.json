@@ -56,14 +56,14 @@
     "fps": 24,
     "duration_sec": 24.375,
     "camera_crop_xyxy": [
-      480,
-      160,
-      960,
+      520,
+      190,
+      1020,
       500
     ],
     "scale_to_panel": [
       900,
-      638
+      558
     ],
     "source_size": [
       1440,
