@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "published_date": "2026-10-21",
+  "baseline_commit": "0c31c469f08f853c775222a098706bef3f154bb7",
+  "files": {
+    "README.md": {
+      "bytes": 3849,
+      "sha256": "64952762802c8c15ff7277e1ac1d8906f21db5f171e532fa119b95d642adbcde"
+    },
+    "browser-validation.json": {
+      "bytes": 304,
+      "sha256": "5399a48d2df9254387d247cf1db7f6caf1f75684ecbedef53d1d452a68a2f367"
+    },
+    "comparison-traces.png": {
+      "bytes": 168830,
+      "sha256": "13132c8accd37395e9d30fdc95b0d6f45070af5ae21b607727c5be62f627a47e"
+    },
+    "evidence.json": {
+      "bytes": 509962,
+      "sha256": "94d4f1a7eb1dcb0c79875dada6193c00f8cbaf5769b4b1519d469ba22867b54b"
+    },
+    "offline-trials.csv": {
+      "bytes": 404,
+      "sha256": "4f78b3cb5975c287379075b99f9002a8c70a6572970528746d71877610c3cf55"
+    },
+    "phase1-performance.html": {
+      "bytes": 2000434,
+      "sha256": "05ff740ea1ca3416a35ae8160ee566a7f56904f9be2c080d5687ff6ae7477c54"
+    },
+    "preview-desktop.png": {
+      "bytes": 146837,
+      "sha256": "cc323334475a60681d9c82410bdf67529fd73b18faaa294d95ff17cc99e48e68"
+    },
+    "preview-mobile.png": {
+      "bytes": 71184,
+      "sha256": "86f167a2b5f53e0fca2f247e85d03c669c15d80f757ea6c81269afc5b5aa7b38"
+    },
+    "preview-review.png": {
+      "bytes": 203182,
+      "sha256": "b1f1d40f9a4830ca0e64f61ccc77b06f1d3bfa2e8d5a24bc756230f417ce2fbd"
+    },
+    "review.md": {
+      "bytes": 8168,
+      "sha256": "aad1c5670df56012e5c6cc3b92b083494a4a7c1aadef93113c8b3ecedb94204a"
+    }
+  },
+  "scope": "Documentation publication and cross-session review; preserved measurements; no new robot trials."
+}
