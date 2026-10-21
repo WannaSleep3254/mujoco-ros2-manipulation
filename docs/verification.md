@@ -5,6 +5,26 @@
 [verify_robot.py](../verify_robot.py)는 선택한 모델의 실제 ROS 노드를 별도 프로세스로 실행해
 궤적·MoveIt·상태·TF·시계와 종료를 검사합니다. 아래 명령은 저장소 루트에서 실행합니다.
 
+## 2026-10-21 후속 검증
+
+[시뮬레이터 제작 상태](simulator_status.md)와 [탐색 A/B·GUI 리포트](reports/2026-10-21-search-optimization/index.html)에 현재 PC에서 확인한 범위를 정리했습니다.
+
+- 실제 ROS 상시 명령 회귀: `20261021T093445.292780Z-941dbff7`, 공동/출발 조정·중복/동시 요청·충돌 계획 실패·취소/복구·CLI·동작 중 종료 통과.
+- 실제 GUI 공동 장면: `20261021T093837.684967Z-e087f7f3`, MuJoCo·RViz GPU 프로세스, 12관절·공유 시계/상태, 계획·충돌 목표 거부·양팔 취소, 접촉 0·정상 종료 통과. 원본 PNG와 해시 보존.
+- 오프라인 탐색 A/B: 고정 입력 6개 × 두 방식 × 5회, 워밍업 별도. 선택 팔·지연·전체 spline·선택 경로 거리 평가 정확히 일치, 네이티브 호출 수 증가 없음.
+
+```bash
+source ./manipulation_env.sh
+python3 verify_motion_commands.py --domain 138
+python3 verify_scene.py --gui --screenshot-dir runtime/validation/새캡처폴더 --performance-seconds 5 --domain 142
+PYTHONPATH=src .venv/bin/python scripts/compare_search_optimization.py --repeats 5
+runtime/report-tools/bin/python scripts/import_search_optimization_report.py --check docs/reports/2026-10-21-search-optimization
+```
+
+GUI·ROS 검증과 오프라인 성능 측정은 순서대로 실행합니다. GUI의 약 1.000 RTF는 동작 검사 후 정지 유지 5wall초 구간으로,
+최대 처리량·이동 성능·GUI FPS와 구분합니다. 상시 명령은 실제 ROS에서 재검사했으며,
+새 탐색의 전체 지령→이동 지연 효과는 다음 랜덤 평가에서 별도 측정합니다.
+
 ## 명령 종료 시점의 확인
 
 연속 명령은 지정한 시간만 기다리는 방식이 아니라 다음 결과를 확인한 뒤 진행합니다.

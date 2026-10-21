@@ -31,3 +31,46 @@ class SearchReportTests(unittest.TestCase):
             if field=="time":profile["elapsed_wall_sec"]+=1
             if field=="calls":profile["native_distance_calls"]+=1
             with self.subTest(field=field),self.assertRaises(ValueError):check_comparison(data)
+
+
+class PublishedSearchReportTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import gzip
+        import hashlib
+        import json
+        from pathlib import Path
+        cls.folder=Path(__file__).resolve().parents[2]/"docs/reports/2026-10-21-search-optimization"
+        cls.report=json.loads((cls.folder/"report.json").read_text())
+        cls.evidence=json.loads(gzip.decompress((cls.folder/"evidence.json.gz").read_bytes()))
+        cls.hashes={a["path"]:hashlib.sha256((cls.folder/a["path"]).read_bytes()).hexdigest() for a in cls.report["assets"]}
+
+    def test_publication_reconstructs_every_sample_and_uses_actual_gui_images(self):
+        from mujoco_ros2_manipulation.reporting.search_optimization import search_report
+        from mujoco_ros2_manipulation.reporting.data import validate
+        report=search_report(self.evidence,self.report["report_id"],self.report["published_date"],self.hashes)
+        self.assertEqual(self.report,report)
+        validate(report,self.folder)
+        comparison=self.evidence["comparison"]
+        self.assertEqual(len(comparison["cases"]),6)
+        self.assertEqual(sum(len(c["samples"]) for c in comparison["cases"]),30)
+        self.assertEqual(sum(len(c["warmup"]) for c in comparison["cases"]),12)
+        self.assertEqual(len(report["sample_groups"]),13)
+        self.assertEqual(sum(len(m["values"]) for m in report["metrics"]),85)
+
+    def test_failed_gui_or_mismatched_owned_screenshot_is_rejected(self):
+        from mujoco_ros2_manipulation.reporting.search_optimization import search_report
+        # Alter GUI evidence only; avoid copying the large, immutable candidate snapshot.
+        for field in ("status","shutdown","contacts","gpu","clock","cancellation","model","image"):
+            evidence=dict(comparison=self.evidence["comparison"],gui=deepcopy(self.evidence["gui"]))
+            run=evidence["gui"]["verification"];hashes=dict(self.hashes)
+            if field=="status":run["status"]="failed"
+            if field=="shutdown":run["shutdown_clean"]=False
+            if field=="contacts":run["physics"]["contact_steps"]=1
+            if field=="gpu":run["rviz_gpu_process_seen"]=False
+            if field=="clock":run["clock_publishers"]=2
+            if field=="cancellation":run["active_cancellation_stops_both_arms"]=False
+            if field=="model":run["model_manifest_sha256"]="0"*64
+            if field=="image":hashes["mujoco-gui.png"]="0"*64
+            with self.subTest(field=field),self.assertRaises(ValueError):
+                search_report(evidence,self.report["report_id"],self.report["published_date"],hashes)

@@ -54,3 +54,7 @@ python3 scripts/compare_search_optimization.py \
 구분합니다. 입력의 난이도에 따라 이득이 달라지며 실시간 재계획이나 최소 공간 우회 최적화는 후속 기능입니다.
 
 [랜덤 목표 평가](random_motion_benchmark.md) · [거리·타이밍 정책](timing_coordination.md)
+
+2026-10-21의 [동일 입력 A/B·실제 GUI 점검](reports/2026-10-21-search-optimization/index.html)에 전체 반복·후보·결정·원본 캡처를 보존했습니다.
+교차 입력의 탐색 중앙값은 1.975→1.537wall초이며, 지령→실제 이동 전체 구간은 별도 재측정 대상입니다.
+[시뮬레이터 제작 상태](simulator_status.md)에서 현재 실행 범위와 남은 UI·작업 기능을 확인할 수 있습니다.
