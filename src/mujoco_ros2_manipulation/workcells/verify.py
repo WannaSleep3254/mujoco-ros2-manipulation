@@ -138,12 +138,13 @@ class WorkcellVerification(Verification):
             self.validity.call_async(request), 5, "shared collision check"
         )
 
-    def plan(self, group, target, start_state=None):
+    def plan(self, group, target, start_state=None, *, planner_id=""):
         started = time.monotonic()
         request = GetMotionPlan.Request()
         motion = request.motion_plan_request
         motion.group_name = group
         motion.pipeline_id = "ompl"
+        motion.planner_id = planner_id
         motion.num_planning_attempts = 3
         motion.allowed_planning_time = 5.0
         motion.max_velocity_scaling_factor = 0.1
@@ -171,6 +172,12 @@ class WorkcellVerification(Verification):
             dict(
                 group=group,
                 wall_sec=time.monotonic() - started,
+                server_planning_sec=answer.planning_time,
+                requested_pipeline_id=motion.pipeline_id,
+                requested_planner_id=motion.planner_id,
+                selected_planner_id=None,  # GetMotionPlan does not expose this field.
+                attempts=motion.num_planning_attempts,
+                allowed_planning_sec=motion.allowed_planning_time,
                 error_code=answer.error_code.val,
             )
         )
@@ -201,6 +208,11 @@ class WorkcellVerification(Verification):
                 self.result(handle.cancel_goal_async(), 5, "peer cancellation")
                 self.result(result, 5, "peer cancellation result")
 
+    def dispatch_event(self, name, arm, **details):
+        observer = getattr(self, "dispatch_observer", None)
+        if observer is not None:
+            observer(name, arm, **details)
+
     def dispatch(self, trajectories, *, inject_cancel_at=None, scheduled_start=None):
         self.handles = []
         pending = []
@@ -208,11 +220,13 @@ class WorkcellVerification(Verification):
             for inst, trajectory in trajectories:
                 goal = FollowJointTrajectory.Goal()
                 goal.trajectory = trajectory
+                self.dispatch_event("goal_sent", inst.id)
                 pending.append((inst, self.arm_clients[inst.id].send_goal_async(goal)))
                 self.dispatched += 1
             rejected = []
             for inst, future in pending:
                 handle = self.result(future, 5, "arm goal acceptance")
+                self.dispatch_event("goal_acceptance", inst.id, accepted=handle.accepted)
                 if handle.accepted:
                     self.handles.append((handle, handle.get_result_async()))
                 else:
@@ -227,7 +241,12 @@ class WorkcellVerification(Verification):
                 self.acceptance_margins.append(margin)
             injected = [False]
 
+            reported_results = set()
+
             def finished():
+                abort = getattr(self, "dispatch_abort", None)
+                if abort is not None:
+                    abort()
                 if (
                     inject_cancel_at is not None
                     and not injected[0]
@@ -235,9 +254,12 @@ class WorkcellVerification(Verification):
                 ):
                     self.handles[0][0].cancel_goal_async()
                     injected[0] = True
-                for _, future in self.handles:
+                for index, (_, future) in enumerate(self.handles):
                     if future.done():
                         answer = future.result()
+                        if index not in reported_results:
+                            reported_results.add(index)
+                            self.dispatch_event("goal_result", trajectories[index][0].id, status=answer.status, error_code=answer.result.error_code)
                         require(
                             answer.status == GoalStatus.STATUS_SUCCEEDED
                             and answer.result.error_code

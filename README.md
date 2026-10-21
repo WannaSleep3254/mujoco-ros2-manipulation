@@ -226,6 +226,13 @@ python3 verify_contact_demo.py --gui --control
 [실제 비교 영상](docs/timing_coordination/comparison.mp4) ·
 [정책·평가 지표·실행 방법·한계](docs/timing_coordination.md)
 
+## 상시 명령과 지령 → 동작 계측
+
+공동 시뮬레이션을 유지한 채 새로운 관절 목표를 받아 계획·검사·실행할 수 있습니다.
+[상시 명령·취소·구간 계측](docs/motion_requests.md)은 같은 요청 ID로 계획 왕복과 서버 시간,
+출발 탐색, 안전검사, Action 수락, 관측 최초 이동과 완료를 wall/sim 시계별로 기록합니다.
+실패·취소·동시 요청 거부도 원본에 남깁니다. 랜덤 목표 성능평가는 후속 단계입니다.
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.

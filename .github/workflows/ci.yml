@@ -107,6 +107,11 @@ jobs:
               python3 verify_robot.py --robot '${{ matrix.robot }}' --scene '${{ matrix.scene }}' --domain "$((93 + run))"
             fi
           done
+      - name: Persistent commands and request-correlated wall timings
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_motion_commands.py --domain 138
       - name: Contact stop fault injection (two fresh launches)
         if: matrix.robot == 'workcell'
         run: |
