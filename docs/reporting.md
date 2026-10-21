@@ -101,7 +101,7 @@ runtime/report-tools/bin/python scripts/import_phase1_report.py --check
 [어댑터](../src/mujoco_ros2_manipulation/reporting/phase1.py)는 기존 근거 JSON의 수치와 원본 자산 해시를 검사합니다.
 첫 실행 시 `report.json`이 없으면 생성하고, 기존 파일과 다르면 덮어쓰지 않고 실패합니다.
 공통 HTML·CSV는 여기서 만든 표준 입력으로 재생성합니다. 기존 상세 HTML·JSON·CSV·그림·manifest는 바꾸지 않습니다.
-새 랜덤 모션 평가에는 새 어댑터를 추가하거나 측정기가 공통 스키마를 직접 출력하게 합니다.
+랜덤 목표 평가는 [전용 어댑터](../src/mujoco_ros2_manipulation/reporting/random_motion.py)를 사용합니다. [평가 절차](random_motion_benchmark.md)에 고정 workload·시작 상태·실패 분모·복귀 분리와 발행 명령을 정리했습니다. `evidence.json.gz`의 전체 원본과 `report.json` 수치는 `scripts/import_random_motion_report.py --check docs/reports/평가_ID`로 대조합니다.
 
 ## HTML 게시와 운영
 

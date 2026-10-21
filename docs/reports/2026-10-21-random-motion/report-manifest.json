@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-random-motion",
+  "source_commit": "b1fa994398beba36b91133f252888ca7b5abc669",
+  "generator": {
+    "version": "1.1",
+    "fingerprint": "76fb635243f328853bd339a6da0d6ee1076c6be4c531550ff5895b7f950319df",
+    "files": {
+      "__init__.py": {
+        "bytes": 125,
+        "sha256": "32d105c522dc57015fb986592698a418ca4a9fa66abc617f5160f19004059e70"
+      },
+      "data.py": {
+        "bytes": 6045,
+        "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
+      },
+      "render.py": {
+        "bytes": 10724,
+        "sha256": "67d25362ed5834c85f3cffcb00c86b47d6a2d6783bff98d2bc5efdec6234900b"
+      },
+      "publish.py": {
+        "bytes": 7184,
+        "sha256": "cae894b517d32763e4208ccf8d55c89da7347e9c7d11482c5eb1d27af5c2f041"
+      },
+      "report.schema.json": {
+        "bytes": 5126,
+        "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
+      },
+      "templates/page.html": {
+        "bytes": 518,
+        "sha256": "3f4c20747e7656c059754449fb570f98a98fceb2ddb53f5a5b045306a2afc26a"
+      },
+      "templates/style.css": {
+        "bytes": 3677,
+        "sha256": "e9d3c5b77ed017369f79126b2a8bfa0b39f8e3edc256e909e5b0a04b9298cbd9"
+      }
+    }
+  },
+  "files": {
+    "evidence.json.gz": {
+      "bytes": 3807677,
+      "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45"
+    },
+    "index.html": {
+      "bytes": 33815,
+      "sha256": "9b8698142b77f9ac65b685b661c118cd46602dc07dd3e01aa54b190ef236569c"
+    },
+    "metrics.csv": {
+      "bytes": 16427,
+      "sha256": "41cf72eb8d834b2b4b276c6166a4dfc958acfa5b26f5cb155bdd3350f78741f7"
+    },
+    "report.json": {
+      "bytes": 25604,
+      "sha256": "d9187e336ec7188949e6e9f098c7b1ed5387c0eedc10fc16492b6abaa8d4136b"
+    }
+  }
+}

@@ -17,6 +17,21 @@
       "resources": []
     },
     {
+      "report_id": "2026-10-21-random-motion",
+      "title": "고정 seed 랜덤 관절 목표·계산 예산 비교",
+      "published_date": "2026-10-21",
+      "status": "preliminary",
+      "commit": "b1fa994398beba36b91133f252888ca7b5abc669",
+      "workcell": "fr5_ur5e",
+      "models": [
+        "FR5",
+        "UR5e"
+      ],
+      "overview": "FR5·UR5e의 근거리 랜덤 목표 5개를 두 전략으로 실행한 재현 평가. 전체 작업 공간 성능평가가 아닙니다.",
+      "url": "2026-10-21-random-motion/index.html",
+      "resources": []
+    },
+    {
       "report_id": "2026-10-21-phase1",
       "title": "1차 성능평가: FR5·UR5e 경로와 출발 조정",
       "published_date": "2026-10-21",

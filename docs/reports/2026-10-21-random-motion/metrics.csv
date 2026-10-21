@@ -1,0 +1,55 @@
+report_id,metric_id,label,group_id,value,unit,clock,sample_count,statistic,scope,note
+2026-10-21-random-motion,first-motion-median,수신 → 관측 최초 이동 (median),coordinated,1.458723358,s,wall,5,median,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,first-motion-median,수신 → 관측 최초 이동 (median),departure-timing,1.65973577,s,wall,5,median,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,first-motion-max,수신 → 관측 최초 이동 (max),coordinated,1.45969738,s,wall,5,max,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,first-motion-max,수신 → 관측 최초 이동 (max),departure-timing,2.030176026,s,wall,5,max,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,compute-median,계획·검증 예산 구간 (median),coordinated,0.35978002,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,compute-median,계획·검증 예산 구간 (median),departure-timing,0.560332008,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,compute-max,계획·검증 예산 구간 (max),coordinated,0.36025786,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,compute-max,계획·검증 예산 구간 (max),departure-timing,0.930000601,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,planning-median,MoveIt 서비스 왕복 합 (median),coordinated,0.04749049599922728,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,planning-median,MoveIt 서비스 왕복 합 (median),departure-timing,0.06054523300554138,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,planning-max,MoveIt 서비스 왕복 합 (max),coordinated,0.04843195500143338,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,planning-max,MoveIt 서비스 왕복 합 (max),departure-timing,0.08530021800106624,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,departure-median,출발 탐색 전체 (median),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,departure-median,출발 탐색 전체 (median),departure-timing,0.09051793400000002,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,departure-max,출발 탐색 전체 (max),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,departure-max,출발 탐색 전체 (max),departure-timing,0.172304781,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,native-distance-median,탐색 중 네이티브 거리 계산 (median),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,native-distance-median,탐색 중 네이티브 거리 계산 (median),departure-timing,0.045073491999999965,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,native-distance-max,탐색 중 네이티브 거리 계산 (max),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,native-distance-max,탐색 중 네이티브 거리 계산 (max),departure-timing,0.08901707400000011,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,distance-calls-median,탐색 거리 계산 호출 (median),coordinated,,count,not_applicable,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,distance-calls-median,탐색 거리 계산 호출 (median),departure-timing,1924,count,not_applicable,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,distance-calls-max,탐색 거리 계산 호출 (max),coordinated,,count,not_applicable,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,distance-calls-max,탐색 거리 계산 호출 (max),departure-timing,3626,count,not_applicable,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidates-median,탐색 후보 수 (median),coordinated,,count,not_applicable,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidates-median,탐색 후보 수 (median),departure-timing,2,count,not_applicable,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidates-max,탐색 후보 수 (max),coordinated,,count,not_applicable,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidates-max,탐색 후보 수 (max),departure-timing,2,count,not_applicable,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidate-time-median,탐색 후보 평가 합 (median),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidate-time-median,탐색 후보 평가 합 (median),departure-timing,0.083707502,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidate-time-max,탐색 후보 평가 합 (max),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,candidate-time-max,탐색 후보 평가 합 (max),departure-timing,0.161572245,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,search-other-median,탐색의 후보 평가 외 구간 (median),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,search-other-median,탐색의 후보 평가 외 구간 (median),departure-timing,0.006932870999999993,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,search-other-max,탐색의 후보 평가 외 구간 (max),coordinated,,s,wall,0,not_measured,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,search-other-max,탐색의 후보 평가 외 구간 (max),departure-timing,0.010721494999999998,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,terminal-median,수신 → 최종 결과 (median),coordinated,6.442543018,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,terminal-median,수신 → 최종 결과 (median),departure-timing,6.663751681,s,wall,5,median,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,terminal-max,수신 → 최종 결과 (max),coordinated,6.453489318,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,terminal-max,수신 → 최종 결과 (max),departure-timing,12.907317568,s,wall,5,max,실패를 포함한 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,joint-travel-median,계획 관절 누적 이동량 (median),coordinated,4.001583325843769,rad,not_applicable,5,median,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,joint-travel-median,계획 관절 누적 이동량 (median),departure-timing,4.130315852315303,rad,not_applicable,5,median,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,joint-travel-max,계획 관절 누적 이동량 (max),coordinated,4.141620137323798,rad,not_applicable,5,max,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,joint-travel-max,계획 관절 누적 이동량 (max),departure-timing,5.5235073619018165,rad,not_applicable,5,max,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,motion-duration-median,계획 궤적 길이 (median),coordinated,4.824799459,s,simulation,5,median,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,motion-duration-median,계획 궤적 길이 (median),departure-timing,4.829648874,s,simulation,5,median,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,motion-duration-max,계획 궤적 길이 (max),coordinated,4.859452064,s,simulation,5,max,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,motion-duration-max,계획 궤적 길이 (max),departure-timing,10.70878024,s,simulation,5,max,성공 요청의 유효 표본,이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null.
+2026-10-21-random-motion,fixed-elapsed-wall-sec,교차 탐색 전체,fixed-search,1.965761678,s,wall,1,single,별도 고정 교차 궤적의 오프라인 탐색 1회,전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음.
+2026-10-21-random-motion,fixed-candidate-wall-sec,교차 후보 평가 합,fixed-search,1.7024072270000001,s,wall,1,single,별도 고정 교차 궤적의 오프라인 탐색 1회,전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음.
+2026-10-21-random-motion,fixed-native-distance-wall-sec,교차 네이티브 거리 계산,fixed-search,0.984309186,s,wall,1,single,별도 고정 교차 궤적의 오프라인 탐색 1회,전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음.
+2026-10-21-random-motion,fixed-other-wall-sec,교차 후보 평가 외 구간,fixed-search,0.2633544509999999,s,wall,1,single,별도 고정 교차 궤적의 오프라인 탐색 1회,전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음.
+2026-10-21-random-motion,fixed-native-distance-calls,교차 거리 계산 호출,fixed-search,39917,count,not_applicable,1,single,별도 고정 교차 궤적의 오프라인 탐색 1회,전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음.
+2026-10-21-random-motion,fixed-candidate-count,교차 탐색 후보 수,fixed-search,58,count,not_applicable,1,single,별도 고정 교차 궤적의 오프라인 탐색 1회,전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음.

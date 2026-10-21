@@ -34,6 +34,7 @@ from mujoco_ros2_manipulation.workcells.motion_request import (
     COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, decode_message, request_id, validate_command, validate_cancel,
 )
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
+from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget
 
 
 def status_qos():
@@ -48,7 +49,11 @@ class CommandCancelled(RuntimeError):
 class MotionCommandServer(WorkcellVerification):
     split = InterferenceVerification.split
 
-    def __init__(self, cell, output, progress=None):
+    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0):
+        PlanningBudget(compute_budget_sec)  # Validate before creating a ROS node/output directory.
+        self.compute_budget_sec = float(compute_budget_sec)
+        self.compute_budget = None
+        self.goal_tolerance_rad = 0.003
         self.metadata = check_workcell(cell)
         _, self.policy = load_policy(cell)
         self.directory = Path(output).resolve()
@@ -77,8 +82,9 @@ class MotionCommandServer(WorkcellVerification):
             runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
                          middleware=get_rmw_implementation_identifier()),
             code_commit=subprocess.check_output(["git", "-C", str(cell.root), "rev-parse", "HEAD"], text=True).strip(),
+            compute_budget_sec=self.compute_budget_sec,
             implementation_sha256={name: file_sha256(cell.root / "src/mujoco_ros2_manipulation/workcells" / name)
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py")},
+                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py")},
             note="Warm persistent server; simulator startup excluded from request latency. Simulation only."))
 
     def destroy_node(self):
@@ -230,13 +236,24 @@ class MotionCommandServer(WorkcellVerification):
         self.initialized = True
         self.heartbeat()
 
-    def plan(self, group, target, start_state=None):
+    def compute_checkpoint(self):
         self.check_abort()
+        if self.compute_budget:
+            self.compute_budget.check()
+
+    def finish_computation(self, trace):
+        self.compute_checkpoint()
+        trace.data["compute_budget"] = self.compute_budget.finish()
+        self.event("computation_done")
+
+    def plan(self, group, target, start_state=None):
+        self.compute_checkpoint()
         self.event("planning_" + group)
         with self.active.span("planning:" + group):
-            answer = super().plan(group, target, start_state, planner_id="RRTConnectkConfigDefault")
+            answer = super().plan(group, target, start_state, planner_id="RRTConnectkConfigDefault",
+                                  allowed_planning_sec=min(5.0, self.compute_budget.remaining()), goal_tolerance_rad=self.goal_tolerance_rad)
         self.active.data.setdefault("plans", []).append(deepcopy(self.planning_timings[-1]))
-        self.check_abort()
+        self.compute_checkpoint()
         require(answer.error_code.val == MoveItErrorCodes.SUCCESS, "MoveIt plan failed: " + str(answer.error_code.val))
         return self.anchored(answer.trajectory.joint_trajectory)
 
@@ -262,6 +279,8 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data.update(initial_state_rad=initial, joint_state_stamp_simulation_sec=self.state_stamp,
                     state_receive_age_wall_sec=(time.monotonic_ns() - self.state_received_ns) / 1e9,
                     clock_receive_age_wall_sec=(time.monotonic_ns() - self.clock_received_ns) / 1e9)
+            self.compute_budget = PlanningBudget(self.compute_budget_sec)
+            self.event("computation_started")
             target = trace.data["command"]["target_rad"]
             strategy = trace.data["command"]["strategy"]
             if max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001:
@@ -271,6 +290,7 @@ class MotionCommandServer(WorkcellVerification):
                 with trace.span("safety_checks"):
                     require(self.validity_of(initial).valid, "Current state is colliding")
                     require(self.evaluator.at(initial)["distance_m"] >= self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"], "Current clearance below planning policy")
+                self.finish_computation(trace)
                 self.event("settled")
                 trace.finish("succeeded")
                 return
@@ -282,26 +302,28 @@ class MotionCommandServer(WorkcellVerification):
                 duration = max(Spline.from_ros(t).duration for _, t in independent)
                 source = [Spline.from_ros(stretch(t, duration)) for _, t in independent]
                 self.event("departure_search")
+                trace.data["departure_search"] = {}
                 with trace.span("departure_search"):
-                    chosen = choose_delay(source, initial, self.cell, self.evaluator, self.policy)
+                    chosen = choose_delay(source, initial, self.cell, self.evaluator, self.policy,
+                        diagnostics=trace.data["departure_search"], checkpoint=self.compute_checkpoint)
                 trace.data["departure_search"] = {k: v for k, v in chosen.items() if k != "curves"}
                 curves = [Spline(**record) for record in chosen["curves"]]
             self.check_abort()
             self.event("safety_checks")
             with trace.span("safety_checks"):
                 threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
-                planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"], reject_below=threshold)
+                planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"], reject_below=threshold, checkpoint=self.compute_checkpoint)
                 trace.data["planned_clearance"] = planned
                 require(planned["complete"], "Planned clearance below 30mm policy")
                 samples = 0
                 for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
-                    self.check_abort()
+                    self.compute_checkpoint()
                     require(self.validity_of(state).valid, "MoveIt rejected interpolated schedule")
                     samples += 1
                 trace.data["moveit_safety_samples"] = samples
             self.quiet()
             require(max(abs(self.state()[n] - initial[n]) for n in self.joint_names) < 0.002, "Robot moved while planning; stale plan refused")
-            self.check_abort()
+            self.finish_computation(trace)
             self.motion_start = self.clock_last + 1.0
             trace.data["scheduled_start_simulation_sec"] = self.motion_start
             trace.data["trajectories"] = [c.record() for c in curves]
@@ -334,6 +356,9 @@ class MotionCommandServer(WorkcellVerification):
             if isinstance(error, KeyboardInterrupt):
                 raise
         finally:
+            if self.compute_budget:
+                trace.data["compute_budget"] = self.compute_budget.finish()
+                self.compute_budget = None
             trace.data["shutdown_requested"] = self.stop_requested
             trace.data["dispatched_goals"] = self.dispatched - before_dispatch
             trace.data["action_results"] = [dict(status=f.result().status, error_code=f.result().result.error_code) for _, f in self.handles if f.done() and f.result() is not None]
@@ -362,6 +387,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--compute-budget", type=float, default=30.0, help="Cooperative planning/validation wall seconds, excludes execution")
     args = parser.parse_args()
     cell = load_workcell(args.workcell)
     output = args.output or ROOT / "runtime/commands" / uuid.uuid4().hex
@@ -370,7 +396,7 @@ def main():
     node = None
     previous_handlers = {}
     try:
-        node = MotionCommandServer(cell, output)
+        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget)
         def stop(signum, frame):
             node.stop_requested = True
         for signum in (signal.SIGINT, signal.SIGTERM):

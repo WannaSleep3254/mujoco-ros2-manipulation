@@ -31,6 +31,7 @@ manipulation-verify-contact-stop = "mujoco_ros2_manipulation.workcells.verify_co
 manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
 manipulation-motion-server = "mujoco_ros2_manipulation.workcells.motion_server:main"
 manipulation-command = "mujoco_ros2_manipulation.workcells.motion_client:main"
+manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

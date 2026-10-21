@@ -1,0 +1,746 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-random-motion",
+  "published_date": "2026-10-21",
+  "status": "preliminary",
+  "title": "고정 seed 랜덤 관절 목표·계산 예산 비교",
+  "overview": "FR5·UR5e의 근거리 랜덤 목표 5개를 두 전략으로 실행한 재현 평가. 전체 작업 공간 성능평가가 아닙니다.",
+  "findings": [
+    "목표 5개 × 2전략. seed 20261021, 반경 0.6rad, 같은 계산 예산 5.0wall초.",
+    "양팔 공동 계획: 성공 5/5, 실패 0. 실패 요청도 원본과 분모에 포함.",
+    "독립 계획 + 출발 조정: 성공 5/5, 실패 0. 실패 요청도 원본과 분모에 포함.",
+    "기준 실측 자세 대비 시작 허용오차 0.0015rad. 명목 홈·실측 기준·각 요청 시작 상태를 보존.",
+    "복귀·워밍업 16개 요청을 별도 보존하고 점수에서 분리. 한 시뮬레이터 정상 종료, 접촉 0스텝.",
+    "랜덤 출발 조정 5회에서 선택 지연은 모두 0sim초. 교차 전용 탐색은 별도 표본으로 구분.",
+    "별도 교차 입력 탐색: 후보 58개, 거리 39917회, 전체 1.966wall초. 선택 지연 2.3sim초는 계산 시간과 구분."
+  ],
+  "limitations": [
+    "홈 주변 관절 목표의 소규모 표본. Cartesian/TCP 작업, 교차 전용 과제, 전역 작업 공간의 성공률로 일반화할 수 없음.",
+    "목표 생성 seed는 고정하지만 OMPL 내부 난수열과 OS 스케줄링을 고정하지 않음. 같은 입력도 경로와 시간은 달라질 수 있음.",
+    "최초 이동은 /joint_states 수신의 0.001rad 초과 변화이며 1초 sim 예약을 포함. 시뮬레이터 시작 비용은 제외.",
+    "예산은 상태 스냅샷 후 계획·탐색·최종 검사·상태 재확인까지의 협력식 wall 제한. 이미 진행 중인 RPC/native 호출을 선점하지 않아 초과 시간이 기록될 수 있음.",
+    "성공 요청의 지연·경로 표본 수와 전체 요청 분모는 다를 수 있음. p95/p99 또는 통계적 신뢰 구간을 제시하지 않음.",
+    "MuJoCo convex 근사·이산 거리 검사 결과. 실제 하드웨어·공구 TCP·연속 시간 안전 인증을 검증하지 않음.",
+    "이번 랜덤 목표의 교차 대기·회피 난이도는 낮음. 다양한 교차·장애물 조건의 회피 성공률은 추가 평가가 필요함.",
+    "별도 고정 교차 탐색은 현재 모델에서 새로 검증·고정한 입력 1회. 과거 1차의 다른 궤적·환경과 직접 속도 향상을 비교하지 않음."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "b1fa994398beba36b91133f252888ca7b5abc669",
+    "workcell": "fr5_ur5e",
+    "models": [
+      "FR5",
+      "UR5e"
+    ],
+    "scenario": "paired_seeded_joint_goals",
+    "input_kind": "random_joint_targets"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "python": "3.10.12",
+    "ros": "ROS 2 Humble / rmw_cyclonedds_cpp",
+    "native_mujoco": "MuJoCo 3.12.0",
+    "mode": "headless",
+    "verification_run": "20261021T074952.736829Z-76b8abf2",
+    "workload_sha256": "5a73136e37a7796c56b75b2d244de41155559da302be60411926d22d59997cbb"
+  },
+  "sample_groups": [
+    {
+      "id": "coordinated",
+      "label": "양팔 공동 계획",
+      "kind": "headless",
+      "unique_cases": 5,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "Random(20261021), 같은 목표 파일, 사례별 순서 교대",
+      "description": "명목 홈 ±0.6rad와 관절 한계의 교집합 균등 표본. 충돌 목표를 미리 걸러내지 않음."
+    },
+    {
+      "id": "departure-timing",
+      "label": "독립 계획 + 출발 조정",
+      "kind": "headless",
+      "unique_cases": 5,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "Random(20261021), 같은 목표 파일, 사례별 순서 교대",
+      "description": "명목 홈 ±0.6rad와 관절 한계의 교집합 균등 표본. 충돌 목표를 미리 걸러내지 않음."
+    },
+    {
+      "id": "fixed-search",
+      "label": "교차 사례: 별도 고정 궤적 탐색 1회",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "현재 모델에서 검증 후 고정한 입력 spline 1개; OMPL 난수열 고정 아님",
+      "description": "랜덤 요청과 별개인 교차 참조의 출발 탐색. 수신→동작 지연이나 랜덤 비교 분모에 합산하지 않음."
+    }
+  ],
+  "stages": [
+    {
+      "id": "receive",
+      "label": "명령 수신·상태 확인",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "요청 ID·단일 monotonic 기록 시계"
+    },
+    {
+      "id": "compute",
+      "label": "계획·출발 탐색·안전검사",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "같은 전체 계산 예산; 후보별 시간과 네이티브 호출 횟수"
+    },
+    {
+      "id": "motion",
+      "label": "실제 움직임·완료",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "수신 관절 상태·양팔 Action과 정상 종료 검증"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "first-motion-median",
+      "label": "수신 → 관측 최초 이동 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "성공 요청의 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 1.458723358,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 1.65973577,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "first-motion-max",
+      "label": "수신 → 관측 최초 이동 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "성공 요청의 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 1.45969738,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 2.030176026,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "compute-median",
+      "label": "계획·검증 예산 구간 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 0.35978002,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.560332008,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "compute-max",
+      "label": "계획·검증 예산 구간 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 0.36025786,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.930000601,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "planning-median",
+      "label": "MoveIt 서비스 왕복 합 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 0.04749049599922728,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.06054523300554138,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "planning-max",
+      "label": "MoveIt 서비스 왕복 합 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 0.04843195500143338,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.08530021800106624,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "departure-median",
+      "label": "출발 탐색 전체 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.09051793400000002,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "departure-max",
+      "label": "출발 탐색 전체 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.172304781,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "native-distance-median",
+      "label": "탐색 중 네이티브 거리 계산 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.045073491999999965,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "native-distance-max",
+      "label": "탐색 중 네이티브 거리 계산 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.08901707400000011,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "distance-calls-median",
+      "label": "탐색 거리 계산 호출 (median)",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 1924,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "distance-calls-max",
+      "label": "탐색 거리 계산 호출 (max)",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 3626,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "candidates-median",
+      "label": "탐색 후보 수 (median)",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "candidates-max",
+      "label": "탐색 후보 수 (max)",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "candidate-time-median",
+      "label": "탐색 후보 평가 합 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.083707502,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "candidate-time-max",
+      "label": "탐색 후보 평가 합 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.161572245,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "search-other-median",
+      "label": "탐색의 후보 평가 외 구간 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.006932870999999993,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "search-other-max",
+      "label": "탐색의 후보 평가 외 구간 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 0.010721494999999998,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "terminal-median",
+      "label": "수신 → 최종 결과 (median)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 6.442543018,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 6.663751681,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "terminal-max",
+      "label": "수신 → 최종 결과 (max)",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "실패를 포함한 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 6.453489318,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 12.907317568,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "joint-travel-median",
+      "label": "계획 관절 누적 이동량 (median)",
+      "unit": "rad",
+      "clock": "not_applicable",
+      "scope": "성공 요청의 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 4.001583325843769,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 4.130315852315303,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "joint-travel-max",
+      "label": "계획 관절 누적 이동량 (max)",
+      "unit": "rad",
+      "clock": "not_applicable",
+      "scope": "성공 요청의 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 4.141620137323798,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 5.5235073619018165,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "motion-duration-median",
+      "label": "계획 궤적 길이 (median)",
+      "unit": "s",
+      "clock": "simulation",
+      "scope": "성공 요청의 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 4.824799459,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 4.829648874,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "motion-duration-max",
+      "label": "계획 궤적 길이 (max)",
+      "unit": "s",
+      "clock": "simulation",
+      "scope": "성공 요청의 유효 표본",
+      "values": [
+        {
+          "group_id": "coordinated",
+          "value": 4.859452064,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "departure-timing",
+          "value": 10.70878024,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+    },
+    {
+      "id": "fixed-elapsed-wall-sec",
+      "label": "교차 탐색 전체",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "별도 고정 교차 궤적의 오프라인 탐색 1회",
+      "values": [
+        {
+          "group_id": "fixed-search",
+          "value": 1.965761678,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."
+    },
+    {
+      "id": "fixed-candidate-wall-sec",
+      "label": "교차 후보 평가 합",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "별도 고정 교차 궤적의 오프라인 탐색 1회",
+      "values": [
+        {
+          "group_id": "fixed-search",
+          "value": 1.7024072270000001,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."
+    },
+    {
+      "id": "fixed-native-distance-wall-sec",
+      "label": "교차 네이티브 거리 계산",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "별도 고정 교차 궤적의 오프라인 탐색 1회",
+      "values": [
+        {
+          "group_id": "fixed-search",
+          "value": 0.984309186,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."
+    },
+    {
+      "id": "fixed-other-wall-sec",
+      "label": "교차 후보 평가 외 구간",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "별도 고정 교차 궤적의 오프라인 탐색 1회",
+      "values": [
+        {
+          "group_id": "fixed-search",
+          "value": 0.2633544509999999,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."
+    },
+    {
+      "id": "fixed-native-distance-calls",
+      "label": "교차 거리 계산 호출",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "별도 고정 교차 궤적의 오프라인 탐색 1회",
+      "values": [
+        {
+          "group_id": "fixed-search",
+          "value": 39917,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."
+    },
+    {
+      "id": "fixed-candidate-count",
+      "label": "교차 탐색 후보 수",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "별도 고정 교차 궤적의 오프라인 탐색 1회",
+      "values": [
+        {
+          "group_id": "fixed-search",
+          "value": 58,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."
+    }
+  ],
+  "assets": [
+    {
+      "path": "evidence.json.gz",
+      "label": "전체 요청·복귀·원본 workload·세션·물리 검증 (gzip JSON)",
+      "role": "data",
+      "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45"
+    }
+  ],
+  "references": [
+    {
+      "label": "평가 구현 커밋",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/b1fa994398beba36b91133f252888ca7b5abc669"
+    }
+  ]
+}

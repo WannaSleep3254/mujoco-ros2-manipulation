@@ -132,3 +132,9 @@ CI 자료를 다른 경로로 다운로드했으면 `--traces`로 command sessio
 기존 발행본은 `--check docs/reports/평가_ID`로 원본과 수치를 대조합니다.
 
 공식 제어 인터페이스: [JTC Action과 완료·선점 정책](https://control.ros.org/humble/doc/ros2_controllers/joint_trajectory_controller/doc/userdoc.html).
+
+## 계산 예산과 반복 평가
+
+명령 노드의 `--compute-budget` 기본값은 30wall초입니다. 상태 스냅샷 후 계획·탐색·최종 검사·상태 재확인 구간에 협력식으로 적용하고, 초과 시 이동 지령 전에 실패합니다. 각 RPC와 네이티브 샘플을 선점하지 않으므로 실제 초과 시간이 기록될 수 있습니다. 실행·예약 시간과 구분합니다. `compute_budget`와 `computation_started/done` 이벤트, 출발 탐색의 후보별 비용을 원본에 추가했습니다.
+
+[고정 seed 랜덤 목표 비교](random_motion_benchmark.md)는 두 전략에 같은 목표·예산을 적용하고, 복귀·워밍업을 별도로 보존합니다.
