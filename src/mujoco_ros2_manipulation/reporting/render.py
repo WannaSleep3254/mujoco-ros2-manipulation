@@ -17,6 +17,25 @@ def esc(value):
     return escape(str(value), quote=True)
 
 
+RESOURCE_LABELS = {"legacy_report": "상세 리포트", "video": "동작 영상"}
+
+
+def report_resources(data, prefix=""):
+    return [{"url": prefix + quote(asset["path"], safe="/"), "label": asset["label"], "kind": asset["role"]}
+            for asset in data["assets"] if asset["role"] in RESOURCE_LABELS]
+
+
+def resource_links(resources):
+    links = []
+    for resource in resources:
+        caption = RESOURCE_LABELS[resource["kind"]]
+        if sum(item["kind"] == resource["kind"] for item in resources) > 1:
+            caption += ": " + resource["label"]
+        links.append(f'<a data-report-resource="{resource["kind"]}" href="{esc(resource["url"])}" '
+                     f'title="{esc(resource["label"])}">{esc(caption)}</a>')
+    return "".join(links)
+
+
 def _page(title, subtitle, body, navigation, script=""):
     resources = files(__package__).joinpath("templates")
     template = Template(resources.joinpath("page.html").read_text(encoding="utf-8"))
@@ -104,7 +123,9 @@ def report_html(data):
     parts.append('<p><a href="report-manifest.json">공개 파일 SHA-256·크기·생성기 정보</a></p><h3>관련 자료</h3>')
     parts.append('<ul>' + ''.join(f'<li><a href="{esc(r["url"])}">{esc(r["label"])}</a></li>' for r in data["references"]) + '</ul></section>')
     script = """'use strict';document.getElementById('condition').addEventListener('change',e=>{for(const row of document.querySelectorAll('tr[data-kind]'))row.hidden=e.target.value!=='all'&&row.dataset.kind!==e.target.value});document.getElementById('print').addEventListener('click',()=>window.print());window.reportReady=true;"""
-    nav = '<nav><a href="../index.html">리포트 목록</a><a href="#metrics">지표</a><a href="#evidence">근거</a></nav>'
+    nav = ('<nav><a href="../index.html">리포트 목록</a>'
+           + resource_links(report_resources(data))
+           + '<a href="#metrics">지표</a><a href="#evidence">근거</a></nav>')
     return _page(data["title"], f'{data["published_date"]} / {source["workcell"]} / {data["report_id"]}', ''.join(parts), nav, script)
 
 
@@ -112,7 +133,8 @@ def catalog_entry(data):
     return {"report_id": data["report_id"], "title": data["title"], "published_date": data["published_date"],
             "status": data["status"], "commit": data["provenance"]["commit"],
             "workcell": data["provenance"]["workcell"], "models": data["provenance"]["models"],
-            "overview": data["overview"], "url": data["report_id"] + "/index.html"}
+            "overview": data["overview"], "url": data["report_id"] + "/index.html",
+            "resources": report_resources(data, data["report_id"] + "/")}
 
 
 def catalog_html(entries):
@@ -121,8 +143,11 @@ def catalog_html(entries):
             '<a href="catalog.json">목록 JSON</a></div><p id="count" class="note" aria-live="polite"></p>'
             '<div class="table-wrap"><table class="catalog"><thead><tr><th>날짜 / 상태</th><th>리포트</th><th>모델·기준</th><th>평가 범위</th></tr></thead><tbody>']
     for entry in entries:
+        links = (f'<a data-report-link="summary" href="{esc(entry["url"])}">요약 보기</a>'
+                 + resource_links(entry.get("resources", [])))
         body.append(f'<tr data-report><td>{entry["published_date"]}<br><span class="tag">{STATUS[entry["status"]]}</span></td>'
-            f'<td><a href="{entry["url"]}">{esc(entry["title"])}</a><br><code>{entry["report_id"]}</code></td>'
+            f'<td><a href="{esc(entry["url"])}">{esc(entry["title"])}</a>'
+            f'<div class="report-links">{links}</div><code>{entry["report_id"]}</code></td>'
             f'<td>{esc(", ".join(entry["models"]))}<br><code>{entry["commit"][:12]}</code></td><td>{esc(entry["overview"])}</td></tr>')
     body.append('</tbody></table></div></section>')
     script = """'use strict';const rows=[...document.querySelectorAll('[data-report]')];function filter(){const q=document.getElementById('search').value.trim().toLowerCase();let n=0;for(const row of rows){row.hidden=!row.textContent.toLowerCase().includes(q);if(!row.hidden)n++}document.getElementById('count').textContent=n+' / '+rows.length+'개 리포트'}document.getElementById('search').addEventListener('input',filter);filter();window.reportReady=true;"""

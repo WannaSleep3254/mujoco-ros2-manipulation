@@ -13,7 +13,14 @@
         "UR5e"
       ],
       "overview": "동일한 양팔 교차 사례 1개에서 큰 공동 우회를 출발 지연으로 줄인 예비 평가. GUI/headless 각 1회 비교와 고정 입력 오프라인 5회 측정.",
-      "url": "2026-10-21-phase1/index.html"
+      "url": "2026-10-21-phase1/index.html",
+      "resources": [
+        {
+          "url": "2026-10-21-phase1/phase1-performance.html",
+          "label": "기존 상세 HTML: 영상·대안·세션 대조 (원본 보존)",
+          "kind": "legacy_report"
+        }
+      ]
     }
   ]
 }
