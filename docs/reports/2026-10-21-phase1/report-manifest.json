@@ -3,20 +3,20 @@
   "report_id": "2026-10-21-phase1",
   "source_commit": "0c31c469f08f853c775222a098706bef3f154bb7",
   "generator": {
-    "version": "1.0",
-    "fingerprint": "2e2a0be1484af6d7b58a8a959187a50b9c875171315377dc13f249cdda46a110",
+    "version": "1.1",
+    "fingerprint": "76fb635243f328853bd339a6da0d6ee1076c6be4c531550ff5895b7f950319df",
     "files": {
       "__init__.py": {
         "bytes": 125,
-        "sha256": "f8b4ef8392cb21ad64a2da525a14dd1ee9597031ac092dfb75aca5a08960fea6"
+        "sha256": "32d105c522dc57015fb986592698a418ca4a9fa66abc617f5160f19004059e70"
       },
       "data.py": {
         "bytes": 6045,
         "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
       },
       "render.py": {
-        "bytes": 9597,
-        "sha256": "f004fe25b22fea593884269126ff7efed21ceca3da9ff02af08973e57e838ea1"
+        "bytes": 10724,
+        "sha256": "67d25362ed5834c85f3cffcb00c86b47d6a2d6783bff98d2bc5efdec6234900b"
       },
       "publish.py": {
         "bytes": 7184,
@@ -31,8 +31,8 @@
         "sha256": "3f4c20747e7656c059754449fb570f98a98fceb2ddb53f5a5b045306a2afc26a"
       },
       "templates/style.css": {
-        "bytes": 3533,
-        "sha256": "afe2f57ff96253314d96a35f1eb3993e502bf1709eb2b13f11f708c8cb11471f"
+        "bytes": 3677,
+        "sha256": "e9d3c5b77ed017369f79126b2a8bfa0b39f8e3edc256e909e5b0a04b9298cbd9"
       }
     }
   },
@@ -50,8 +50,8 @@
       "sha256": "94d4f1a7eb1dcb0c79875dada6193c00f8cbaf5769b4b1519d469ba22867b54b"
     },
     "index.html": {
-      "bytes": 29674,
-      "sha256": "98b56186f4cfb6493ec13ed56c451388c169be4cf98bc39424f22f9bb9ac30a3"
+      "bytes": 29983,
+      "sha256": "4bd0b0fca0d5c6bafd3863251b8501397d276e0f87b8bae74d12b897e6f97a82"
     },
     "metrics.csv": {
       "bytes": 10925,

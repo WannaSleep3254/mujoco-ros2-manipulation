@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+from html.parser import HTMLParser
 import tempfile
 import unittest
 
@@ -14,6 +15,21 @@ from mujoco_ros2_manipulation.reporting.publish import build, collect, export_si
 from mujoco_ros2_manipulation.reporting.render import metrics_csv, report_html
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+class ReportLinks(HTMLParser):
+    def __init__(self, content):
+        super().__init__()
+        self.links = []
+        self.reports = 0
+        self.feed(content)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "a":
+            self.links.append(attrs)
+        if "data-report" in attrs:
+            self.reports += 1
 
 
 class PublicationReportTests(unittest.TestCase):
@@ -78,6 +94,51 @@ class PublicationReportTests(unittest.TestCase):
         manifest = read_json(output / "site-manifest.json")
         for name, metadata in manifest["files"].items():
             self.assertEqual(hashlib.sha256((output / name).read_bytes()).hexdigest(), metadata["sha256"])
+
+    def test_details_and_video_are_directly_reachable_from_catalog_and_header(self):
+        fixtures = [
+            ("details/상세 report.html", "영상·분석 <원본>", "legacy_report", b"<p>test-only detail</p>"),
+            ("extra.html", "추가 분석", "legacy_report", b"<p>test-only extra</p>"),
+            ("motion sample.mp4", "시험 영상", "video", b"test-only media link fixture"),
+        ]
+        for name, label, role, content in fixtures:
+            path = self.directory / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+            self.data["assets"].append(dict(path=name, label=label, role=role,
+                sha256=hashlib.sha256(content).hexdigest()))
+        self.save()
+        build(self.root)
+        output = self.temporary / "site"
+        export_site(self.root, output)
+        entry = read_json(output / "catalog.json")["reports"][0]
+        expected = [
+            ("legacy_report", "sample/details/%EC%83%81%EC%84%B8%20report.html"),
+            ("legacy_report", "sample/extra.html"),
+            ("video", "sample/motion%20sample.mp4"),
+        ]
+        self.assertEqual([(item["kind"], item["url"]) for item in entry["resources"]], expected)
+        catalog = ReportLinks((output / "index.html").read_text())
+        self.assertEqual(catalog.reports, 1)
+        self.assertEqual([a["href"] for a in catalog.links if a.get("data-report-link") == "summary"],
+                         ["sample/index.html"])
+        self.assertEqual([(a["data-report-resource"], a["href"]) for a in catalog.links
+                          if "data-report-resource" in a], expected)
+        summary = (output / "sample/index.html").read_text()
+        header = ReportLinks(summary.split("</header>")[0])
+        self.assertEqual([(a["data-report-resource"], a["href"]) for a in header.links
+                          if "data-report-resource" in a],
+                         [(kind, url.removeprefix("sample/")) for kind, url in expected])
+        self.assertIn("영상·분석 &lt;원본&gt;", summary)
+        self.assertNotIn("영상·분석 <원본>", summary)
+
+    def test_reports_without_details_do_not_advertise_missing_resources(self):
+        build(self.root)
+        self.assertEqual(read_json(self.root / "catalog.json")["reports"][0]["resources"], [])
+        for path in (self.root / "index.html", self.directory / "index.html"):
+            self.assertFalse(any("data-report-resource" in a for a in ReportLinks(path.read_text()).links))
+        self.assertTrue(any(a.get("data-report-link") == "summary"
+                            for a in ReportLinks((self.root / "index.html").read_text()).links))
 
     def test_existing_site_directory_is_preserved(self):
         build(self.root)
