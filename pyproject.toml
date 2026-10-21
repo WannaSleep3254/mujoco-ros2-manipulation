@@ -29,6 +29,8 @@ manipulation-verify-clock-stop = "mujoco_ros2_manipulation.workcells.verify_cloc
 manipulation-verify-process-crash = "mujoco_ros2_manipulation.workcells.verify_process_crash:main"
 manipulation-verify-contact-stop = "mujoco_ros2_manipulation.workcells.verify_contact_stop:main"
 manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
+manipulation-motion-server = "mujoco_ros2_manipulation.workcells.motion_server:main"
+manipulation-command = "mujoco_ros2_manipulation.workcells.motion_client:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

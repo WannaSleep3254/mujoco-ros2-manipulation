@@ -1,0 +1,66 @@
+"""One recorder's monotonic timeline; simulation stamps are separate observations."""
+from contextlib import contextmanager
+from copy import deepcopy
+from datetime import datetime, timezone
+import time
+
+from mujoco_ros2_manipulation.verification.reports import atomic_json
+
+
+class RequestTrace:
+    def __init__(self, identifier, *, clock=time.monotonic_ns, received_ns=None):
+        self.clock = clock
+        self.origin = clock() if received_ns is None else received_ns
+        self.data = dict(schema_version=1, request_id=identifier, status="received",
+            received_utc=datetime.now(timezone.utc).isoformat(),
+            clock=dict(wall="time.monotonic_ns in this recorder process", origin_ns=self.origin,
+                       simulation="ROS joint-state /clock seconds; never added to wall durations"),
+            events=[], spans=[], metrics={}, error=None, dispatched_goals=0)
+        self.event("received")
+
+    def elapsed(self):
+        return (self.clock() - self.origin) / 1e9
+
+    def event(self, name, *, simulation_sec=None, **details):
+        record = dict(name=name, wall_sec=self.elapsed(), simulation_sec=simulation_sec, **details)
+        if self.data["events"] and record["wall_sec"] < self.data["events"][-1]["wall_sec"]:
+            raise ValueError("Recorder monotonic clock moved backwards")
+        self.data["events"].append(record)
+        return record
+
+    @contextmanager
+    def span(self, name):
+        record = dict(name=name, start_wall_sec=self.elapsed(), status="running")
+        self.data["spans"].append(record)
+        try:
+            yield record
+        except BaseException as error:
+            record.update(status="failed", error=type(error).__name__)
+            raise
+        else:
+            record["status"] = "completed"
+        finally:
+            record["end_wall_sec"] = self.elapsed()
+            record["duration_wall_sec"] = record["end_wall_sec"] - record["start_wall_sec"]
+
+    def skip(self, name, reason):
+        self.data["spans"].append(dict(name=name, status="not_applicable", duration_wall_sec=None, reason=reason))
+
+    def finish(self, status, error=None):
+        if status not in ("succeeded", "failed", "cancelled", "rejected"):
+            raise ValueError("Expected a terminal command status")
+        self.event("terminal")
+        self.data.update(status=status, error=error)
+        first = lambda name: next((e["wall_sec"] for e in self.data["events"] if e["name"] == name), None)
+        self.data["metrics"] = dict(received_to_first_motion_wall_sec=first("first_motion"),
+            received_to_actions_done_wall_sec=first("actions_done"),
+            received_to_settled_wall_sec=first("settled"),
+            received_to_terminal_wall_sec=first("terminal"))
+
+    def save(self, path):
+        atomic_json(path, self.data)
+
+    def summary(self, path, session_id):
+        return dict(schema_version=1, session_id=session_id, request_id=self.data["request_id"],
+            status=self.data["status"], stage=self.data["events"][-1]["name"],
+            trace_path=str(path), metrics=deepcopy(self.data["metrics"]), error=self.data["error"])

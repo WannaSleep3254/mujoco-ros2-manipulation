@@ -1,0 +1,910 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-request-timing",
+  "published_date": "2026-10-21",
+  "title": "상시 모션 명령·지령 → 동작 구간 계측 검증",
+  "status": "preliminary",
+  "overview": "FR5·UR5e 한 시뮬레이션의 짧은 회귀 절차. 상시 요청, 실패·취소, 별도 CLI와 명령 노드 SIGINT를 검증하고 wall 구간을 연결했습니다.",
+  "findings": [
+    "원본 요청 11개: 성공 5, 실패 1, 취소 3, 거부 2. 의도된 부정 대조를 포함하므로 성공률 평가가 아님.",
+    "첫 공동 요청의 수신→최초 이동 1.351wall초, 출발 조정 요청 1.482wall초. 각각 1회이며 서로 다른 연속 목표라 성능 우열 비교가 아님.",
+    "최초 이동 지연에는 1초 sim 예약 출발이 포함됨. 계획 서비스·안전검사·수락 지연은 별도 표로 제공.",
+    "중복 ID 재실행 방지, 동시 요청 거부, 실제 충돌 목표 계획 실패, 양팔 취소·복구·SIGINT 정상 종료 검증 통과.",
+    "네이티브 접촉 0스텝, 정상 시뮬레이터 종료 확인. 이미 도달한 목표는 새 Action 0개·최초 이동 null."
+  ],
+  "limitations": [
+    "명령 노드 수신부터의 지연이며 사용자 클릭·키보드 입력·클라이언트→서버 전송 이전 시간은 포함하지 않음.",
+    "하나의 짧은 회귀 절차이며 랜덤 목표 성공률·p95/p99·cold/warm 분포를 평가하지 않음. 절차의 일부 목표는 당시 측정 상태에서 계산함.",
+    "시뮬레이터·MoveIt·거리 모델 최초 구동은 수신 전에 끝남. 각 요청의 원본 목표와 시각·코드 해시를 함께 보존.",
+    "1차 교차 회피 리포트와 움직임·시작 상태·입력 경계가 달라 2.133초 오프라인 계산과 직접 성능 비교하지 않음.",
+    "관측 최초 이동은 /joint_states 수신 기준이며 첫 물리 적분·실물 엔코더 응답과 다름. SIGKILL 종료 감시는 포함하지 않음."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "c67565f958da9c6ddade2bdc393e227b4acb48d2",
+    "workcell": "fr5_ur5e",
+    "models": [
+      "FR5",
+      "UR5e"
+    ],
+    "scenario": "persistent_command_regression",
+    "input_kind": "fixed_joint_targets"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "python": "3.10.12",
+    "ros": "ROS 2 Humble / rmw_cyclonedds_cpp",
+    "native_mujoco": "MuJoCo 3.12.0",
+    "mode": "headless",
+    "verification_run": "20261021T063206.805570Z-c9214995",
+    "recorder": "time.monotonic_ns; per-process origin; simulation stamps separate"
+  },
+  "sample_groups": [
+    {
+      "id": "request-1",
+      "label": "공동 계획",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 5b8430420f6b4b00a408ee98f17a6847; 반환 succeeded. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-2",
+      "label": "출발 조정",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 7cb7ca4d0bbb4da7b9716d856cdf5d3e; 반환 succeeded. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-3",
+      "label": "관절 제한 위반 거부",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 0,
+      "failures": 1,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 621030f45a5243c98263cccb69d4a11a; 반환 rejected. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-4",
+      "label": "충돌 목표 계획 실패",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 0,
+      "failures": 1,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 1b9c6257708a4ae88eaabf2166789f59; 반환 failed. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-5",
+      "label": "실행 전 취소",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 0,
+      "failures": 1,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID bbd51a33f0cf48d3a5202ee64542e232; 반환 cancelled. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-6",
+      "label": "이동 중 취소",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 0,
+      "failures": 1,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 7c66b04028594aa88c89164586f56a32; 반환 cancelled. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-7",
+      "label": "동시 요청 거부",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 0,
+      "failures": 1,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 31bdcef4fa1d4e2c8e5b75c8461d577b; 반환 rejected. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-8",
+      "label": "취소 후 복구",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID f16ea953cfb44a7dbd6f23b7bd81e907; 반환 succeeded. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-9",
+      "label": "이미 도달한 목표",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 5d2c1b126f3f4c138c0a81318028672b; 반환 succeeded. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-10",
+      "label": "별도 CLI 명령",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID 461795d521b74c5995b1ab7363ed0140; 반환 succeeded. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    },
+    {
+      "id": "request-11",
+      "label": "명령 노드 SIGINT",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 0,
+      "failures": 1,
+      "seed_policy": "고정 회귀 절차; 충돌 목표 대조 탐색만 Random(42). 랜덤 동작 표본 아님.",
+      "description": "ID e60dfada73d447e79ec51cd06ee549c6; 반환 cancelled. 기대된 실패·취소·거부도 동작 성공으로 집계하지 않음."
+    }
+  ],
+  "stages": [
+    {
+      "id": "receive",
+      "label": "명령 수신·상태 스냅샷",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "단일 요청 ID와 관측 상태 나이; simulator startup 제외"
+    },
+    {
+      "id": "planning",
+      "label": "MoveIt 계획·출발 조정",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "명시적 planner ID·왕복·서버 시간·선택 후보를 분리"
+    },
+    {
+      "id": "safety",
+      "label": "최종 안전검사",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "계획 30mm 기준과 MoveIt 전체 보간 상태 검사"
+    },
+    {
+      "id": "accept",
+      "label": "Action 전송·수락",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "팔별 이벤트. 1초 sim 예약은 CPU 계산과 구분"
+    },
+    {
+      "id": "motion",
+      "label": "관측 최초 이동",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "관절 상태 수신 시 최초 0.001rad 초과 변화"
+    },
+    {
+      "id": "result",
+      "label": "Action·수렴·종료",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "실패·취소·거부도 보존하고 이동 없는 경우 null"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "first-motion",
+      "label": "수신 → 관측 최초 이동",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 1.350551859,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 1.481737665,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": 1.44363638,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 1.258754614,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-10",
+          "value": 1.338179474,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": 1.42141399,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신."
+    },
+    {
+      "id": "plan-round-trip",
+      "label": "계획 서비스 왕복 합",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 0.027659642000799067,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 0.053796076999788056,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": 0.02222449900000356,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": 0.050384328000291134,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 0.026602449999700184,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-10",
+          "value": 0.030456483000307344,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": 0.04552761800005101,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "한 요청 안의 순차 호출 합. pure DDS 지연이 아님."
+    },
+    {
+      "id": "server-planning",
+      "label": "서버 planning_time 합",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 0.022322335999999998,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 0.038810903,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": 0.0,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": 0.041995068999999996,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 0.024490944,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-10",
+          "value": 0.026237164,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": 0.037729829,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음."
+    },
+    {
+      "id": "departure-search",
+      "label": "출발 시점 탐색",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-2",
+          "value": 0.049811968999999984,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-9",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-10",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-11",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름."
+    },
+    {
+      "id": "safety",
+      "label": "최종 안전검사",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 0.127328737,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 0.189748408,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": 0.20484431300000003,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 0.03330869,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": 0.0005611870000000047,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-10",
+          "value": 0.113494538,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": 0.17672567,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분."
+    },
+    {
+      "id": "action-acceptance",
+      "label": "전송 시작 → 마지막 팔 수락",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 0.021890218000000017,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 0.025676137000000043,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": 0.031936050999999965,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 0.00731870699999998,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-10",
+          "value": 0.01942460300000004,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": 0.029835001000000028,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "두 Action의 수락 수신. 실제 이동 시작과 구분."
+    },
+    {
+      "id": "actions-done",
+      "label": "수신 → 양팔 Action 완료",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 4.228319582,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 4.352939906,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 2.017628391,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-10",
+          "value": 3.86264309,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null."
+    },
+    {
+      "id": "settled",
+      "label": "수신 → 관절 수렴",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 4.310936488,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 4.441636729,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-4",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-5",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-6",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-7",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "request-8",
+          "value": 2.108551001,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": 0.091859673,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-10",
+          "value": 3.947232941,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시."
+    },
+    {
+      "id": "terminal",
+      "label": "수신 → 최종 결과 표시",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 요청 1회의 계측 구간",
+      "values": [
+        {
+          "group_id": "request-1",
+          "value": 4.324672768,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-2",
+          "value": 4.456499284,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-3",
+          "value": 4.8786e-05,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-4",
+          "value": 0.118825807,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-5",
+          "value": 0.001308412,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-6",
+          "value": 2.003936634,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-7",
+          "value": 7.1934e-05,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-8",
+          "value": 2.112861418,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-9",
+          "value": 0.092228318,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-10",
+          "value": 3.95902913,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "request-11",
+          "value": 2.431526623,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분."
+    }
+  ],
+  "assets": [
+    {
+      "path": "evidence.json",
+      "label": "요청·세션·회귀 실행 원본 스냅샷",
+      "role": "data",
+      "sha256": "3eb2adf6464b3af9ac2f774711207ced674a4e8998237371416b0b5018deea90"
+    }
+  ],
+  "references": [
+    {
+      "label": "고정 구현 커밋",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/c67565f958da9c6ddade2bdc393e227b4acb48d2"
+    }
+  ]
+}

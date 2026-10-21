@@ -71,13 +71,33 @@
       "bytes": 21357,
       "sha256": "32cdc10b0fadea28b6249b7ebc313b12d8e524b7d251730066ea16aea3f72177"
     },
+    "2026-10-21-request-timing/evidence.json": {
+      "bytes": 2709990,
+      "sha256": "3eb2adf6464b3af9ac2f774711207ced674a4e8998237371416b0b5018deea90"
+    },
+    "2026-10-21-request-timing/index.html": {
+      "bytes": 47416,
+      "sha256": "b2b0cc47aefcc69e57b93053be096092d3effe02748b253c70a76cd2ed1f7c18"
+    },
+    "2026-10-21-request-timing/metrics.csv": {
+      "bytes": 21867,
+      "sha256": "a82bade3b2060cfe838dc2552ca47b0bae6c7c147da3bfa41f55e1cceaf039dd"
+    },
+    "2026-10-21-request-timing/report-manifest.json": {
+      "bytes": 1831,
+      "sha256": "01a9ed89ca71bbd9d35cb50988a1f5dc91efb557a424ebdbc320009f8a2110af"
+    },
+    "2026-10-21-request-timing/report.json": {
+      "bytes": 27217,
+      "sha256": "308abc9d6d0b45576a30685dcf00155d47a4ebc213db61e91a5f1127fc4cdb8e"
+    },
     "catalog.json": {
-      "bytes": 861,
-      "sha256": "060d61cd688d9778ff661be2a444335b88be2c7785f1ad061638826ffb8d7976"
+      "bytes": 1485,
+      "sha256": "42ca246b4d8cf03ff673053cd163398d989ad8eb4eae2079ef6ad2dd025df692"
     },
     "index.html": {
-      "bytes": 6052,
-      "sha256": "a3773c4da51fa95cee09d96c50d96719ab61840da2fb123c634abdcbd054d8c5"
+      "bytes": 6642,
+      "sha256": "6fefc55c00d74c9f0009ffdfbbc7a4bc4d5480b1a40e3b67663500736e714684"
     }
   }
 }
