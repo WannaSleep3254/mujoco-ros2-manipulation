@@ -6,6 +6,8 @@ from pathlib import Path
 import time
 import subprocess
 import signal
+import platform
+from rclpy.utilities import get_rmw_implementation_identifier
 import uuid
 
 import rclpy
@@ -72,6 +74,8 @@ class MotionCommandServer(WorkcellVerification):
         atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
             workcell=cell.id, model_manifest=self.metadata, policy=self.policy,
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
+            runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
+                         middleware=get_rmw_implementation_identifier()),
             code_commit=subprocess.check_output(["git", "-C", str(cell.root), "rev-parse", "HEAD"], text=True).strip(),
             implementation_sha256={name: file_sha256(cell.root / "src/mujoco_ros2_manipulation/workcells" / name)
                 for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py")},
