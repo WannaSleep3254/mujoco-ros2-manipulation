@@ -145,7 +145,7 @@ def main():
                 cases=[c for c in cases if (c[0]=="crossing")== (args.case=="crossing")]
             if not cases:
                 raise ValueError("No comparison inputs selected")
-            data.update(source=provenance,workcell=cell.id,model_manifest_sha256=file_sha256(cell.output/"source.json"),
+            data.update(source=provenance,requested_case_filter=args.case,planned_case_ids=[c[0] for c in cases],workcell=cell.id,model_manifest_sha256=file_sha256(cell.output/"source.json"),
                 policy=policy,evaluator=evaluator.metadata(),host=host_info(),
                 runtime=dict(python=platform.python_version(),os=platform.freedesktop_os_release().get("PRETTY_NAME",platform.platform())),
                 implementation_sha256={name:file_sha256(Path(__file__).parent/name) for name in ("timing.py","interference.py","path_quality.py","distance.py","search_comparison.py")})
