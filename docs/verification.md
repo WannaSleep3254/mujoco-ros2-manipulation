@@ -25,6 +25,20 @@ GUI·ROS 검증과 오프라인 성능 측정은 순서대로 실행합니다. G
 최대 처리량·이동 성능·GUI FPS와 구분합니다. 상시 명령은 실제 ROS에서 재검사했으며,
 새 탐색의 전체 지령→이동 지연 효과는 다음 랜덤 평가에서 별도 측정합니다.
 
+## 전용 조작 화면 검증
+
+[통합 화면 안내](operator_console.md) · [원본 검증 자료](operator/validation.json.gz)
+
+실제 HTTP→ROS→관절 이동·양팔 취소·출발 조정 복구·정상 종료는 `verify_operator_console.py`로 검사합니다.
+`20261021T104643.608766Z-21a701d4`에서 라이브 EGL 렌더러를 함께 실행해 통과했으며 매 물리 스텝 접촉 0을 확인했습니다.
+브라우저 버튼·목표 파일·이력/리포트·데스크톱/모바일·재시작 후 실제 동작은 별도 검증했습니다.
+CI는 같은 API/ROS 검증을 `--no-render`로 실행합니다. 네이티브 GUI 창·실물 검증과 구분합니다.
+
+```bash
+source ./manipulation_env.sh
+python3 verify_operator_console.py --domain 143 --no-render
+```
+
 ## 명령 종료 시점의 확인
 
 연속 명령은 지정한 시간만 기다리는 방식이 아니라 다음 결과를 확인한 뒤 진행합니다.

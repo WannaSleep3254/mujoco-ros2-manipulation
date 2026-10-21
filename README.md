@@ -5,7 +5,7 @@ FAIRINO FR5·FR10과 Universal Robots UR5e를 공통 실행기로 선택하며,
 제조사 모델 변환부터 경로 계획·실행, 관절 상태 기반 완료 확인과 정상 종료까지 검증했습니다.
 
 FR5·UR5e 공동 장면과 상시 명령·취소·랜덤 평가도 제공합니다.
-현재 조작은 MuJoCo·RViz·CLI이며 전용 통합 조작 화면은 후속 기능입니다.
+[전용 통합 조작 화면](docs/operator_console.md)에서 FR5·UR5e 공동 장면의 시작·목표 입력·계획 후 실행·양팔 취소·라이브 뷰·기록을 사용할 수 있습니다.
 [시뮬레이터 제작 상태와 현재 PC 점검](docs/simulator_status.md)에 기능별 판정을 정리했습니다.
 
 ## 지원 모델과 실행 화면
@@ -44,6 +44,17 @@ MoveIt 2 / ROS 2 JointTrajectory 명령
 모델별 YAML 프로필에서 관절 이름·순서, 초기 자세, 서보 게인, ROS 이름과 검증 목표를 관리합니다.
 같은 프로필로 MuJoCo 모델과 ROS 제어기 설정을 생성하고, 관절 이름으로 연결합니다.
 위치 서보는 목표 각도에 따른 힘을 계산하므로 중력·관성·토크 제한의 영향을 받습니다.
+
+## 전용 조작 화면
+
+```bash
+source ./manipulation_env.sh
+python3 operator_console.py --domain 89 --port 8765
+```
+
+[로컬 화면](http://127.0.0.1:8765/)에서 **시뮬레이션 시작 → 목표 설정 → 계획 후 실행**을 사용합니다.
+현재 대상은 FR5·UR5e 공동 장면입니다. 기존 MuJoCo·RViz·CLI도 계속 사용할 수 있습니다.
+[사용 방법·연결·기록·검증 범위](docs/operator_console.md)
 
 ## 빠른 실행
 
@@ -139,6 +150,7 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [설치와 빌드](docs/setup.md) | 새 PC 준비, 고정 소스 버전, 생성 파일, 공통 코드 구성 |
 | [의존성 업데이트](docs/dependency_updates.md) | Dependabot 주간 검사, ROS 호환성 제한, 보안 업데이트와 사본 반영 절차 |
 | [모델별 자료](docs/robots/README.md) | FR5·FR10·UR5e 설정, 좌표계, 실제 GUI 스크린샷 |
+| [전용 조작 화면](docs/operator_console.md) | 라이브 모델·양팔 목표·실행·취소·요청 기록과 리포트 |
 | [시뮬레이터 제작 상태](docs/simulator_status.md) | 구동 확인 범위·현재 PC 실제 GUI·남은 기능·실행 방법 |
 | [검증 안내](docs/verification.md) | 연속 명령의 완료 확인, 자동 검증, JSON·로그 해석 |
 | [공개 성능 리포트](https://wannasleep3254.github.io/mujoco-ros2-manipulation/) | 브라우저에서 HTML 목록·지표·원본 데이터 열람 |
@@ -262,7 +274,7 @@ python3 verify_contact_demo.py --gui --control
 | 검증 추가 | [양팔 간섭 참조 경로 차단·공동 회피 전용 사례](docs/interference_avoidance.md) |
 | 검증 추가 | 상시 명령·랜덤 평가·탐색 최적화 A/B·현재 PC 실제 GUI 점검 |
 | 1 | 교차·장애물·큰 이동 평가와 실제 지령→동작 재측정 |
-| 2 | 전용 통합 조작 화면, 크래시 후 위치 유지 검증, 끝단 Pose/IK 사례 |
+| 2 | 단일 모델의 화면 제어 확장, 크래시 후 위치 유지 검증, 끝단 Pose/IK 사례 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |

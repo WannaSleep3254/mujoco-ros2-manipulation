@@ -48,3 +48,10 @@ python scripts/reports.py build --check
 생성 파일을 직접 편집하지 않습니다. 새 측정·정정은 새 평가 ID를 사용하고 원본을 보존합니다.
 기존 1차 자료는 `python scripts/import_phase1_report.py --check`로 대조합니다.
 CI는 검증된 정적 폴더를 Artifact로 보관하며 Pages를 배포하지 않습니다.
+
+## 전용 조작 화면
+
+`src/mujoco_ros2_manipulation/operator_console`에서 로컬 HTTP 화면과 ROS 어댑터를 관리합니다.
+기존 명령 계약·안전검사를 우회하지 않으며, 자체 소유 프로세스만 종료합니다.
+`source ./manipulation_env.sh` 후 `python3 verify_operator_console.py --domain 143 --no-render`로
+실제 HTTP→ROS 동작·양팔 취소·복구와 접촉·종료를 검사합니다. 화면·EGL 렌더러는 로컬 브라우저에서 별도로 확인합니다.
