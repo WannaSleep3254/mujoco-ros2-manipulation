@@ -1,0 +1,14 @@
+{
+  "javascript_errors": [],
+  "external_network_requests": [],
+  "desktop_no_horizontal_overflow": true,
+  "mobile_no_horizontal_overflow": true,
+  "dataset_toggle": true,
+  "json_download": true,
+  "csv_rows": 6,
+  "print_styles": true,
+  "video": {
+    "duration": 28.125,
+    "canPlay": "maybe"
+  }
+}
