@@ -134,6 +134,7 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [의존성 업데이트](docs/dependency_updates.md) | Dependabot 주간 검사, ROS 호환성 제한, 보안 업데이트와 사본 반영 절차 |
 | [모델별 자료](docs/robots/README.md) | FR5·FR10·UR5e 설정, 좌표계, 실제 GUI 스크린샷 |
 | [검증 안내](docs/verification.md) | 연속 명령의 완료 확인, 자동 검증, JSON·로그 해석 |
+| [공개 성능 리포트](https://wannasleep3254.github.io/mujoco-ros2-manipulation/) | 브라우저에서 HTML 목록·지표·원본 데이터 열람 |
 | [성능 리포트 목록](docs/reports/README.md) | 공통 HTML 목록·표준 JSON·CSV와 평가 이력 |
 | [리포트 생성·게시](docs/reporting.md) | 공통 스키마·생성기·검증·CI 미리보기와 GitHub Pages 도입 검토 |
 | [1차 성능평가 · 2026-10-21](docs/reports/2026-10-21-phase1/README.md) | HTML 리포트, 고정 사례 계산·동작 비교, 모션 플래닝 세션 대조와 랜덤 평가 설계 |
