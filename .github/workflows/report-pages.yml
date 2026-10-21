@@ -59,4 +59,4 @@ jobs:
       - name: Verify published bytes against this commit
         env:
           REPORT_URL: ${{ steps.deployment.outputs.page_url }}
-        run: python3 scripts/check_published_reports.py --url "$REPORT_URL" --attempts 12 --delay 5
+        run: python3 scripts/check_published_reports.py --url "$REPORT_URL" --manifest docs/reports/site-manifest.json --attempts 12 --delay 5

@@ -3,6 +3,7 @@ import hashlib
 from contextlib import redirect_stderr
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -74,6 +75,19 @@ class PublishedReportsTests(unittest.TestCase):
         with patch("mujoco_ros2_manipulation.reporting.published.urlopen", side_effect=URLError("not ready")):
             with self.assertRaisesRegex(PublishedReportError, "Cannot read"):
                 fetch_bytes(self.base, 100)
+
+    def test_default_manifest_uses_workspace_even_outside_checkout(self):
+        root = Path(__file__).resolve().parents[2]
+        previous = Path.cwd()
+        try:
+            os.chdir(self.root)
+            with patch.dict(os.environ, {"MUJOCO_ROS2_WORKSPACE": str(root)}), \
+                 patch("mujoco_ros2_manipulation.reporting.published.verify_site", return_value={"files": 3}) as verify, \
+                 patch("builtins.print"):
+                self.assertEqual(main(["--url", self.base]), 0)
+            self.assertEqual(verify.call_args.args[1], root / "docs/reports/site-manifest.json")
+        finally:
+            os.chdir(previous)
 
     def test_deployment_propagation_retry_is_bounded(self):
         with patch("mujoco_ros2_manipulation.reporting.published.verify_site", side_effect=[PublishedReportError("stale"), {"files": 3}]) as verify, \

@@ -63,11 +63,16 @@ def verify_site(base_url, manifest, *, fetch=None):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", required=True)
-    parser.add_argument("--manifest", type=Path,
-        default=Path(__file__).resolve().parents[1] / "docs/reports/site-manifest.json")
+    parser.add_argument("--manifest", type=Path, help="Default: workspace/docs/reports/site-manifest.json")
     parser.add_argument("--attempts", type=int, default=1)
     parser.add_argument("--delay", type=float, default=5)
     args = parser.parse_args(argv)
+    if args.manifest is None:
+        try:
+            from ..paths import workspace_root
+            args.manifest = workspace_root() / "docs/reports/site-manifest.json"
+        except RuntimeError as error:
+            parser.error(str(error))
     if not 1 <= args.attempts <= 30 or not 0 <= args.delay <= 10:
         parser.error("attempts must be 1..30; delay must be 0..10 seconds")
     for attempt in range(1, args.attempts + 1):
