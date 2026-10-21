@@ -117,6 +117,12 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_motion_commands.py --domain 138
+      - name: Paired seeded motion benchmark smoke test
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 benchmark_motion.py --count 2 --radius 0.15 --compute-budget 8 --require-all-success --domain 139
+          python3 benchmark_motion.py --count 1 --radius 0.15 --compute-budget 0.01 --expect-budget-exhaustion --domain 140
       - name: Contact stop fault injection (two fresh launches)
         if: matrix.robot == 'workcell'
         run: |

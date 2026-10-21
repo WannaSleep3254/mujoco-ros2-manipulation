@@ -1,6 +1,7 @@
 """Bounded departure-delay search: preserve every moving spline segment exactly."""
 from copy import deepcopy
 import math
+import time
 from pathlib import Path
 import yaml
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
@@ -64,50 +65,89 @@ def delayed_curve(curve, delay):
 
 
 class TimingRejected(ValueError):
-    def __init__(self, candidates):
+    def __init__(self, candidates, profiling=None):
         super().__init__(
             "No departure-only solution within delay/clearance budget; no command is allowed"
         )
         self.candidates = candidates
+        self.profiling = profiling
 
 
-def choose_delay(curves, initial, cell, evaluator, policy):
+def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, checkpoint=None, clock=time.monotonic_ns):
     if len(curves) != 2 or abs(curves[0].duration - curves[1].duration) > 1e-8:
         raise ValueError("Expected two synchronized source curves")
     candidates = []
+    profiling = dict(clock="time.monotonic_ns", elapsed_wall_sec=0.0, candidate_wall_sec=0.0,
+                     native_distance_wall_sec=0.0, native_distance_calls=0, candidate_count=0,
+                     other_wall_sec=0.0)
+    if diagnostics is not None:
+        diagnostics.update(candidates=candidates, profiling=profiling)
+    started = clock()
+
+    class CountedDistance:
+        def __init__(self):
+            self.calls = 0
+            self.wall = 0.0
+
+        def at(self, state):
+            before = clock()
+            self.calls += 1
+            try:
+                return evaluator.at(state)
+            finally:
+                self.wall += (clock() - before) / 1e9
+
+    def assess(scheduled, arm, delay):
+        if checkpoint:
+            checkpoint()
+        entry = dict(delayed_arm=cell.instances[arm].id, delay_sec=delay, status="running",
+                     complete=None, samples=0, minimum=None)
+        candidates.append(entry)
+        before = clock()
+        counted = CountedDistance()
+        try:
+            result = evaluate_path(scheduled, initial, cell, counted, dt=policy["sample_dt_sec"],
+                reject_below=policy["min_inter_arm_distance_m"] + policy["tracking_reserve_m"],
+                checkpoint=checkpoint)
+            entry.update(status="completed", complete=result["complete"], samples=result["samples"], minimum=result["minimum"])
+            return result
+        except BaseException as error:
+            entry.update(status="interrupted", error=dict(type=type(error).__name__, message=str(error)))
+            raise
+        finally:
+            elapsed = (clock() - before) / 1e9
+            entry.update(elapsed_wall_sec=elapsed, native_distance_calls=counted.calls, native_distance_wall_sec=counted.wall)
+            profiling["candidate_wall_sec"] += elapsed
+            profiling["native_distance_wall_sec"] += counted.wall
+            profiling["native_distance_calls"] += counted.calls
+
+    try:
+        return _choose_delay(curves, initial, cell, policy, candidates, profiling, assess, checkpoint)
+    finally:
+        profiling["elapsed_wall_sec"] = (clock() - started) / 1e9
+        profiling["candidate_count"] = len(candidates)
+        profiling["other_wall_sec"] = max(0.0, profiling["elapsed_wall_sec"] - profiling["candidate_wall_sec"])
+
+
+def _choose_delay(curves, initial, cell, policy, candidates, profiling, assess, checkpoint):
     solutions = []
     step = policy["delay_step_sec"]
     limit = min(policy["max_delay_sec"], 35.0 - curves[0].duration)
     for arm in (0, 1):
         for index in range(math.floor(limit / step + 1e-9) + 1):
+            if checkpoint:
+                checkpoint()
             delay = round(index * step, 9)
             scheduled = [
                 delayed_curve(c, delay if n == arm else 0.0)
                 for n, c in enumerate(curves)
             ]
-            result = evaluate_path(
-                scheduled,
-                initial,
-                cell,
-                evaluator,
-                dt=policy["sample_dt_sec"],
-                reject_below=policy["min_inter_arm_distance_m"]
-                + policy["tracking_reserve_m"],
-            )
-            candidates.append(
-                dict(
-                    delayed_arm=cell.instances[arm].id,
-                    delay_sec=delay,
-                    complete=result["complete"],
-                    samples=result["samples"],
-                    minimum=result["minimum"],
-                )
-            )
+            result = assess(scheduled, arm, delay)
             if result["complete"]:
                 solutions.append((delay, arm, scheduled, result))
                 break
     if not solutions:
-        raise TimingRejected(candidates)
+        raise TimingRejected(candidates, profiling)
     delay, arm, scheduled, result = min(solutions, key=lambda s: (s[0], s[1]))
     return dict(
         delayed_arm=cell.instances[arm].id,
@@ -115,6 +155,7 @@ def choose_delay(curves, initial, cell, evaluator, policy):
         curves=[c.record() for c in scheduled],
         evaluation=result,
         candidates=candidates,
+        profiling=profiling,
         selection="Smallest feasible departure delay on the configured grid, both arm orders; no claim of global optimality",
     )
 
@@ -147,6 +188,7 @@ def prepare_timing(bundle_path, output, cell, evaluator):
                 policy_sha256=file_sha256(policy_path),
                 evaluator=evaluator.metadata(),
                 candidates=error.candidates,
+                profiling=error.profiling,
             ),
         )
         raise

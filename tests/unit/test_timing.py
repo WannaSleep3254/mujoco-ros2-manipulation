@@ -50,6 +50,44 @@ class AnalyticDistance:
 
 
 class TimingTests(unittest.TestCase):
+    def test_native_cost_is_a_subset_of_candidate_time_and_failed_search_keeps_counts(self):
+        now = [0]
+        class MeasuredDistance(AnalyticDistance):
+            def at(self, state):
+                now[0] += 100_000
+                return super().at(state)
+        policy = dict(sample_dt_sec=0.01, min_inter_arm_distance_m=0.05, tracking_reserve_m=0.0,
+                      delay_step_sec=0.2, max_delay_sec=1.2)
+        result = choose_delay([curve("l"), curve("r")], {"l": 0.0, "r": 0.0}, cell(), MeasuredDistance(), policy, clock=lambda: now[0])
+        profile = result["profiling"]
+        self.assertEqual(profile["native_distance_calls"], sum(c["samples"] for c in result["candidates"]))
+        self.assertAlmostEqual(profile["native_distance_wall_sec"], profile["native_distance_calls"] * 0.0001)
+        self.assertAlmostEqual(profile["elapsed_wall_sec"], profile["candidate_wall_sec"] + profile["other_wall_sec"])
+        policy["max_delay_sec"] = 0.4
+        from mujoco_ros2_manipulation.workcells.timing import TimingRejected
+        with self.assertRaises(TimingRejected) as caught:
+            choose_delay([curve("l"), curve("r")], {"l": 0.0, "r": 0.0}, cell(), MeasuredDistance(), policy, clock=lambda: now[0])
+        self.assertGreater(caught.exception.profiling["native_distance_calls"], 0)
+        self.assertEqual(caught.exception.profiling["candidate_count"], len(caught.exception.candidates))
+
+    def test_budget_interrupts_native_sampling_and_preserves_partial_candidate(self):
+        from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
+        now = [0]
+        class SlowDistance(AnalyticDistance):
+            def at(self, state):
+                now[0] += 1_000_000
+                return super().at(state)
+        budget = PlanningBudget(0.02, clock=lambda: now[0])
+        evidence = {}
+        with self.assertRaises(PlanningBudgetExceeded):
+            choose_delay([curve("l"), curve("r")], {"l": 0.0, "r": 0.0}, cell(), SlowDistance(),
+                dict(sample_dt_sec=0.01, min_inter_arm_distance_m=0.05, tracking_reserve_m=0.0, delay_step_sec=0.2, max_delay_sec=1.2),
+                diagnostics=evidence, checkpoint=budget.check, clock=lambda: now[0])
+        self.assertEqual(evidence["profiling"]["native_distance_calls"], 20)
+        self.assertEqual(evidence["candidates"][-1]["status"], "interrupted")
+        self.assertIsNone(evidence["candidates"][-1]["complete"])
+        self.assertEqual(evidence["candidates"][-1]["error"]["type"], "PlanningBudgetExceeded")
+
     def test_delay_preserves_moving_polynomial_and_derivatives_without_endpoint_hold_overshoot(
         self,
     ):

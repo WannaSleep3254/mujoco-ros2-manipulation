@@ -138,7 +138,7 @@ class WorkcellVerification(Verification):
             self.validity.call_async(request), 5, "shared collision check"
         )
 
-    def plan(self, group, target, start_state=None, *, planner_id=""):
+    def plan(self, group, target, start_state=None, *, planner_id="", allowed_planning_sec=5.0, goal_tolerance_rad=0.003):
         started = time.monotonic()
         request = GetMotionPlan.Request()
         motion = request.motion_plan_request
@@ -146,7 +146,7 @@ class WorkcellVerification(Verification):
         motion.pipeline_id = "ompl"
         motion.planner_id = planner_id
         motion.num_planning_attempts = 3
-        motion.allowed_planning_time = 5.0
+        motion.allowed_planning_time = float(allowed_planning_sec)
         motion.max_velocity_scaling_factor = 0.1
         motion.max_acceleration_scaling_factor = 0.1
         motion.start_state.is_diff = True
@@ -161,7 +161,7 @@ class WorkcellVerification(Verification):
             joint = JointConstraint()
             joint.joint_name = name
             joint.position = float(value)
-            joint.tolerance_above = joint.tolerance_below = 0.003
+            joint.tolerance_above = joint.tolerance_below = float(goal_tolerance_rad)
             joint.weight = 1.0
             constraint.joint_constraints.append(joint)
         motion.goal_constraints = [constraint]
@@ -178,6 +178,7 @@ class WorkcellVerification(Verification):
                 selected_planner_id=None,  # GetMotionPlan does not expose this field.
                 attempts=motion.num_planning_attempts,
                 allowed_planning_sec=motion.allowed_planning_time,
+                goal_tolerance_rad=goal_tolerance_rad,
                 error_code=answer.error_code.val,
             )
         )

@@ -38,7 +38,7 @@ def sample_schedule(curves, initial, dt=0.01):
         previous = state
 
 
-def evaluate_states(states, cell, evaluator, *, reject_below=None):
+def evaluate_states(states, cell, evaluator, *, reject_below=None, checkpoint=None):
     previous = None
     minimum = None
     count = 0
@@ -49,6 +49,8 @@ def evaluate_states(states, cell, evaluator, *, reject_below=None):
     first_time = last_time = None
     max_dt = 0.0
     for t, state in states:
+        if checkpoint:
+            checkpoint()
         if not finite([t]) or (last_time is not None and t <= last_time):
             raise ValueError("Observation time must increase")
         if first_time is None:
@@ -57,6 +59,8 @@ def evaluate_states(states, cell, evaluator, *, reject_below=None):
             max_dt = max(max_dt, t - last_time)
         last_time = t
         result = evaluator.at(state)
+        if checkpoint:
+            checkpoint()
         count += 1
         if minimum is None or result["distance_m"] < minimum["distance_m"]:
             minimum = dict(time_sec=t, state_rad=state, **result)
@@ -87,7 +91,7 @@ def evaluate_states(states, cell, evaluator, *, reject_below=None):
     )
 
 
-def evaluate_path(curves, initial, cell, evaluator, *, dt=0.01, reject_below=None):
+def evaluate_path(curves, initial, cell, evaluator, *, dt=0.01, reject_below=None, checkpoint=None):
     return evaluate_states(
-        sample_schedule(curves, initial, dt), cell, evaluator, reject_below=reject_below
+        sample_schedule(curves, initial, dt), cell, evaluator, reject_below=reject_below, checkpoint=checkpoint
     )
