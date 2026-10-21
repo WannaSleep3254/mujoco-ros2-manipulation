@@ -73,15 +73,19 @@ class TimingRejected(ValueError):
         self.profiling = profiling
 
 
-def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, checkpoint=None, clock=time.monotonic_ns):
+def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, checkpoint=None, clock=time.monotonic_ns, optimize=True):
     if len(curves) != 2 or abs(curves[0].duration - curves[1].duration) > 1e-8:
         raise ValueError("Expected two synchronized source curves")
+    if type(optimize) is not bool:
+        raise ValueError("optimize must be a boolean")
     candidates = []
+    decisions = []
     profiling = dict(clock="time.monotonic_ns", elapsed_wall_sec=0.0, candidate_wall_sec=0.0,
                      native_distance_wall_sec=0.0, native_distance_calls=0, candidate_count=0,
-                     other_wall_sec=0.0)
+                     other_wall_sec=0.0, optimized=optimize,
+                     reused_zero_delay_evaluations=0, grid_values_pruned_by_bound=0)
     if diagnostics is not None:
-        diagnostics.update(candidates=candidates, profiling=profiling)
+        diagnostics.update(candidates=candidates, profiling=profiling, search_decisions=decisions)
     started = clock()
 
     class CountedDistance:
@@ -122,27 +126,45 @@ def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, 
             profiling["native_distance_calls"] += counted.calls
 
     try:
-        return _choose_delay(curves, initial, cell, policy, candidates, profiling, assess, checkpoint)
+        return _choose_delay(curves, initial, cell, policy, candidates, profiling, decisions, assess, checkpoint, optimize)
     finally:
         profiling["elapsed_wall_sec"] = (clock() - started) / 1e9
         profiling["candidate_count"] = len(candidates)
         profiling["other_wall_sec"] = max(0.0, profiling["elapsed_wall_sec"] - profiling["candidate_wall_sec"])
 
 
-def _choose_delay(curves, initial, cell, policy, candidates, profiling, assess, checkpoint):
+def _choose_delay(curves, initial, cell, policy, candidates, profiling, decisions, assess, checkpoint, optimize):
     solutions = []
+    zero_result = None
     step = policy["delay_step_sec"]
     limit = min(policy["max_delay_sec"], 35.0 - curves[0].duration)
+    count = math.floor(limit / step + 1e-9) + 1
     for arm in (0, 1):
-        for index in range(math.floor(limit / step + 1e-9) + 1):
+        for index in range(count):
             if checkpoint:
                 checkpoint()
             delay = round(index * step, 9)
+            # On the right-arm pass, an equal delay loses the existing left-arm tie.
+            # Larger delays cannot beat the incumbent, so their grid states need no evaluation.
+            if optimize and solutions and delay >= solutions[0][0]:
+                profiling["grid_values_pruned_by_bound"] += count - index
+                decisions.append(dict(kind="incumbent_bound", delayed_arm=cell.instances[arm].id,
+                    first_pruned_delay_sec=delay, incumbent_delay_sec=solutions[0][0],
+                    unevaluated_grid_values=count-index, reason="Equal delay retains the left-arm tie; larger delay cannot improve selection"))
+                break
             scheduled = [
                 delayed_curve(c, delay if n == arm else 0.0)
                 for n, c in enumerate(curves)
             ]
-            result = assess(scheduled, arm, delay)
+            if optimize and arm == 1 and index == 0:
+                result = zero_result
+                profiling["reused_zero_delay_evaluations"] += 1
+                decisions.append(dict(kind="shared_zero_delay", delayed_arm=cell.instances[arm].id,
+                    source_candidate_index=0, reason="Both zero-delay schedules are identical, with the same initial state and full-distance evaluation"))
+            else:
+                result = assess(scheduled, arm, delay)
+                if arm == 0 and index == 0:
+                    zero_result = result
             if result["complete"]:
                 solutions.append((delay, arm, scheduled, result))
                 break
@@ -156,6 +178,7 @@ def _choose_delay(curves, initial, cell, policy, candidates, profiling, assess, 
         evaluation=result,
         candidates=candidates,
         profiling=profiling,
+        search_decisions=decisions,
         selection="Smallest feasible departure delay on the configured grid, both arm orders; no claim of global optimality",
     )
 

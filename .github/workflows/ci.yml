@@ -186,6 +186,13 @@ jobs:
           python3 scripts/compare_timing.py --summary-only \
             --plan runtime/validation/timing-plan.json \
             --output-dir runtime/validation/timing-comparison
+      - name: Search optimization equivalence on frozen CI trajectories
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 scripts/compare_search_optimization.py \
+            --bundle runtime/validation/interference-comparison-bundle.json --case crossing --repeats 1 \
+            --output runtime/validation/search-optimization-ci.json
       - name: Preserve reports on success or failure
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
