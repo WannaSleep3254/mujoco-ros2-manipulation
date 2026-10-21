@@ -115,4 +115,20 @@ python3 verify_motion_commands.py --domain 138
 이미 도달한 0.001rad 이내 목표는 새 관절 명령을 보내지 않고 최초 이동을 null로 유지합니다.
 이는 작은 고정 회귀 사례이며 랜덤 목표 성공률이나 p95/p99 성능평가가 아닙니다.
 
+
+## 요청 계측 결과 발행
+
+검증이 완료된 실행을 새 평가 ID로 가져옵니다. 요청 실패·취소·거부를 포함한 전체 스냅샷을 보존합니다.
+
+```bash
+runtime/report-tools/bin/python scripts/import_motion_request_report.py \
+  --run runtime/validation/runs/실행_ID/result.json \
+  --report-id 새날짜-request-timing --date YYYY-MM-DD
+runtime/report-tools/bin/python scripts/reports.py build
+```
+
+[2026-10-21 요청 계측 리포트](reports/2026-10-21-request-timing/index.html)는 고정 구현의 발행 예입니다.
+CI 자료를 다른 경로로 다운로드했으면 `--traces`로 command session 폴더를 지정합니다.
+기존 발행본은 `--check docs/reports/평가_ID`로 원본과 수치를 대조합니다.
+
 공식 제어 인터페이스: [JTC Action과 완료·선점 정책](https://control.ros.org/humble/doc/ros2_controllers/joint_trajectory_controller/doc/userdoc.html).

@@ -29,6 +29,7 @@ jobs:
       - name: Publication report schema, evidence and generated files
         run: |
           python scripts/import_phase1_report.py --check
+          python scripts/import_motion_request_report.py --check docs/reports/2026-10-21-request-timing
           manipulation-report validate
           manipulation-report build --check
           manipulation-report --reports-dir docs/reporting validate

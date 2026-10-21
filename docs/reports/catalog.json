@@ -2,6 +2,21 @@
   "schema_version": 1,
   "reports": [
     {
+      "report_id": "2026-10-21-request-timing",
+      "title": "상시 모션 명령·지령 → 동작 구간 계측 검증",
+      "published_date": "2026-10-21",
+      "status": "preliminary",
+      "commit": "c67565f958da9c6ddade2bdc393e227b4acb48d2",
+      "workcell": "fr5_ur5e",
+      "models": [
+        "FR5",
+        "UR5e"
+      ],
+      "overview": "FR5·UR5e 한 시뮬레이션의 짧은 회귀 절차. 상시 요청, 실패·취소, 별도 CLI와 명령 노드 SIGINT를 검증하고 wall 구간을 연결했습니다.",
+      "url": "2026-10-21-request-timing/index.html",
+      "resources": []
+    },
+    {
       "report_id": "2026-10-21-phase1",
       "title": "1차 성능평가: FR5·UR5e 경로와 출발 조정",
       "published_date": "2026-10-21",

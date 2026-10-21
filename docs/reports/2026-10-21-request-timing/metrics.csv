@@ -1,0 +1,100 @@
+report_id,metric_id,label,group_id,value,unit,clock,sample_count,statistic,scope,note
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-1,1.350551859,s,wall,1,single,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-2,1.481737665,s,wall,1,single,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-4,,s,wall,0,not_measured,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-6,1.44363638,s,wall,1,single,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-8,1.258754614,s,wall,1,single,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-9,,s,wall,0,not_measured,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-10,1.338179474,s,wall,1,single,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,first-motion,수신 → 관측 최초 이동,request-11,1.42141399,s,wall,1,single,각 요청 1회의 계측 구간,1초 sim 예약 대기를 포함. 실제 관절 상태의 첫 0.001rad 초과 변화 수신.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-1,0.027659642000799067,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-2,0.053796076999788056,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-4,0.02222449900000356,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-6,0.050384328000291134,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-8,0.026602449999700184,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-9,,s,wall,0,not_measured,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-10,0.030456483000307344,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,plan-round-trip,계획 서비스 왕복 합,request-11,0.04552761800005101,s,wall,1,single,각 요청 1회의 계측 구간,한 요청 안의 순차 호출 합. pure DDS 지연이 아님.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-1,0.022322335999999998,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-2,0.038810903,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-4,0.0,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-6,0.041995068999999996,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-8,0.024490944,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-9,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-10,0.026237164,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,server-planning,서버 planning_time 합,request-11,0.037729829,s,wall,1,single,각 요청 1회의 계측 구간,MoveIt 응답 그대로. 응답 실패의 0 값도 보존하며 전체 응답 지연에 더하지 않음.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-1,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-2,0.049811968999999984,s,wall,1,single,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-4,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-6,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-8,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-9,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-10,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,departure-search,출발 시점 탐색,request-11,,s,wall,0,not_measured,각 요청 1회의 계측 구간,사용하지 않았으면 null. 선택된 팔 대기(sim 시간)와 다름.
+2026-10-21-request-timing,safety,최종 안전검사,request-1,0.127328737,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-2,0.189748408,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-4,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-6,0.20484431300000003,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-8,0.03330869,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-9,0.0005611870000000047,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-10,0.113494538,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,safety,최종 안전검사,request-11,0.17672567,s,wall,1,single,각 요청 1회의 계측 구간,MuJoCo 거리와 MoveIt 보간 유효성 검사. 상태 재확인 대기와 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-1,0.021890218000000017,s,wall,1,single,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-2,0.025676137000000043,s,wall,1,single,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-4,,s,wall,0,not_measured,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-6,0.031936050999999965,s,wall,1,single,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-8,0.00731870699999998,s,wall,1,single,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-9,,s,wall,0,not_measured,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-10,0.01942460300000004,s,wall,1,single,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,action-acceptance,전송 시작 → 마지막 팔 수락,request-11,0.029835001000000028,s,wall,1,single,각 요청 1회의 계측 구간,두 Action의 수락 수신. 실제 이동 시작과 구분.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-1,4.228319582,s,wall,1,single,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-2,4.352939906,s,wall,1,single,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-4,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-6,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-8,2.017628391,s,wall,1,single,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-9,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-10,3.86264309,s,wall,1,single,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,actions-done,수신 → 양팔 Action 완료,request-11,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 Action 결과 수신. 취소·거부는 이 성공 완료 지표가 null.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-1,4.310936488,s,wall,1,single,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-2,4.441636729,s,wall,1,single,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-3,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-4,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-5,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-6,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-7,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-8,2.108551001,s,wall,1,single,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-9,0.091859673,s,wall,1,single,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-10,3.947232941,s,wall,1,single,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,settled,수신 → 관절 수렴,request-11,,s,wall,0,not_measured,각 요청 1회의 계측 구간,정상 목표 수렴. 이미 도달한 목표도 별도 no_motion_required 표시.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-1,4.324672768,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-2,4.456499284,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-3,4.8786e-05,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-4,0.118825807,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-5,0.001308412,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-6,2.003936634,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-7,7.1934e-05,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-8,2.112861418,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-9,0.092228318,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-10,3.95902913,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
+2026-10-21-request-timing,terminal,수신 → 최종 결과 표시,request-11,2.431526623,s,wall,1,single,각 요청 1회의 계측 구간,같은 기록 프로세스의 terminal 표시까지. 클라이언트 왕복 지연과 구분.
