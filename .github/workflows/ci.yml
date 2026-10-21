@@ -30,6 +30,7 @@ jobs:
         run: |
           python scripts/import_phase1_report.py --check
           python scripts/import_motion_request_report.py --check docs/reports/2026-10-21-request-timing
+          python scripts/import_random_motion_report.py --check docs/reports/2026-10-21-random-motion
           manipulation-report validate
           manipulation-report build --check
           manipulation-report --reports-dir docs/reporting validate

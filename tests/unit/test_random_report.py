@@ -74,3 +74,29 @@ class RandomReportTests(unittest.TestCase):
     def test_execution_failure_cannot_be_counted_as_an_ordinary_planning_failure(self):
         changed=fixture();changed["requests"][1]["dispatched_goals"]=2
         with self.assertRaisesRegex(ValueError,"physical execution"):checked_requests(changed)
+
+
+class PublishedRandomReportTests(unittest.TestCase):
+    def evidence(self):
+        import gzip
+        from pathlib import Path
+        folder=Path(__file__).resolve().parents[2]/"docs/reports/2026-10-21-random-motion"
+        raw=(folder/"evidence.json.gz").read_bytes()
+        return folder,raw,json.loads(gzip.decompress(raw))
+
+    def test_published_report_matches_every_request_and_fixed_profile(self):
+        folder,raw,evidence=self.evidence()
+        report=json.loads((folder/"report.json").read_text())
+        self.assertEqual(report,random_report(evidence,report["report_id"],report["published_date"],hashlib.sha256(raw).hexdigest()))
+        self.assertEqual(len(evidence["benchmark"]["rows"]),10)
+        self.assertEqual(len(evidence["requests"]),26)
+        self.assertEqual(len(report["sample_groups"]),3)
+
+    def test_fixed_profile_cannot_change_call_counts_or_source_commit(self):
+        _,_,original=self.evidence()
+        for field in ("count","commit"):
+            evidence=deepcopy(original)
+            if field=="count": evidence["fixed_search"]["plan"]["profiling"]["native_distance_calls"]+=1
+            if field=="commit": evidence["fixed_search"]["evaluation_commit"]="0"*40
+            with self.subTest(field=field),self.assertRaises(ValueError):
+                random_report(evidence,"random-test","2026-10-21","b"*64)

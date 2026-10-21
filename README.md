@@ -233,6 +233,7 @@ python3 verify_contact_demo.py --gui --control
 출발 탐색, 안전검사, Action 수락, 관측 최초 이동과 완료를 wall/sim 시계별로 기록합니다.
 실패·취소·동시 요청 거부도 원본에 남깁니다.
 [랜덤 목표 비교](docs/random_motion_benchmark.md)는 같은 목표·계산 예산과 실측 시작 기준으로 두 전략을 평가하고, 출발 탐색의 후보별 비용을 기록합니다.
+[첫 비교 리포트](docs/reports/2026-10-21-random-motion/index.html)에 목표 5개 × 두 전략의 성공·계측 원본과 별도 교차 탐색의 비용 분해를 보존했습니다.
 
 ## 구현 범위와 다음 작업
 

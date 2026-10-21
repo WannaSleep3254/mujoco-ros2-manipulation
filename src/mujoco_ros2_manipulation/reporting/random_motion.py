@@ -71,6 +71,36 @@ def checked_requests(evidence):
     return grouped
 
 
+def checked_fixed_search(evidence):
+    fixed = evidence.get("fixed_search")
+    if fixed is None:
+        return None
+    plan, bundle, run = (fixed[k] for k in ("plan", "bundle", "source_verification"))
+    session = evidence["session"]
+    encoded = lambda value: (json.dumps(value, indent=2, allow_nan=False)+"\n").encode()
+    if (hashlib.sha256(encoded(bundle)).hexdigest() != plan["bundle_sha256"]
+            or hashlib.sha256(encoded(run)).hexdigest() != bundle["source_report_sha256"]
+            or plan["model_manifest_sha256"] != evidence["verification"]["model_manifest_sha256"]
+            or fixed["evaluation_commit"] != session["code_commit"]
+            or plan["evaluator"] != session["evaluator"] or plan["policy"] != session["policy"]
+            or run["status"] != "passed" or not run["shutdown_clean"] or not run["physics_checks_passed"]
+            or run["physics"]["contact_steps"] != 0):
+        raise ValueError("Fixed-search input/model/engine/source provenance does not match")
+    profile = plan["profiling"]
+    candidates = plan["candidates"]
+    if (profile["candidate_count"] != len(candidates) or not candidates
+            or profile["native_distance_calls"] != sum(c["native_distance_calls"] for c in candidates)
+            or any(c["status"] != "completed" or c["native_distance_calls"] != c["samples"] for c in candidates)
+            or abs(profile["candidate_wall_sec"] - sum(c["elapsed_wall_sec"] for c in candidates)) > 1e-8
+            or abs(profile["native_distance_wall_sec"] - sum(c["native_distance_wall_sec"] for c in candidates)) > 1e-8
+            or abs(profile["elapsed_wall_sec"] - profile["candidate_wall_sec"] - profile["other_wall_sec"]) > 1e-8
+            or profile["native_distance_wall_sec"] > profile["candidate_wall_sec"]
+            or not plan["evaluation"]["complete"]
+            or plan["evaluation"]["minimum"]["distance_m"] < plan["policy"]["min_inter_arm_distance_m"] + plan["policy"]["tracking_reserve_m"]):
+        raise ValueError("Fixed-search profiling counts, time boundaries or clearance are inconsistent")
+    return plan
+
+
 def random_report(evidence, identifier, published, sha):
     grouped = checked_requests(evidence)
     run, session, benchmark, workload = (evidence[k] for k in ("verification", "session", "benchmark", "workload"))
@@ -94,6 +124,9 @@ def random_report(evidence, identifier, published, sha):
         ("departure", "출발 탐색 전체", "s", "wall", lambda r:span(r,"departure_search"), False),
         ("native-distance", "탐색 중 네이티브 거리 계산", "s", "wall", lambda r:r.get("departure_search",{}).get("profiling",{}).get("native_distance_wall_sec"), False),
         ("distance-calls", "탐색 거리 계산 호출", "count", "not_applicable", lambda r:r.get("departure_search",{}).get("profiling",{}).get("native_distance_calls"), False),
+        ("candidates", "탐색 후보 수", "count", "not_applicable", lambda r:r.get("departure_search",{}).get("profiling",{}).get("candidate_count"), False),
+        ("candidate-time", "탐색 후보 평가 합", "s", "wall", lambda r:r.get("departure_search",{}).get("profiling",{}).get("candidate_wall_sec"), False),
+        ("search-other", "탐색의 후보 평가 외 구간", "s", "wall", lambda r:r.get("departure_search",{}).get("profiling",{}).get("other_wall_sec"), False),
         ("terminal", "수신 → 최종 결과", "s", "wall", lambda r:r["metrics"]["received_to_terminal_wall_sec"], False),
         ("joint-travel", "계획 관절 누적 이동량", "rad", "not_applicable", lambda r:r.get("planned_clearance",{}).get("joint_total_variation_rad"), True),
         ("motion-duration", "계획 궤적 길이", "s", "simulation", lambda r:r.get("planned_clearance",{}).get("duration_sec"), True),
@@ -110,7 +143,7 @@ def random_report(evidence, identifier, published, sha):
             metrics.append(dict(id=key+"-"+statistic,label=label+" ("+statistic+")",unit=unit,clock=clock,
                 scope="성공 요청의 유효 표본" if success_only else "실패를 포함한 유효 표본",values=values,
                 note="이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."))
-    return dict(schema_version=1, report_id=identifier, published_date=published, status="preliminary",
+    result = dict(schema_version=1, report_id=identifier, published_date=published, status="preliminary",
         title="고정 seed 랜덤 관절 목표·계산 예산 비교", overview=f"FR5·UR5e의 근거리 랜덤 목표 {workload['count']}개를 두 전략으로 실행한 재현 평가. 전체 작업 공간 성능평가가 아닙니다.",
         findings=[f"목표 {workload['count']}개 × 2전략. seed {workload['seed']}, 반경 {workload['radius_rad']}rad, 같은 계산 예산 {benchmark['compute_budget_wall_sec']}wall초.",
             *(f"{g['label']}: 성공 {g['successes']}/{g['observations']}, 실패 {g['failures']}. 실패 요청도 원본과 분모에 포함." for g in groups),
@@ -132,6 +165,26 @@ def random_report(evidence, identifier, published, sha):
             dict(id="motion",label="실제 움직임·완료",clock="wall",coverage="measured",note="수신 관절 상태·양팔 Action과 정상 종료 검증")],
         metrics=metrics, assets=[dict(path="evidence.json.gz",label="전체 요청·복귀·원본 workload·세션·물리 검증 (gzip JSON)",role="data",sha256=sha)],
         references=[dict(label="평가 구현 커밋",url="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/"+session["code_commit"])])
+    delays=[r.get("departure_search",{}).get("delay_sec") for r in grouped["departure_timing"]]
+    delays=[v for v in delays if v is not None]
+    if delays and all(v == 0 for v in delays):
+        result["findings"].append(f"랜덤 출발 조정 {len(delays)}회에서 선택 지연은 모두 0sim초. 교차 전용 탐색은 별도 표본으로 구분.")
+        result["limitations"].append("이번 랜덤 목표의 교차 대기·회피 난이도는 낮음. 다양한 교차·장애물 조건의 회피 성공률은 추가 평가가 필요함.")
+    plan = checked_fixed_search(evidence)
+    if plan:
+        profile = plan["profiling"]
+        groups.append(dict(id="fixed-search", label="교차 사례: 별도 고정 궤적 탐색 1회", kind="offline", unique_cases=1, observations=1,
+            successes=1, failures=0, seed_policy="현재 모델에서 검증 후 고정한 입력 spline 1개; OMPL 난수열 고정 아님",
+            description="랜덤 요청과 별개인 교차 참조의 출발 탐색. 수신→동작 지연이나 랜덤 비교 분모에 합산하지 않음."))
+        for key,label,unit in (("elapsed_wall_sec","교차 탐색 전체","s"),("candidate_wall_sec","교차 후보 평가 합","s"),
+                ("native_distance_wall_sec","교차 네이티브 거리 계산","s"),("other_wall_sec","교차 후보 평가 외 구간","s"),
+                ("native_distance_calls","교차 거리 계산 호출","count"),("candidate_count","교차 탐색 후보 수","count")):
+            metrics.append(dict(id="fixed-"+key.replace("_","-"),label=label,unit=unit,clock="wall" if unit=="s" else "not_applicable",
+                scope="별도 고정 교차 궤적의 오프라인 탐색 1회",values=[dict(group_id="fixed-search",value=profile[key],sample_count=1,statistic="single")],
+                note="전체 = 후보 평가 + 그 외. 네이티브 시간은 후보 평가의 일부. 모델 로딩·RPC·동작은 포함하지 않음."))
+        result["findings"].append(f"별도 교차 입력 탐색: 후보 {profile['candidate_count']}개, 거리 {profile['native_distance_calls']}회, 전체 {profile['elapsed_wall_sec']:.3f}wall초. 선택 지연 {plan['delay_sec']}sim초는 계산 시간과 구분.")
+        result["limitations"].append("별도 고정 교차 탐색은 현재 모델에서 새로 검증·고정한 입력 1회. 과거 1차의 다른 궤적·환경과 직접 속도 향상을 비교하지 않음.")
+    return result
 
 
 def main():
@@ -141,6 +194,7 @@ def main():
     parser.add_argument("--report-id")
     parser.add_argument("--date",default=date.today().isoformat())
     parser.add_argument("--check",type=Path)
+    parser.add_argument("--fixed-search",type=Path,help="Optional separate fixed crossing input and profiling evidence")
     args=parser.parse_args()
     if args.check:
         folder=args.check
@@ -158,6 +212,8 @@ def main():
     source=args.traces or Path(run["command_trace_directory"])
     evidence=dict(verification=run,session=read_json(source/"session.json"),benchmark=read_json(source/"benchmark.json"),
         workload=read_json(source/"workload.json"),requests=[read_json(p) for p in sorted(source.glob("*.json")) if re.fullmatch(r"[0-9a-f]{32}\.json",p.name)])
+    if args.fixed_search:
+        evidence["fixed_search"]=read_json(args.fixed_search)
     raw=gzip.compress(json_text(evidence).encode(),mtime=0)
     report=random_report(evidence,args.report_id,args.date,hashlib.sha256(raw).hexdigest())
     from ..paths import workspace_root

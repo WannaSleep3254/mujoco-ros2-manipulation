@@ -99,3 +99,7 @@ CI의 근거리 정상 시험은 `--require-all-success`로 모든 채점 동작
 홈 주변 관절 목표 결과를 전체 작업 공간, TCP/Cartesian 작업, 반복 충돌 회피 또는 실물 성능으로 일반화하지 않습니다.
 
 [명령과 계측 경계](motion_requests.md) · [출발 조정과 거리 정책](timing_coordination.md) · [리포트 운영](reporting.md)
+
+## 첫 평가 자료
+
+[2026-10-21 HTML 리포트](reports/2026-10-21-random-motion/index.html)에 고정 seed·반경 0.6rad의 목표 5개 × 두 전략 결과와 별도 교차 궤적의 후보 58개 탐색 비용을 보존했습니다. 랜덤 목표의 선택 지연은 모두 0초였으며, 교차 탐색을 별도 offline 표본으로 구분합니다.
