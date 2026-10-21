@@ -119,6 +119,11 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_motion_commands.py --domain 138
+      - name: Operator console HTTP to actual ROS motion and cancellation
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_operator_console.py --domain 143 --no-render
       - name: Paired seeded motion benchmark smoke test
         if: matrix.robot == 'workcell'
         run: |

@@ -32,6 +32,8 @@ manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
 manipulation-motion-server = "mujoco_ros2_manipulation.workcells.motion_server:main"
 manipulation-command = "mujoco_ros2_manipulation.workcells.motion_client:main"
 manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
+manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main"
+manipulation-verify-operator = "mujoco_ros2_manipulation.operator_console.verify:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -41,3 +43,5 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "mujoco_ros2_manipulation.reporting" = ["report.schema.json", "templates/*.html", "templates/*.css"]
+
+"mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js"]
