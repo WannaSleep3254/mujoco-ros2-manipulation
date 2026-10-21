@@ -98,33 +98,67 @@ runtime/report-tools/bin/python scripts/import_phase1_report.py --check
 공통 HTML·CSV는 여기서 만든 표준 입력으로 재생성합니다. 기존 상세 HTML·JSON·CSV·그림·manifest는 바꾸지 않습니다.
 새 랜덤 모션 평가에는 새 어댑터를 추가하거나 측정기가 공통 스키마를 직접 출력하게 합니다.
 
-## HTML 게시 방식 검토 — 2026-10-21
+## HTML 게시와 운영
 
-당일 GitHub 저장소 조회의 `has_pages=false`를 확인했습니다. Pages 설정·배포·도메인은 변경하지 않았습니다.
+[공개 리포트 목록](https://wannasleep3254.github.io/mujoco-ros2-manipulation/) ·
+[게시 workflow](../.github/workflows/report-pages.yml) ·
+[배포 상태](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/workflows/report-pages.yml)
 
-| 방법 | 용도·평가 |
+GitHub Pages의 Source는 GitHub Actions, 배포 환경은 `github-pages`입니다.
+배포 환경은 `main` 브랜치만 허용하고, workflow의 build/deploy도 main에서만 실행합니다.
+커스텀 도메인이나 별도 서버는 사용하지 않습니다.
+
+| 보관·열람 방법 | 운영 용도 |
 |---|---|
-| 로컬 파일 / HTTP | 개발·검토용. 추가 서비스 없이 현재 지원 |
-| CI Artifact | PR의 생성 결과 다운로드·검토용. 장기 공개 링크로 사용하지 않음 |
-| GitHub Pages + Actions | **권장**. 공통 생성·검증 후 선택한 정적 파일만 발행. 별도 서버 없이 목록과 HTML 열람 |
-| main의 /docs 직접 Pages 발행 | 가능하지만 문서 전체가 대상이고 생성 검증·파일 선택 통제가 약해 현재 구조에는 비추천 |
-| GitHub Releases | 대용량 로그·전체 시계열·영상의 버전별 내려받기 보관. HTML 웹 서비스와 역할이 다름 |
+| 로컬 파일 / HTTP | 개발·검토용. 같은 정적 파일과 상대 경로 사용 |
+| CI `report-site-preview` Artifact | PR 생성 결과를 다운로드해 검토. 14일 보관 |
+| GitHub Pages + Actions | 공통 생성·검증을 통과한 파일만 공개 HTML로 게시 |
+| GitHub Releases | 평가 원본이 커질 때 압축 로그·전체 시계열·영상을 버전별 보존 |
 
-이번 CI는 사이트를 만들고 Artifact로 보관하며 **배포하지 않습니다**. 기존 ROS 필수 검사 이름과 보호 규칙은 유지합니다.
-기존 ROS 진단 Artifact는 14일 보존입니다. 중요한 원본을 CI 링크에만 의존하지 않습니다.
-현재 규모의 자료는 Git에 보관하되 랜덤 평가가 커지면 Git에는 요약·작은 그림·파일 해시를,
-Release에는 압축 원본을 두고 HTTPS 참조로 연결합니다. 웹용 HTML에 매번 대형 영상을 내장하지 않습니다.
+### 자동 게시
 
-실제 Pages 도입 시:
+1. PR에서 기존 필수 CI 6개와 생성 결과를 검토하고 main에 병합합니다.
+2. main의 리포트 입력·생성기·의존성·게시 workflow 변경이 있으면 `Publish reports`를 실행합니다.
+3. JSON 스키마·원본 자료 해시·출력 일치·리포트 단위 검사를 수행합니다.
+4. `site`로 선택한 파일만 새 폴더에 내보내고 Pages Artifact를 올립니다.
+5. Pages 배포 후 공개 파일 전체를 해당 커밋의 `site-manifest.json`과 대조합니다.
+   HTML 200 응답만으로 성공 처리하지 않습니다. 이전 내용·누락·해시 불일치는 실패입니다.
 
-1. Settings → Pages → Source에서 GitHub Actions 선택.
-2. [검토용 workflow 예시](reporting/report-pages.workflow.yml)를 `.github/workflows/report-pages.yml`로 옮기는 별도 PR 작성.
-3. 기본 브랜치의 `github-pages` environment·배포 권한을 확인. 예시는 main에서 수동 실행만 허용합니다.
-4. 생성·검증된 폴더만 업로드하고 Pages 배포 실행. 이 작업 브랜치에서는 실제 배포하지 않습니다.
-5. 발급된 URL에서 목록·조건 전환·상대 경로·CSV·기존 HTML·모바일·다운로드를 확인한 뒤 README에 실제 주소 추가.
+일반 ROS·단위 CI의 필수 검사 이름과 main 보호 규칙은 유지합니다.
+Pages workflow는 리포트 게시를 담당하며 실시간 로봇 시험이나 새 성능 측정을 실행하지 않습니다.
+보고서의 평가 코드 커밋은 배포 코드 커밋과 다를 수 있으며, 보고서의 provenance가 평가 기준입니다.
 
-예상 프로젝트 주소는 `https://WannaSleep3254.github.io/mujoco-ros2-manipulation/`이며 **아직 게시된 주소가 아닙니다**.
-루트 고정 경로 대신 상대 링크를 사용해 프로젝트 하위 경로와 로컬 열람 모두 지원합니다.
+### 수동 실행과 게시 확인
+
+Actions → Publish reports → Run workflow에서 **main**을 선택합니다.
+배포 결과의 page URL과 이후 공개 파일 검증 단계를 함께 확인합니다.
+다른 브랜치에서는 build/deploy가 실행되지 않습니다.
+
+```bash
+python3 scripts/check_published_reports.py \
+  --url https://wannasleep3254.github.io/mujoco-ros2-manipulation/ \
+  --attempts 12 --delay 5
+```
+
+검사기는 표준 라이브러리만 사용하며 토큰을 보내지 않습니다. 공개 사이트의 manifest와 선언된 모든 파일의
+바이트 수·SHA-256을 로컬 커밋과 비교합니다. CDN 반영 중에는 제한된 횟수만 재시도하고,
+계속 다르면 성공으로 보고하지 않습니다. 과거 체크아웃으로 최신 사이트를 검사하면 실패할 수 있습니다.
+비교할 발행 버전의 커밋을 사용합니다.
+
+목록 검색, 조건 필터, JSON/CSV 다운로드, 기존 상세 HTML·영상과 모바일 화면은 최초 게시·템플릿 변경 시
+브라우저에서 추가로 확인합니다. GitHub Pages 설정은 Git 외부 상태이므로 저장소 관리 권한으로도 확인합니다.
+
+### 변경·복구
+
+자료 수정은 새 평가 ID 또는 정정 리포트로 PR을 작성합니다. 게시 설정·검증기는 일반 코드 PR로 변경합니다.
+실패한 배포는 Actions의 단계별 로그와 공개 파일 검증 메시지로 진단합니다.
+main을 수정한 뒤 다시 게시하거나, 검토한 이전 커밋의 설정·자료를 새 PR로 복원합니다.
+브랜치 보호나 파일 해시 검사를 해제하여 실패를 통과시키지 않습니다.
+
+중요한 원본을 14일 CI 링크에만 의존하지 않습니다. 현재 규모는 Git에서 보존하고,
+랜덤 평가가 커지면 요약·작은 그림·파일 해시는 Git, 압축 원본은 Release 링크로 분리합니다.
+[단순 수동 workflow 예시](reporting/report-pages.workflow.yml)는 참고용이며,
+실제 운영 설정은 `.github/workflows/report-pages.yml`입니다.
 
 공식 근거:
 
