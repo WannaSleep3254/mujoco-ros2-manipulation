@@ -32,3 +32,19 @@ PR에는 변경 동작, 호환성 영향, 실행한 검사와 생략한 검사�
 초기 통합 후 새 PR은 최신 main에서 분기해 main을 대상으로 작성합니다.
 보호 규칙은 관리자에게도 적용하며, PR의 필수 검사 6개·최신 main 반영·미해결 대화 해결을 확인합니다.
 CI 작업 이름을 바꾸면 보호 규칙의 필수 검사 이름도 함께 검토합니다.
+
+
+## 성능 리포트
+
+선택 의존성 `pip install '.[reports]'`를 설치하고 [리포트 규칙](docs/reporting.md)을 따릅니다.
+공통 입력 `report.json`과 선언한 근거 자료를 작성한 뒤 아래를 실행합니다.
+
+```bash
+python scripts/reports.py validate
+python scripts/reports.py build
+python scripts/reports.py build --check
+```
+
+생성 파일을 직접 편집하지 않습니다. 새 측정·정정은 새 평가 ID를 사용하고 원본을 보존합니다.
+기존 1차 자료는 `python scripts/import_phase1_report.py --check`로 대조합니다.
+CI는 검증된 정적 폴더를 Artifact로 보관하며 Pages를 배포하지 않습니다.

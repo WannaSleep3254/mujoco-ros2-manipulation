@@ -10,7 +10,11 @@ requires-python = ">=3.10"
 # Compatibility constraints remain in requirements.txt (Dependabot watches it).
 dynamic = ["dependencies"]
 
+[project.optional-dependencies]
+reports = ["jsonschema>=4.18,<5"]
+
 [project.scripts]
+manipulation-report = "mujoco_ros2_manipulation.reporting.__main__:main"
 manipulation-prepare = "mujoco_ros2_manipulation.model_build.prepare:main"
 manipulation-verify = "mujoco_ros2_manipulation.verification.ros_checks:main"
 manipulation-images = "mujoco_ros2_manipulation.verification.images:main"
@@ -31,3 +35,6 @@ dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"mujoco_ros2_manipulation.reporting" = ["report.schema.json", "templates/*.html", "templates/*.css"]

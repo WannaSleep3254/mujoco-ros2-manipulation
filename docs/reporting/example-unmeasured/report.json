@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "report_id": "example-unmeasured",
+  "title": "새 평가 입력 예제 — 미측정",
+  "published_date": "2026-10-21",
+  "status": "preliminary",
+  "overview": "작성용 예제입니다. 실제 평가 시 ID·날짜·코드·환경·자료를 교체합니다.",
+  "findings": [
+    "아직 실행하지 않았습니다."
+  ],
+  "limitations": [
+    "성능 수치와 성공률 없음."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "c2493cbdaabe00a9e43ae275a4530daf90e30017",
+    "workcell": "미정",
+    "models": [
+      "미정"
+    ],
+    "scenario": "미정",
+    "input_kind": "other"
+  },
+  "environment": {
+    "os": "미확인",
+    "cpu": "미확인",
+    "python": "미확인",
+    "ros": "미확인",
+    "native_mujoco": "미확인"
+  },
+  "sample_groups": [
+    {
+      "id": "pending",
+      "label": "미실행",
+      "kind": "unmeasured",
+      "unique_cases": 0,
+      "observations": 0,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "미정",
+      "description": "실행 전 예제"
+    }
+  ],
+  "stages": [
+    {
+      "id": "request",
+      "label": "지령 → 최초 이동",
+      "clock": "wall",
+      "coverage": "unmeasured",
+      "note": "미계측"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "command-to-motion",
+      "label": "지령 → 최초 이동",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "전체 요청의 wall 지연",
+      "note": "null은 미측정이며 0초가 아닙니다.",
+      "values": [
+        {
+          "group_id": "pending",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "path": "notes.txt",
+      "label": "예제 설명",
+      "role": "document",
+      "sha256": "78f72fb214d3b0159321e696b35b91d1cb424f8b300ee168e72ade18e09722b2"
+    }
+  ],
+  "references": []
+}
