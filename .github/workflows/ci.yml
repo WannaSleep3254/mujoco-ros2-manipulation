@@ -72,6 +72,10 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Trust the checked-out workspace in the ROS container
+        # checkout's temporary HOME trust does not cover later root-run steps.
+        # Restrict the exception to this checkout; never trust all repositories.
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: ROS build dependencies
         run: |
           apt-get update
