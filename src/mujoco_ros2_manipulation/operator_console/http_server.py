@@ -12,7 +12,7 @@ from ..workcells.motion_request import decode_message, command, validate_command
 
 class ConsoleHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
-    allow_reuse_address = False
+    allow_reuse_address = True
 
 
 class Handler(BaseHTTPRequestHandler):

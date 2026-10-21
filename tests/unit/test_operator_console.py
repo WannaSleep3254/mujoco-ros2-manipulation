@@ -135,6 +135,14 @@ class ConsoleHTTPTests(unittest.TestCase):
         self.server.shutdown();self.server.server_close();self.thread.join();self.temp.cleanup()
     def post(self,path,body,**headers):
         return urlopen(Request(self.url+path,data=body,headers={'Content-Type':'application/json','Origin':self.url,'X-Operator-Token':'test-token',**headers}),timeout=3)
+    def test_closed_port_can_restart_but_running_listener_cannot_be_shared(self):
+        address=self.server.server_address
+        with self.assertRaises(OSError):ConsoleHTTPServer(address,Handler)
+        with urlopen(self.url+'/api/state') as response:response.read()
+        self.server.shutdown();self.server.server_close();self.thread.join()
+        replacement=ConsoleHTTPServer(address,Handler)
+        replacement.server_close()
+
     def test_remote_origin_missing_token_and_rebinding_host_cannot_mutate(self):
         for headers in ({'Origin':'https://example.com'},{'X-Operator-Token':''},{'Host':'attacker.example'}):
             with self.subTest(headers=headers),self.assertRaises(HTTPError) as caught:self.post('/api/start',b'{}',**headers)
