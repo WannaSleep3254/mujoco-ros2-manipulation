@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "reports": [
+    {
+      "report_id": "2026-10-21-phase1",
+      "title": "1차 성능평가: FR5·UR5e 경로와 출발 조정",
+      "published_date": "2026-10-21",
+      "status": "preliminary",
+      "commit": "0c31c469f08f853c775222a098706bef3f154bb7",
+      "workcell": "fr5_ur5e",
+      "models": [
+        "FR5",
+        "UR5e"
+      ],
+      "overview": "동일한 양팔 교차 사례 1개에서 큰 공동 우회를 출발 지연으로 줄인 예비 평가. GUI/headless 각 1회 비교와 고정 입력 오프라인 5회 측정.",
+      "url": "2026-10-21-phase1/index.html"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+report_id,metric_id,label,group_id,value,unit,clock,sample_count,statistic,scope,note
+2026-10-21-phase1,command-to-motion,지령 접수 → 최초 이동,e2e,,s,wall,0,not_measured,전체 요청 반응 지연,0초가 아닌 미측정. 아래 오프라인·sim 시간을 합산하지 않음.
+2026-10-21-phase1,total-with-cleanup-sec,오프라인 계산 총 소요,offline,2.133431133,s,wall,5,median,고정 입력 1개 × 같은 프로세스 5회,새 MoveIt 계획·ROS 검사·전송·실행·전체 launch 시간 제외.
+2026-10-21-phase1,departure-search-sec,출발 시점 탐색,offline,1.890810513,s,wall,5,median,고정 입력 1개 × 같은 프로세스 5회,새 MoveIt 계획·ROS 검사·전송·실행·전체 launch 시간 제외.
+2026-10-21-phase1,native-load-sec,모델·평가기 생성,offline,0.033996266,s,wall,5,median,고정 입력 1개 × 같은 프로세스 5회,새 MoveIt 계획·ROS 검사·전송·실행·전체 launch 시간 제외.
+2026-10-21-phase1,planning-service,MoveIt 계획 서비스 응답,plan-setup,0.06215895700006513,s,wall,1,single,고정 사례 원본 생성 실행의 요청별 기록,서버 계산·ROS 왕복·클라이언트 대기 포함. 내부 플래너 시간이나 순수 DDS 비용이 아님.
+2026-10-21-phase1,planning-service,MoveIt 계획 서비스 응답,plan-left,0.03496431000166922,s,wall,1,single,고정 사례 원본 생성 실행의 요청별 기록,서버 계산·ROS 왕복·클라이언트 대기 포함. 내부 플래너 시간이나 순수 DDS 비용이 아님.
+2026-10-21-phase1,planning-service,MoveIt 계획 서비스 응답,plan-right,0.02815335799823515,s,wall,1,single,고정 사례 원본 생성 실행의 요청별 기록,서버 계산·ROS 왕복·클라이언트 대기 포함. 내부 플래너 시간이나 순수 DDS 비용이 아님.
+2026-10-21-phase1,planning-service,MoveIt 계획 서비스 응답,plan-both,0.18880693199753296,s,wall,1,single,고정 사례 원본 생성 실행의 요청별 기록,서버 계산·ROS 왕복·클라이언트 대기 포함. 내부 플래너 시간이나 순수 DDS 비용이 아님.
+2026-10-21-phase1,motion,명령된 궤적 시간,gui-baseline,26.62834873,s,simulation,1,single,시간 파라미터화된 명령 길이,전체 wall 완료 지연이 아님.
+2026-10-21-phase1,motion,명령된 궤적 시간,gui-timing,8.621950734,s,simulation,1,single,시간 파라미터화된 명령 길이,전체 wall 완료 지연이 아님.
+2026-10-21-phase1,motion,명령된 궤적 시간,headless-baseline,26.62834873,s,simulation,1,single,시간 파라미터화된 명령 길이,전체 wall 완료 지연이 아님.
+2026-10-21-phase1,motion,명령된 궤적 시간,headless-timing,8.621950734,s,simulation,1,single,시간 파라미터화된 명령 길이,전체 wall 완료 지연이 아님.
+2026-10-21-phase1,travel,계획 관절 누적 이동량,gui-baseline,24.691739492294364,rad,not_applicable,1,single,모든 관절의 |Δq| 합,미터 단위 이동거리·소비 에너지가 아님.
+2026-10-21-phase1,travel,계획 관절 누적 이동량,gui-timing,2.0237225659550147,rad,not_applicable,1,single,모든 관절의 |Δq| 합,미터 단위 이동거리·소비 에너지가 아님.
+2026-10-21-phase1,travel,계획 관절 누적 이동량,headless-baseline,24.691739492294364,rad,not_applicable,1,single,모든 관절의 |Δq| 합,미터 단위 이동거리·소비 에너지가 아님.
+2026-10-21-phase1,travel,계획 관절 누적 이동량,headless-timing,2.0237225659550147,rad,not_applicable,1,single,모든 관절의 |Δq| 합,미터 단위 이동거리·소비 에너지가 아님.
+2026-10-21-phase1,planned-gap,계획 최소 팔 간 간격,gui-baseline,30.847953420143483,mm,not_applicable,1,single,native 거리와 JTC spline의 이산 검사,"계획 기준 30mm, 최대 10ms 간격. 연속 시간 전체의 보증 아님."
+2026-10-21-phase1,planned-gap,계획 최소 팔 간 간격,gui-timing,33.14356297090096,mm,not_applicable,1,single,native 거리와 JTC spline의 이산 검사,"계획 기준 30mm, 최대 10ms 간격. 연속 시간 전체의 보증 아님."
+2026-10-21-phase1,planned-gap,계획 최소 팔 간 간격,headless-baseline,30.847953420143483,mm,not_applicable,1,single,native 거리와 JTC spline의 이산 검사,"계획 기준 30mm, 최대 10ms 간격. 연속 시간 전체의 보증 아님."
+2026-10-21-phase1,planned-gap,계획 최소 팔 간 간격,headless-timing,33.14356297090096,mm,not_applicable,1,single,native 거리와 JTC spline의 이산 검사,"계획 기준 30mm, 최대 10ms 간격. 연속 시간 전체의 보증 아님."
+2026-10-21-phase1,observed-gap,관측 최소 팔 간 간격,gui-baseline,30.745684572018053,mm,not_applicable,1,single,한 실행의 수신 관절 자세에서 얻은 최소값,"수신 자세 2763개, 최대 간격 약 12ms. 값 하나는 실행 1회의 결과."
+2026-10-21-phase1,observed-gap,관측 최소 팔 간 간격,gui-timing,30.64359811263672,mm,not_applicable,1,single,한 실행의 수신 관절 자세에서 얻은 최소값,"수신 자세 2763개, 최대 간격 약 12ms. 값 하나는 실행 1회의 결과."
+2026-10-21-phase1,observed-gap,관측 최소 팔 간 간격,headless-baseline,30.745684574325036,mm,not_applicable,1,single,한 실행의 수신 관절 자세에서 얻은 최소값,"수신 자세 2763개, 최대 간격 약 12ms. 값 하나는 실행 1회의 결과."
+2026-10-21-phase1,observed-gap,관측 최소 팔 간 간격,headless-timing,30.62883216106166,mm,not_applicable,1,single,한 실행의 수신 관절 자세에서 얻은 최소값,"수신 자세 2763개, 최대 간격 약 12ms. 값 하나는 실행 1회의 결과."
+2026-10-21-phase1,error,최종 목표 최대 오차,gui-baseline,0.006238810255229321,rad,not_applicable,1,single,양팔 관절 목표 수렴,성공 기준 0.01rad 미만의 연속 상태 메시지와 Action 결과를 함께 검사.
+2026-10-21-phase1,error,최종 목표 최대 오차,gui-timing,0.006068823244921306,rad,not_applicable,1,single,양팔 관절 목표 수렴,성공 기준 0.01rad 미만의 연속 상태 메시지와 Action 결과를 함께 검사.
+2026-10-21-phase1,error,최종 목표 최대 오차,headless-baseline,0.006238810255229321,rad,not_applicable,1,single,양팔 관절 목표 수렴,성공 기준 0.01rad 미만의 연속 상태 메시지와 Action 결과를 함께 검사.
+2026-10-21-phase1,error,최종 목표 최대 오차,headless-timing,0.006068823244921306,rad,not_applicable,1,single,양팔 관절 목표 수렴,성공 기준 0.01rad 미만의 연속 상태 메시지와 Action 결과를 함께 검사.
+2026-10-21-phase1,wall,검증 전체 소요,gui-baseline,41.440311,s,wall,1,single,각 새 launch의 준비·명령·관측·정리,동일 비교 관측 구간 27.628sim초 포함. 계획 지연으로 해석하지 않음.
+2026-10-21-phase1,wall,검증 전체 소요,gui-timing,41.109033,s,wall,1,single,각 새 launch의 준비·명령·관측·정리,동일 비교 관측 구간 27.628sim초 포함. 계획 지연으로 해석하지 않음.
+2026-10-21-phase1,wall,검증 전체 소요,headless-baseline,37.988011,s,wall,1,single,각 새 launch의 준비·명령·관측·정리,동일 비교 관측 구간 27.628sim초 포함. 계획 지연으로 해석하지 않음.
+2026-10-21-phase1,wall,검증 전체 소요,headless-timing,37.313434,s,wall,1,single,각 새 launch의 준비·명령·관측·정리,동일 비교 관측 구간 27.628sim초 포함. 계획 지연으로 해석하지 않음.
+2026-10-21-phase1,contacts,접촉 수,gui-baseline,0,count,not_applicable,1,single,해당 실행의 전체 물리 스텝 감시,동작 후 수렴·정상 종료와 함께 판정. 실물 제동 시험 아님.
+2026-10-21-phase1,contacts,접촉 수,gui-timing,0,count,not_applicable,1,single,해당 실행의 전체 물리 스텝 감시,동작 후 수렴·정상 종료와 함께 판정. 실물 제동 시험 아님.
+2026-10-21-phase1,contacts,접촉 수,headless-baseline,0,count,not_applicable,1,single,해당 실행의 전체 물리 스텝 감시,동작 후 수렴·정상 종료와 함께 판정. 실물 제동 시험 아님.
+2026-10-21-phase1,contacts,접촉 수,headless-timing,0,count,not_applicable,1,single,해당 실행의 전체 물리 스텝 감시,동작 후 수렴·정상 종료와 함께 판정. 실물 제동 시험 아님.
+2026-10-21-phase1,rtf,Paced real-time factor,gui-baseline,1.0000332915550818,ratio,not_applicable,1,single,해당 native 계측 구간,ROS·GUI 전체 처리 성능이나 최대 처리량이 아님.
+2026-10-21-phase1,rtf,Paced real-time factor,gui-timing,1.0000492048778538,ratio,not_applicable,1,single,해당 native 계측 구간,ROS·GUI 전체 처리 성능이나 최대 처리량이 아님.
+2026-10-21-phase1,rtf,Paced real-time factor,headless-baseline,1.0000267252854078,ratio,not_applicable,1,single,해당 native 계측 구간,ROS·GUI 전체 처리 성능이나 최대 처리량이 아님.
+2026-10-21-phase1,rtf,Paced real-time factor,headless-timing,1.0000489389374627,ratio,not_applicable,1,single,해당 native 계측 구간,ROS·GUI 전체 처리 성능이나 최대 처리량이 아님.
+2026-10-21-phase1,left-tip,FR5 끝단 프레임 경로,gui-baseline,1.7639862994478728,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,left-tip,FR5 끝단 프레임 경로,gui-timing,0.6953311413425278,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,left-tip,FR5 끝단 프레임 경로,headless-baseline,1.7639862994478728,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,left-tip,FR5 끝단 프레임 경로,headless-timing,0.6953311413425278,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,right-tip,UR5e 끝단 프레임 경로,gui-baseline,2.2135096598022113,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,right-tip,UR5e 끝단 프레임 경로,gui-timing,0.5515069467581531,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,right-tip,UR5e 끝단 프레임 경로,headless-baseline,2.2135096598022113,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.
+2026-10-21-phase1,right-tip,UR5e 끝단 프레임 경로,headless-timing,0.5515069467581531,m,not_applicable,1,single,계획 경로의 프레임 원점 이동량,left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님.

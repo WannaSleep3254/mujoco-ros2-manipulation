@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-phase1",
+  "source_commit": "0c31c469f08f853c775222a098706bef3f154bb7",
+  "generator": {
+    "version": "1.0",
+    "fingerprint": "2e2a0be1484af6d7b58a8a959187a50b9c875171315377dc13f249cdda46a110",
+    "files": {
+      "__init__.py": {
+        "bytes": 125,
+        "sha256": "f8b4ef8392cb21ad64a2da525a14dd1ee9597031ac092dfb75aca5a08960fea6"
+      },
+      "data.py": {
+        "bytes": 6045,
+        "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
+      },
+      "render.py": {
+        "bytes": 9597,
+        "sha256": "f004fe25b22fea593884269126ff7efed21ceca3da9ff02af08973e57e838ea1"
+      },
+      "publish.py": {
+        "bytes": 7184,
+        "sha256": "cae894b517d32763e4208ccf8d55c89da7347e9c7d11482c5eb1d27af5c2f041"
+      },
+      "report.schema.json": {
+        "bytes": 5126,
+        "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
+      },
+      "templates/page.html": {
+        "bytes": 518,
+        "sha256": "3f4c20747e7656c059754449fb570f98a98fceb2ddb53f5a5b045306a2afc26a"
+      },
+      "templates/style.css": {
+        "bytes": 3533,
+        "sha256": "afe2f57ff96253314d96a35f1eb3993e502bf1709eb2b13f11f708c8cb11471f"
+      }
+    }
+  },
+  "files": {
+    "browser-validation.json": {
+      "bytes": 304,
+      "sha256": "5399a48d2df9254387d247cf1db7f6caf1f75684ecbedef53d1d452a68a2f367"
+    },
+    "comparison-traces.png": {
+      "bytes": 168830,
+      "sha256": "13132c8accd37395e9d30fdc95b0d6f45070af5ae21b607727c5be62f627a47e"
+    },
+    "evidence.json": {
+      "bytes": 509962,
+      "sha256": "94d4f1a7eb1dcb0c79875dada6193c00f8cbaf5769b4b1519d469ba22867b54b"
+    },
+    "index.html": {
+      "bytes": 29674,
+      "sha256": "98b56186f4cfb6493ec13ed56c451388c169be4cf98bc39424f22f9bb9ac30a3"
+    },
+    "metrics.csv": {
+      "bytes": 10925,
+      "sha256": "73596768f50196f2bb41ecfa642bac4eed723e9e7f75e2506e4e009b2b694cf1"
+    },
+    "offline-trials.csv": {
+      "bytes": 404,
+      "sha256": "4f78b3cb5975c287379075b99f9002a8c70a6572970528746d71877610c3cf55"
+    },
+    "phase1-performance.html": {
+      "bytes": 2000434,
+      "sha256": "05ff740ea1ca3416a35ae8160ee566a7f56904f9be2c080d5687ff6ae7477c54"
+    },
+    "report.json": {
+      "bytes": 21357,
+      "sha256": "32cdc10b0fadea28b6249b7ebc313b12d8e524b7d251730066ea16aea3f72177"
+    }
+  }
+}

@@ -1,0 +1,675 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-phase1",
+  "title": "1차 성능평가: FR5·UR5e 경로와 출발 조정",
+  "published_date": "2026-10-21",
+  "status": "preliminary",
+  "overview": "동일한 양팔 교차 사례 1개에서 큰 공동 우회를 출발 지연으로 줄인 예비 평가. GUI/headless 각 1회 비교와 고정 입력 오프라인 5회 측정.",
+  "findings": [
+    "GUI 명령 궤적 26.628→8.622sim초, 관절 누적 이동량 24.692→2.024rad.",
+    "오프라인 총 중앙값 2.133초, 출발 탐색 1.891초. 사용자 지령→동작의 전체 wall 지연은 미측정.",
+    "58개는 두 팔의 출발 지연 후보. FR5 대기 2.3sim초는 계산 지연이 아님.",
+    "이전 소스 사본과 달리 최신 공동 장면에는 RRTConnect 설정·서비스 wall 기록·공통 바닥 충돌 모델이 있음."
+  ],
+  "limitations": [
+    "고유 시작·목표 1개이며 랜덤 목표의 성공률·P95/P99를 평가하지 않음.",
+    "물리 시뮬레이션 결과. 실물 로봇·실제 TCP·그리퍼·접촉 조립 성능을 검증하지 않음.",
+    "이산 자세·convex 충돌 근사에 따른 거리. 모든 연속 시각의 간격이나 전역 최적성을 보장하지 않음.",
+    "다음 순서: 상시 명령과 구간 계측 → 탐색 비용 분석 → 동일 랜덤 목표 비교 → 작업별 확장."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "0c31c469f08f853c775222a098706bef3f154bb7",
+    "workcell": "fr5_ur5e",
+    "models": [
+      "FR5",
+      "UR5e"
+    ],
+    "scenario": "dual_arm_crossing",
+    "input_kind": "fixed_joint_targets"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "cpu": "Intel Core i7-13700 / 24 logical CPUs",
+    "memory": "31 GiB reported by free; approximately 32 GB installed",
+    "python": "3.10.12",
+    "python_mujoco": "3.14.0",
+    "numpy": "1.26.4",
+    "native_mujoco": "3.12.0",
+    "gpu_probe": "This execution environment could not communicate with the NVIDIA driver via nvidia-smi. No new GPU-planner benchmark was performed.",
+    "historical_gui_gpu": "2026-10-20 preserved GUI record: RTX 3050, 6144 MiB, NVIDIA 580.178.04, OpenGL 4.6",
+    "ros": "ROS 2 Humble",
+    "measurement_dates": "GUI/headless: 2026-10-20; offline: 2026-10-21; Asia/Seoul"
+  },
+  "sample_groups": [
+    {
+      "id": "offline",
+      "label": "고정 입력 오프라인 5회",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "새 랜덤 목표·planner seed 없음. 같은 입력과 프로세스를 반복.",
+      "description": "매 회 모델·평가기 재생성. OS 캐시 초기화·CPU 격리 없음. 로봇 동작 성공률 표본 아님."
+    },
+    {
+      "id": "gui-baseline",
+      "label": "gui / 기존 공동 회피",
+      "kind": "gui",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "같은 동결 궤적 묶음 재사용. 새 랜덤 목표 아님.",
+      "description": "실행 20261020T095632.514137Z-0dd355ed. 성공은 양팔 Action·수렴·접촉 0·정상 종료 판정."
+    },
+    {
+      "id": "gui-timing",
+      "label": "gui / 출발 조정",
+      "kind": "gui",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "같은 동결 궤적 묶음 재사용. 새 랜덤 목표 아님.",
+      "description": "실행 20261020T095714.283615Z-ff502bd6. 성공은 양팔 Action·수렴·접촉 0·정상 종료 판정."
+    },
+    {
+      "id": "headless-baseline",
+      "label": "headless / 기존 공동 회피",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "같은 동결 궤적 묶음 재사용. 새 랜덤 목표 아님.",
+      "description": "실행 20261020T095425.623950Z-2076b06f. 성공은 양팔 Action·수렴·접촉 0·정상 종료 판정."
+    },
+    {
+      "id": "headless-timing",
+      "label": "headless / 출발 조정",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "같은 동결 궤적 묶음 재사용. 새 랜덤 목표 아님.",
+      "description": "실행 20261020T095503.903018Z-55db9c07. 성공은 양팔 Action·수렴·접촉 0·정상 종료 판정."
+    },
+    {
+      "id": "plan-setup",
+      "label": "MoveIt 요청 / setup",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "고정 사례의 서로 다른 요청 4개. 4개 랜덤 사례 아님.",
+      "description": "원본 생성 실행 20261020T095257.211097Z-fa120f7d의 서비스 왕복 1회."
+    },
+    {
+      "id": "plan-left",
+      "label": "MoveIt 요청 / left",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "고정 사례의 서로 다른 요청 4개. 4개 랜덤 사례 아님.",
+      "description": "원본 생성 실행 20261020T095257.211097Z-fa120f7d의 서비스 왕복 1회."
+    },
+    {
+      "id": "plan-right",
+      "label": "MoveIt 요청 / right",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "고정 사례의 서로 다른 요청 4개. 4개 랜덤 사례 아님.",
+      "description": "원본 생성 실행 20261020T095257.211097Z-fa120f7d의 서비스 왕복 1회."
+    },
+    {
+      "id": "plan-both",
+      "label": "MoveIt 요청 / both",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "고정 사례의 서로 다른 요청 4개. 4개 랜덤 사례 아님.",
+      "description": "원본 생성 실행 20261020T095257.211097Z-fa120f7d의 서비스 왕복 1회."
+    },
+    {
+      "id": "e2e",
+      "label": "지령 → 최초 이동",
+      "kind": "unmeasured",
+      "unique_cases": 0,
+      "observations": 0,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "미실행",
+      "description": "사용자 지령과 실제 움직임을 동일 wall 요청 ID로 연결하지 못함."
+    }
+  ],
+  "stages": [
+    {
+      "id": "input",
+      "label": "지령·장면 준비",
+      "clock": "wall",
+      "coverage": "unmeasured",
+      "note": "동일 요청 ID의 접수·상태 스냅샷 시각 미기록."
+    },
+    {
+      "id": "compute",
+      "label": "경로·출발 조정",
+      "clock": "wall",
+      "coverage": "partial",
+      "note": "서비스 왕복과 별도 오프라인 탐색 측정. 같은 실행의 전체 구간 분해는 아님."
+    },
+    {
+      "id": "validation",
+      "label": "최종 안전검사",
+      "clock": "wall",
+      "coverage": "unmeasured",
+      "note": "검사 성공은 확인했으나 구간 전체 소요시간 미분리."
+    },
+    {
+      "id": "dispatch",
+      "label": "Action 수락·예약",
+      "clock": "simulation",
+      "coverage": "partial",
+      "note": "현재 sim 시각 +1초 예약과 시작 0.1초 전 양팔 수락 확인. wall 전송 지연 미계측."
+    },
+    {
+      "id": "motion",
+      "label": "실제 움직임·완료",
+      "clock": "simulation",
+      "coverage": "estimated",
+      "note": "수신 상태·Action·수렴 확인. 최초 이동은 0.005rad·0.05초 기준의 후처리 추정. 실물 아님."
+    }
+  ],
+  "metrics": [
+    {
+      "id": "command-to-motion",
+      "label": "지령 접수 → 최초 이동",
+      "unit": "s",
+      "clock": "wall",
+      "values": [
+        {
+          "group_id": "e2e",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "scope": "전체 요청 반응 지연",
+      "note": "0초가 아닌 미측정. 아래 오프라인·sim 시간을 합산하지 않음."
+    },
+    {
+      "id": "total-with-cleanup-sec",
+      "label": "오프라인 계산 총 소요",
+      "unit": "s",
+      "clock": "wall",
+      "values": [
+        {
+          "group_id": "offline",
+          "value": 2.133431133,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "scope": "고정 입력 1개 × 같은 프로세스 5회",
+      "note": "새 MoveIt 계획·ROS 검사·전송·실행·전체 launch 시간 제외."
+    },
+    {
+      "id": "departure-search-sec",
+      "label": "출발 시점 탐색",
+      "unit": "s",
+      "clock": "wall",
+      "values": [
+        {
+          "group_id": "offline",
+          "value": 1.890810513,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "scope": "고정 입력 1개 × 같은 프로세스 5회",
+      "note": "새 MoveIt 계획·ROS 검사·전송·실행·전체 launch 시간 제외."
+    },
+    {
+      "id": "native-load-sec",
+      "label": "모델·평가기 생성",
+      "unit": "s",
+      "clock": "wall",
+      "values": [
+        {
+          "group_id": "offline",
+          "value": 0.033996266,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "scope": "고정 입력 1개 × 같은 프로세스 5회",
+      "note": "새 MoveIt 계획·ROS 검사·전송·실행·전체 launch 시간 제외."
+    },
+    {
+      "id": "planning-service",
+      "label": "MoveIt 계획 서비스 응답",
+      "unit": "s",
+      "clock": "wall",
+      "values": [
+        {
+          "group_id": "plan-setup",
+          "value": 0.06215895700006513,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "plan-left",
+          "value": 0.03496431000166922,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "plan-right",
+          "value": 0.02815335799823515,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "plan-both",
+          "value": 0.18880693199753296,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "고정 사례 원본 생성 실행의 요청별 기록",
+      "note": "서버 계산·ROS 왕복·클라이언트 대기 포함. 내부 플래너 시간이나 순수 DDS 비용이 아님."
+    },
+    {
+      "id": "motion",
+      "label": "명령된 궤적 시간",
+      "unit": "s",
+      "clock": "simulation",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 26.62834873,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 8.621950734,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 26.62834873,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 8.621950734,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "시간 파라미터화된 명령 길이",
+      "note": "전체 wall 완료 지연이 아님."
+    },
+    {
+      "id": "travel",
+      "label": "계획 관절 누적 이동량",
+      "unit": "rad",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 24.691739492294364,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 2.0237225659550147,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 24.691739492294364,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 2.0237225659550147,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "모든 관절의 |Δq| 합",
+      "note": "미터 단위 이동거리·소비 에너지가 아님."
+    },
+    {
+      "id": "planned-gap",
+      "label": "계획 최소 팔 간 간격",
+      "unit": "mm",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 30.847953420143483,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 33.14356297090096,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 30.847953420143483,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 33.14356297090096,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "native 거리와 JTC spline의 이산 검사",
+      "note": "계획 기준 30mm, 최대 10ms 간격. 연속 시간 전체의 보증 아님."
+    },
+    {
+      "id": "observed-gap",
+      "label": "관측 최소 팔 간 간격",
+      "unit": "mm",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 30.745684572018053,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 30.64359811263672,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 30.745684574325036,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 30.62883216106166,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "한 실행의 수신 관절 자세에서 얻은 최소값",
+      "note": "수신 자세 2763개, 최대 간격 약 12ms. 값 하나는 실행 1회의 결과."
+    },
+    {
+      "id": "error",
+      "label": "최종 목표 최대 오차",
+      "unit": "rad",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 0.006238810255229321,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 0.006068823244921306,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 0.006238810255229321,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 0.006068823244921306,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "양팔 관절 목표 수렴",
+      "note": "성공 기준 0.01rad 미만의 연속 상태 메시지와 Action 결과를 함께 검사."
+    },
+    {
+      "id": "wall",
+      "label": "검증 전체 소요",
+      "unit": "s",
+      "clock": "wall",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 41.440311,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 41.109033,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 37.988011,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 37.313434,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "각 새 launch의 준비·명령·관측·정리",
+      "note": "동일 비교 관측 구간 27.628sim초 포함. 계획 지연으로 해석하지 않음."
+    },
+    {
+      "id": "contacts",
+      "label": "접촉 수",
+      "unit": "count",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 0,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 0,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 0,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 0,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "해당 실행의 전체 물리 스텝 감시",
+      "note": "동작 후 수렴·정상 종료와 함께 판정. 실물 제동 시험 아님."
+    },
+    {
+      "id": "rtf",
+      "label": "Paced real-time factor",
+      "unit": "ratio",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 1.0000332915550818,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 1.0000492048778538,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 1.0000267252854078,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 1.0000489389374627,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "해당 native 계측 구간",
+      "note": "ROS·GUI 전체 처리 성능이나 최대 처리량이 아님."
+    },
+    {
+      "id": "left-tip",
+      "label": "FR5 끝단 프레임 경로",
+      "unit": "m",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 1.7639862994478728,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 0.6953311413425278,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 1.7639862994478728,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 0.6953311413425278,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "계획 경로의 프레임 원점 이동량",
+      "note": "left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님."
+    },
+    {
+      "id": "right-tip",
+      "label": "UR5e 끝단 프레임 경로",
+      "unit": "m",
+      "clock": "not_applicable",
+      "values": [
+        {
+          "group_id": "gui-baseline",
+          "value": 2.2135096598022113,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "gui-timing",
+          "value": 0.5515069467581531,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-baseline",
+          "value": 2.2135096598022113,
+          "sample_count": 1,
+          "statistic": "single"
+        },
+        {
+          "group_id": "headless-timing",
+          "value": 0.5515069467581531,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "scope": "계획 경로의 프레임 원점 이동량",
+      "note": "left_wrist3_link / right_tool0 기준. 실제 공구 TCP가 아님."
+    }
+  ],
+  "assets": [
+    {
+      "path": "comparison-traces.png",
+      "label": "보존된 GUI 관측: 관절 이동량·팔 간 간격",
+      "role": "figure",
+      "sha256": "13132c8accd37395e9d30fdc95b0d6f45070af5ae21b607727c5be62f627a47e"
+    },
+    {
+      "path": "phase1-performance.html",
+      "label": "기존 상세 HTML: 영상·대안·세션 대조 (원본 보존)",
+      "role": "legacy_report",
+      "sha256": "05ff740ea1ca3416a35ae8160ee566a7f56904f9be2c080d5687ff6ae7477c54"
+    },
+    {
+      "path": "evidence.json",
+      "label": "원본 보고서 스냅샷·반복 시간·시계열 JSON",
+      "role": "data",
+      "sha256": "94d4f1a7eb1dcb0c79875dada6193c00f8cbaf5769b4b1519d469ba22867b54b"
+    },
+    {
+      "path": "offline-trials.csv",
+      "label": "오프라인 5회 원본 CSV",
+      "role": "data",
+      "sha256": "4f78b3cb5975c287379075b99f9002a8c70a6572970528746d71877610c3cf55"
+    },
+    {
+      "path": "browser-validation.json",
+      "label": "기존 상세 HTML의 브라우저 검증 기록",
+      "role": "data",
+      "sha256": "5399a48d2df9254387d247cf1db7f6caf1f75684ecbedef53d1d452a68a2f367"
+    }
+  ],
+  "references": [
+    {
+      "label": "기준 구현 / PR #13",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/13"
+    },
+    {
+      "label": "기존 상세 리포트·세션 대조 / PR #14",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/14"
+    }
+  ]
+}

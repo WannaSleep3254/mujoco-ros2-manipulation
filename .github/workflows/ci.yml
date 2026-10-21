@@ -21,14 +21,27 @@ jobs:
         with:
           python-version: '3.10'
           cache: pip
-      - run: python -m pip install -r requirements.txt build
+      - run: python -m pip install -r requirements.txt build '.[reports]'
       - run: python -m build
-      - run: python -m pip install --no-deps dist/*.whl
+      - run: python -m pip install --force-reinstall --no-deps dist/*.whl
       - run: python scripts/check_repository.py
       - run: python -m unittest discover -s tests/unit -t . -v
+      - name: Publication report schema, evidence and generated files
+        run: |
+          python scripts/import_phase1_report.py --check
+          manipulation-report validate
+          manipulation-report build --check
+          manipulation-report --reports-dir docs/reporting validate
+          manipulation-report site --output runtime/report-site
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: report-site-preview
+          path: runtime/report-site/
+          retention-days: 14
       - name: Installed package works outside checkout
         run: |
           cd /tmp
+          manipulation-report --reports-dir "$GITHUB_WORKSPACE/docs/reports" build --check
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare --list
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --robots fr5
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --workcell fr5_ur5e
