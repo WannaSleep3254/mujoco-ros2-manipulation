@@ -1,4 +1,4 @@
-"""Publish explicitly registered functional demos separately from measured reports."""
+"""Publish registered functional demos and design reviews outside measured reports."""
 import hashlib
 import json
 from importlib.resources import files
@@ -9,6 +9,7 @@ from .data import ReportError, read_json, safe_asset
 
 
 REGISTRY = "operator-demos.json"
+DOCUMENT_TYPES = ("functional_demo", "design_review")
 
 
 def collect_demos(root):
@@ -52,6 +53,12 @@ def collect_demos(root):
             raise ReportError("Demo manifest changed during publication")
         if not isinstance(manifest, dict) or type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
             raise ReportError("Unsupported demo manifest version")
+        document_type = entry.get("document_type", "functional_demo")
+        manifest_type = manifest.get("document_type", "functional_demo")
+        if manifest_type not in DOCUMENT_TYPES:
+            raise ReportError(f"Unsupported demo manifest document type: {identifier}")
+        if manifest_type != document_type:
+            raise ReportError(f"Demo document type mismatch: {identifier}")
         assets = manifest.get("assets")
         if not isinstance(assets, dict) or "index.html" not in assets or "manifest.json" in assets:
             raise ReportError("Demo manifest needs index.html and cannot claim manifest.json")
@@ -65,7 +72,7 @@ def collect_demos(root):
                 raise ReportError(f"Demo asset hash mismatch: {identifier}/{name}")
             site[prefix + name] = content
         entries.append({key: entry[key] for key in ("id", "title", "published_date", "overview")}
-                       | {"url": prefix + "index.html"})
+                       | {"url": prefix + "index.html", "document_type": document_type})
     entries.sort(key=lambda entry: (entry["published_date"], entry["id"]), reverse=True)
     return entries, site
 

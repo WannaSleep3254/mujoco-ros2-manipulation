@@ -32,3 +32,9 @@ GitHub 파일 화면은 HTML 소스를 표시합니다. 로컬 브라우저로 �
 공개 목록 아래의 **기능 시연**에서 [뷰어 상태·피킹 접근·후퇴 비교](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html)를 엽니다.
 [별도 등록 목록](operator-demos.json)과 시연 폴더의 manifest로 게시 파일을 검증합니다.
 성능평가 `catalog.json`의 보고서·표본에는 합산하지 않습니다. [등록 방법](../reporting.md#기능-시연의-등록과-게시)을 따릅니다.
+
+## 설계·개발 리포트
+
+[뷰어 개발 방향성](../operator/viewer-direction-2026-10-22/index.html)은 이기종 복수 로봇의 통합 조작 방향과 현재 구현·검증 범위, 대안·개선 계획을 정리합니다.
+게시 목록에서는 **설계·개발 리포트**로 구분하며 성능평가 표본에는 합산하지 않습니다.
+새 방향성 리포트는 [작성 기준 v1.9](../reporting/report-style-guide.md)와 [HTML 템플릿](../reporting/templates/engineering-report-v1.9.html)을 기본으로 사용합니다.

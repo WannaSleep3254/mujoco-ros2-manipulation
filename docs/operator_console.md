@@ -9,6 +9,12 @@
 
 ![실제 시뮬레이터와 연결한 통합 조작 화면](operator/images/console-desktop.png)
 
+## 뷰어 개발 방향성
+
+[구성·채택 배경·대안 비교·개선 계획 HTML](operator/viewer-direction-2026-10-22/index.html)에
+통합 조작 화면의 구현 구조와 기술 선택을 개발 사례로 소개합니다.
+현재 이미지 표시와 웹 클라이언트 3D·Qt·RViz·Foxglove의 차이, 기존 기능 검증과 후속 확장·평가 계획을 구분합니다.
+
 ## 2026-10-22 현재 상태와 동작 비교
 
 [공개 뷰어 상태·비교 영상 HTML](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html) · [저장소 HTML](operator/picking-comparison-2026-10-22/index.html) ·

@@ -159,6 +159,7 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [의존성 업데이트](docs/dependency_updates.md) | Dependabot 주간 검사, ROS 호환성 제한, 보안 업데이트와 사본 반영 절차 |
 | [모델별 자료](docs/robots/README.md) | FR5·FR10·UR5e 설정, 좌표계, 실제 GUI 스크린샷 |
 | [전용 조작 화면](docs/operator_console.md) | 라이브 모델·양팔 목표·실행·취소·요청 기록과 리포트 |
+| [뷰어 개발 방향성](docs/operator/viewer-direction-2026-10-22/index.html) | 통합 조작 화면 개발 사례·설계 근거, 렌더링 대안과 단계별 확장·검증 계획 |
 | [시뮬레이터 제작 상태](docs/simulator_status.md) | 구동 확인 범위·현재 PC 실제 GUI·남은 기능·실행 방법 |
 | [검증 안내](docs/verification.md) | 연속 명령의 완료 확인, 자동 검증, JSON·로그 해석 |
 | [공개 성능 리포트](https://wannasleep3254.github.io/mujoco-ros2-manipulation/) | 브라우저에서 HTML 목록·지표·원본 데이터 열람 |

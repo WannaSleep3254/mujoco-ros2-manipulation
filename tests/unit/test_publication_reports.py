@@ -11,8 +11,9 @@ import unittest
 
 from mujoco_ros2_manipulation.reporting.data import ReportError, json_text, load_report, read_json, validate
 from mujoco_ros2_manipulation.reporting.phase1 import phase1_report
+from mujoco_ros2_manipulation.reporting.operator_demos import collect_demos
 from mujoco_ros2_manipulation.reporting.publish import build, collect, export_site
-from mujoco_ros2_manipulation.reporting.render import metrics_csv, report_html
+from mujoco_ros2_manipulation.reporting.render import catalog_html, metrics_csv, report_html
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -22,6 +23,9 @@ class ReportLinks(HTMLParser):
         super().__init__()
         self.links = []
         self.reports = 0
+        self.sections = []
+        self.article_sections = []
+        self.section_stack = []
         self.feed(content)
 
     def handle_starttag(self, tag, attrs):
@@ -30,6 +34,16 @@ class ReportLinks(HTMLParser):
             self.links.append(attrs)
         if "data-report" in attrs:
             self.reports += 1
+        if tag == "section":
+            self.sections.append(attrs.get("id"))
+            self.section_stack.append(attrs.get("id"))
+        for marker in ("data-demo", "data-design-report"):
+            if marker in attrs:
+                self.article_sections.append((marker, self.section_stack[-1]))
+
+    def handle_endtag(self, tag):
+        if tag == "section":
+            self.section_stack.pop()
 
 
 class PublicationReportTests(unittest.TestCase):
@@ -93,6 +107,8 @@ class PublicationReportTests(unittest.TestCase):
         self.assertEqual(len(read_json(output / "catalog.json")["reports"]), 1)
         catalog = ReportLinks((output / "index.html").read_text())
         self.assertEqual(catalog.reports, 1)
+        self.assertEqual(catalog.article_sections, [("data-demo", "demos")])
+        self.assertNotIn("design-reports", catalog.sections)
         self.assertTrue(any(a["href"] == "operator/demo/index.html" for a in catalog.links))
         self.assertIn("시연 &lt;자료&gt;", (output / "index.html").read_text())
         names = {str(p.relative_to(output)) for p in output.rglob("*") if p.is_file()}
@@ -104,6 +120,104 @@ class PublicationReportTests(unittest.TestCase):
             raw = (output / name).read_bytes()
             self.assertEqual(metadata, dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest()))
         build(self.root, check=True)
+
+    def test_legacy_and_explicit_functional_demo_types_are_compatible(self):
+        demo = self.demo_fixture()
+        for registry_type, manifest_type in ((None, None), ("functional_demo", None),
+                                             (None, "functional_demo"), ("functional_demo", "functional_demo")):
+            with self.subTest(registry_type=registry_type, manifest_type=manifest_type):
+                for target, value in ((self.demo_registry["demos"][0], registry_type),
+                                      (self.demo_manifest, manifest_type)):
+                    target.pop("document_type", None)
+                    if value is not None:
+                        target["document_type"] = value
+                self.save_demo(demo)
+                entries, _ = collect_demos(self.root)
+                self.assertEqual(entries[0]["document_type"], "functional_demo")
+
+    def test_registry_rejects_unknown_document_types(self):
+        demo = self.demo_fixture()
+        for value in ("performance_report", "", None, 1, []):
+            with self.subTest(document_type=value):
+                self.demo_registry["demos"][0]["document_type"] = value
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "Demo registry schema"):
+                    collect_demos(self.root)
+
+    def test_document_types_must_match_the_reviewed_manifest(self):
+        demo = self.demo_fixture()
+        for registry_type, manifest_type in ((None, "design_review"), ("functional_demo", "design_review"),
+                                             ("design_review", None), ("design_review", "functional_demo")):
+            with self.subTest(registry_type=registry_type, manifest_type=manifest_type):
+                for target, value in ((self.demo_registry["demos"][0], registry_type),
+                                      (self.demo_manifest, manifest_type)):
+                    target.pop("document_type", None)
+                    if value is not None:
+                        target["document_type"] = value
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "document type mismatch"):
+                    collect_demos(self.root)
+        self.demo_registry["demos"][0].pop("document_type", None)
+        for value in ("performance_report", None, 1, ["design_review"]):
+            with self.subTest(manifest_type=value):
+                self.demo_manifest["document_type"] = value
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "Unsupported demo manifest document type"):
+                    collect_demos(self.root)
+
+    def test_design_review_export_has_its_own_section_and_preserves_measured_catalog(self):
+        self.demo_fixture()
+        review = self.temporary / "operator" / "design-review"
+        review.mkdir()
+        review_html = b'<h1>Design review</h1><a href="manifest.json">Evidence</a>'
+        (review / "index.html").write_bytes(review_html)
+        review_manifest = json_text(dict(schema_version=1, document_type="design_review",
+            assets={"index.html": hashlib.sha256(review_html).hexdigest()})).encode()
+        (review / "manifest.json").write_bytes(review_manifest)
+        (review / "private.env").write_text("not reviewed")
+        self.demo_registry["demos"].append(dict(id="design-review", document_type="design_review",
+            title='설계 <자료> & "검토"', published_date="2026-10-22",
+            overview='<img src=x onerror="alert(1)">',
+            manifest_sha256=hashlib.sha256(review_manifest).hexdigest()))
+        (self.root / "operator-demos.json").write_text(json_text(self.demo_registry))
+        entries, _ = collect_demos(self.root)
+        self.assertEqual({entry["id"]: entry["document_type"] for entry in entries},
+                         {"demo": "functional_demo", "design-review": "design_review"})
+        build(self.root)
+        output = self.temporary / "design-site"
+        export_site(self.root, output)
+        self.assertEqual([entry["report_id"] for entry in read_json(output / "catalog.json")["reports"]],
+                         ["sample"])
+        page = (output / "index.html").read_text()
+        catalog = ReportLinks(page)
+        self.assertEqual(catalog.reports, 1)
+        self.assertEqual(catalog.article_sections,
+                         [("data-demo", "demos"), ("data-design-report", "design-reports")])
+        self.assertTrue(any(a["href"] == "#design-reports" for a in catalog.links))
+        self.assertTrue(any(a["href"] == "operator/design-review/index.html" for a in catalog.links))
+        self.assertIn('<section id="design-reports"><h2>설계·개발 리포트</h2>', page)
+        self.assertIn('설계 &lt;자료&gt; &amp; &quot;검토&quot;', page)
+        self.assertIn('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;', page)
+        self.assertNotIn('<img src=x', page)
+        self.assertEqual((output / "operator/design-review/index.html").read_bytes(), review_html)
+        self.assertEqual((output / "operator/design-review/manifest.json").read_bytes(), review_manifest)
+        self.assertFalse((output / "operator/design-review/private.env").exists())
+        build(self.root, check=True)
+
+    def test_design_review_links_and_text_are_escaped_without_a_demo_section(self):
+        url = 'operator/review/index.html?title="detail"&next=<review>'
+        page = catalog_html([], [dict(document_type="design_review", url=url,
+            title='검토 </a><script>alert("x")</script>', published_date="2026-10-22",
+            overview='내용 <img src=x onerror="alert(1)">')])
+        catalog = ReportLinks(page)
+        self.assertEqual(catalog.reports, 0)
+        self.assertEqual(catalog.article_sections, [("data-design-report", "design-reports")])
+        self.assertNotIn("demos", catalog.sections)
+        self.assertFalse(any(a["href"] == "#demos" for a in catalog.links))
+        self.assertTrue(any(a["href"] == url for a in catalog.links))
+        self.assertIn('href="operator/review/index.html?title=&quot;detail&quot;&amp;next=&lt;review&gt;"', page)
+        self.assertNotIn('<script>alert("x")</script>', page)
+        self.assertNotIn('<img src=x', page)
 
     def test_demo_cannot_overwrite_an_existing_report_asset(self):
         self.demo_fixture()

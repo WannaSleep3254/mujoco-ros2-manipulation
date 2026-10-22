@@ -4,7 +4,7 @@
   "source_commit": "0c31c469f08f853c775222a098706bef3f154bb7",
   "generator": {
     "version": "1.2",
-    "fingerprint": "9bea715fba7a38d28698f914914523e33ec493a21a26026f82a1f2236a7dc8f4",
+    "fingerprint": "427bcf6216c15e13e9780e046d635f8da736b8a4a1db652952401eeaa5ed7874",
     "files": {
       "__init__.py": {
         "bytes": 125,
@@ -15,8 +15,8 @@
         "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
       },
       "render.py": {
-        "bytes": 11372,
-        "sha256": "aba012b1f4d915d27749cc02e4827f9993e1ca6de1f85269112c1cc35e0b5c6d"
+        "bytes": 12008,
+        "sha256": "c282adc8e90dd50b110a9c8023d0728bbc2cbb3809a4b22e609183606adddf2c"
       },
       "publish.py": {
         "bytes": 7522,
@@ -27,12 +27,12 @@
         "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
       },
       "operator_demos.py": {
-        "bytes": 3561,
-        "sha256": "7d0cd2139318acb21c9134f631ed14ccee9c7179ef4285c57e68518d13a2843d"
+        "bytes": 4045,
+        "sha256": "1decf90baa0b42d6a012ee6604d135aadb67955edf51d4bc0aeed78715b78ee4"
       },
       "operator-demos.schema.json": {
-        "bytes": 1209,
-        "sha256": "d1a2fa44b8348b15226e65a766035c2e47644fe5a23e420283cd7e4a4d05e9bc"
+        "bytes": 1398,
+        "sha256": "3ae8ac708f7a2860cfd425aed03b48940b66704e4ba4e29b54aa2993006dda80"
       },
       "templates/page.html": {
         "bytes": 518,

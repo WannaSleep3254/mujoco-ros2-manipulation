@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Reviewed functional demo registry (separate from performance reports)",
+  "title": "Reviewed functional demo and design review registry (separate from performance reports)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -25,6 +25,13 @@
           "manifest_sha256"
         ],
         "properties": {
+          "document_type": {
+            "type": "string",
+            "enum": [
+              "functional_demo",
+              "design_review"
+            ]
+          },
           "id": {
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",

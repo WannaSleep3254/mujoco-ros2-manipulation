@@ -1,0 +1,183 @@
+{
+  "document_type": "design_review",
+  "document_schema_version": 1,
+  "document_version": "1.9",
+  "id": "viewer-direction-2026-10-22",
+  "title": "뷰어 개발 방향성",
+  "reviewed_date": "2026-10-22",
+  "baseline_commit": "7a71402e2a04fd002f8d863ac9908341103a9f00",
+  "scope": "Original mujoco-ros2-manipulation operator console. No private CAD or other-project source included.",
+  "requirement": "Dedicated integrated operator UI; web delivery is not mandatory.",
+  "current_architecture": {
+    "ui": "Plain HTML/CSS/JS",
+    "transport": "Loopback HTTP GET state/JPEG and guarded JSON POST",
+    "render": "Separate Python MuJoCo renderer: joint states -> mj_forward -> EGL -> JPEG",
+    "native_physics_mujoco": "3.12.0",
+    "display_mujoco": "3.14.0",
+    "image_width": 960,
+    "image_height": 640,
+    "jpeg_quality": 88,
+    "configured_render_cap_fps": 5,
+    "scheduled_http_poll_ms": 250,
+    "camera_presets": [
+      "overview",
+      "front",
+      "top"
+    ]
+  },
+  "current_settings_are_measured_performance": false,
+  "initial_selection_evidence": {
+    "pr": 21,
+    "recorded_problem": "Consolidate terminals, MuJoCo/RViz, goals, execution, cancel, status, history and reports into one local operator screen.",
+    "comparative_selection_benchmark_found": false
+  },
+  "alternatives": [
+    {
+      "id": "A",
+      "name": "Extend existing server-rendered JPEG",
+      "performance_rank": null
+    },
+    {
+      "id": "B",
+      "name": "Web client 3D / Three.js",
+      "performance_rank": null
+    },
+    {
+      "id": "C",
+      "name": "Qt desktop client",
+      "performance_rank": null
+    },
+    {
+      "id": "D",
+      "name": "RViz2 custom panel",
+      "performance_rank": null
+    },
+    {
+      "id": "E",
+      "name": "Foxglove + Bridge/extensions",
+      "performance_rank": null
+    }
+  ],
+  "recommendation": {
+    "status": "proposed",
+    "preserve": [
+      "motion/cancel/status contract",
+      "backend safety and model/state guards",
+      "existing operational UI where useful"
+    ],
+    "first_comparison": [
+      "A",
+      "B"
+    ],
+    "qt_condition": "Include as equal candidate when desktop product and deployment requirements are confirmed.",
+    "final_renderer": "not_selected"
+  },
+  "new_performance_measurements": [],
+  "new_ros_motion_tests": [],
+  "observed_http_checks": [
+    {
+      "url": "http://127.0.0.1:8765/reports/index.html",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8765/reports/operator/picking-comparison-2026-10-22/index.html",
+      "status": 404
+    },
+    {
+      "url": "https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html",
+      "status": 200
+    }
+  ],
+  "http_check_scope": "Read-only GET on current running local process and existing public page. Local process loaded-code revision not asserted.",
+  "implemented_by_this_change": [
+    "Design review HTML",
+    "Source/decision metadata",
+    "Self-review record",
+    "Documentation links"
+  ],
+  "not_implemented": [
+    "Free camera",
+    "Client 3D renderer",
+    "Qt/ROS integration",
+    "Local demo route fix",
+    "Remote control deployment"
+  ],
+  "publication": {
+    "registry": "docs/reports/operator-demos.json",
+    "registry_document_type": "design_review",
+    "measurement_catalog_registered": false,
+    "pages_requires_main_merge": true,
+    "note": "Published as a design/development report, separate from functional demos and measured performance samples."
+  },
+  "web_sources": [
+    {
+      "id": "initial-console-pr",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/21",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "mujoco-overview",
+      "url": "https://mujoco.readthedocs.io/en/3.12.0/overview.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "mujoco-camera",
+      "url": "https://mujoco.readthedocs.io/en/3.12.0/programming/visualization.html#cameras",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "three-orbit",
+      "url": "https://threejs.org/docs/pages/OrbitControls.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "qt-deployment",
+      "url": "https://doc.qt.io/qt-6/windows-deployment.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "rviz-panel",
+      "url": "https://github.com/ros2/rviz/blob/humble/docs/plugin_development.md",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "ros-intra-process",
+      "url": "https://github.com/ros2/demos/blob/humble/intra_process_demo/src/two_node_pipeline/two_node_pipeline.cpp",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "foxglove-3d",
+      "url": "https://docs.foxglove.dev/docs/visualization/panels/3d",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "foxglove-standalone",
+      "url": "https://docs.foxglove.dev/docs/standalone-license",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "qt-quick-3d",
+      "url": "https://doc.qt.io/qt-6/qtquick3d-index.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "id": "qt-opengl-widget",
+      "url": "https://doc.qt.io/qt-6/qopenglwidget.html",
+      "accessed_date": "2026-10-22"
+    }
+  ],
+  "intended_audience": "Developers visiting the repository, technical reviewers and engineering presentation audiences",
+  "editorial_style": "Developer-facing engineering case study",
+  "narrative_structure": [
+    "Problem and implemented result",
+    "Implementation architecture",
+    "Technology choice and trade-offs",
+    "Existing validation evidence and limits",
+    "Alternatives and extension roadmap"
+  ],
+  "direction": {
+    "target": "Unified web operation for heterogeneous multiple robot simulations",
+    "implemented_example": "Shared FR5 and UR5e scene with 12 joint goals",
+    "generalized_model_and_robot_count_support": "future_work"
+  }
+}

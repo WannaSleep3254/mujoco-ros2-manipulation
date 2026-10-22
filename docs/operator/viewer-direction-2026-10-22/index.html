@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="MuJoCo·ROS 2 로봇 제어 프로젝트의 통합 조작 화면 설계, 기술 선택의 트레이드 오프와 단계별 확장 전략" name="description"/>
+<title>뷰어 개발 방향성</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--bg:#f1f4f5;--ink:#182b35;--muted:#526772;--line:#d6e0e3;--accent:#126268;--soft:#e9f3f2;--warm:#fff5e6;--warm-ink:#79500b;--blue:#edf2fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Noto Sans KR",sans-serif;word-break:keep-all;overflow-wrap:anywhere}a{color:var(--accent);text-underline-offset:3px}button,a{touch-action:manipulation}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #c86b27;outline-offset:4px}button{font:inherit;cursor:pointer}header{background:#142e37;color:#f4f7f8;padding:62px max(24px,calc((100vw - 1160px)/2)) 48px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:650;color:#a4d5d1;margin:0 0 16px}h1{font-size:clamp(28px,4.2vw,48px);line-height:1.25;letter-spacing:-.04em;margin:0 0 22px}header .lead{max-width:800px;font-size:19px;color:#d7e6e9;margin:0}.meta{display:flex;gap:10px 22px;flex-wrap:wrap;font-size:13px;color:#c0d5da;margin-top:26px}.topbar{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.nav{max-width:1208px;margin:auto;padding:12px 24px;display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}.nav a{font-size:14px;text-decoration:none;color:var(--ink);padding:4px 0}.nav button{margin-left:auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:13px;border-radius:5px;padding:5px 13px}main{max-width:1208px;margin:auto;padding:36px 24px 64px}section{margin-bottom:36px;background:var(--paper);padding:32px;border:1px solid var(--line);border-radius:10px}section h2{font-size:27px;line-height:1.4;margin:0 0 16px;letter-spacing:-.03em}h3{font-size:20px;line-height:1.5;margin:30px 0 12px}h4{font-size:16px;margin:0 0 8px}p{margin:10px 0 16px}.section-no{display:block;font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent);margin-bottom:10px}.note{border-left:4px solid var(--accent);background:var(--soft);padding:17px 20px;margin:20px 0}.note.warn{background:var(--warm);border-color:#b97a21;color:var(--warm-ink)}.note p:last-child{margin-bottom:0}.note p:first-child{margin-top:0}.small{font-size:13px;color:var(--muted)}.tag{display:inline-block;font-size:12px;font-weight:650;border-radius:4px;background:var(--soft);color:#175e57;padding:1px 7px;vertical-align:middle}.tag.proposed{background:var(--blue);color:#264f83}.tag.unmeasured{background:var(--warm);color:var(--warm-ink)}.legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted);margin-top:18px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.panel{border:1px solid var(--line);border-radius:7px;padding:20px}.panel p{margin-bottom:0}.panel ul{padding-left:20px;margin:8px 0 0}.callout{font-size:20px;font-weight:600;max-width:920px}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fact{border-top:2px solid var(--accent);padding:14px 10px;background:#f7fafb}.fact strong{display:block;font-size:23px;line-height:1.5;letter-spacing:-.02em}.fact span{font-size:13px;color:var(--muted)}figure{margin:22px 0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}figcaption{font-size:13px;color:var(--muted);margin-top:10px}.table-scroll{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:6px;margin:18px 0}table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.7}caption{text-align:left;font-size:13px;color:var(--muted);padding:12px 14px;background:#f8fafb}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:13px 14px}th{font-weight:650;background:#edf3f4}tr:last-child td,tr:last-child th{border-bottom:0}td:first-child{font-weight:600}.wide{min-width:850px}.metrics{min-width:790px}.source{font-size:12px;white-space:nowrap}code{font:0.88em/1.7 ui-monospace,monospace;background:#edf2f4;padding:2px 5px;border-radius:3px;word-break:break-all}.flow{padding:20px;background:#f6f9fa;border:1px solid var(--line);border-radius:7px}.flow-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center}.node{padding:16px;border:1px solid #b9cdd2;background:var(--paper);border-radius:6px}.node strong{display:block;font-size:15px}.node span{display:block;font-size:13px;color:var(--muted);margin-top:4px}.arrow{text-align:center;font-size:22px;color:var(--accent)}.flow-label{font-size:13px;color:var(--accent);font-weight:650;margin:0 0 10px}.flow-row+.flow-label{margin-top:20px}.stage{display:grid;grid-template-columns:100px 1fr;gap:22px;border-top:1px solid var(--line);padding:22px 0}.stage:last-child{padding-bottom:0}.stage-id{font-size:13px;font-weight:700;color:var(--accent);padding-top:4px}.stage h3{margin:0 0 10px}.stage p{margin:8px 0}.stage ul{margin:8px 0;padding-left:20px}ul,ol{padding-left:24px}li{margin:6px 0}.sources{font-size:14px}.sources li{padding:8px 0;border-bottom:1px solid var(--line)}.sources span{display:block;font-size:13px;color:var(--muted)}details{border:1px solid var(--line);border-radius:6px;margin:14px 0;padding:14px 18px}summary{font-weight:600;cursor:pointer}.check{padding:12px 0;border-bottom:1px solid var(--line)}.check:last-child{border:0}.check strong{display:block}.footer{font-size:13px;color:var(--muted);display:flex;gap:12px 24px;flex-wrap:wrap}.nowrap{white-space:nowrap}
+@media(max-width:760px){html{scroll-padding-top:145px}header{padding:38px 20px 30px}.nav{padding:10px 20px;gap:8px 14px}.nav a{font-size:13px}.nav button{margin-left:0}main{padding:22px 14px 38px}section{padding:22px 18px;margin-bottom:22px}section h2{font-size:23px}.grid{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.flow{padding:16px}.flow-row{grid-template-columns:1fr;gap:6px}.arrow{transform:rotate(90deg);height:30px}.stage{grid-template-columns:1fr;gap:4px}.callout{font-size:18px}.meta{gap:6px 16px}header .lead{font-size:17px}}
+@media print{@page{size:A4;margin:16mm}body{background:white;font-size:10pt;line-height:1.65}header{padding:0 0 18px;background:white;color:#182b35}header .lead,.eyebrow,.meta{color:#526772}.topbar,.print-hide{display:none}main{max-width:none;padding:0}section{border:0;border-radius:0;padding:15px 0;margin:0;break-inside:auto}h1{font-size:27pt}h2{font-size:18pt}h3{font-size:13pt}h2,h3,caption{break-after:avoid}.panel,.fact,.stage,.node,tr{break-inside:avoid}.table-scroll{overflow:visible;border:0}.wide,.metrics{min-width:0}table{font-size:8pt}th,td{padding:7px}a{color:inherit}.source{white-space:normal}.flow-row{grid-template-columns:1fr auto 1fr auto 1fr}figure{max-width:150mm;margin:14px auto}details{display:block}.footer{padding-top:14px}}
+</style>
+<style>
+/* Editorial review: paragraph groups preserve meaning as the viewport changes. */
+.copy-paragraphs{margin:10px 0 18px}.copy-paragraphs p{margin:0 0 10px}
+.summary-grid .panel-followup{margin-top:16px}.summary-grid li{margin:7px 0}
+.role-summary{margin:10px 0 22px}.role-summary p{margin-bottom:8px}.role-summary ul{margin-top:0}
+.validation-summary{padding-left:16px;border-left:2px solid var(--line)}
+.runtime-summary{margin:22px 0;padding:20px;background:#f6f9fa;border:1px solid var(--line);border-radius:7px}
+.runtime-list{margin:12px 0}.runtime-list>div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.runtime-list>div:last-child{border:0}.runtime-list dt{font-weight:650;color:var(--accent)}.runtime-list dd{margin:0}
+.qt-scope{margin:20px 0}.qt-scope h4{font-size:17px}.qt-scope p,.qt-scope ul{margin:10px 0}
+.evaluation-summary{margin:10px 0 20px}.evaluation-summary p{margin-bottom:8px}.evaluation-summary ul{margin-top:0}
+@media(max-width:760px){.desktop-break{display:none}.runtime-list>div{grid-template-columns:1fr;gap:3px}}
+@media print{.desktop-break{display:none}.runtime-summary,.qt-scope{break-inside:avoid}}
+</style><style id="layout-review-style">
+/* Screenshot review: preserve semantic text flow, token boundaries and content-driven height. */
+body{font-family:"Noto Sans KR",system-ui,-apple-system,sans-serif}
+h1,h2,h3,h4,p,li,td,th,dt,dd{word-break:keep-all;overflow-wrap:break-word}
+.panel,.node,.fact,.stage>div,.runtime-card{min-inline-size:0;height:auto}
+.panel p,.runtime-card p{line-height:1.85}
+.panel .panel-followup{margin-top:16px}
+.selection-points{padding-top:6px}
+.callout{max-inline-size:100%;font-size:21px;line-height:1.65}
+code{display:inline-block;position:static;white-space:nowrap;word-break:normal;overflow-wrap:normal;max-inline-size:100%;line-height:1.5;vertical-align:baseline;letter-spacing:0}
+code.code-wrap{white-space:normal;word-break:break-all;overflow-wrap:anywhere}
+.runtime-grid{margin-top:16px;gap:16px;align-items:stretch}
+.runtime-card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:20px}
+.runtime-role{display:block;color:var(--accent);font-weight:650;font-size:13px;margin-bottom:5px}
+.runtime-card h4{font-size:20px;line-height:1.5;margin:0 0 12px}
+.api-token{margin:0 0 12px}.api-token code{font-size:16px;padding:5px 9px}
+.runtime-card p{margin:0}
+.runtime-notes{margin-top:18px}.runtime-notes p{margin:10px 0}
+.local-operation{margin:20px 0 0;padding:20px;border-top:1px solid var(--line)}
+.local-operation h4{margin-bottom:12px}
+.endpoint-row{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+.endpoint-label{font-size:13px;color:var(--muted)}
+.local-operation p{margin:12px 0 0}
+.extension-sequence{margin:8px 0 16px}
+.extension-scope p{margin:12px 0}
+td p{margin:0 0 10px}td p:last-child{margin-bottom:0}
+.source{display:inline-block;white-space:nowrap}
+.sources a{overflow-wrap:anywhere}
+.review-origin{font-size:12px;color:var(--muted);margin-top:14px}
+@media(max-width:900px){.runtime-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.callout{font-size:19px}.local-operation{padding:16px 0}.runtime-card{padding:16px}.runtime-card h4{font-size:18px}}
+@media print{.runtime-grid{grid-template-columns:1fr 1fr}.runtime-summary{break-inside:auto}.runtime-card,.local-operation{break-inside:avoid}.api-token code{font-size:10pt}}
+</style><style id="overview-list-style">
+.overview-context{margin:20px 0 24px;padding:0}
+.overview-context-row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:18px;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.overview-context-row:last-child{border-bottom:0}
+.overview-context dt{margin:0;color:var(--accent);font-weight:650;line-height:1.85}
+.overview-context dd{margin:0;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+@media(max-width:760px){.overview-context-row{grid-template-columns:1fr;gap:4px;padding:12px 0}.overview-context{margin:16px 0 22px}}
+@media print{.overview-context-row{break-inside:avoid;grid-template-columns:66px minmax(0,1fr);gap:12px;padding:7px 0}}
+</style><style id="technical-summary-style">
+.technical-summary h4{margin-bottom:16px}
+.technical-details{margin:0;padding:0}
+.technical-details>div{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.technical-details>div:first-child{padding-top:0}
+.technical-details>div:last-child{padding-bottom:0;border-bottom:0}
+.technical-details dt{margin:0;color:var(--muted);font-size:13px;font-weight:650;line-height:1.8}
+.technical-details dd{margin:0;font-size:15px;line-height:1.8;word-break:keep-all;overflow-wrap:break-word}
+.technical-details dd>span{display:block}
+.technical-details .technical-detail-note{margin-top:3px;font-size:12px;color:var(--muted)}
+@media(max-width:760px){.technical-details>div{grid-template-columns:1fr;gap:4px}.technical-details dd{font-size:15px}}
+</style><style id="summary-card-alignment-style">
+/* Shared semantic rows; desktop subgrid aligns corresponding separators without fixed heights. */
+@supports(grid-template-rows:subgrid){
+ @media(min-width:761px){
+  #copy-review-3{grid-template-rows:auto auto auto auto;row-gap:0}
+  #copy-review-3>.technical-summary{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0}
+  #copy-review-3>.technical-summary h4{margin:0 0 16px}
+  #copy-review-3 .technical-details{display:contents}
+ }
+}
+#current>figure>figcaption{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;line-height:1.7}
+#current>figure>figcaption a{white-space:nowrap}
+</style><style id="consistent-report-list-style">
+.report-list{--list-label-width:108px;margin:16px 0 22px;padding:0}
+.report-list>div{display:grid;grid-template-columns:var(--list-label-width) minmax(0,1fr);gap:18px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line)}
+.report-list>div:last-child{border-bottom:0}
+.report-list dt{margin:0;color:var(--accent);font-weight:650;line-height:1.85}
+.report-list dd{margin:0;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+.report-list dd>p{margin:0}
+.uniform-panel h4{margin-bottom:16px}
+.evaluation-summary>.report-list{margin-top:8px}
+.stage .report-list{--list-label-width:100px;margin:8px 0 18px}
+.stage .report-list>div{padding:10px 0}
+.role-summary{margin-bottom:20px}
+.bullet-list{margin:12px 0 18px;padding-left:22px}
+.bullet-list>li{margin:8px 0;line-height:1.85;padding-left:1px}
+.bullet-list>li:first-child{margin-top:0}
+.bullet-list>li:last-child{margin-bottom:0}
+.panel>.bullet-list{margin:10px 0 0}
+.stage .bullet-list{margin:8px 0 18px;padding-left:22px}
+.validation-list>.bullet-list{margin:12px 0 20px}
+@media(max-width:760px){.report-list>div{grid-template-columns:1fr;gap:4px;padding:12px 0}.report-list{margin:14px 0 20px}}
+@media print{.report-list>div{break-inside:avoid;padding:7px 0;gap:12px}.report-list{margin:8px 0 12px}.uniform-panel{break-inside:auto}.bullet-list>li{break-inside:avoid}}
+</style><style id="visual-title-pattern-style">
+.visual-title{color:var(--ink);font-size:14px;font-weight:650;line-height:1.7;letter-spacing:0}
+.flow>.visual-title{margin:0 0 16px}
+table caption.visual-title{padding:12px 14px;text-align:left}
+.visual-note{margin:-6px 0 20px;font-size:13px;line-height:1.75;color:var(--muted)}
+.rationale-table{min-width:650px;table-layout:fixed}
+.rationale-table thead th:first-child{width:21%}
+.rationale-table thead th:last-child{width:108px}
+.rationale-table tbody th{background:var(--paper);font-weight:600}
+.rationale-table .evidence-cell{white-space:nowrap}
+.rationale-table .tag{font-size:12px;text-decoration:none}
+@media print{.rationale-table{min-width:0;table-layout:auto}.visual-note{font-size:8pt}.visual-title{font-size:10pt}}
+</style><style id="completion-criteria-style">
+.stage .completion-block{background:var(--soft);padding:16px 18px;border-radius:4px;margin-top:18px}
+.stage .completion-block>h4{margin:0 0 8px;color:var(--accent);font-size:14px;font-weight:650}
+.stage .completion-criteria{margin:0;padding-left:20px;list-style:disc}
+.stage .completion-criteria>li{margin:0 0 7px;line-height:1.85;padding-left:2px}
+.stage .completion-criteria>li:last-child{margin-bottom:0}
+@media(max-width:760px){.stage .completion-block{padding:14px}.stage .completion-criteria{padding-left:18px}}
+@media print{.stage .completion-block{break-inside:auto;padding:10px 12px}.stage .completion-criteria>li{break-inside:avoid;margin-bottom:4px}}
+</style></head>
+<body>
+<header>
+<p class="eyebrow">개발 사례 · 2026-10-22</p>
+<h1>뷰어 개발 방향성</h1>
+<p class="lead">이기종 복수 로봇의 시뮬레이션 조작을 하나의 웹 화면으로 통합<br/>구현 상태와 기술 선택의 근거, 범용 조작 환경으로의 확장 방향</p>
+<div class="meta"><span>기반: MuJoCo·ROS 2</span><span>현재 구현·검증: FR5·UR5e</span><span>기준 코드: <b>7a71402</b></span><span>문서 v1.9 · 개발 사례와 확장 방향</span></div>
+</header>
+<div class="topbar"><nav aria-label="문서 목차" class="nav"><a href="#decision">개발 요약</a><a href="#current">1. 현재 구성</a><a href="#alternatives">2. 대안 비교</a><a href="#roadmap">3. 개선 방향</a><a href="#evaluation">검증 기준</a><a href="#review">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
+<main>
+<section id="decision">
+<span class="section-no">Project overview</span><h2>이기종 복수 로봇을 위한 통합 시뮬레이션 조작</h2>
+<p class="callout" id="copy-review-1">계획·실행·취소와 결과 조회까지 하나의 화면에서 제공합니다.</p><div id="copy-review-2"><dl aria-label="개발 방향과 현재 구현 개요" class="overview-context" id="direction-scope"><div class="overview-context-row"><dt>개발 방향</dt><dd>이기종 복수 로봇을 일관된 흐름으로 조작하는 웹 환경을 지향합니다.</dd></div><div class="overview-context-row"><dt>구현 상태</dt><dd>현재 구현·검증 사례는 FR5·UR5e 공동 장면이며, 모델과 로봇 대수의 확장은 후속 개발 범위입니다.</dd></div><div class="overview-context-row"><dt>도입 배경</dt><dd>초기 환경에서는 목표 전송과 결과 확인을 위해 여러 터미널과 MuJoCo·RViz를 오가야 했습니다.</dd></div><div class="overview-context-row"><dt>구현 방식</dt><dd>통합 조작 화면은 이 흐름을 한곳에 모으고, 기존 ROS 명령 규약과 제어 검사를 재사용합니다.</dd></div></dl></div>
+<div class="grid summary-grid" id="copy-review-3">
+<div class="panel technical-summary"><h4>현재 구현 결과: FR5·UR5e</h4>
+<dl class="technical-details">
+<div><dt>목표 입력</dt><dd><span>공동 장면 시작·종료</span><span>양팔 12관절 목표 입력</span></dd></div>
+<div><dt>실행·조회</dt><dd><span>계획·실행·취소</span><span>상태·오류·요청 이력·결과·리포트 조회</span></dd></div>
+<div><dt>상태 표시</dt><dd>별도 프로세스에서 ROS 관절 상태 반영</dd></div>
+</dl></div>
+<div class="panel technical-summary"><h4>기술 선택과 남은 과제</h4>
+<dl class="technical-details">
+<div><dt>기술 구성</dt><dd><span>MJCF 기반 서버 렌더링</span><span>HTML·CSS·JavaScript 조작부</span></dd></div>
+<div><dt>현재 설정</dt><dd>카메라 프리셋 3개 · 최대 5 fps<span class="technical-detail-note">렌더러 설정 상한</span></dd></div>
+<div><dt>후속 검증</dt><dd>자유 시점 조작 · 상태 표시 성능</dd></div>
+</dl></div>
+</div>
+<div class="legend"><span class="tag">현재 사실</span><span>코드·PR·검증 기록</span><span class="tag proposed">확장안</span><span>후속 설계</span><span class="tag unmeasured">미측정</span><span>대안 간 성능 비교</span></div>
+<p class="small">이 문서는 구현과 설계 판단을 소개하는 개발 사례입니다. 비교표와 확장 계획의 제안 사항은 현재 구현·검증 결과와 구분합니다.</p>
+</section>
+<section id="current">
+<span class="section-no">01 / Implementation &amp; decisions</span><h2>현재 구현과 기술 선택</h2>
+<h3>웹 조작부와 서버 렌더링을 결합한 구조</h3>
+<div class="role-summary" id="copy-review-4"><dl class="report-list"><div><dt>조작부</dt><dd>HTML/CSS/JavaScript로 목표 입력과 조작·상태 UI를 제공합니다.</dd></div><div><dt>상태 렌더러</dt><dd>별도 Python 프로세스가 ROS 관절 상태를 MuJoCo 모델에 적용하고 JPEG를 생성합니다.</dd></div><div><dt>브라우저</dt><dd>HTTP로 받은 이미지를 <code>&lt;img&gt;</code> 요소에 표시합니다. <a class="source" href="#src-code">[코드 1]</a></dd></div></dl></div>
+<div aria-labelledby="diagram-title-1" class="flow" role="figure"><p class="visual-title" id="diagram-title-1">도식 1. 상태·명령 흐름</p>
+<p class="flow-label">상태 표시 경로</p><div class="flow-row"><div class="node"><strong>MuJoCo 물리 + ROS 2</strong><span>네이티브 물리 적분<br/>/joint_states · /clock</span></div><div aria-hidden="true" class="arrow">→</div><div class="node"><strong>별도 상태 렌더러</strong><span>같은 생성 MJCF에 관절값 적용<br/>mj_forward → EGL → JPEG</span></div><div aria-hidden="true" class="arrow">→</div><div class="node"><strong>브라우저 이미지</strong><span>HTTP로 최신 프레임 요청<br/>전체·정면·상단 카메라</span></div></div>
+<p class="flow-label">명령·취소 경로</p><div class="flow-row"><div class="node"><strong>웹 조작 화면</strong><span>양팔 목표 · 전략 · 요청 ID<br/>계획 후 실행 / 양팔 취소</span></div><div aria-hidden="true" class="arrow">→</div><div class="node"><strong>로컬 HTTP / ROS 어댑터</strong><span>입력·모델·상태 검사<br/>기존 command / cancel 규약</span></div><div aria-hidden="true" class="arrow">→</div><div class="node"><strong>기존 모션 서버</strong><span>MoveIt 계획 · 검사 · 실행<br/>ros2_control · 결과 상태 회신</span></div></div>
+</div>
+<p class="small">접촉·시계 감시는 기존 네이티브/ROS 계층이 담당합니다. 표시용 렌더러는 물리를 적분하거나 제어 명령·시계를 발행하지 않습니다.</p>
+<div aria-label="소스 코드의 현재 설정" class="facts"><div class="fact"><strong>960 × 640</strong><span>표시용 원본 이미지 크기</span></div><div class="fact"><strong>최대 5 fps</strong><span>렌더러 설정 상한 · 실측 아님</span></div><div class="fact"><strong>250 ms</strong><span>HTTP 상태 조회 예약 간격</span></div><div class="fact"><strong>프리셋 3개</strong><span>전체 · 정면 · 상단 카메라</span></div></div>
+<p class="small">JPEG 품질 설정은 88입니다. 250 ms는 약 4 Hz의 조회 예약 간격이며 응답 완료 주기나 실제 표시 FPS를 보장하지 않습니다. 위 설정은 물리·제어 주기와 별개입니다. <a href="#src-code">[코드 1]</a></p>
+<figure aria-labelledby="figure-title-1"><img alt="FR5·UR5e 로봇 이미지와 12관절 목표 입력, 계획·실행·취소, 요청 이력을 한 화면에 배치한 실제 통합 조작 화면" height="1305" loading="lazy" src="current-console.png" width="1600"/><figcaption><span class="visual-title" id="figure-title-1">그림 1. FR5·UR5e 통합 조작 화면</span><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/7a71402e2a04fd002f8d863ac9908341103a9f00/docs/operator/images/console-desktop.png">원본 보기</a></figcaption></figure>
+<h3>채택 배경: 분산된 조작 흐름의 통합</h3>
+<div class="copy-paragraphs" id="copy-review-5">
+<p>웹 조작 화면의 도입 목적은 <strong>다수의 터미널과 MuJoCo·RViz로 분산된 조작 흐름을 통합하는 것</strong>입니다.</p>
+<p>로컬 브라우저 기반 화면을 도입해 시뮬레이터 실행, 목표 전송, 결과 확인과 기록 조회를 연결했습니다.</p>
+</div>
+<div aria-labelledby="table-title-1" class="table-scroll" role="region" tabindex="0"><table aria-describedby="table-note-1" class="rationale-table"><caption class="visual-title" id="table-title-1">표 1. 웹 UI 채택 근거</caption><thead><tr><th scope="col">선택 배경</th><th scope="col">적용 내용·설계 판단</th><th scope="col">근거 구분</th></tr></thead><tbody><tr><th scope="row">조작 흐름 통합</th><td>시작·목표·실행·취소·결과·이력·리포트를 한 화면에 연결했습니다.</td><td class="evidence-cell"><a class="tag" href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/21">개발 기록</a></td></tr><tr><th scope="row">제어 기능 재사용</th><td>기존 ROS 명령 규약과 안전 검사를 사용해 별도 웹 제어기의 구현 범위를 줄였습니다.</td><td class="evidence-cell"><a class="tag" href="#src-code">코드 확인</a></td></tr><tr><th scope="row">UI 의존성 최소화</th><td>표준 Python HTTP 서버와 순수 HTML/CSS/JS로 구성했습니다. 초기 구현에 Qt SDK·새 웹 프레임워크·CDN을 추가하지 않았습니다.</td><td class="evidence-cell"><a class="tag" href="#src-code">코드 확인</a></td></tr><tr><th scope="row">모델·렌더러 재사용</th><td>생성 MJCF를 그대로 읽어 브라우저 전용 메시·재질·기구학 표시 경로의 구현 범위를 줄였습니다.</td><td class="evidence-cell"><a class="tag" href="#src-code">코드 확인</a></td></tr><tr><th scope="row">입력·기록·자료 연결</th><td>폼·상태·기록·HTML 자료를 연결하기에 적합한 구성으로 판단했습니다. 대안별 개발 비용의 정량 비교는 후속 평가 항목입니다.</td><td class="evidence-cell"><span class="tag proposed">설계 분석</span></td></tr></tbody></table></div><p class="visual-note" id="table-note-1">기술 선택의 배경과 근거를 정리했습니다. PR에 기록된 목적, 코드로 확인되는 구성, 설계 분석을 구분합니다.</p>
+<div class="note warn"><p><strong>선정 근거:</strong> 초기 웹 채택은 기존 제어 규약·모델·HTML 자료의 재사용과 조작 통합을 위한 구현 선택이었습니다. 웹·Qt·Foxglove의 동등 조건 성능 비교는 미실시 상태이며, 후속 기술 선정은 별도 평가를 전제로 합니다.</p></div>
+<h3>기능 검증으로 확인한 결과</h3>
+<div class="validation-list" id="copy-review-6"><ul class="bullet-list"><li><strong>명령 연동:</strong> 기존 기능 검증에서 HTTP→ROS 명령 전달과 양팔 이동·취소·복구를 확인했습니다.</li><li><strong>GUI 동시 실행:</strong> 네이티브 MuJoCo·RViz와 웹 렌더러를 함께 실행해 시작·종료를 3회 반복했습니다. 각 실행은 준비 완료 후 15초간 유지했습니다.</li><li><strong>확인 결과:</strong> 해당 절차에서 접촉 발생 0건과 소유 프로세스의 정상 종료를 확인했습니다. <a href="#src-demo">[기능 검증 기록]</a></li></ul></div>
+<div aria-labelledby="table-title-2" class="table-scroll" role="region" tabindex="0"><table aria-describedby="table-note-2"><caption class="visual-title" id="table-title-2">표 2. 기능 검증 결과</caption><thead><tr><th scope="col">검증 대상</th><th scope="col">확인 결과</th><th scope="col">해석 범위</th></tr></thead><tbody>
+<tr><td>명령과 상태 연결</td><td>양팔 실행·이동 중 취소·복구, 잘못된 목표·중복/동시 요청 처리 확인</td><td>고정 회귀 입력의 기능 검증</td></tr>
+<tr><td>GUI 동시 실행</td><td>MuJoCo·RViz·웹 렌더러의 반복 시작·종료와 소유 프로세스 정리 확인</td><td>해당 실행 조건의 회귀 검증</td></tr>
+<tr><td>브라우저 조작</td><td>deg/rad 입력·JSON 입출력·카메라 전환·기록·PC/모바일 배치 확인</td><td>현재 조작 화면의 기능·표시 검증</td></tr>
+</tbody></table></div><p class="visual-note" id="table-note-2">기존 기능 검증에서 확인한 범위 · 렌더러 대안의 성능 비교와 구분</p>
+<p class="small">장시간 내구성, 전체 작업 공간의 계획 성공률, 렌더러별 FPS·지연 우위와 실제 파지 성능은 위 결과의 검증 범위에 포함되지 않습니다.</p>
+<h3>현재 지원 범위와 기술적 한계</h3>
+<div class="grid uniform-panel-pair"><div class="panel uniform-panel"><h4>구현된 조작</h4><ul class="bullet-list"><li>FR5·UR5e 공동 장면 시작·종료</li><li>양팔 12관절 목표, deg/rad 전환, JSON 입출력</li><li>계획 후 실행·협력식 취소, 상태·오류·이력</li><li>카메라 프리셋 3개와 상태 이미지, 접촉·시계 상태 표시</li></ul></div><div class="panel uniform-panel"><h4>다음 개발 범위</h4><ul class="bullet-list"><li>자유 회전·이동·줌·시점 초기화</li><li>단일 모델·추가 작업장면 선택 UI</li><li>Pose/IK·TCP 조작, 계획 경로 미리보기</li><li>그리퍼·물체 파지·AMR·실물 연동</li></ul></div></div>
+<div class="runtime-summary" id="copy-review-7">
+<h4>물리 계산과 상태 표시의 실행 환경</h4>
+<div class="grid runtime-grid">
+<div class="runtime-card"><span class="runtime-role">물리 계산</span><h4>MuJoCo 3.12.0</h4>
+<div class="api-token"><code>mj_step</code></div>
+<p>C/C++ 네이티브 경로에서 CPU로 물리를 적분합니다.</p>
+</div>
+<div class="runtime-card"><span class="runtime-role">상태 표시</span><h4>MuJoCo 3.14.0</h4>
+<div class="api-token"><code>mj_forward</code></div>
+<p>별도 Python 프로세스가 관절 상태를 모델에 적용하고, 표시할 장면을 갱신합니다. 물리 적분은 수행하지 않습니다.</p>
+</div>
+</div>
+<div class="runtime-notes"><p><strong>GPU 활용:</strong> 현재 구성에서는 렌더링에 사용합니다. MJX/Warp 기반 물리 계산은 포함하지 않습니다.</p>
+<p><strong>후속 검증:</strong> 물리 런타임과 상태 렌더러 사이의 버전 차이에 따른 모델·링크 변환 일치를 확인할 계획입니다.</p></div>
+<p class="small"><a href="#src-code">[코드 1]</a> · <a href="https://mujoco.readthedocs.io/en/3.12.0/overview.html">[MuJoCo 개요]</a></p>
+</div>
+<p>고해상도 시연 영상은 촬영용 렌더러와 브라우저 캡처 설정을 확대한 기록입니다. 영상의 12 fps에는 반복 프레임이 포함되며, 기본 라이브 설정인 최대 5 fps와 구분합니다. <a href="https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html#comparison">시연 영상 보기</a></p>
+<div class="local-operation">
+<h4>운영 범위: 로컬 단일 사용자</h4>
+<div class="endpoint-row"><span class="endpoint-label">접속 주소</span><code>127.0.0.1</code></div>
+<p>변경 요청의 출처와 세션 토큰을 검사합니다. 다중 사용자·원격 제어에 필요한 인증·권한·명령 소유권은 후속 배포 설계 범위입니다. <a href="#src-code">[코드 1]</a></p>
+</div>
+</section>
+<section id="alternatives">
+<span class="section-no">02 / Alternatives &amp; trade-offs</span><h2>렌더링 대안과 트레이드 오프</h2>
+<p>대안은 <strong>UI 실행 환경</strong>과 <strong>3D 렌더링 위치</strong>의 두 축으로 비교합니다. 웹·데스크톱 UI 모두 클라이언트 렌더링과 원격 상태 수신을 구성할 수 있습니다. 비교표는 모델 재사용, 구현 범위, 배포와 운영 비용을 정성적으로 평가한 것이며, FPS·지연 순위는 별도 측정 대상입니다.</p>
+<div aria-labelledby="table-title-3" class="table-scroll" role="region" tabindex="0"><table aria-describedby="table-note-3" class="wide"><caption class="visual-title" id="table-title-3">표 3. 뷰어 구성 비교</caption><thead><tr><th scope="col">구성</th><th scope="col">렌더링 / 조작 방식</th><th scope="col">장점</th><th scope="col">비용·트레이드 오프</th><th scope="col">적합한 경우</th></tr></thead><tbody>
+<tr><td>A. 현재 웹 + 이미지 전달 확장<br/><span class="tag">현재 기반</span></td><td><p><strong>현재:</strong> 서버 MuJoCo 렌더러와 카메라 프리셋 3개</p><p><strong>확장안:</strong> 마우스 입력을 카메라 변경 API에 연결</p></td><td>현재 MJCF·재질·조작부를 재사용합니다. 별도 클라이언트 기구학 경로가 필요하지 않습니다.</td><td>카메라 입력도 왕복·렌더·전송·디코딩을 거칩니다. 최대 5 fps 렌더·250 ms 조회 설정은 자유 시점 조작의 응답 주기를 제한합니다. 갱신률을 높일 경우 서버·전송 비용을 함께 검증해야 합니다.</td><td>카메라 기능 추가와 기존 모델 표시 보존이 우선일 때<br/><a href="https://mujoco.readthedocs.io/en/3.12.0/programming/visualization.html#cameras">MuJoCo 카메라 근거</a></td></tr>
+<tr><td>B. 현재 웹 + Three.js 클라이언트 3D<br/><span class="tag proposed">우선 비교 후보</span></td><td>브라우저 GPU로 렌더링합니다. 상태를 받고 카메라는 브라우저에서 직접 조작합니다.</td><td>기존 입력·기록 UI를 재사용합니다. 카메라 동작을 상태 수신 주기와 분리하고, 원격 분리 시 사용자 PC로 렌더 부하를 옮길 수 있습니다.</td><td>메시·재질·좌표계·기구학/TF·시간 동기 구현이 필요합니다. 기존 MuJoCo 장면과의 일치 검증, 자산 배포·버전 관리가 추가됩니다.</td><td>전용 통합 UI를 유지하면서 자유 시점과 3D 선택을 확장할 때<br/><a href="https://threejs.org/docs/pages/OrbitControls.html">OrbitControls 근거</a></td></tr>
+<tr><td>C. Qt / QML / 네이티브 렌더링</td><td>데스크톱 앱에서 GPU로 렌더링합니다. ROS 또는 공통 상태 게이트웨이에 연결합니다.</td><td>장치·파일·키보드 조작을 데스크톱 UI에 통합할 수 있습니다. 로컬·원격 상태 수신을 모두 구성할 수 있습니다.</td><td>UI와 상태 어댑터 연결, 모델 변환, OS별 빌드·패키징·회귀 검증이 필요합니다. 네이티브라는 이유만으로 저지연·고성능이 보장되지는 않습니다.</td><td>설치형 제품, 폐쇄망 운영, 데스크톱 기능 통합이 주요 조건일 때<br/><a href="https://doc.qt.io/qt-6/windows-deployment.html">Qt 배포 근거</a></td></tr>
+<tr><td>D. RViz2 + 전용 패널</td><td>RViz RobotModel·TF·기존 MoveIt 화면에 패널/도구 플러그인을 추가합니다.</td><td>ROS 개발·디버깅 도구와 바로 연결합니다. 좌표계·센서·계획 상태 확인에 유리합니다.</td><td>사용자용 흐름·기록·리포트 UI를 다시 연결해야 합니다. ROS/RViz 실행 환경과 플러그인 버전·배포 관리가 필요합니다.</td><td>개발자용 진단·MoveIt 작업 환경을 중심으로 운영할 때<br/><a href="https://github.com/ros2/rviz/blob/humble/docs/plugin_development.md#writing-a-panel-plugin">패널 확장 근거</a></td></tr>
+<tr><td>E. Foxglove + Bridge / 확장 패널</td><td>기존 3D·시계열·로그 도구에 ROS 연결과 전용 제어 UI를 결합합니다.</td><td>URDF·좌표계·센서·기록 분석 도구를 활용합니다. 향후 AMR 관측·재생 비교의 후보입니다.</td><td>모델 자산·변환·타임스탬프·Bridge 배포가 필요합니다. 전용 명령/취소 흐름은 별도로 연결·검증합니다. 사용 기능과 오프라인 배포의 현행 라이선스 조건도 확인해야 합니다.</td><td>운영 관측·센서·로그 분석의 비중이 높을 때<br/><a href="https://docs.foxglove.dev/docs/visualization/panels/3d">3D 문서</a> · <a href="https://docs.foxglove.dev/docs/standalone-license">오프라인 배포 조건</a></td></tr>
+</tbody></table></div><p class="visual-note" id="table-note-3">동일한 명령·상태 계약을 유지한다는 조건의 정성 비교 · 개발 공수와 성능은 미측정</p>
+<div class="grid uniform-panel-pair"><div class="panel uniform-panel"><h4>한 PC에서 실행할 때</h4><ul class="bullet-list"><li>브라우저 WebGL과 Qt 모두 같은 PC의 CPU/GPU·메모리를 사용합니다.</li><li>JPEG 방식은 서버 렌더·읽기·압축·브라우저 디코딩 비용이 있습니다.</li><li>MuJoCo·RViz·추가 뷰어를 동시에 열면 중복 렌더링 부하도 포함해 측정해야 합니다.</li></ul></div><div class="panel uniform-panel"><h4>서버와 사용자 PC를 분리할 때</h4><ul class="bullet-list"><li>클라이언트 3D는 모델 자산과 상태를 보내고 사용자 PC가 표시합니다. 자산·기구학 일치가 주요 비교 항목입니다.</li><li>이미지 전달 방식은 서버가 그린 프레임을 전송합니다. 영상 대역폭·지연이 주요 비교 항목입니다.</li><li>PC 대수만으로 결정하지 않습니다.</li></ul></div></div>
+<div class="qt-scope panel" id="copy-review-8"><h4>Qt 구성 검토</h4>
+<p>Qt/QML을 UI로 채택하더라도 3D 렌더링 경로는 별도로 선택해야 합니다.</p><ul class="bullet-list"><li><strong>모듈 선택:</strong> <a href="https://doc.qt.io/qt-6/qtquick3d-index.html">Qt Quick 3D</a>와 <a href="https://doc.qt.io/qt-6/qopenglwidget.html">QOpenGLWidget</a> 기반 렌더링은 구현 경로가 다릅니다.</li><li><strong>통합 비용:</strong> 선택한 모듈에 따라 모델 자산과 기존 렌더링 코드의 재사용·변환 범위를 함께 평가합니다.</li></ul></div>
+<h3>운영 요구에 따른 기술 선택 기준</h3>
+<div aria-labelledby="table-title-4" class="table-scroll" role="region" tabindex="0"><table><caption class="visual-title" id="table-title-4">표 4. 기술 선택 기준</caption><thead><tr><th scope="col">주요 요구</th><th scope="col">우선 검토 방향</th><th scope="col">결정 전 확인</th></tr></thead><tbody>
+<tr><td>기존 조작 화면 유지 + 자유 시점</td><td>현재 이미지 방식 확장과 웹 클라이언트 3D를 우선 비교</td><td>카메라 응답·모델 일치·자원 비용·실패 표시</td></tr>
+<tr><td>설치형 데스크톱 제품·장치 통합</td><td>Qt를 동등 후보로 포함</td><td>필수 OS·설치/업데이트·상태 어댑터·라이선스</td></tr>
+<tr><td>ROS 개발·센서·로그 분석이 중심</td><td>RViz/Foxglove를 보조 진단 도구 또는 주 화면 후보로 검토</td><td>전용 작업 흐름과 기존 제어 계약의 연결 비용</td></tr>
+</tbody></table></div>
+<p class="small">전용 조작 화면과 진단 도구는 역할에 따라 병행 구성이 가능합니다. 전체 도구 교체 여부보다 작업 흐름과 공통 제어 계약의 유지가 선정 기준입니다.</p>
+<h3>구성별 기술 검토 항목</h3>
+<div aria-labelledby="table-title-5" class="table-scroll" role="region" tabindex="0"><table><caption class="visual-title" id="table-title-5">표 5. 구성별 검토 항목</caption><thead><tr><th scope="col">검토 항목</th><th scope="col">설계 판단</th></tr></thead><tbody>
+<tr><td>서버 렌더링의 카메라 상호작용</td><td>카메라 이벤트 API를 추가하면 자유 시점 조작으로 확장할 수 있습니다. 현재는 카메라 프리셋 3개를 지원하며, 확장 시 왕복 지연과 프레임 생성·표시 주기를 평가해야 합니다. <a href="https://mujoco.readthedocs.io/en/3.12.0/programming/visualization.html#cameras">공식 카메라 API</a></td></tr>
+<tr><td>Qt 클라이언트의 배포 범위</td><td>필요한 Qt 라이브러리·플러그인을 애플리케이션과 함께 배포하는 방식이 가능합니다. OS별 패키징, 서드파티 의존성과 라이선스가 검토 항목입니다. <a href="https://doc.qt.io/qt-6/windows-deployment.html">Qt 배포 도구</a></td></tr>
+<tr><td>동일 PC의 통신·동기 비용</td><td>프로세스·ROS 미들웨어·전송/복사·동기 방식에 따라 달라집니다. 프로세스 배치와 전송 방식을 고정한 실측이 필요합니다. ROS intra-process 최적화에는 명시적인 구성 조건이 있습니다. <a href="https://github.com/ros2/demos/blob/humble/intra_process_demo/src/two_node_pipeline/two_node_pipeline.cpp">공식 예제</a></td></tr>
+<tr><td>웹 UI와 렌더러의 확장 범위</td><td>기존 조작부에 렌더 모듈을 추가하는 점진적 확장이 가능합니다. 웹 프레임워크 전환은 렌더러 선정과 별도의 비용·요구 분석 대상입니다.</td></tr>
+<tr><td>표시 성능과 계획 성능의 경계</td><td>카메라·표시 FPS와 MoveIt 계획·거리 검사 시간은 서로 다른 지표입니다. 뷰어의 자원 사용이 제어에 미치는 간접 영향도 별도로 계측합니다.</td></tr>
+</tbody></table></div>
+<p class="small">대안의 통합 비용에는 화면 구현 외에 ROS 상태·명령 연결, 모델 변환과 기록 연동이 포함됩니다. 외부 CAD·모델 자산의 재사용·배포 권한도 통합 범위와 함께 확인합니다.</p>
+</section>
+<section id="roadmap">
+<span class="section-no">03 / Improvement direction</span><h2>현재 한계에서 도출한 확장 계획</h2>
+<p>현재 상태 렌더러는 카메라 프리셋 3개와 서버 이미지 갱신을 중심으로 구성되어 있습니다. 후속 목표는 자유 시점 조작과 표시 성능의 확장입니다. <strong>공통 명령·상태 계약을 유지하는 읽기 전용 3D 시제품</strong>으로 표시 기술을 먼저 평가하고, 목표 조작·실물 제어는 별도 단계에서 검증하는 계획입니다.</p>
+<div class="note"><p><strong>확장 아키텍처안:</strong> 기존 모션 서버·명령/취소·접촉/시계 감시를 공통 기반으로 유지합니다. 서버 이미지 전달과 Three.js 클라이언트 3D를 우선 비교하고, 데스크톱 배포·네이티브 통합 요구가 주요 조건인 경우 Qt를 포함합니다. 표시용 상태·모델 제공 경계를 정의해 각 대안의 통합 비용과 성능을 비교합니다.</p></div>
+<div aria-labelledby="diagram-title-2" class="flow" role="figure"><p class="visual-title" id="diagram-title-2">도식 2. 표시부 확장안</p><div class="flow-row"><div class="node"><strong>기존 제어·검증 계층</strong><span>MoveIt · ros2_control · MuJoCo<br/>접촉/시계 감시 · 요청/결과</span></div><div aria-hidden="true" class="arrow">→</div><div class="node"><strong>공통 표시 데이터 경계</strong><span>모델 버전 · 관절명 · 좌표계<br/>시각 · 순서 · 최신성</span></div><div aria-hidden="true" class="arrow">→</div><div class="node"><strong>교체 가능한 표시부</strong><span>현재 이미지 / 웹 3D / Qt<br/>카메라·표시만 독립 비교</span></div></div></div>
+<p class="small">공통 3D 상태 게이트웨이와 교체 어댑터는 제안 단계입니다. 카메라 조작과 로봇 목표 전송을 분리하고, 실행 요청에는 현재 요청 ID·단위·취소·결과 확인 규약을 적용하는 구조입니다.</p>
+<div class="stage"><div class="stage-id">P0 · 안정화</div><div><h3>현재 기능·문제·비교 기준을 고정</h3><ul class="bullet-list"><li>30 mm 거리 조건으로 거부되는 홈 복귀를 재현하고, 거부와 재계획 정책을 구분합니다. 뷰어의 오류 표시가 내부 실패를 가리지 않게 유지합니다.</li><li>로컬 리포트 제공 경로와 정적 배포 경로의 불일치를 해소합니다. 로컬 시연 페이지의 404 응답을 고정 회귀 사례로 보존합니다.</li><li>현재 JPEG 방식의 실제 FPS·표시 지연·CPU/GPU·물리 실시간 배율을 먼저 기록합니다. 렌더 설정 상한을 측정값으로 사용하지 않습니다.</li></ul><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>실패 재현 입력과 로그 보존</li><li>리포트 링크 열기 확인</li><li>동일 조건으로 반복할 수 있는 기준 실행 자료 확보</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">P1 · 데이터 계약</div><div><h3>읽기 전용 모델·상태 계약 정리</h3><ul class="bullet-list"><li>모델/작업장면 ID와 해시, 관절명·단위(rad), 링크·기준 프레임, 설치 변환·메시 축/스케일을 명시합니다.</li><li>상태 순번·세션·시뮬레이션 시각·수신 시각과 시간 정지/역행·연결 단절을 구분합니다. 로컬 monotonic 시각을 다른 PC와 직접 빼서 지연으로 계산하지 않습니다.</li><li>표시 좌표는 TF 기반 또는 같은 URDF의 기구학 기반 중 하나를 권위 있는 경로로 정합니다. 설치 변환 중복, 관절 배열 순서 추측, deg/rad 혼용을 방지합니다.</li></ul><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>동일한 기록 자세에서 모델·팔·관절 매핑·링크 변환의 일치 확인</li><li>모델 불일치·상태 정지·재시작의 명시적 표시</li><li>표시용 보간과 관측 상태 구분, 오래된 상태의 보간 중단</li><li>관절 허용 오차와 링크 위치·회전 허용 오차를 단위·기준 프레임과 함께 시험 전에 정의</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">P2 · 시제품 평가</div><div><h3>카메라·표시 성능의 시제품 비교</h3><dl class="report-list"><div><dt>A안</dt><dd>현재 이미지 방식에 회전·이동·줌·초기화 이벤트를 추가하는 최소 확장안입니다.</dd></div><div><dt>B안</dt><dd>같은 UI 영역에 Three.js 상태 표시를 연결하는 읽기 전용 시제품입니다.</dd></div><div><dt>C안</dt><dd>데스크톱 배포 요구가 확정되면 Qt 시제품을 같은 상태 계약·장면으로 비교합니다. 초기 범위는 렌더링·상태 연결·카메라 조작으로 제한합니다.</dd></div></dl><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>같은 모델·상태 기록·뷰포트·카메라 조작 조건으로 A/B 결과 작성</li><li>코드·환경·표본·실패 원본 보존</li><li>Qt 포함 여부와 선택 사유 기록</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">P3 · 선정·통합</div><div><h3>검증한 표시부를 연결하고 기존 방식 보존</h3><ul class="bullet-list"><li>선정한 렌더러를 기존 목표·상태·실행 기록 UI에 연결하고, 기존 JPEG 표시를 비교·복구 수단으로 남깁니다.</li><li>상태 정지·재연결·모델 변경·탭 비활성·렌더 실패를 시험합니다. 재연결 후 명령 자동 재전송을 금지하고 취소 요청/완료를 구분합니다.</li><li>원격 운영을 택할 경우 인증·권한·명령 소유자·전송 보호·감사 로그를 포함한 별도 배포 설계를 작성합니다. 원격 배포의 완료 기준에는 접근 제어와 명령 소유권 검증을 포함합니다.</li></ul><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>기존 시작·종료·실행·취소·결과의 회귀 검사</li><li>표시 오류가 기존 제어에 미치는 영향의 격리 확인</li><li>성능·배포 조건에 근거한 선정 또는 보류 결론 작성</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">P4 · 후속 확장</div><div><h3>Pose·그리퍼·AMR을 작업별로 추가</h3>
+<div class="extension-scope">
+<p><strong>기능 확장 순서</strong></p>
+<ol class="extension-sequence"><li>단일 모델·작업장면 선택</li><li>계획 경로 미리보기</li><li>Pose/IK·TCP 목표</li><li>그리퍼·물체 상태</li></ol><ul class="bullet-list"><li><strong>목표 조작:</strong> 물체 선택과 TCP 드래그는 목표 초안 생성 → IK·경로 검사 → 미리보기 → 사용자 실행 순서로 구성합니다.</li><li><strong>AMR·다중 장치:</strong> 별도 요구로 우선순위를 정합니다. 관절 상태에 더해 이동 기준 좌표계·위치·센서·지도 상태가 필요합니다.</li><li><strong>포인트클라우드:</strong> 점 수·입력 주기·필터·간소화·전송량을 시험 조건으로 고정합니다. 웹·네이티브 구분만으로 처리 한계를 단정하지 않습니다.</li></ul>
+<p>각 단계의 입력·실패·취소·검증 범위는 별도로 정의합니다.</p>
+</div>
+<div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>기능별 시뮬레이션·실물 적용 범위 구분</li><li>관측과 명령, 실제 상태와 계획 미리보기 구분</li><li>재현 가능한 검증 자료 확보</li></ul></div></div></div>
+<h3>초기 개선 범위</h3>
+<ol><li><strong>내부 기능:</strong> 홈 복귀 거부 재현·거리 조건·재계획 정책 정리</li><li><strong>표시 기반:</strong> 상태·모델 계약과 기존 표시의 기준 성능 기록</li><li><strong>조작성 검증:</strong> 현재 방식의 자유 카메라 최소 확장과 클라이언트 3D 읽기 전용 비교</li></ol>
+<p>이 단계 구분은 조작 정확성·취소·오류 표시를 유지하면서 표시 기술을 평가하기 위한 것입니다. 목표 드래그와 실물 제어를 별도 변경 단위로 관리해 표시·제어 회귀의 원인을 구분합니다.</p>
+</section>
+<section id="evaluation">
+<span class="section-no">Validation design</span><h2>기술 선정을 위한 비교 검증 설계</h2>
+<div class="evaluation-summary" id="copy-review-9"><dl class="report-list"><div><dt>비교 기준</dt><dd>FR5·UR5e 공동 장면을 기준으로, 각 뷰어에 동일한 입력을 적용하는 비교를 계획합니다.</dd></div><div><dt>공통 입력</dt><dd>카메라 조작, 홈→접근→후퇴 상태 기록, 연결 단절·재연결</dd></div><div><dt>평가 범위</dt><dd>표시 응답, 상태 일치, 자원 비용, 기존 제어에 미치는 영향</dd></div><div><dt>별도 시험</dt><dd>장시간 안정성과 임의 목표의 계획 성능</dd></div></dl></div>
+<div aria-labelledby="table-title-6" class="table-scroll" role="region" tabindex="0"><table aria-describedby="table-note-6" class="metrics"><caption class="visual-title" id="table-title-6">표 6. 뷰어 비교 평가 계획</caption><thead><tr><th scope="col">평가 영역</th><th scope="col">측정·검증 방법</th><th scope="col">선정에 사용하는 이유</th></tr></thead><tbody>
+<tr><td>자유 카메라 응답</td><td>같은 회전/팬/줌 입력에서 실제 화면 반영 시간의 중앙값·p95와 프레임 간격을 기록합니다. 클라이언트 렌더는 requestAnimationFrame 간격과 GPU 완료/실제 표시 시점의 차이를 명시합니다.</td><td>카메라 체감 조작성을 평가합니다. 단순 JS 루프 횟수나 영상 인코딩 FPS를 사용하지 않습니다.</td></tr>
+<tr><td>관절 상태 최신성</td><td>소스 상태 시각→수신→반영을 구분합니다. 같은 시계 범위의 지연·누락·순서 역전과 상태 나이를 기록합니다. 원격 단방향 지연은 시계 동기 오차를 포함합니다.</td><td>부드러운 화면이 오래된 로봇 상태를 숨기지 않는지 확인합니다.</td></tr>
+<tr><td>좌표·모델 일치</td><td>고정 자세·움직이는 자세에서 기준 링크/TCP 정의와 변환을 비교합니다. 좌표·회전 오차와 모델 버전을 기록하고, 양팔 접두사·단위·설치 변환을 검사합니다.</td><td>관절 매핑·기준 좌표·표시 모델의 정합을 검증합니다.</td></tr>
+<tr><td>자원·전송 비용</td><td>CPU/GPU 사용·메모리/VRAM·프로세스 수·초기 자산 크기·정상 상태 전송량을 기록합니다. 같은 해상도·DPR·메시 복잡도를 사용합니다.</td><td>이미지 압축/전송과 클라이언트 3D의 실제 비용을 비교합니다.</td></tr>
+<tr><td>기존 제어 영향</td><td>뷰어 없음/있음에서 물리 실시간 배율, 계획 시간, 명령 수신→첫 이동, 취소→종료 확인을 별도로 계측합니다.</td><td>렌더 개선으로 제어가 느려지거나 상태 판정이 바뀌지 않는지 확인합니다.</td></tr>
+<tr><td>실패·배포·운영</td><td>상태 정지·시계 역행·소스 재시작·메시 누락·GPU/렌더 오류·오프라인 자산 로딩·설치/업데이트/복구를 반복합니다.</td><td>평균 성능 외에 운영 가능성과 실패 표시·복구 비용을 평가합니다.</td></tr>
+</tbody></table></div><p class="visual-note" id="table-note-6">대안 비교용 평가 지표입니다. 기준 실행 결과를 바탕으로 수용 기준을 확정하는 계획이며, 비교 측정은 미실시 상태입니다.</p>
+<details><summary>공정한 비교를 위한 실행 조건</summary><ul><li>같은 PC·OS·드라이버·전원 정책에서 뷰포트 픽셀 수와 DPR을 맞추고 앱/브라우저·모델·소스 커밋을 기록합니다.</li><li>먼저 기록 상태 재생으로 렌더러만 비교한 뒤, 같은 ROS 시뮬레이션에 연결해 전체 영향을 확인합니다. 기록 재생 결과로 물리/제어 성능을 주장하지 않습니다.</li><li>기본 비교는 뷰어 하나씩 실행합니다. MuJoCo·RViz까지 함께 띄운 실제 운영 조건은 별도 묶음으로 기록합니다.</li><li>워밍업·반복 횟수·측정 구간과 사용 도구를 사전에 고정하고 원본을 남깁니다. 목표 FPS·허용 지연·자원 한계는 기준 측정 후 결정합니다.</li><li>이상치·실패 실행을 임의 제외하지 않습니다. 로컬/원격, 캐시 유무, 센서/포인트클라우드 추가 여부를 섞어 평균내지 않습니다.</li></ul></details>
+<p class="small">렌더러별 처리량, 원격 대역폭·반응성, 개발·배포 비용은 후속 비교 리포트의 평가 항목입니다. 현재 문서의 정성 비교와 구현 설정은 실측 결과와 구분됩니다.</p>
+</section>
+<section id="review">
+<span class="section-no">Review scope &amp; limitations</span><h2>설계 검토 범위와 남은 검증</h2>
+<p id="review-status">기준 코드·개발 PR·기능 검증 기록과 공식 기술 문서를 대조했습니다. 구현된 기능과 후속 설계를 구분하고, 기술 선택의 근거·통합 비용·평가 조건을 검토했습니다.</p>
+<div id="review-results"><dl class="report-list"><div><dt>구현 구조</dt><dd>웹 조작부·상태 렌더러·ROS 제어 경로의 역할과 재사용 범위를 분석했습니다. 최초 웹 채택의 근거는 조작 통합과 기존 구성 활용에 있습니다.</dd></div><div><dt>대안 비교</dt><dd>서버 이미지, 클라이언트 3D, Qt와 진단 도구를 렌더링 위치·모델 관리·배포·운영 관점에서 비교했습니다. 성능 순위는 후속 측정 대상입니다.</dd></div><div><dt>모델·상태</dt><dd>관절 단위·좌표계·엔진 버전·소스 시각·상태 최신성을 공통 검증 항목으로 정의했습니다. 렌더 프레임률과 물리·제어 주기는 별도 지표입니다.</dd></div><div><dt>미검증 범위</dt><dd>시제품 A/B 성능 비교, 장시간 운영, 원격 배포와 실물 연동은 미검증 범위입니다. 각 개선 단계의 완료 조건을 충족한 자료로 구현 상태를 갱신합니다.</dd></div></dl></div>
+<div class="note"><p><strong>개발 상태:</strong> 통합 조작 화면과 서버 상태 렌더러는 구현되어 있습니다. 자유 카메라, Three.js·Qt 표시 클라이언트, 공통 상태 게이트웨이와 로컬 리포트 경로 정합화는 후속 개선 범위입니다.</p></div>
+<p class="small"><a href="review-data.json">설계 판단·근거 데이터</a> · <a href="review-notes.json">수정·검토 내역</a> · <a href="manifest.json">자료·SHA-256</a></p>
+</section>
+<section id="sources">
+<span class="section-no">Evidence / Source baseline</span><h2>근거와 확인 범위</h2>
+<p class="small">확인일: 2026-10-22. 저장소 링크는 기준 커밋 <code class="code-wrap">7a71402e2a04fd002f8d863ac9908341103a9f00</code>으로 고정합니다. 공식 제품 문서는 열람일 기준이며 향후 변경될 수 있습니다.</p>
+<ol class="sources">
+<li id="src-code"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/7a71402e2a04fd002f8d863ac9908341103a9f00/src/mujoco_ros2_manipulation/operator_console">조작 화면 코드</a><span>render_worker.py: 상태 적용·960×640·0.2초 제한·품질 88 / static/app.js: 250 ms 조회·카메라 프리셋 / __main__.py·http_server.py: 루프백·출처·토큰·리포트 경로. native/step_monitor.hpp와 workcells/motion_request.py는 물리·명령 경로의 근거입니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/21">PR #21 · 통합 조작 화면 최초 구현</a><span>조작 통합의 목적, 기존 규약 재사용, 별도 표시 프로세스와 초기 지원 범위를 기록한 개발 이력입니다. 대안별 성능 선정 실험은 포함하지 않습니다.</span></li>
+<li id="src-demo"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/7a71402e2a04fd002f8d863ac9908341103a9f00/docs/operator_console.md">현재 조작 화면 사용·검증 기록</a> · <a href="https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html">기존 시연</a><span>기본 제품 설정과 촬영 전용 고해상도 설정, 실제 접근·후퇴와 미구현 파지/Pose 기능을 구분합니다.</span></li>
+<li><a href="https://mujoco.readthedocs.io/en/3.12.0/overview.html">MuJoCo 3.12 개요</a> · <a href="https://mujoco.readthedocs.io/en/3.12.0/programming/visualization.html#cameras">시각화·카메라 API</a><span>현재 물리 런타임 계열의 물리·표시 구분과 자유 카메라 API를 설명하는 공식 자료입니다.</span></li>
+<li><a href="https://threejs.org/docs/pages/OrbitControls.html">Three.js OrbitControls</a><span>클라이언트 카메라 제어 기능의 근거 자료입니다. 프로젝트 통합 비용과 성능은 시제품 평가 범위에 해당합니다.</span></li>
+<li><a href="https://doc.qt.io/qt-6/windows-deployment.html">Qt Windows 배포</a><span>Qt 라이브러리·플러그인·QML 의존성을 포함한 Windows 배포 경로의 근거입니다. 대상 OS별 배포 방식과 라이선스는 후보 확정 단계의 검토 항목입니다.</span></li>
+<li><a href="https://github.com/ros2/rviz/blob/humble/docs/plugin_development.md">ROS 2 Humble RViz 플러그인 개발</a><span>Panel·Tool·Display·ViewController 확장 경로의 근거입니다.</span></li>
+<li><a href="https://github.com/ros2/demos/blob/humble/intra_process_demo/src/two_node_pipeline/two_node_pipeline.cpp">ROS 2 Humble intra-process 예제</a><span>동일 프로세스 구성과 use_intra_process_comms 옵션을 사용하는 공식 예제입니다. 통신 최적화의 구성 조건을 확인하는 근거로 사용합니다.</span></li>
+<li><a href="https://docs.foxglove.dev/docs/visualization/panels/3d">Foxglove 3D 패널</a> · <a href="https://docs.foxglove.dev/docs/standalone-license">Standalone License</a><span>URDF·메시·좌표계·시간 정보 표시와 오프라인 배포 조건의 근거입니다. 적용할 제품·버전·기능의 라이선스와 운영 조건은 통합 검토 범위에 포함합니다.</span></li>
+</ol>
+<p class="small">구현 사실은 고정된 저장소 커밋과 검증 기록에, 외부 도구의 기능은 공식 기술 문서에 근거합니다. 기술 선택과 단계별 개선안은 이 근거를 바탕으로 한 설계 판단이며, 후속 비교 평가 결과에 따라 갱신합니다.</p>
+</section>
+<div class="footer"><span class="review-origin">문서 v1.9 · 이기종 복수 로봇의 통합 조작 방향과 현재 구현 사례 구분</span><span>문서 유형: 개발 사례 / 기술 설계</span><span>대안 비교 상태: 평가 설계</span><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation">프로젝트 저장소</a><a href="#decision">처음으로 ↑</a></div>
+</main>
+<script>document.getElementById('print').addEventListener('click',()=>window.print());</script>
+</body>
+</html>
