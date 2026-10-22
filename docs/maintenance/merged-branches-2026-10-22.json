@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-22",
+  "main_commit": "bae37cdaf7e75eecbffe1cbd4328eab3854ce91e",
+  "remote_merged_branches": [
+    {
+      "branch": "codex/contact-performance-validation",
+      "sha": "004a54054c0ef0afeca72bb0e171196541b23f2e",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/contact-stop-interlock",
+      "sha": "914177460707715d692ef761dfbbc8113fdd7dcb",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/dependabot-python-weekly",
+      "sha": "3c7bcfbac244289946fde16117b32a42a04fa4b5",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/dependabot-range-guards",
+      "sha": "4b9cbba780cc5c1b39a97fff4cfac47a18e51644",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/dual-arm-interference-avoidance",
+      "sha": "649a729a68cff27011c8acfc12c25c04763e671a",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/dual-arm-timing-evaluation",
+      "sha": "4225e5dad6d85f60bb7ac50cf762ee4586ff72c1",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/dual-arm-workcell",
+      "sha": "81a8d68882a4824705370834d5a5ea2aba8b4e2c",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/motion-request-tracing",
+      "sha": "f6afe5e449a2762949c76d2e4a7a5e27d78a535e",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/operator-console",
+      "sha": "50b549b24ff33b9286e4ac7545c01d893c1ac193",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/package-workcells-ci",
+      "sha": "3f58145bf38917434986947c7d254a4de1a2decf",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/phase1-performance-report",
+      "sha": "5b1026109ab15af044bfc4309c8809de906a2475",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/random-motion-benchmark",
+      "sha": "944c82d6440afa55278c97cc82ae7907e9ed7772",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/report-detail-links",
+      "sha": "36ed87d945a584f5e60f43beb2e370067c97455d",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/report-pages",
+      "sha": "15f82231fe0ac51b7ffbd1835c8c8687621f8d79",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/report-standardization",
+      "sha": "bf145a66720cc90b2451380e7e37bea402c46534",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/search-optimization-simulator-status",
+      "sha": "619624fb40d5fdd19684a5d3f4f6a4edd4dbd14b",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/verification-artifact-integrity",
+      "sha": "8de21a988cbdae8541b235606cf955fb71366340",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/workcell-clock-stall-watchdog",
+      "sha": "aa199db3f755700c9d5830ca0662fb42c9f3f720",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    },
+    {
+      "branch": "codex/workcell-process-crash-verification",
+      "sha": "e15e4c475066914e1d9bf0798a9173efb8e7d4b3",
+      "commits_not_in_main": 0,
+      "main_contains_tip": true,
+      "recommendation": "delete_merged_branch_reference"
+    }
+  ],
+  "open_pull_requests": [],
+  "delete_branch_on_merge": false,
+  "current_work_branch": "codex/operator-picking-comparison",
+  "keep": [
+    "main",
+    "codex/operator-picking-comparison"
+  ],
+  "executed_deletions": [],
+  "recommendation": "Delete merged local/remote refs after review; main commits and PR history remain. Use annotated tags/releases for milestones, not archive branch copies.",
+  "main_ci": [
+    {
+      "conclusion": "success",
+      "name": "Python package and unit tests",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "name": "ROS Humble (fr5, default)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "name": "ROS Humble (ur5e, default)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "name": "ROS Humble (fr10, default)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "name": "ROS Humble (fr5, pedestal)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "name": "ROS Humble (workcell, fr5_ur5e)",
+      "status": "completed"
+    }
+  ]
+}
