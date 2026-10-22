@@ -82,6 +82,31 @@ class ConsoleApplication:
             self.worker.start()
             return dict(phase=self.phase)
 
+    def process_failure(self, *, preparing=False):
+        exited = {kind: process.poll() for kind, process in self.children.items()
+                  if kind != "renderer" and process.poll() is not None}
+        if not exited:
+            return None
+        phase = "준비 중" if preparing else "실행 중"
+        detail = ", ".join(f"{kind} (exit={code})" for kind, code in exited.items())
+        cause = "핵심 프로세스가 종료됐습니다."
+        if self.last_launch:
+            # Read a bounded tail from our own logs; the command traceback often
+            # contains only a secondary timeout after a controller spawner fails.
+            for kind in ("simulation", "commands"):
+                path = self.last_launch / (kind+".log")
+                try:
+                    with path.open("rb") as stream:
+                        stream.seek(max(0, path.stat().st_size-65536))
+                        tail = stream.read(65536).decode(errors="replace")
+                except OSError:
+                    continue
+                if "Failed to find a free participant index" in tail:
+                    cause = "ROS DDS 참가자 슬롯 부족으로 제어기 초기화가 실패했습니다."
+                    break
+            detail += f". 로그: {self.last_launch}"
+        return f"{phase} {cause} {detail}"
+
     def start_worker(self, options, folder, attach, generation):
         try:
             with self.lock:
@@ -100,8 +125,9 @@ class ConsoleApplication:
                 with self.lock:
                     if self.phase != "starting" or self.generation != generation:
                         return
-                    if any(p.poll() is not None for k,p in self.children.items() if k != "renderer"):
-                        raise RuntimeError("실행 프로세스가 준비 전에 종료됐습니다. 실행 로그를 확인하세요.")
+                    failure = self.process_failure(preparing=True)
+                    if failure:
+                        raise RuntimeError(failure)
                     if self.state.snapshot()["can_submit"]:
                         self.phase = "running"
                         self.audit("simulation_ready", attached=attach)
@@ -166,10 +192,10 @@ class ConsoleApplication:
 
     def watch(self):
         while not self.closing.wait(0.5):
-            failed = False
+            failure = None
             with self.lock:
-                if self.phase == "running" and any(p.poll() is not None for k,p in self.children.items() if k != "renderer"):
-                    failed = True
+                if self.phase == "running":
+                    failure = self.process_failure()
                 live = self.state.snapshot()
                 if not self.render_suspended and self.phase != "stopping" and self.render_enabled and not self.render_attempted and live["simulation_verified"] and live["state_age_sec"] is not None and live["state_age_sec"] < 0.5:
                     self.render_attempted = True
@@ -180,13 +206,13 @@ class ConsoleApplication:
                             "--workcell", self.cell.id, "--directory", str(self.directory)], folder, MUJOCO_GL="egl")
                     except Exception as error:
                         atomic_json(self.directory/"frame.json", dict(error=str(error)))
-            if failed:
+            if failure:
                 with self.lock:
                     failed = self.phase == "running"
                     if failed:
                         self.phase = "stopping"
                 if failed:
-                    self.stop(error="실행 중 핵심 프로세스가 종료됐습니다.")
+                    self.stop(error=failure)
 
     def suspend_dispatch(self):
         with self.state.lock:

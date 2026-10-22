@@ -133,7 +133,13 @@ ROS 시스템 Python과 생성용 가상환경은 다르므로 실행 시 두 �
 프로젝트의 로컬 런타임·빌드 패키지를 로드합니다. 셸 초기 설정 파일은 수정하지 않습니다.
 공통 도메인은 `MANIPULATION_ROS_DOMAIN_ID`로 지정하며 기본값은 89입니다.
 미들웨어 기본값은 `rmw_cyclonedds_cpp`이며 `MANIPULATION_RMW_IMPLEMENTATION`으로 변경할 수 있습니다.
-모든 참여 터미널에서 같은 환경을 source합니다.
+Cyclone DDS 기본 설정은 [config/ros/cyclonedds.xml](../config/ros/cyclonedds.xml)의
+`ParticipantIndex=auto`, `MaxAutoParticipantIndex=31`로 참가자 32개를 허용합니다.
+Humble의 Cyclone DDS 0.10.5 기본 범위 0..9에서는 조작 화면·네이티브 GUI·제어기 시작 노드의
+동시 실행이 슬롯 부족으로 실패할 수 있습니다. 최대 지원 도메인 232에서도 UDP 포트 범위를 넘지 않도록 정했습니다.
+사용자가 지정한 비어 있지 않은 `CYCLONEDDS_URI`는 유지하며, 다른 미들웨어에는 이 설정을 추가하지 않습니다.
+기본 범위의 근거는 [Cyclone DDS 0.10.5 설정 정의](https://github.com/eclipse-cyclonedds/cyclonedds/blob/0.10.5/src/core/ddsi/include/dds/ddsi/ddsi_cfgelems.h)에 있습니다.
+모든 참여 터미널에서 같은 환경을 source하고, 설정 변경 후에는 기존 화면 서버와 관련 프로세스를 정상 종료한 뒤 재시작합니다.
 
 FR5의 기존 `prepare_fr5.py`, `run_fr5.sh`, `fr5.launch.py`, `fr5_env.sh`,
 `verify_fr5.py`, `build_fr5_runtime.sh`는 호환 진입점으로 유지합니다.

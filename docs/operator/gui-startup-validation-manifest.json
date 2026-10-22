@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-22",
+  "base_commit": "5211a9bfbdc53ccdc6c091f52ec7ebddf8aa9d7a",
+  "evaluated_worktree_dirty": true,
+  "implementation_sha256": {
+    "manipulation_env.sh": "1df5ea6dd96b51a4587dad3da8b6decf6b4f979cad29e4dc44349888678722f4",
+    "scripts/ros_middleware_env.sh": "dca53af71b60f964ceda01c035685a51a9d96c79ab8c8bd2638ccf401c00d2f4",
+    "config/ros/cyclonedds.xml": "de90c03915aa00495f89e9c82d01adf4fa3083e56d8a7ad8885f3ade391d7d12",
+    "src/mujoco_ros2_manipulation/operator_console/application.py": "28890630ea3d9c83827dc77f2d3754ed399d889020b17f9a720a5bfb55bade8a",
+    "src/mujoco_ros2_manipulation/operator_console/verify.py": "504797f11499fb8ee921e66e4259ca930cca19ebf0954af5ecd84a776daa64be",
+    "tests/unit/test_operator_console.py": "37e7624533e56c461e875b8893a9b6b4faefa878604ff79c8c6913802ae854fd",
+    "tests/unit/test_ros_environment.py": "9db8b2b8093ee5c5e6cab84a0541e22f4d9f31e4534e8cc318d0637cd4b9045a"
+  },
+  "evidence": {
+    "path": "gui-startup-validation.json.gz",
+    "sha256": "e831dba4426ee6462f2475229b52d880cbfa236743ce7e6e2668a71c5088c758"
+  },
+  "unit_tests": 175,
+  "native_gui_run_id": "20261022T021707.225994Z-bf3e6f0a",
+  "headless_run_id": "20261022T022135.040019Z-41dfb7f4",
+  "scope": "Three native GUI startups with 15 second ready holds; two headless startups; physical success/cancel/recovery; not an endurance test. Original user domain 144 kept running."
+}

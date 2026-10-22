@@ -1,5 +1,6 @@
 """Actual loopback HTTP -> ROS commands -> observed two-arm motion regression."""
 import argparse
+import os
 import json
 from pathlib import Path
 import shutil
@@ -29,10 +30,15 @@ def main():
     parser.add_argument('--domain',type=int,default=143)
     parser.add_argument('--port',type=int,default=8878)
     parser.add_argument('--no-render',action='store_true')
+    parser.add_argument('--native-gui',action='store_true',help='Also start native MuJoCo and RViz windows')
+    parser.add_argument('--startup-cycles',type=int,default=1,help='Owned start/stop cycles before motion checks (1..10)')
+    parser.add_argument('--startup-hold-seconds',type=float,default=0,help='Require ready state continuously after each startup (0..60)')
     args=parser.parse_args()
     if not 0<=args.domain<=232 or not 1024<=args.port<=65535:parser.error('Invalid domain or port')
+    if not 1<=args.startup_cycles<=10 or not 0<=args.startup_hold_seconds<=60:parser.error('Invalid startup cycles or hold duration')
     cell=load_workcell();check_workcell(cell)
-    report=VerificationReport(ROOT,'operator_console','headless' if args.no_render else 'render',args.domain)
+    mode='native_gui' if args.native_gui else ('headless' if args.no_render else 'render')
+    report=VerificationReport(ROOT,'operator_console',mode,args.domain)
     process=None;session=None;failed=False;cleanup=[];token=None
     url=f'http://127.0.0.1:{args.port}'
     def api(route,body=None):
@@ -70,13 +76,34 @@ def main():
                 cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         bootstrap=until(lambda:api('/api/bootstrap'),15,'console HTTP readiness');token=bootstrap['token']
         until(lambda:api('/api/state')['reason']!='ROS 연결을 확인하고 있습니다.',5,'ROS graph discovery')
-        report.stage('start_owned_simulation')
-        api('/api/start',dict(native_gui=False,planning_case='dual_arm_crossing'))
-        until(ready,65,'MuJoCo identity / shared-state / command readiness')
-        initial=api('/api/state');session=Path(initial['lifecycle']['last_launch_directory']).parent
-        require(session.resolve().is_relative_to((ROOT/'runtime/operator').resolve()),'Unexpected console session path')
-        if not args.no_render:
-            until(lambda:api('/api/state')['frame'].get('sequence',0)>2,25,'live joint-state renderer')
+        startup_checks=[]
+        report.update(native_gui=args.native_gui,dds_configuration_uri=os.environ.get('CYCLONEDDS_URI'),
+            startup_cycles_requested=args.startup_cycles,startup_hold_seconds=args.startup_hold_seconds)
+        for cycle in range(args.startup_cycles):
+            report.stage('start_owned_simulation_'+str(cycle+1))
+            started=time.monotonic()
+            api('/api/start',dict(native_gui=args.native_gui,planning_case='dual_arm_crossing'))
+            until(ready,65,'MuJoCo identity / shared-state / command readiness')
+            initial=api('/api/state');session=Path(initial['lifecycle']['last_launch_directory']).parent
+            require(session.resolve().is_relative_to((ROOT/'runtime/operator').resolve()),'Unexpected console session path')
+            if not args.no_render:
+                until(lambda:api('/api/state')['frame'].get('sequence',0)>2,25,'live joint-state renderer')
+            deadline=time.monotonic()+args.startup_hold_seconds
+            while time.monotonic()<deadline:
+                require(ready(),'Readiness lost during startup hold')
+                time.sleep(.1)
+            check=dict(cycle=cycle+1,ready_and_hold_wall_sec=time.monotonic()-started,
+                launch_directory=initial['lifecycle']['last_launch_directory'])
+            startup_checks.append(check);report.update(startup_checks=startup_checks)
+            if cycle<args.startup_cycles-1:
+                api('/api/stop',{})
+                stopped=until(lambda:(s if (s:=api('/api/state'))['lifecycle']['phase'] in ('idle','failed') else None),35,'restart shutdown')
+                require(stopped['lifecycle']['phase']=='idle' and not stopped['lifecycle']['owned'] and not stopped['can_submit'],'Restart shutdown was not clean')
+                folder=Path(check['launch_directory']);physics=json.loads((folder/'physics.json').read_text())
+                check_physics(physics,run_id=physics['run_id'],source_sha256=file_sha256(ROOT/'native/step_monitor.hpp'),timestep=cell.data['physics']['timestep'],require_interlock=True)
+                check.update(physics=physics,shutdown_clean=True)
+                report.update(startup_checks=startup_checks)
+                until(lambda:(s:=api('/api/state'))['graph']['clock']==0 and s['graph']['joints']==0 and s['graph']['status']==0,10,'previous graph departure')
         report.stage('strict_target_rejection')
         invalid=dict(bootstrap['config']['home_rad']);name=cell.joints[0];invalid[name]=bootstrap['config']['joint_limits'][name]['upper']+1
         try:api('/api/command',command(invalid))
@@ -118,7 +145,7 @@ def main():
         require(stopped['lifecycle']['phase']=='idle' and not stopped['lifecycle']['owned'] and not stopped['can_submit'],'Owned shutdown did not disable dispatch cleanly')
         folder=Path(stopped['lifecycle']['last_launch_directory']);physics=json.loads((folder/'physics.json').read_text())
         check_physics(physics,run_id=physics['run_id'],source_sha256=file_sha256(ROOT/'native/step_monitor.hpp'),timestep=cell.data['physics']['timestep'],require_interlock=True)
-        require(physics['run_id']==initial['lifecycle']['session_id']+'-1','Native physics belongs to another console launch')
+        require(physics['run_id']==initial['lifecycle']['session_id']+'-'+folder.name.removeprefix('launch-').lstrip('0'),'Native physics belongs to another console launch')
         report.update(physics=physics,physics_checks_passed=True,console_session=str(session),renderer_checked=not args.no_render)
     except (Exception,KeyboardInterrupt) as error:
         failed=True;report.update(error=dict(type=type(error).__name__,message=str(error)),failure_stage=report.data['stage'])

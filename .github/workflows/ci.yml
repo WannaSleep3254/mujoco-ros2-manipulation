@@ -123,7 +123,7 @@ jobs:
         if: matrix.robot == 'workcell'
         run: |
           source ./manipulation_env.sh
-          python3 verify_operator_console.py --domain 143 --no-render
+          python3 verify_operator_console.py --domain 143 --no-render --startup-cycles 2 --startup-hold-seconds 2
       - name: Paired seeded motion benchmark smoke test
         if: matrix.robot == 'workcell'
         run: |

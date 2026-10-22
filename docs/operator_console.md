@@ -86,9 +86,11 @@ python3 operator_console.py --domain 89 --port 8765
 ```bash
 PYTHONPATH=src runtime/report-tools/bin/python -m unittest tests.unit.test_operator_console -v
 source ./manipulation_env.sh
-python3 verify_operator_console.py --domain 143 --no-render
+python3 verify_operator_console.py --domain 143 --no-render --startup-cycles 2 --startup-hold-seconds 2
 # EGL 렌더러도 실제 구동하는 로컬 검사
 python3 verify_operator_console.py --domain 143 --port 8878
+# 실제 MuJoCo·RViz·웹 렌더러 동시 실행, 3회 시작/종료 후 기존 이동·취소 검사
+python3 verify_operator_console.py --domain 146 --port 8881 --native-gui --startup-cycles 3 --startup-hold-seconds 15
 ```
 
 실제 HTTP 검증은 새 시뮬레이터를 준비해 잘못된 목표 거부, 양팔 물리 이동·성공,
@@ -113,3 +115,39 @@ CI는 디스플레이·GPU 없이 `--no-render`로 같은 실제 ROS 경로를 �
 
 [검증 원본 (gzip JSON)](operator/validation.json.gz) · [파일·화면 해시](operator/validation-manifest.json) ·
 [양팔 취소 화면](operator/images/console-cancelled.png) · [실행 기록](operator/images/console-history.png) · [모바일 화면](operator/images/console-mobile.png)
+
+## 2026-10-22 네이티브 GUI 동시 실행 오류 수정
+
+사용자 실행 `launch-005`, `launch-007`에서 제어기 시작 노드가
+`Failed to find a free participant index for domain 144`로 실패했습니다.
+이어 명령 노드가 `Timeout: contact guard ready` 또는 `Timeout: shared state and clock`으로 종료됐고,
+화면의 소유 프로세스 관리가 MuJoCo·RViz까지 SIGINT로 정리했습니다.
+두 실행의 네이티브 진단에는 접촉·무효 수·시계 불연속이 없고 약 1.0배속으로 물리가 진행됐습니다.
+확인한 원인은 DDS 참가자 슬롯 부족이며, 관측된 창 종료는 준비 실패에 따른 정상 정리였습니다.
+
+[공통 환경](setup.md#공통-코드-구성)에 DDS 참가자 32개 설정을 추가했습니다.
+사용자 DDS 설정은 보존합니다. 핵심 프로세스 종료 시 화면에는 종료 코드·로그 경로와
+확인된 DDS 슬롯 부족 원인을 표시합니다. 준비 시간 제한과 접촉·시계 감시는 유지합니다.
+기존 버전으로 실행 중인 화면 서버에는 코드와 환경이 자동 반영되지 않습니다.
+필요한 기록을 보존하고 화면의 **실행 종료**, 서버의 Ctrl+C 후 다음과 같이 재시작합니다.
+
+```bash
+source ./manipulation_env.sh
+python3 operator_console.py --domain 144 --port 8765
+```
+
+별도 도메인 146의 검증 `20261022T021707.225994Z-bf3e6f0a`에서
+실제 네이티브 MuJoCo·RViz와 웹 렌더러를 함께 3회 시작하고 각 준비 후 15초를 유지했습니다.
+양팔 정상 실행·동작 중 양팔 취소·홈 복귀·모든 소유 프로세스 정상 종료를 통과했고 접촉은 0이었습니다.
+단위 검사 175개(조작 화면 15개, ROS 없는 환경 정책 4개 포함)를 통과했습니다.
+이는 해당 실행 조건의 회귀 검증이며 장시간 내구성 시험 결과는 아닙니다.
+원래 사용자 도메인 144의 세션은 종료하지 않았습니다.
+
+[실제 GUI·ROS 검증 원본](operator/gui-startup-validation.json.gz) ·
+[실행 조건·구현 해시](operator/gui-startup-validation-manifest.json)
+
+추가로 도메인 97·98에서 실제 ROS 노드 12개를 시작한 슬롯 비교에서는 기존 설정이 9개 준비·3개 슬롯 부족,
+수정 설정이 12개 모두 준비였고 검사 프로세스는 모두 회수했습니다. 기존 설정에서 실제 사용할 수 있는 수는
+다른 참가자의 점유 상황 등에 따라 기본 상한보다 작을 수 있습니다.
+CI와 같은 헤드리스 조건에서도 2회 시작·종료와 실제 이동·취소·복귀를 통과했습니다.
+위 원본에는 실행 결과와 재현용 슬롯 비교 스크립트를 함께 보존했습니다.

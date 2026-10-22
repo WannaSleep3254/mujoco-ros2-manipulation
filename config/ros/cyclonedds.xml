@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain Id="any">
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+      <!-- 32 local processes, including transient controller spawners and viewers.
+           Index 31 also keeps UDP ports valid at the supported domain 232. -->
+      <MaxAutoParticipantIndex>31</MaxAutoParticipantIndex>
+    </Discovery>
+  </Domain>
+</CycloneDDS>

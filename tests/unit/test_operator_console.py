@@ -109,6 +109,31 @@ class ConsoleOwnershipTests(unittest.TestCase):
                 spawn.assert_not_called()
             app.close()
 
+    def test_startup_failure_reports_dds_cause_from_simulation_log(self):
+        state,_=fixture()
+        with tempfile.TemporaryDirectory() as temp:
+            folder=Path(temp)
+            (folder/'simulation.log').write_text('Failed to find a free participant index for domain 144\n')
+            (folder/'commands.log').write_text('RuntimeError: Timeout: contact guard ready\n')
+            app=ConsoleApplication(NS(root=folder),state,NS(outbox=queue.Queue()),folder/'console',render=False)
+            app.last_launch=folder
+            app.children=dict(commands=NS(poll=lambda:1))
+            error=app.process_failure(preparing=True)
+            self.assertIn('DDS 참가자 슬롯 부족',error)
+            self.assertIn('commands (exit=1)',error)
+            self.assertIn(str(folder),error)
+            app.children.clear();app.close()
+
+    def test_renderer_exit_does_not_masquerade_as_core_process_failure(self):
+        state,_=fixture()
+        with tempfile.TemporaryDirectory() as temp:
+            app=ConsoleApplication(NS(root=Path(temp)),state,NS(outbox=queue.Queue()),Path(temp)/'console',render=False)
+            app.children=dict(simulation=NS(poll=lambda:None),renderer=NS(poll=lambda:1))
+            self.assertIsNone(app.process_failure())
+            app.children['commands']=NS(poll=lambda:2)
+            self.assertIn('commands (exit=2)',app.process_failure())
+            app.children.clear();app.close()
+
     def test_stop_orders_owned_command_owner_before_simulation(self):
         state,_=fixture()
         with tempfile.TemporaryDirectory() as temp:
