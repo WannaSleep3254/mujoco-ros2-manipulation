@@ -11,7 +11,7 @@
 
 ## 2026-10-22 현재 상태와 동작 비교
 
-[뷰어 상태·비교 영상 HTML](operator/picking-comparison-2026-10-22/index.html) ·
+[공개 뷰어 상태·비교 영상 HTML](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html) · [저장소 HTML](operator/picking-comparison-2026-10-22/index.html) ·
 [뷰어 조작 확대 MP4](operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4) ·
 [전체 UI 원본 MP4](operator/picking-comparison-2026-10-22/viewer-interface.mp4) ·
 [뷰어·MuJoCo·RViz 비교 MP4](operator/picking-comparison-2026-10-22/viewer-mujoco-rviz.mp4) ·

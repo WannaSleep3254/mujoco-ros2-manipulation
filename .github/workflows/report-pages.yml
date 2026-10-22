@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/report-pages.yml'
       - 'docs/reports/**'
+      - 'docs/operator/**'
       - 'src/mujoco_ros2_manipulation/reporting/**'
       - 'scripts/check_published_reports.py'
       - 'pyproject.toml'

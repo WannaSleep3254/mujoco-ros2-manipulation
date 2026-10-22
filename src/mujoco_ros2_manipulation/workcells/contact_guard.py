@@ -3,6 +3,7 @@ import argparse
 import json
 import time
 import rclpy
+from rclpy.signals import SignalHandlerOptions
 from rclpy.node import Node
 from rclpy.clock import Clock
 from rclpy.clock import ClockType
@@ -11,6 +12,7 @@ from std_msgs.msg import Bool, String
 from action_msgs.srv import CancelGoal
 from controller_manager_msgs.srv import ListControllers, SwitchController
 from mujoco_ros2_manipulation.workcells.contact_policy import ContactPolicy
+from mujoco_ros2_manipulation.verification.signals import cooperative_shutdown
 
 
 class ContactGuard(Node):
@@ -142,16 +144,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--controllers", nargs=2, required=True)
     args, ros_args = parser.parse_known_args()
-    rclpy.init(args=ros_args)
-    node = ContactGuard(args.controllers)
-    try:
-        rclpy.spin(node)
-    except (KeyboardInterrupt, rclpy.executors.ExternalShutdownException):
-        pass
-    finally:
-        node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
+    # Do not interrupt rclpy's C response conversion with Python's default SIGINT.
+    # Keep handlers installed through cleanup; unrelated callback errors still fail.
+    with cooperative_shutdown() as stop:
+        rclpy.init(args=ros_args, signal_handler_options=SignalHandlerOptions.NO)
+        node = None
+        try:
+            node = ContactGuard(args.controllers)
+            while rclpy.ok() and not stop.requested:
+                rclpy.spin_once(node, timeout_sec=0.1)
+        except rclpy.executors.ExternalShutdownException:
+            pass
+        finally:
+            if node is not None:
+                node.destroy_node()
+            if rclpy.ok():
+                rclpy.shutdown()
 
 
 if __name__ == "__main__":

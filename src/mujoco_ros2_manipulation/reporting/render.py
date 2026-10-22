@@ -137,7 +137,7 @@ def catalog_entry(data):
             "resources": report_resources(data, data["report_id"] + "/")}
 
 
-def catalog_html(entries):
+def catalog_html(entries, demos=()):
     body = ['<section><h2>평가 이력</h2><p>같은 조건에서 측정한 지표끼리 비교하세요. 예비 평가와 미측정 구간을 함께 표시합니다.</p>'
             '<div class="controls"><label>리포트 검색 <input id="search" type="search" placeholder="모델·평가명·날짜"></label>'
             '<a href="catalog.json">목록 JSON</a></div><p id="count" class="note" aria-live="polite"></p>'
@@ -150,5 +150,13 @@ def catalog_html(entries):
             f'<div class="report-links">{links}</div><code>{entry["report_id"]}</code></td>'
             f'<td>{esc(", ".join(entry["models"]))}<br><code>{entry["commit"][:12]}</code></td><td>{esc(entry["overview"])}</td></tr>')
     body.append('</tbody></table></div></section>')
+    if demos:
+        body.append('<section id="demos"><h2>기능 시연</h2>'
+                    '<p>조작 화면과 단일 동작 검증 자료입니다. 위 성능평가 목록과 표본 수에 합산하지 않습니다.</p>')
+        for demo in demos:
+            body.append(f'<article data-demo><h3><a href="{esc(demo["url"])}">{esc(demo["title"])}</a></h3>'
+                        f'<p><span class="tag">{esc(demo["published_date"])} / 기능 시연</span></p>'
+                        f'<p>{esc(demo["overview"])}</p></article>')
+        body.append('</section>')
     script = """'use strict';const rows=[...document.querySelectorAll('[data-report]')];function filter(){const q=document.getElementById('search').value.trim().toLowerCase();let n=0;for(const row of rows){row.hidden=!row.textContent.toLowerCase().includes(q);if(!row.hidden)n++}document.getElementById('count').textContent=n+' / '+rows.length+'개 리포트'}document.getElementById('search').addEventListener('input',filter);filter();window.reportReady=true;"""
-    return _page('로봇 제어 성능평가 리포트', '원본 저장소에서 관리하는 평가 이력 · ROS 2 / MuJoCo / MoveIt', ''.join(body), '', script)
+    return _page('로봇 제어 성능평가 리포트', '원본 저장소에서 관리하는 평가 이력 · ROS 2 / MuJoCo / MoveIt', ''.join(body), '<nav><a href="#demos">기능 시연</a></nav>' if demos else '', script)

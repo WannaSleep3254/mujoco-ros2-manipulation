@@ -3,28 +3,36 @@
   "report_id": "2026-10-21-request-timing",
   "source_commit": "c67565f958da9c6ddade2bdc393e227b4acb48d2",
   "generator": {
-    "version": "1.1",
-    "fingerprint": "76fb635243f328853bd339a6da0d6ee1076c6be4c531550ff5895b7f950319df",
+    "version": "1.2",
+    "fingerprint": "9bea715fba7a38d28698f914914523e33ec493a21a26026f82a1f2236a7dc8f4",
     "files": {
       "__init__.py": {
         "bytes": 125,
-        "sha256": "32d105c522dc57015fb986592698a418ca4a9fa66abc617f5160f19004059e70"
+        "sha256": "176bdb654c5c454e7973f058bdc67922cdba168fd272f2a7f0d15c4761d0163a"
       },
       "data.py": {
         "bytes": 6045,
         "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
       },
       "render.py": {
-        "bytes": 10724,
-        "sha256": "67d25362ed5834c85f3cffcb00c86b47d6a2d6783bff98d2bc5efdec6234900b"
+        "bytes": 11372,
+        "sha256": "aba012b1f4d915d27749cc02e4827f9993e1ca6de1f85269112c1cc35e0b5c6d"
       },
       "publish.py": {
-        "bytes": 7184,
-        "sha256": "cae894b517d32763e4208ccf8d55c89da7347e9c7d11482c5eb1d27af5c2f041"
+        "bytes": 7522,
+        "sha256": "924cc7538b553da49af4ba471aed812bff137996abd10f0bbea5d5d02f1f065e"
       },
       "report.schema.json": {
         "bytes": 5126,
         "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
+      },
+      "operator_demos.py": {
+        "bytes": 3561,
+        "sha256": "7d0cd2139318acb21c9134f631ed14ccee9c7179ef4285c57e68518d13a2843d"
+      },
+      "operator-demos.schema.json": {
+        "bytes": 1209,
+        "sha256": "d1a2fa44b8348b15226e65a766035c2e47644fe5a23e420283cd7e4a4d05e9bc"
       },
       "templates/page.html": {
         "bytes": 518,
@@ -43,7 +51,7 @@
     },
     "index.html": {
       "bytes": 47416,
-      "sha256": "b2b0cc47aefcc69e57b93053be096092d3effe02748b253c70a76cd2ed1f7c18"
+      "sha256": "bf6e73c713b7b9e18c5bd8fcd11f8cccaa422c90bf54b61f7bded790f7428819"
     },
     "metrics.csv": {
       "bytes": 21867,

@@ -26,3 +26,9 @@ HTML 목록과 `catalog.json`은 새 평가 입력에서 자동 생성됩니다.
 GitHub 파일 화면은 HTML 소스를 표시합니다. 로컬 브라우저로 열거나 게시용 정적 사이트를 사용합니다.
 공개 사이트는 main의 리포트 관련 변경 후 검증된 파일을 GitHub Pages에 게시합니다.
 배포 상태와 공개 파일 검증은 [게시 안내](../reporting.md#html-게시와-운영)에서 확인합니다.
+
+## 기능 시연
+
+공개 목록 아래의 **기능 시연**에서 [뷰어 상태·피킹 접근·후퇴 비교](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html)를 엽니다.
+[별도 등록 목록](operator-demos.json)과 시연 폴더의 manifest로 게시 파일을 검증합니다.
+성능평가 `catalog.json`의 보고서·표본에는 합산하지 않습니다. [등록 방법](../reporting.md#기능-시연의-등록과-게시)을 따릅니다.

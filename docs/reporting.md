@@ -14,12 +14,17 @@ docs/reports/
   index.html                 # 자동 생성: 전체 목록·검색
   catalog.json               # 자동 생성: 목록 API용 JSON
   site-manifest.json         # 자동 생성: 게시 파일 전체 해시, 자기 자신 제외
+  operator-demos.json        # 선택 입력: 기능 시연 ID·설명·검토한 manifest 해시
   <날짜>-<평가ID>/
     report.json              # 작성·검토할 공통 입력
     index.html               # 자동 생성: 표준 요약
     metrics.csv              # 자동 생성: 동일 지표와 단위·시계·n
     report-manifest.json     # 자동 생성: 파일 해시·크기·생성기 버전/지문
     ...                      # report.json에 선언한 근거·그림·기존 상세 HTML
+docs/operator/<시연ID>/
+  manifest.json              # assets: 검토한 파일명 → SHA-256
+  index.html                 # 독립 기능 시연 HTML
+  ...                        # manifest에 등록한 영상·그림·근거
 runtime/report-site-<ID>/     # 새 폴더에만 내보내는 게시용 파일; Git 제외
 ```
 
@@ -92,6 +97,32 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 예제의 null을 측정값으로 바꿀 때 표본·성공/실패·시계도 함께 기록합니다.
 자료 파일의 SHA-256은 `sha256sum`으로 계산합니다.
 
+## 기능 시연의 등록과 게시
+
+성능 측정이 아닌 조작·기능 시연은 `docs/operator/<시연ID>`에 보관합니다.
+[시연 등록 목록](reports/operator-demos.json)은 [별도 스키마](../src/mujoco_ros2_manipulation/reporting/operator-demos.schema.json)로 검사합니다.
+목록의 ID로 형제 폴더 `docs/operator/<시연ID>`만 찾으며 임의 소스 경로는 받지 않습니다.
+등록 목록이 없는 다른 리포트 루트는 기존 동작을 유지합니다.
+
+1. 독립 HTML과 필요한 영상·그림·근거를 준비하고 브라우저에서 검토합니다.
+2. 해당 폴더의 `manifest.json`에 `schema_version: 1`과 `assets`를 기록합니다.
+   `assets`는 상대 파일명과 SHA-256의 객체이며 `index.html`을 포함하고 `manifest.json` 자체는 제외합니다.
+3. `operator-demos.json`의 `demos` 배열에 `id`, `title`, `published_date`, `overview`,
+   검토한 `manifest.json`의 `manifest_sha256`을 추가합니다. 날짜는 YYYY-MM-DD입니다.
+4. `validate` → `build` → `build --check` → 새 폴더 `site` 내보내기로 자료와 출력을 확인합니다.
+   자료 정정 시 자산 해시, manifest 해시, 생성 파일을 함께 갱신하고 PR에서 검토합니다.
+
+공개 주소는 `operator/<시연ID>/index.html`입니다. 목록의 **기능 시연** 구역에서 연결하며,
+성능평가 `catalog.json`의 `reports`와 검색 개수·표본에는 넣지 않습니다.
+manifest에 등록한 파일과 manifest만 복사하고, 미등록 파일·다른 시연 폴더·runtime은 복사하지 않습니다.
+중복 ID·공개 경로, 미지원 manifest 버전, 파일 변조·누락, 경로 이탈·심볼릭 링크를 거부합니다.
+전체 사이트의 `site-manifest.json`은 기능 시연 파일과 등록 목록도 포함합니다.
+
+공개 HTML은 내보낸 폴더에서 링크가 모두 해결되어야 합니다. 저장소 README·실행 안내는 GitHub HTTPS 링크를 사용합니다.
+로컬 조작 주소는 설명용 텍스트로만 표기하고 공개 페이지에 로컬 제어 연결을 넣지 않습니다.
+촬영 원본의 구현 커밋과 물리 검증 결과는 유지하며, 게시를 위해 새 성능 측정을 만든 것으로 표시하지 않습니다.
+기존 상세 HTML과 마찬가지로 JavaScript가 포함된 시연 HTML은 PR에서 직접 검토합니다.
+
 ## 기존 1차 리포트 변환
 
 ```bash
@@ -123,7 +154,7 @@ GitHub Pages의 Source는 GitHub Actions, 배포 환경은 `github-pages`입니�
 ### 자동 게시
 
 1. PR에서 기존 필수 CI 6개와 생성 결과를 검토하고 main에 병합합니다.
-2. main의 리포트 입력·생성기·의존성·게시 workflow 변경이 있으면 `Publish reports`를 실행합니다.
+2. main의 리포트 입력·기능 시연(`docs/operator/**`)·생성기·의존성·게시 workflow 변경이 있으면 `Publish reports`를 실행합니다.
 3. JSON 스키마·원본 자료 해시·출력 일치·리포트 단위 검사를 수행합니다.
 4. `site`로 선택한 파일만 새 폴더에 내보내고 Pages Artifact를 올립니다.
 5. Pages 배포 후 공개 파일 전체를 해당 커밋의 `site-manifest.json`과 대조합니다.

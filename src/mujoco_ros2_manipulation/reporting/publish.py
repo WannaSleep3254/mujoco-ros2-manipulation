@@ -11,9 +11,11 @@ from urllib.parse import unquote, urlsplit
 
 from . import GENERATOR_VERSION
 from .data import ReportError, json_text, load_report
+from .operator_demos import collect_demos
 from .render import catalog_entry, catalog_html, metrics_csv, report_html
 
 GENERATOR_FILES = ("__init__.py", "data.py", "render.py", "publish.py", "report.schema.json",
+                   "operator_demos.py", "operator-demos.schema.json",
                    "templates/page.html", "templates/style.css")
 
 
@@ -109,7 +111,12 @@ def collect(root):
     entries = [catalog_entry(data) for _, data in reports]
     entries.sort(key=lambda entry: (entry["published_date"], entry["report_id"]), reverse=True)
     generated["catalog.json"] = json_text({"schema_version": 1, "reports": entries}).encode()
-    generated["index.html"] = catalog_html(entries).encode()
+    demos, demo_site = collect_demos(root)
+    overlap = site.keys() & demo_site.keys()
+    if overlap:
+        raise ReportError("Duplicate publication paths: " + ", ".join(sorted(overlap)))
+    site.update(demo_site)
+    generated["index.html"] = catalog_html(entries, demos).encode()
     site.update({name: generated[name] for name in ("catalog.json", "index.html")})
     generated["site-manifest.json"] = json_text({
         "schema_version": 1, "generator": generator,
