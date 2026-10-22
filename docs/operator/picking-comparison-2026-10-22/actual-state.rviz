@@ -1,0 +1,36 @@
+Panels: []
+Visualization Manager:
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Value: true
+      Cell Size: 0.2
+      Alpha: 0.35
+    - Class: rviz_default_plugins/RobotModel
+      Name: ActualRobotModel
+      Description Source: File
+      Description File: /home/sea21jk/projects/isaac_sim_setup/runtime/generated/workcells/fr5_ur5e/cell.urdf
+      Visual Enabled: true
+      Collision Enabled: false
+      Alpha: 1
+      Value: true
+  Global Options:
+    Fixed Frame: world
+    Background Color: 38; 43; 49
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 2.8
+      Focal Point: {X: 0, Y: 0, Z: 0.65}
+      Name: Current View
+      Pitch: 0.5
+      Target Frame: world
+      Yaw: -0.623
+Window Geometry:
+  Width: 1200
+  Height: 650
+  X: 3840
+  Y: 80

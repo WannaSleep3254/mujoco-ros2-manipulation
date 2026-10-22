@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>뷰어 상태와 피킹 접근·후퇴 비교 · 2026-10-22</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1720;--card:#172630;--text:#e4eef4;--muted:#9cb0bf;--line:#304550;--accent:#f5aa70}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,"Noto Sans CJK KR",sans-serif}main{max-width:1280px;margin:auto;padding:38px 24px 60px}a{color:#88d2ed}h1{font-size:clamp(28px,4vw,43px);line-height:1.25;margin:10px 0 20px}h2{font-size:25px;margin:32px 0 12px}h3{margin:0 0 8px;font-size:19px}p{color:var(--muted)}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--accent)}.lead{max-width:950px}.chips,.metrics,.cards{display:grid;gap:14px}.chips{display:flex;flex-wrap:wrap;margin:20px 0}.chips span,.seek{border:1px solid var(--line);border-radius:5px;padding:6px 11px;font-size:13px}.metrics{grid-template-columns:repeat(4,1fr);margin:26px 0}.metric,.card{background:var(--card);border:1px solid var(--line);padding:18px;border-radius:9px}.metric strong{font-size:29px;display:block}.metric small{color:var(--muted)}video{display:block;width:100%;background:#080f14;border:1px solid var(--line);border-radius:8px}.seeks{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.seek{background:var(--card);color:var(--text);cursor:pointer}.seek:hover,.seek:focus{border-color:var(--accent)}.note{border-left:3px solid var(--accent);padding:10px 16px;background:#192a32}.cards{grid-template-columns:repeat(3,1fr);margin:18px 0}.card p{margin:0;font-size:14px}.table{overflow-x:auto;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);vertical-align:top}th{color:#b6cbd7;background:var(--card)}td:first-child{white-space:nowrap}tr:last-child td{border-bottom:0}code{font-size:13px;overflow-wrap:anywhere}.image-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.image-grid figure{margin:0}.image-grid img{width:100%;border:1px solid var(--line);border-radius:6px}.image-grid figcaption{font-size:13px;color:var(--muted)}summary{cursor:pointer;font-size:19px;margin:22px 0 12px}footer{border-top:1px solid var(--line);margin-top:38px;padding-top:18px;font-size:13px;color:var(--muted)}button{font:inherit}li{margin:9px 0}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}details p{font-size:14px}@media(max-width:700px){main{padding:25px 15px}.metrics{grid-template-columns:1fr 1fr}.cards,.image-grid{grid-template-columns:1fr}table{font-size:12px}th,td{padding:10px}.metric strong{font-size:25px}}
+.views{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0}.view{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:10px 15px;cursor:pointer}.view[aria-pressed="true"]{color:#101923;background:var(--accent);border-color:var(--accent)}.view:focus-visible,.seek:focus-visible{outline:2px solid #88d2ed;outline-offset:3px}.video-stage{position:relative;aspect-ratio:16/9;background:#080f14;border-radius:8px;box-shadow:0 0 0 1px var(--line)}.video-stage video{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain}#comparison-video:fullscreen{width:100%;height:100%;border-radius:0}#view-description{min-height:3.3em}p strong{color:var(--text)}</style></head><body><main>
+<div class="eyebrow">FUNCTIONAL DEMO / 2026-10-22</div>
+<h1>뷰어 상태와 피킹 접근·후퇴 비교</h1>
+<p class="lead">FR5·UR5e 공동 장면의 현재 조작 화면을 정리했습니다. 뷰어에서 관절 목표 파일을 불러오고 실행하면, MuJoCo가 물리를 계산하고 뷰어와 RViz가 같은 ROS 상태를 표시합니다. 이 시연은 집기 위치로 접근하고 후퇴하는 동작이며 물체 파지는 포함하지 않습니다.</p>
+<div class="chips"><span>FR5 이동 / UR5e 홈 목표 유지</span><span>실제 파지·그리퍼·공구 TCP 제외</span><span>같은 세션 촬영 / 재생 1×</span><span>단일 기능 검증 사례</span></div>
+<nav><a href="#comparison">뷰어 조작·비교 영상</a><a href="#status">현재 기능</a><a href="#evidence">측정과 원본</a><a href="../../../README.md">프로젝트 README</a></nav>
+<div class="metrics"><div class="metric"><strong>44.2초</strong><small>촬영본 재생 길이</small></div><div class="metric"><strong>4 / 4 성공</strong><small>상부 이동·접근·후퇴·홈</small></div><div class="metric"><strong>249.6mm</strong><small>관측 종료점 사이의 하강량</small></div><div class="metric"><strong>접촉 0</strong><small>네이티브 매 물리 스텝 진단</small></div></div>
+<h2 id="comparison">뷰어 인터페이스와 동작 비교</h2>
+<p>목표 입력과 실행 과정을 볼 수 있도록 <strong>뷰어 조작부 확대 화면</strong>을 기본으로 표시합니다. 아래 버튼으로 같은 촬영본의 세 화면 비교와 모션 확대 영상을 전환할 수 있습니다. 재생 영역은 두 번째 영상(뷰어·MuJoCo·RViz)의 16:9 비율로 맞췄으며, 탭을 바꿔도 높이를 유지합니다. 각 영상은 원본 비율로 표시합니다.</p>
+<div class="views" role="group" aria-label="영상 보기 선택">
+<button class="view" data-view="interface" aria-pressed="true">뷰어 조작 확대</button>
+<button class="view" data-view="comparison" aria-pressed="false">뷰어 · MuJoCo · RViz</button>
+<button class="view" data-view="closeup" aria-pressed="false">모션 확대 비교</button>
+</div>
+<div id="video-stage" class="video-stage interface"><video id="comparison-video" controls playsinline preload="metadata" poster="viewer-interface-focus.png" aria-label="뷰어 조작부 확대 영상"><source src="viewer-interface-focus.mp4" type="video/mp4">브라우저가 영상을 지원하지 않습니다. <a href="viewer-interface-focus.mp4">뷰어 조작 확대 MP4 내려받기</a></video></div>
+<div class="seeks"><button class="seek" data-seek="2.924">상부 위치 이동</button><button class="seek" data-seek="12.335">접근</button><button class="seek" data-seek="22.227">후퇴</button><button class="seek" data-seek="32.105">홈 복귀</button></div>
+<p id="view-description" aria-live="polite">첫 번째 영상은 상단 제목·로고와 하단 안내·로그·푸터를 잘라 조작부를 확대했습니다. 시뮬레이션 시작·종료, 관절 목표·불러오기·실행·취소와 진행·완료 표시는 유지합니다. 같은 촬영본이며 재생 시간과 속도는 그대로입니다. 전체 UI 원본은 아래 링크에서 볼 수 있습니다.</p>
+<p><a id="video-download" href="viewer-interface-focus.mp4">선택한 영상 열기 / 내려받기</a> · <a href="viewer-interface.mp4">전체 UI 원본 영상</a> · <a href="viewer-interface-focus.png" target="_blank" rel="noopener">확대 정지 화면</a> · <a href="viewer-interface.png" target="_blank" rel="noopener">전체 UI 정지 화면</a> · <a href="http://127.0.0.1:8765/">실제 로컬 조작 화면 열기</a></p>
+<p class="note">이 페이지는 녹화 영상입니다. 실제 로봇 조작은 로컬 서버가 실행 중일 때 <a href="http://127.0.0.1:8765/">통합 조작 화면</a>에서 할 수 있습니다. 영상의 작은 글씨는 전체 화면 재생 또는 정지 화면 확대를 사용하세요.</p>
+<p class="note">고해상도 재촬영: 같은 1200×1180 CSS 화면을 DPR 2의 <strong>2400×2360px PNG</strong>로 직접 기록했습니다. 첫 영상은 원본에서 2400×1796px로 잘라 H.264 CRF 14로 한 번 인코딩했습니다. 촬영용 장면 렌더러도 1920×1280px로 높였습니다. 화면 구도와 16:9 공통 재생 영역은 유지했습니다.</p>
+<details><summary>재촬영 전후 글자 선명도 비교</summary><img src="quality-comparison.png" alt="같은 목표의 접근 완료 장면에서 관절 목표 영역을 동일 표시 크기로 비교" style="display:block;width:100%;max-width:1080px;margin:auto"><p>기존 촬영본과 새 촬영본의 관절 목표 영역을 같은 표시 크기로 비교했습니다. 서로 다른 실제 실행이며, 같은 목표의 접근 완료 장면입니다. 원본 PNG와 요청·물리 진단은 별도 보관했습니다.</p></details>
+<div class="cards"><article class="card"><h3>1. 목표 입력·불러오기</h3><p>오른쪽 FR5·UR5e 관절 목표와 단위를 확인합니다. 영상에서는 목표 파일을 불러와 각 단계의 목표를 채웁니다.</p></article><article class="card"><h3>2. 계획 후 실행</h3><p>오른쪽 아래 실행 버튼으로 요청을 보냅니다. 단계 이동 버튼은 영상의 해당 조작 시점으로 이동합니다.</p></article><article class="card"><h3>3. 진행·완료 확인</h3><p>뷰어 아래 현재 요청에서 목표 수신·계획·양팔 동작·완료 확인을 보고, 세 화면 비교로 실제 움직임을 확인합니다.</p></article></div>
+<p>별도 전용 세션에 재접속해 촬영했으며, 네이티브 창 체크박스는 다음 시작 옵션입니다. 이미 열린 창의 상태를 나타내는 표시로 사용하지 않습니다. 카메라 각도는 서로 다릅니다. 뷰어 표시는 최대 5fps이고, 12fps 촬영본에는 시간 간격을 유지하기 위한 반복 프레임이 포함됩니다. 렌더링 성능 측정값은 아닙니다.</p>
+<div class="cards"><article class="card"><h3>Viewer</h3><p>실제 Chromium 페이지를 DPR 2로 직접 촬영했습니다. <code>/joint_states</code>를 받은 별도 MuJoCo 렌더러의 이미지를 표시합니다. 이 렌더러는 물리를 적분하지 않습니다.</p></article><article class="card"><h3>MuJoCo</h3><p>네이티브 MuJoCo 3.12.0의 실제 X11 창. ROS 제어기와 물리 엔진이 명령을 실행합니다.</p></article><article class="card"><h3>RViz RobotModel</h3><p>같은 생성 URDF와 실제 TF를 사용하는 별도 RViz 창입니다. 계획·목표 자세 표시를 제외해 현재 동작만 비교합니다.</p></article></div>
+<h2 id="status">현재 구현 범위</h2>
+<div class="table"><table><thead><tr><th>기능</th><th>현재 상태</th><th>범위·남은 내용</th></tr></thead><tbody><tr><td>공동 장면</td><td>구현·검증</td><td>FR5·UR5e 12관절, 시작·종료·기존 장면 연결</td></tr><tr><td>관절 목표 조작</td><td>구현·검증</td><td>deg/rad, 현재·홈·예제, JSON 입출력</td></tr><tr><td>계획 후 실행·취소</td><td>구현·검증</td><td>공동 계획·출발 타이밍 조정, 요청별 완료 피드백</td></tr><tr><td>상태·실패 표시</td><td>구현·검증</td><td>단계·거리·실패·취소·최근 40개 기록</td></tr><tr><td>라이브 모델</td><td>구현·검증</td><td>ROS 상태 기반 최대 5fps, 전체·정면·상단 카메라</td></tr><tr><td>연결·안전 차단</td><td>구현·검증</td><td>중복 명령·상태/시계·모델·접촉 잠금 검사</td></tr><tr><td>거리 제약 재계획</td><td>초기 단계</td><td>일부 홈 복귀 경로가 30mm 조건에서 거부됨. 공간 경로 재탐색 보강 필요</td></tr><tr><td>3D 클릭·TCP 드래그</td><td>미구현</td><td>관절 목표 입력 방식. 화면에서 위치를 집어 목표로 지정하지 않음</td></tr><tr><td>Pose/IK·단일 모델 UI</td><td>후속 범위</td><td>FR5·FR10·UR5e 단일 모델은 기존 CLI/RViz로 실행</td></tr><tr><td>그리퍼·물체 파지·작업 TCP</td><td>미구현</td><td>이번 영상에 실제 집기·이송·조립은 포함하지 않음</td></tr></tbody></table></div>
+<p class="note">이번 결과는 정해진 목표 4개의 기능 검증입니다. 임의의 자세에서 항상 홈 복귀하거나 최소 우회 경로를 찾는다는 보장은 없습니다. 현재 우선 과제는 실패 사례 재현, 거리 조건을 반영한 재계획, 다양한 시작·목표에 대한 평가입니다.</p>
+<h2 id="evidence">시퀀스와 확인한 결과</h2>
+<p>FR5 기준 프레임은 <code>left_wrist3_link</code>입니다. 오프라인 역기구학으로 만든 관절 목표를 기존 뷰어에 불러왔으며, 뷰어에 Pose/IK 기능을 추가한 시연은 아닙니다. 상부 목표 z=0.94m, 접근 목표 z=0.69m입니다. 관절 공간 계획이므로 이동 중 직선 접근을 보장하지 않습니다.</p>
+<div class="table"><table><thead><tr><th>단계</th><th>결과</th><th>관측 종료 높이</th><th>수신 → 요청 종료</th><th>계획 샘플 최소 간격</th></tr></thead><tbody><tr><td>상부 위치 이동</td><td>성공</td><td>0.9368 m</td><td>6.284 s</td><td>181.1 mm</td></tr><tr><td>접근</td><td>성공</td><td>0.6872 m</td><td>6.928 s</td><td>451.2 mm</td></tr><tr><td>후퇴</td><td>성공</td><td>0.9364 m</td><td>6.925 s</td><td>452.2 mm</td></tr><tr><td>홈 복귀</td><td>성공</td><td>0.9391 m</td><td>6.293 s</td><td>187.3 mm</td></tr></tbody></table></div>
+<p>UR5e에는 홈 목표를 유지하도록 명령했습니다. 추종 오차와 MoveIt 목표 허용 오차에 따른 작은 관절 변화가 포함됩니다. 접촉 0은 네이티브 물리 진단 값이며 간격 값은 샘플 검사 결과입니다. 프레임별 캡처 시각과 상태를 보존했지만 세 표시기의 동일 프레임 시각을 보장하는 지연 측정은 수행하지 않았습니다.</p>
+<div class="image-grid"><figure><img src="pre-pick.png" alt="실제 상부 위치 도달 비교"><figcaption>집기 위치 상부</figcaption></figure><figure><img src="approach.png" alt="실제 접근 위치 도달 비교"><figcaption>약 25cm 접근 · 실제 파지 없음</figcaption></figure></div>
+<p><a href="evidence.json.gz">요청·관측·물리 진단·촬영 소스 원본</a> · <a href="manifest.json">파일·구현 해시와 검증 범위</a> · <a href="targets.json">목표 관절값과 참조 위치</a> · <a href="actual-state.rviz">RViz 실제 상태 설정</a></p>
+<p>PR <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/20">#20</a>·<a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/21">#21</a>은 main에 병합됐습니다. <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39714938525">병합 후 main CI</a>와 <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39714938494">공개 리포트 배포</a>도 통과했습니다. 이 시연 자료는 해당 병합 이후 별도로 작성했으며 공개 배포된 것으로 표시하지 않습니다.</p>
+<footer>2026-10-22 · DPR 2 고해상도 재촬영 · FR5 + UR5e · 실제 파지 제외 · 로컬 기능 검증 자료. 기존 성능 리포트 표본과 합산하지 않습니다.</footer>
+</main><script>
+const views={
+ interface:{src:'viewer-interface-focus.mp4',poster:'viewer-interface-focus.png',label:'뷰어 조작부 확대 영상',description:'첫 번째 영상은 상단 제목·로고와 하단 안내·로그·푸터를 잘라 조작부를 확대했습니다. 시뮬레이션 시작·종료, 관절 목표·불러오기·실행·취소와 진행·완료 표시는 유지합니다. 같은 촬영본이며 재생 시간과 속도는 그대로입니다. 전체 UI 원본은 아래 링크에서 볼 수 있습니다.'},
+ comparison:{src:'viewer-mujoco-rviz.mp4',poster:'operation-poster.png',label:'뷰어·MuJoCo·RViz 전체 비교 영상',description:'왼쪽은 조작부를 포함한 뷰어 전체, 오른쪽 위는 네이티브 MuJoCo, 아래는 실제 TF를 표시하는 RViz입니다. 같은 세션의 전체 녹화 화면입니다.'},
+ closeup:{src:'motion-closeup.mp4',poster:'poster.png',label:'세 화면의 로봇 모션 확대 비교 영상',description:'로봇 움직임을 비교하기 위한 확대본입니다. 조작부는 포함하지 않으므로 목표 입력과 버튼은 뷰어 조작 확대 영상에서 확인하세요.'}
+};
+const video=document.getElementById('comparison-video');
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
+ if(button.getAttribute('aria-pressed')==='true')return;
+ const name=button.dataset.view,view=views[name],time=video.currentTime,playing=!video.paused;
+ video.pause();
+ document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+ document.getElementById('video-stage').classList.toggle('interface',name==='interface');
+ document.getElementById('view-description').textContent=view.description;
+ document.getElementById('video-download').href=view.src;
+ video.poster=view.poster;video.setAttribute('aria-label',view.label);
+ video.onloadedmetadata=()=>{video.currentTime=Math.min(time,video.duration);if(playing)video.play().catch(()=>{});};
+ video.querySelector('source').src=view.src;
+ video.querySelector('a').href=view.src;video.querySelector('a').textContent=view.label+' MP4 내려받기';
+ video.load();
+}));
+document.querySelectorAll('[data-seek]').forEach(button=>button.addEventListener('click',()=>{
+ video.currentTime=Number(button.dataset.seek);video.play().catch(()=>{});
+}));
+</script></body></html>

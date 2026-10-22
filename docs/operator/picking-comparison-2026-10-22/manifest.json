@@ -1,0 +1,494 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-22",
+  "evaluated_code_commit": "50b549b24ff33b9286e4ac7545c01d893c1ac193",
+  "merged_main_commit": "bae37cdaf7e75eecbffe1cbd4328eab3854ce91e",
+  "evaluated_and_merged_code_trees_equal": true,
+  "source_recording": "/home/sea21jk/projects/isaac_sim_setup/runtime/recordings/operator-picking-hq-2026-10-22-d5811741",
+  "video": {
+    "duration_sec": 44.25,
+    "frames": 531,
+    "fps": 12,
+    "source_browser_display_cap_fps": 5,
+    "actual_grasp": false
+  },
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/operator_console/application.py": "28890630ea3d9c83827dc77f2d3754ed399d889020b17f9a720a5bfb55bade8a",
+    "src/mujoco_ros2_manipulation/operator_console/render_worker.py": "1255ead0ca9c1bc6366e81cd9e2679d67d7a9e3ac85a50ea2b93f4b07efeb42d",
+    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "94b077b614ccbab6076a3170b07a82d933fc33d6cc5d9fd72bce100399459a4c",
+    "src/mujoco_ros2_manipulation/workcells/motion_server.py": "2448774bff49d177c20e713085fdeff1ee5de782eff9179288ea42c798e97c07"
+  },
+  "validation": {
+    "successful_requests": 4,
+    "contacts": 0,
+    "physics_complete": true,
+    "downward_endpoint_delta_mm": 249.58028495931828,
+    "browser_errors": [],
+    "scope": "New actual simulation capture. DPR2 direct lossless browser PNGs; capture-only scene renderer increased without changing production source. Native MuJoCo/RViz same session. No grasp; no frame-level latency certification."
+  },
+  "assets": {
+    "actual-state.rviz": "eef633a420912ca83ee3ddaefadd7f4ac647618985a68729dc95662e75c9c70d",
+    "approach.png": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9",
+    "evidence.json.gz": "a03303ef0c0c809d842bf1ee9c0caf873ce85a38fe5b537cb21822bfa3a6c766",
+    "index.html": "b736bf84ec5249c3b167aca1b06a06a0bd9ce3dd70c7b90e1fcee590b8ef84b3",
+    "motion-closeup.mp4": "d1f3faec3995b6d1be83581ca48daccfaa7fa5514adac7b9d776fdae585ca5b5",
+    "operation-poster.png": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9",
+    "poster.png": "e9689186b3ba7fd899bc00aa6229ab3178317104b6db93c196d2b08d631ed310",
+    "pre-pick.png": "255201ce4024d3b88193c2adbe0511350a277d494e883eb5b3d32174951e300a",
+    "quality-comparison.png": "4267891b58c721a85b819742593629d0bac0dc9193fed1ff74b67c61d822e11f",
+    "targets.json": "cdb9501f6695b3515f87c728a38d56f5b4e37c3b24221d6ac790eca4471cba8b",
+    "viewer-interface-focus.mp4": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba",
+    "viewer-interface-focus.png": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1",
+    "viewer-interface.mp4": "474feef1c796db2abe8cde89b62559da024ef22ee5bcc45e899b72b52aedfbdf",
+    "viewer-interface.png": "5e80bb2b4aa604da1ca0f789bf4d88f3be70375947c507829cf9ed1335c40bf7",
+    "viewer-mujoco-rviz.mp4": "38aa19f75c5b1db88bd9097c36e2faf34ee682905222f7d8308d77259ac69023"
+  },
+  "browser_qa": {
+    "status": "passed",
+    "default_view": "interface",
+    "default_interface_visible": true,
+    "view_switch_preserves_time": true,
+    "phase_seeks_tested": [
+      2.924,
+      12.335,
+      22.227,
+      32.105
+    ],
+    "playback_decoded": true,
+    "metadata": [
+      {
+        "src": "viewer-interface-focus.mp4",
+        "duration": 44.25,
+        "width": 2400,
+        "height": 1796,
+        "error": null
+      },
+      {
+        "src": "viewer-mujoco-rviz.mp4",
+        "duration": 44.25,
+        "width": 1920,
+        "height": 1080,
+        "error": null
+      },
+      {
+        "src": "motion-closeup.mp4",
+        "duration": 44.25,
+        "width": 1920,
+        "height": 850,
+        "error": null
+      },
+      {
+        "src": "viewer-interface-focus.mp4",
+        "duration": 44.25,
+        "width": 2400,
+        "height": 1796,
+        "error": null
+      }
+    ],
+    "full_original": {
+      "width": 2400,
+      "height": 2360,
+      "duration": 44.25,
+      "error": null
+    },
+    "fullscreen": {
+      "width": 1920,
+      "height": 1200,
+      "object_fit": "contain",
+      "source_width": 2400,
+      "source_height": 1796,
+      "error": null
+    },
+    "quality": {
+      "totalVideoFrames": 21,
+      "droppedVideoFrames": 0
+    },
+    "fixed_height_layout": {
+      "status": "passed",
+      "viewports": [
+        {
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "samples": [
+            {
+              "view": "comparison",
+              "stage": {
+                "top": 653.515625,
+                "height": 693,
+                "width": 1232
+              },
+              "seeks": {
+                "top": 1360.515625,
+                "height": 35.4375,
+                "width": 1232
+              },
+              "description": {
+                "top": 1411.953125,
+                "height": 52.796875,
+                "width": 1232
+              },
+              "object_fit": "contain",
+              "overflow": false
+            },
+            {
+              "view": "closeup",
+              "stage": {
+                "top": 653.515625,
+                "height": 693,
+                "width": 1232
+              },
+              "seeks": {
+                "top": 1360.515625,
+                "height": 35.4375,
+                "width": 1232
+              },
+              "description": {
+                "top": 1411.953125,
+                "height": 52.796875,
+                "width": 1232
+              },
+              "object_fit": "contain",
+              "overflow": false
+            },
+            {
+              "view": "interface",
+              "stage": {
+                "top": 653.515625,
+                "height": 693,
+                "width": 1232
+              },
+              "seeks": {
+                "top": 1360.515625,
+                "height": 35.4375,
+                "width": 1232
+              },
+              "description": {
+                "top": 1411.953125,
+                "height": 52.796875,
+                "width": 1232
+              },
+              "object_fit": "contain",
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "viewport": {
+            "width": 1920,
+            "height": 1200
+          },
+          "samples": [
+            {
+              "view": "comparison",
+              "stage": {
+                "top": 653.515625,
+                "height": 693,
+                "width": 1232
+              },
+              "seeks": {
+                "top": 1360.515625,
+                "height": 35.4375,
+                "width": 1232
+              },
+              "description": {
+                "top": 1411.953125,
+                "height": 52.796875,
+                "width": 1232
+              },
+              "object_fit": "contain",
+              "overflow": false
+            },
+            {
+              "view": "closeup",
+              "stage": {
+                "top": 653.515625,
+                "height": 693,
+                "width": 1232
+              },
+              "seeks": {
+                "top": 1360.515625,
+                "height": 35.4375,
+                "width": 1232
+              },
+              "description": {
+                "top": 1411.953125,
+                "height": 52.796875,
+                "width": 1232
+              },
+              "object_fit": "contain",
+              "overflow": false
+            },
+            {
+              "view": "interface",
+              "stage": {
+                "top": 653.515625,
+                "height": 693,
+                "width": 1232
+              },
+              "seeks": {
+                "top": 1360.515625,
+                "height": 35.4375,
+                "width": 1232
+              },
+              "description": {
+                "top": 1411.953125,
+                "height": 52.796875,
+                "width": 1232
+              },
+              "object_fit": "contain",
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "samples": [
+            {
+              "view": "comparison",
+              "stage": {
+                "top": 1231.078125,
+                "height": 202.5,
+                "width": 360
+              },
+              "seeks": {
+                "top": 1447.578125,
+                "height": 35.4375,
+                "width": 360
+              },
+              "description": {
+                "top": 1499.015625,
+                "height": 79.171875,
+                "width": 360
+              },
+              "object_fit": "contain",
+              "overflow": false
+            },
+            {
+              "view": "closeup",
+              "stage": {
+                "top": 1231.078125,
+                "height": 202.5,
+                "width": 360
+              },
+              "seeks": {
+                "top": 1447.578125,
+                "height": 35.4375,
+                "width": 360
+              },
+              "description": {
+                "top": 1499.015625,
+                "height": 79.171875,
+                "width": 360
+              },
+              "object_fit": "contain",
+              "overflow": false
+            },
+            {
+              "view": "interface",
+              "stage": {
+                "top": 1231.078125,
+                "height": 202.5,
+                "width": 360
+              },
+              "seeks": {
+                "top": 1447.578125,
+                "height": 35.4375,
+                "width": 360
+              },
+              "description": {
+                "top": 1499.015625,
+                "height": 158.34375,
+                "width": 360
+              },
+              "object_fit": "contain",
+              "overflow": false
+            }
+          ]
+        }
+      ],
+      "tab_height_shift_px": 0,
+      "seek_buttons_shift_px": 0,
+      "description_top_shift_px": 0
+    },
+    "quality_comparison_visible": true,
+    "local_links_checked": 18,
+    "asset_hashes_verified": 15,
+    "cancelled_media_requests_on_view_switch": [
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-mujoco-rviz.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/motion-closeup.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-mujoco-rviz.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/motion-closeup.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-mujoco-rviz.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/motion-closeup.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-mujoco-rviz.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/motion-closeup.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "file:///home/sea21jk/projects/isaac_sim_setup/docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4",
+        "type": "media",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "errors": []
+  },
+  "cleanup": {
+    "console_exit_code": 0,
+    "renderer_exit_code": 0,
+    "extra_rviz_exit_code": 0,
+    "browser_actor_exit_code": 0,
+    "native_owned_cleanup_errors": []
+  },
+  "presentation": {
+    "default_view": "interface",
+    "available_views": [
+      "interface",
+      "comparison",
+      "closeup"
+    ],
+    "interface_video": {
+      "source": "Direct browser PNG sequence",
+      "file": "viewer-interface.mp4",
+      "width": 2400,
+      "height": 2360,
+      "frames": 531,
+      "fps": 12,
+      "duration_sec": 44.25,
+      "rescaled": false,
+      "time_preserved": true
+    },
+    "live_controls_url": "http://127.0.0.1:8765/",
+    "scope": "Same approved crop and 16:9 stage, new actual simulation sequence captured at DPR2 and encoded directly from PNG originals.",
+    "player_layout": {
+      "fixed_across_views": true,
+      "reference_video": "viewer-mujoco-rviz.mp4",
+      "stage_aspect_ratio": "16/9",
+      "height": "player width * 9 / 16",
+      "desktop_mobile_same_ratio": true,
+      "object_fit": "contain",
+      "aspect_ratio_preserved": true
+    },
+    "interface_focus_video": {
+      "source": "Direct browser PNG sequence",
+      "file": "viewer-interface-focus.mp4",
+      "crop_xyxy": [
+        0,
+        222,
+        2400,
+        2018
+      ],
+      "width": 2400,
+      "height": 1796,
+      "frames": 531,
+      "fps": 12,
+      "duration_sec": 44.25,
+      "device_scale_factor": 2,
+      "css_viewport": [
+        1200,
+        1180
+      ],
+      "previous_crop_pixels": [
+        906,
+        678
+      ],
+      "same_visible_region": true,
+      "spatially_upscaled": false,
+      "full_interface_original_preserved": true,
+      "time_preserved": true
+    },
+    "capture_quality": {
+      "codec": "libx264",
+      "crf": 14,
+      "pixel_format": "yuv420p",
+      "direct_png_source": true,
+      "ffmpeg_version": "7.0.2-static",
+      "browser_native_pixels": [
+        2400,
+        2360
+      ],
+      "scene_renderer_pixels": [
+        1920,
+        1280
+      ],
+      "production_renderer_unchanged": true,
+      "raw_png_directory": "/home/sea21jk/projects/isaac_sim_setup/runtime/recordings/operator-picking-hq-2026-10-22-d5811741/browser-frames"
+    },
+    "previous_report_archive": "/home/sea21jk/projects/isaac_sim_setup/runtime/recordings/operator-picking-hq-2026-10-22-be4a0c77/previous-report",
+    "quality_comparison": {
+      "image": "quality-comparison.png",
+      "kind": "Actual decoded MP4 frames at 21 sec, same normalized joint-panel region and display size",
+      "different_actual_runs_same_target": true
+    }
+  },
+  "previous_recording": "/home/sea21jk/projects/isaac_sim_setup/runtime/recordings/operator-picking-2026-10-22-7957268e"
+}

@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "workcell": "fr5_ur5e",
+  "reference_frame": "left_wrist3_link",
+  "actual_grasp": false,
+  "sequence": [
+    {
+      "name": "pre_pick",
+      "target_rad": {
+        "left_j1": 0.42595214393463643,
+        "left_j2": -1.6723340032931127,
+        "left_j3": 1.7514592869480905,
+        "left_j4": -1.6147310993233892,
+        "left_j5": -1.4770861501505306,
+        "left_j6": 0.42681019224750544,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "reference_frame": "left_wrist3_link",
+      "target_xyz_m": [
+        -0.28,
+        0.28,
+        0.94
+      ],
+      "fk_xyz_m": [
+        -0.2800000073375522,
+        0.27999997632155504,
+        0.9399992288240485
+      ],
+      "orientation_error_rad": 5.045925459453601e-09,
+      "contacts": 0,
+      "clearance": {
+        "distance_m": 0.4618974772370555,
+        "bodies": [
+          "left_forearm_link",
+          "right_wrist_3_link"
+        ],
+        "nearest_points_m": [
+          [
+            -0.27501970719812396,
+            0.11778007588822383,
+            0.93984707763753
+          ],
+          [
+            0.1143900538820609,
+            -0.12977208941496546,
+            0.9191772226033991
+          ]
+        ],
+        "tips_m": [
+          [
+            -0.2800000073375522,
+            0.27999997632155504,
+            0.9399992288240485
+          ],
+          [
+            0.15810119528204167,
+            -0.13329963412832282,
+            0.8879003662170254
+          ]
+        ]
+      }
+    },
+    {
+      "name": "approach",
+      "target_rad": {
+        "left_j1": 0.42595449946286695,
+        "left_j2": -1.4059846519248853,
+        "left_j3": 2.185449570721686,
+        "left_j4": -2.3150709457448273,
+        "left_j5": -1.4770860675067599,
+        "left_j6": 0.4268125534693494,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "reference_frame": "left_wrist3_link",
+      "target_xyz_m": [
+        -0.28,
+        0.28,
+        0.69
+      ],
+      "fk_xyz_m": [
+        -0.2800000938150446,
+        0.2799999431544889,
+        0.68999973386455
+      ],
+      "orientation_error_rad": 5.4408117412306655e-09,
+      "contacts": 0,
+      "clearance": {
+        "distance_m": 0.5010646150198937,
+        "bodies": [
+          "left_forearm_link",
+          "right_wrist_3_link"
+        ],
+        "nearest_points_m": [
+          [
+            -0.28148182275618416,
+            0.11484796262345633,
+            0.716468680619548
+          ],
+          [
+            0.12774817538118147,
+            -0.11102494983881996,
+            0.8969624047911517
+          ]
+        ],
+        "tips_m": [
+          [
+            -0.2800000938150446,
+            0.2799999431544889,
+            0.68999973386455
+          ],
+          [
+            0.15810119528204167,
+            -0.13329963412832282,
+            0.8879003662170254
+          ]
+        ]
+      }
+    },
+    {
+      "name": "retreat",
+      "target_rad": {
+        "left_j1": 0.4259521612007456,
+        "left_j2": -1.6723341094151523,
+        "left_j3": 1.7514582890428105,
+        "left_j4": -1.6147299995695337,
+        "left_j5": -1.4770861496918546,
+        "left_j6": 0.4268102075208032,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "reference_frame": "left_wrist3_link",
+      "target_xyz_m": [
+        -0.28,
+        0.28,
+        0.94
+      ],
+      "fk_xyz_m": [
+        -0.28000002162876814,
+        0.2799999784212224,
+        0.9399996594253831
+      ],
+      "orientation_error_rad": 7.122289050084056e-09,
+      "contacts": 0,
+      "clearance": {
+        "distance_m": 0.4618975070464096,
+        "bodies": [
+          "left_forearm_link",
+          "right_wrist_3_link"
+        ],
+        "nearest_points_m": [
+          [
+            -0.2750197149408979,
+            0.11778007977445487,
+            0.9398475513513986
+          ],
+          [
+            0.1143900538820609,
+            -0.12977208941496546,
+            0.9191772226033991
+          ]
+        ],
+        "tips_m": [
+          [
+            -0.28000002162876814,
+            0.2799999784212224,
+            0.9399996594253831
+          ],
+          [
+            0.15810119528204167,
+            -0.13329963412832282,
+            0.8879003662170254
+          ]
+        ]
+      }
+    }
+  ]
+}
