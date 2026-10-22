@@ -4,6 +4,10 @@ MuJoCo와 ROS 2 Humble, ros2_control, MoveIt 2를 연결한 로봇팔 시뮬레�
 FAIRINO FR5·FR10과 Universal Robots UR5e를 공통 실행기로 선택하며,
 제조사 모델 변환부터 경로 계획·실행, 관절 상태 기반 완료 확인과 정상 종료까지 검증했습니다.
 
+FR5·UR5e 공동 장면과 상시 명령·취소·랜덤 평가도 제공합니다.
+현재 조작은 MuJoCo·RViz·CLI이며 전용 통합 조작 화면은 후속 기능입니다.
+[시뮬레이터 제작 상태와 현재 PC 점검](docs/simulator_status.md)에 기능별 판정을 정리했습니다.
+
 ## 지원 모델과 실행 화면
 
 | FAIRINO FR5 V6 | FAIRINO FR10 V6 | Universal Robots UR5e |
@@ -98,10 +102,12 @@ ros2 topic echo /joint_states sensor_msgs/msg/JointState --once
 | ROS / MoveIt | ROS 2 Humble / MoveIt 2.5.10 |
 | ROS 시뮬레이션 런타임 | MuJoCo 3.12.0 / mujoco_ros2_control 0.1.2 + 로컬 종료 패치 |
 | 모델 변환·기준 렌더 | `.venv`의 MuJoCo 3.14.0 / NumPy 1.26.4 |
-| 그래픽 | GTX 1050 Ti 4 GB / NVIDIA 580.178.04 / 데스크톱 OpenGL 4.6 |
+| 현재 PC (2026-10-21) | Intel i7-13700 / RTX 3050 6 GB / NVIDIA 580.178.04 / 데스크톱 OpenGL 4.6 |
 | 갱신 주기 | 물리 0.002초 / ros2_control 100 Hz / 관절 상태 설정 50 Hz |
 
-위 표는 실제 검증한 환경입니다. 일반 MuJoCo 물리 계산은 CPU에서 수행하며 GPU는 렌더링에 사용합니다.
+현재 PC의 양팔 실제 GUI·GPU 검증은 [최신 리포트](docs/reports/2026-10-21-search-optimization/index.html)에 보존했습니다.
+아래 단일 모델의 2026-10-06~07 기록은 업그레이드 전 GTX 1050 Ti 환경의 결과입니다.
+일반 MuJoCo 물리 계산은 CPU에서 수행하며 GPU는 렌더링에 사용합니다.
 ROS 런타임과 Python MuJoCo는 별도로 구성했습니다.
 
 | 모델 | 궤적·MoveIt·TF·시계 | 궤적 종료 후 최대 관절 오차 | 실행·종료 검증 기록 |
@@ -133,6 +139,7 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](docs/verif
 | [설치와 빌드](docs/setup.md) | 새 PC 준비, 고정 소스 버전, 생성 파일, 공통 코드 구성 |
 | [의존성 업데이트](docs/dependency_updates.md) | Dependabot 주간 검사, ROS 호환성 제한, 보안 업데이트와 사본 반영 절차 |
 | [모델별 자료](docs/robots/README.md) | FR5·FR10·UR5e 설정, 좌표계, 실제 GUI 스크린샷 |
+| [시뮬레이터 제작 상태](docs/simulator_status.md) | 구동 확인 범위·현재 PC 실제 GUI·남은 기능·실행 방법 |
 | [검증 안내](docs/verification.md) | 연속 명령의 완료 확인, 자동 검증, JSON·로그 해석 |
 | [공개 성능 리포트](https://wannasleep3254.github.io/mujoco-ros2-manipulation/) | 브라우저에서 HTML 목록·지표·원본 데이터 열람 |
 | [성능 리포트 목록](docs/reports/README.md) | 공통 HTML 목록·표준 JSON·CSV와 평가 이력 |
@@ -235,6 +242,11 @@ python3 verify_contact_demo.py --gui --control
 [랜덤 목표 비교](docs/random_motion_benchmark.md)는 같은 목표·계산 예산과 실측 시작 기준으로 두 전략을 평가하고, 출발 탐색의 후보별 비용을 기록합니다.
 [첫 비교 리포트](docs/reports/2026-10-21-random-motion/index.html)에 목표 5개 × 두 전략의 성공·계측 원본과 별도 교차 탐색의 비용 분해를 보존했습니다.
 
+[출발 탐색 최적화](docs/search_optimization.md)는 중복 0초 평가와 최선 지연 이후의 후보를 제거합니다.
+[동일 입력 A/B·실제 GUI 점검](docs/reports/2026-10-21-search-optimization/index.html)에서 6입력 × 두 방식 × 5회 결과가 정확히 일치했습니다.
+교차 입력의 탐색 중앙값은 1.975→1.537wall초, 거리 호출은 39,917→30,784회였습니다.
+이 수치는 오프라인 탐색 구간이며 지령→실제 동작 전체 지연과 구분합니다.
+
 ## 구현 범위와 다음 작업
 
 현재 구현은 제조사 모델 변환, 위치 서보, ROS 2 궤적 제어, MoveIt 계획·실행과 종료 검증입니다.
@@ -248,7 +260,9 @@ python3 verify_contact_demo.py --gui --control
 | 검증 추가 | [핵심 프로세스 크래시 시 자동 전체 종료](docs/process_crash.md) |
 | 검증 추가 | [시계 누락·반복 감시와 양팔 위치 고정](docs/clock_stop.md) |
 | 검증 추가 | [양팔 간섭 참조 경로 차단·공동 회피 전용 사례](docs/interference_avoidance.md) |
-| 2 | 크래시 후 위치 유지 검증, 끝단 Pose/IK 사례 |
+| 검증 추가 | 상시 명령·랜덤 평가·탐색 최적화 A/B·현재 PC 실제 GUI 점검 |
+| 1 | 교차·장애물·큰 이동 평가와 실제 지령→동작 재측정 |
+| 2 | 전용 통합 조작 화면, 크래시 후 위치 유지 검증, 끝단 Pose/IK 사례 |
 | 3 | 단일·다중 로봇 성능 측정, 비교 표·영상 |
 | 4 | 그리퍼·도구 TCP와 집기·이동·놓기 예제 |
 | 5 | 접촉 조립·힘/순응 제어와 실제 로봇 연결 검토 |

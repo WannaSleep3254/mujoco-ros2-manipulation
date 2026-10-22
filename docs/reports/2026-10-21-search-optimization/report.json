@@ -1,0 +1,824 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-search-optimization",
+  "published_date": "2026-10-21",
+  "title": "출발 탐색 최적화 A/B와 시뮬레이터 GUI 점검",
+  "status": "preliminary",
+  "overview": "입력·검사 해상도를 보존하고 공유 0초 평가와 최선 지연 상한으로 계산을 줄인 비교. 실제 GUI 제작 상태를 별도 실행으로 확인했습니다.",
+  "findings": [
+    "고정 입력 6개 × 두 방식 × 5회. 선택 팔·지연·전체 spline·거리 평가가 모든 반복에서 정확히 같음.",
+    "random-case-0001: 탐색 중앙값 0.085→0.042wall초, 거리 호출 1934→967회.",
+    "random-case-0002: 탐색 중앙값 0.084→0.042wall초, 거리 호출 1888→944회.",
+    "random-case-0003: 탐색 중앙값 0.162→0.082wall초, 거리 호출 3626→1813회.",
+    "random-case-0004: 탐색 중앙값 0.087→0.044wall초, 거리 호출 1924→962회.",
+    "random-case-0005: 탐색 중앙값 0.083→0.042wall초, 거리 호출 1892→946회.",
+    "crossing: 탐색 중앙값 1.975→1.537wall초, 거리 호출 39917→30784회.",
+    "별도 GUI 실제 실행: MuJoCo·RViz GPU 사용, 12관절·공유 시계/상태·계획·충돌 거부·양팔 취소·접촉 0·정상 종료 확인."
+  ],
+  "limitations": [
+    "같은 구현의 optimize=False 참조 경로와 optimize=True를 비교. 과거 리포트의 다른 실행 시간과 직접 속도 향상을 비교하지 않음.",
+    "고정 입력·소규모 반복이며 OS 스케줄링·배경 부하를 고정하지 않음. p95/p99·통계적 신뢰구간·전체 작업 공간 성공률을 제시하지 않음.",
+    "절감한 탐색 시간과 지령→실제 이동 전체 지연은 구분. 선택 경로의 최종 MuJoCo/MoveIt 안전검사와 네이티브 접촉 감시는 계속 수행.",
+    "GUI 사진은 실제 소유 프로세스의 X11 화면. 전용 통합 조작 화면은 미구현이며 현재 조작은 MuJoCo·RViz·CLI로 구성.",
+    "GUI 점검과 오프라인 탐색은 별도 실행. 정지 유지 RTF는 GUI FPS나 최대 처리량이 아님. 물리·경로 계산은 현재 CPU 구성, GPU 확인은 GUI 렌더링 범위.",
+    "그리퍼·공구 TCP·CAD·양팔 Pose/IK·실물 연결과 대규모 교차/장애물 평가가 남아 있음."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "8c46b5f35a1fdffe76a9f86c01df7925e949bcf5",
+    "workcell": "fr5_ur5e",
+    "models": [
+      "FR5",
+      "UR5e"
+    ],
+    "scenario": "exact_departure_search_ab",
+    "input_kind": "fixed_joint_targets"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "python": "3.10.12",
+    "ros": "ROS 2 Humble (별도 GUI 검증)",
+    "native_mujoco": "MuJoCo 3.12.0",
+    "gui_run": "20261021T093837.684967Z-e087f7f3"
+  },
+  "sample_groups": [
+    {
+      "id": "random-case-0001-reference",
+      "label": "random-case-0001 / 기존 두 순서 탐색",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0001-optimized",
+      "label": "random-case-0001 / 중복·상한 제거",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0002-reference",
+      "label": "random-case-0002 / 기존 두 순서 탐색",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0002-optimized",
+      "label": "random-case-0002 / 중복·상한 제거",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0003-reference",
+      "label": "random-case-0003 / 기존 두 순서 탐색",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0003-optimized",
+      "label": "random-case-0003 / 중복·상한 제거",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0004-reference",
+      "label": "random-case-0004 / 기존 두 순서 탐색",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0004-optimized",
+      "label": "random-case-0004 / 중복·상한 제거",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0005-reference",
+      "label": "random-case-0005 / 기존 두 순서 탐색",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "random-case-0005-optimized",
+      "label": "random-case-0005 / 중복·상한 제거",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "crossing-reference",
+      "label": "crossing / 기존 두 순서 탐색",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "crossing-optimized",
+      "label": "crossing / 중복·상한 제거",
+      "kind": "offline",
+      "unique_cases": 1,
+      "observations": 5,
+      "successes": 5,
+      "failures": 0,
+      "seed_policy": "고정 spline 재생; 모드별 워밍업 1회 제외·반복 순서 교대",
+      "description": "같은 모델·정책·시작·입력에서 선택 팔/지연/전체 spline/선택 경로 거리 평가가 정확히 일치해야 통과."
+    },
+    {
+      "id": "gui-readiness",
+      "label": "현재 PC GUI 통합 점검",
+      "kind": "gui",
+      "unique_cases": 1,
+      "observations": 1,
+      "successes": 1,
+      "failures": 0,
+      "seed_policy": "별도 실제 GUI 실행 1회",
+      "description": "MuJoCo·RViz GPU 렌더링, 12관절/공유 시계, 계획·충돌 거부·양팔 취소·정상 종료."
+    }
+  ],
+  "stages": [
+    {
+      "id": "search",
+      "label": "고정 입력 출발 탐색 A/B",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "입력 로딩·ROS·동작과 구분; 정확한 결과 일치와 호출 수 확인"
+    },
+    {
+      "id": "gui",
+      "label": "별도 GUI 통합 점검",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "GPU 렌더링·12관절 제어·계획·취소·종료와 실제 화면"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "search-median",
+      "label": "탐색 시간 중앙값",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 0.084839072,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 0.042289521,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 0.083713855,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 0.041971161,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 0.162254606,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 0.081541822,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 0.087417959,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 0.044296217,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 0.083144543,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 0.041618482,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 1.974795338,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 1.537405855,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "search-max",
+      "label": "탐색 시간 최댓값",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 0.085684169,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 0.042780602,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 0.084372947,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 0.042952875,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 0.164531107,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 0.088357413,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 0.088072542,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 0.044986226,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 0.096229566,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 0.042180613,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 2.001195196,
+          "sample_count": 5,
+          "statistic": "max"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 1.552064609,
+          "sample_count": 5,
+          "statistic": "max"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "native-calls",
+      "label": "네이티브 거리 호출",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 1934,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 967,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 1888,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 944,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 3626,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 1813,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 1924,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 962,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 1892,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 946,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 39917,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 30784,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "candidates",
+      "label": "실제 평가 후보",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 1,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 1,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 1,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 1,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 2,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 1,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 58,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 46,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "native-wall",
+      "label": "네이티브 거리 계산 시간",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 0.043513008000000006,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 0.02168447000000003,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 0.04299596200000002,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 0.02159860099999998,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 0.08623923199999997,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 0.043316883000000035,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 0.04602088699999999,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 0.023231932999999986,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 0.04237154499999998,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 0.021132604000000017,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 0.9781878260000002,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 0.7513395990000001,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "selected-delay",
+      "label": "선택된 팔의 지연",
+      "unit": "s",
+      "clock": "simulation",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 0.0,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 2.3,
+          "sample_count": 5,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 2.3,
+          "sample_count": 5,
+          "statistic": "median"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "clearance",
+      "label": "선택 경로 최소 간격",
+      "unit": "mm",
+      "clock": "not_applicable",
+      "scope": "같은 고정 입력의 오프라인 출발 탐색",
+      "values": [
+        {
+          "group_id": "random-case-0001-reference",
+          "value": 183.6043740579579,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0001-optimized",
+          "value": 183.6043740579579,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0002-reference",
+          "value": 183.6043744720202,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0002-optimized",
+          "value": 183.6043744720202,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0003-reference",
+          "value": 60.63908081732525,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0003-optimized",
+          "value": 60.63908081732525,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0004-reference",
+          "value": 177.02430778032013,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0004-optimized",
+          "value": 177.02430778032013,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0005-reference",
+          "value": 183.60193049475876,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "random-case-0005-optimized",
+          "value": 183.60193049475876,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "crossing-reference",
+          "value": 33.78658060490453,
+          "sample_count": 5,
+          "statistic": "min"
+        },
+        {
+          "group_id": "crossing-optimized",
+          "value": 33.78658060490453,
+          "sample_count": 5,
+          "statistic": "min"
+        }
+      ],
+      "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+    },
+    {
+      "id": "gui-holding-rtf",
+      "label": "GUI 정지 유지 구간 real-time factor",
+      "unit": "ratio",
+      "clock": "not_applicable",
+      "scope": "동작 검증 후 5.0wall초 paced stationary holding",
+      "values": [
+        {
+          "group_id": "gui-readiness",
+          "value": 0.9999790742381015,
+          "sample_count": 1,
+          "statistic": "single"
+        }
+      ],
+      "note": "움직임 중 전체 성능·최대 물리 처리량·GUI FPS 측정이 아님."
+    }
+  ],
+  "assets": [
+    {
+      "path": "evidence.json.gz",
+      "label": "전체 A/B 반복·후보·GUI 검증 원본 (gzip JSON)",
+      "role": "data",
+      "sha256": "b32c5d374b2eaee1bf722b219a72f855a73697fbe294cee00c83a89e852ba397"
+    },
+    {
+      "path": "mujoco-gui.png",
+      "label": "실제 MuJoCo 양팔 장면",
+      "role": "figure",
+      "sha256": "1c3f4e66006ecca49a3dc6268398bd71c84b99dda15c0b3a05f9319f6765fddf"
+    },
+    {
+      "path": "rviz-gui.png",
+      "label": "실제 RViz 양팔 계획 화면",
+      "role": "figure",
+      "sha256": "c7c01fb21f64009ead43e2ddcd8bbfebb567f20ec4d0feeb45d186be7dea4192"
+    }
+  ],
+  "references": [
+    {
+      "label": "평가 구현 커밋",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/8c46b5f35a1fdffe76a9f86c01df7925e949bcf5"
+    }
+  ]
+}

@@ -50,6 +50,60 @@ class AnalyticDistance:
 
 
 class TimingTests(unittest.TestCase):
+    def test_optimized_search_matches_exhaustive_grid_choice_without_zero_or_bound_work(self):
+        policy = dict(sample_dt_sec=0.01, min_inter_arm_distance_m=0.05, tracking_reserve_m=0.0,
+                      delay_step_sec=0.2, max_delay_sec=1.2)
+        curves = [curve("l"), curve("r")]
+        initial = {"l":0.0,"r":0.0}
+        original = [deepcopy(c.record()) for c in curves]
+        reference = choose_delay(curves,initial,cell(),AnalyticDistance(),policy,optimize=False)
+        optimized = choose_delay(curves,initial,cell(),AnalyticDistance(),policy)
+        for key in ("delay_sec","delayed_arm","curves","evaluation"):
+            self.assertEqual(reference[key],optimized[key])
+        self.assertEqual(optimized["delay_sec"],0.8)
+        self.assertEqual(optimized["delayed_arm"],"left")
+        self.assertEqual(optimized["profiling"]["reused_zero_delay_evaluations"],1)
+        self.assertGreater(optimized["profiling"]["grid_values_pruned_by_bound"],0)
+        self.assertLess(optimized["profiling"]["native_distance_calls"],reference["profiling"]["native_distance_calls"])
+        self.assertFalse(any(c["delayed_arm"]=="right" and c["delay_sec"]>=0.8 for c in optimized["candidates"]))
+        self.assertEqual([c.record() for c in curves],original)
+
+    def test_safe_zero_is_checked_once_and_subsequent_search_does_not_reuse_a_different_scene(self):
+        class AlwaysClear(AnalyticDistance):
+            def at(self,state):
+                result=super().at(state);result["distance_m"]=0.5;return result
+        policy=dict(sample_dt_sec=0.01,min_inter_arm_distance_m=0.05,tracking_reserve_m=0.0,delay_step_sec=0.2,max_delay_sec=1.2)
+        args=([curve("l"),curve("r")],{"l":0.0,"r":0.0},cell())
+        ref=choose_delay(*args,AlwaysClear(),policy,optimize=False)
+        opt=choose_delay(*args,AlwaysClear(),policy)
+        self.assertEqual(opt["delay_sec"],0)
+        self.assertEqual(opt["delayed_arm"],"left")
+        self.assertEqual(opt["profiling"]["candidate_count"],1)
+        self.assertEqual(2*opt["profiling"]["native_distance_calls"],ref["profiling"]["native_distance_calls"])
+        # A second call has a different evaluator: no cross-request or rounded-state cache.
+        next_result=choose_delay(*args,AnalyticDistance(),policy)
+        self.assertEqual(next_result["delay_sec"],0.8)
+
+    def test_no_solution_and_right_arm_winner_keep_reference_decisions(self):
+        policy=dict(sample_dt_sec=0.01,min_inter_arm_distance_m=0.05,tracking_reserve_m=0.0,delay_step_sec=0.2,max_delay_sec=1.2)
+        class Asymmetric(AnalyticDistance):
+            def at(self,state):
+                result=super().at(state)
+                result["distance_m"]=((state["l"]-0.4)**2+(state["r"]-0.6)**2)**0.5-0.2
+                return result
+        args=([curve("l"),curve("r")],{"l":0.0,"r":0.0},cell())
+        ref=choose_delay(*args,Asymmetric(),policy,optimize=False)
+        opt=choose_delay(*args,Asymmetric(),policy)
+        self.assertEqual(opt["delayed_arm"],"right")
+        self.assertEqual((opt["delay_sec"],opt["curves"]),(ref["delay_sec"],ref["curves"]))
+        policy["max_delay_sec"]=0.4
+        for mode in (False,True):
+            from mujoco_ros2_manipulation.workcells.timing import TimingRejected
+            with self.subTest(optimize=mode),self.assertRaises(TimingRejected) as caught:
+                choose_delay(*args,AnalyticDistance(),policy,optimize=mode)
+            self.assertTrue(caught.exception.candidates)
+            self.assertTrue(all(c["complete"] is False for c in caught.exception.candidates))
+
     def test_native_cost_is_a_subset_of_candidate_time_and_failed_search_keeps_counts(self):
         now = [0]
         class MeasuredDistance(AnalyticDistance):

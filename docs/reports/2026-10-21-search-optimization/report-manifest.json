@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-21-search-optimization",
+  "source_commit": "8c46b5f35a1fdffe76a9f86c01df7925e949bcf5",
+  "generator": {
+    "version": "1.1",
+    "fingerprint": "76fb635243f328853bd339a6da0d6ee1076c6be4c531550ff5895b7f950319df",
+    "files": {
+      "__init__.py": {
+        "bytes": 125,
+        "sha256": "32d105c522dc57015fb986592698a418ca4a9fa66abc617f5160f19004059e70"
+      },
+      "data.py": {
+        "bytes": 6045,
+        "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
+      },
+      "render.py": {
+        "bytes": 10724,
+        "sha256": "67d25362ed5834c85f3cffcb00c86b47d6a2d6783bff98d2bc5efdec6234900b"
+      },
+      "publish.py": {
+        "bytes": 7184,
+        "sha256": "cae894b517d32763e4208ccf8d55c89da7347e9c7d11482c5eb1d27af5c2f041"
+      },
+      "report.schema.json": {
+        "bytes": 5126,
+        "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
+      },
+      "templates/page.html": {
+        "bytes": 518,
+        "sha256": "3f4c20747e7656c059754449fb570f98a98fceb2ddb53f5a5b045306a2afc26a"
+      },
+      "templates/style.css": {
+        "bytes": 3677,
+        "sha256": "e9d3c5b77ed017369f79126b2a8bfa0b39f8e3edc256e909e5b0a04b9298cbd9"
+      }
+    }
+  },
+  "files": {
+    "evidence.json.gz": {
+      "bytes": 7420248,
+      "sha256": "b32c5d374b2eaee1bf722b219a72f855a73697fbe294cee00c83a89e852ba397"
+    },
+    "index.html": {
+      "bytes": 51144,
+      "sha256": "0b9a24904935f48c214b377232023838f275772da1726a5a366858481c2b19b2"
+    },
+    "metrics.csv": {
+      "bytes": 27338,
+      "sha256": "43e0f478521ffa7957578108a9873b5f3e59e4676567ef29b8c9f22717be5846"
+    },
+    "mujoco-gui.png": {
+      "bytes": 25625,
+      "sha256": "1c3f4e66006ecca49a3dc6268398bd71c84b99dda15c0b3a05f9319f6765fddf"
+    },
+    "report.json": {
+      "bytes": 27403,
+      "sha256": "ad1d2d1adb8d5e0c9b829a54b50617e82e97463b5581c727206f285e087c0213"
+    },
+    "rviz-gui.png": {
+      "bytes": 236594,
+      "sha256": "c7c01fb21f64009ead43e2ddcd8bbfebb567f20ec4d0feeb45d186be7dea4192"
+    }
+  }
+}

@@ -1,0 +1,86 @@
+report_id,metric_id,label,group_id,value,unit,clock,sample_count,statistic,scope,note
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0001-reference,0.084839072,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0001-optimized,0.042289521,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0002-reference,0.083713855,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0002-optimized,0.041971161,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0003-reference,0.162254606,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0003-optimized,0.081541822,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0004-reference,0.087417959,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0004-optimized,0.044296217,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0005-reference,0.083144543,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,random-case-0005-optimized,0.041618482,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,crossing-reference,1.974795338,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-median,탐색 시간 중앙값,crossing-optimized,1.537405855,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0001-reference,0.085684169,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0001-optimized,0.042780602,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0002-reference,0.084372947,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0002-optimized,0.042952875,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0003-reference,0.164531107,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0003-optimized,0.088357413,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0004-reference,0.088072542,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0004-optimized,0.044986226,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0005-reference,0.096229566,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,random-case-0005-optimized,0.042180613,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,crossing-reference,2.001195196,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,search-max,탐색 시간 최댓값,crossing-optimized,1.552064609,s,wall,5,max,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0001-reference,1934,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0001-optimized,967,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0002-reference,1888,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0002-optimized,944,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0003-reference,3626,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0003-optimized,1813,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0004-reference,1924,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0004-optimized,962,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0005-reference,1892,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,random-case-0005-optimized,946,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,crossing-reference,39917,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-calls,네이티브 거리 호출,crossing-optimized,30784,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0001-reference,2,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0001-optimized,1,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0002-reference,2,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0002-optimized,1,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0003-reference,2,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0003-optimized,1,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0004-reference,2,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0004-optimized,1,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0005-reference,2,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,random-case-0005-optimized,1,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,crossing-reference,58,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,candidates,실제 평가 후보,crossing-optimized,46,count,not_applicable,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0001-reference,0.043513008000000006,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0001-optimized,0.02168447000000003,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0002-reference,0.04299596200000002,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0002-optimized,0.02159860099999998,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0003-reference,0.08623923199999997,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0003-optimized,0.043316883000000035,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0004-reference,0.04602088699999999,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0004-optimized,0.023231932999999986,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0005-reference,0.04237154499999998,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,random-case-0005-optimized,0.021132604000000017,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,crossing-reference,0.9781878260000002,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,native-wall,네이티브 거리 계산 시간,crossing-optimized,0.7513395990000001,s,wall,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0001-reference,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0001-optimized,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0002-reference,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0002-optimized,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0003-reference,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0003-optimized,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0004-reference,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0004-optimized,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0005-reference,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,random-case-0005-optimized,0.0,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,crossing-reference,2.3,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,selected-delay,선택된 팔의 지연,crossing-optimized,2.3,s,simulation,5,median,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0001-reference,183.6043740579579,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0001-optimized,183.6043740579579,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0002-reference,183.6043744720202,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0002-optimized,183.6043744720202,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0003-reference,60.63908081732525,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0003-optimized,60.63908081732525,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0004-reference,177.02430778032013,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0004-optimized,177.02430778032013,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0005-reference,183.60193049475876,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,random-case-0005-optimized,183.60193049475876,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,crossing-reference,33.78658060490453,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,clearance,선택 경로 최소 간격,crossing-optimized,33.78658060490453,mm,not_applicable,5,min,같은 고정 입력의 오프라인 출발 탐색,모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음.
+2026-10-21-search-optimization,gui-holding-rtf,GUI 정지 유지 구간 real-time factor,gui-readiness,0.9999790742381015,ratio,not_applicable,1,single,동작 검증 후 5.0wall초 paced stationary holding,움직임 중 전체 성능·최대 물리 처리량·GUI FPS 측정이 아님.

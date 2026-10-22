@@ -111,13 +111,41 @@
       "bytes": 27217,
       "sha256": "308abc9d6d0b45576a30685dcf00155d47a4ebc213db61e91a5f1127fc4cdb8e"
     },
+    "2026-10-21-search-optimization/evidence.json.gz": {
+      "bytes": 7420248,
+      "sha256": "b32c5d374b2eaee1bf722b219a72f855a73697fbe294cee00c83a89e852ba397"
+    },
+    "2026-10-21-search-optimization/index.html": {
+      "bytes": 51144,
+      "sha256": "0b9a24904935f48c214b377232023838f275772da1726a5a366858481c2b19b2"
+    },
+    "2026-10-21-search-optimization/metrics.csv": {
+      "bytes": 27338,
+      "sha256": "43e0f478521ffa7957578108a9873b5f3e59e4676567ef29b8c9f22717be5846"
+    },
+    "2026-10-21-search-optimization/mujoco-gui.png": {
+      "bytes": 25625,
+      "sha256": "1c3f4e66006ecca49a3dc6268398bd71c84b99dda15c0b3a05f9319f6765fddf"
+    },
+    "2026-10-21-search-optimization/report-manifest.json": {
+      "bytes": 2110,
+      "sha256": "401a82d69cb28f1aba2f12f074fc238561c002a9191deba829ed11f509108f3d"
+    },
+    "2026-10-21-search-optimization/report.json": {
+      "bytes": 27403,
+      "sha256": "ad1d2d1adb8d5e0c9b829a54b50617e82e97463b5581c727206f285e087c0213"
+    },
+    "2026-10-21-search-optimization/rviz-gui.png": {
+      "bytes": 236594,
+      "sha256": "c7c01fb21f64009ead43e2ddcd8bbfebb567f20ec4d0feeb45d186be7dea4192"
+    },
     "catalog.json": {
-      "bytes": 2067,
-      "sha256": "b03c1c12799d93ade2f85b5d1e224e347579577ee02c174baf6e85ed26c426e4"
+      "bytes": 2709,
+      "sha256": "a40d051b259eaaf77c198b3d17230a35a977cd95312e8534118a8252efe322e9"
     },
     "index.html": {
-      "bytes": 7189,
-      "sha256": "0e5ae460a1c7c0e2fcb7ec1f37942df8f17108f0dce4579f3613dc34df49620c"
+      "bytes": 7802,
+      "sha256": "f11970850e4a11c8f89b40b17ef774e17de449f26808b43013d63c3a97339121"
     }
   }
 }
