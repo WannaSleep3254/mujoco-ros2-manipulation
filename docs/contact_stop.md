@@ -208,3 +208,16 @@ CI의 공동 장면 작업에도 주입 없는 고정 장애물 접근 시험을
 PC는 i7-13700·메모리 약 32GB·RTX 3050 6GB입니다. M5의 [시계 누락·반복 시험](clock_stop.md)과 [프로세스 크래시 전체 종료 시험](process_crash.md)은 별도 문서로 구분합니다. 실제 하드웨어 제동은 검증하지 않았습니다.
 
 ![접촉 후 양팔 자동 정지](workcells/fr5_ur5e/contact_stop/images/mujoco_gui.png)
+
+## 종료 신호 처리 보강 (2026-10-22)
+
+[PR #23의 최초 공동 장면 CI](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/39730471708)에서
+paused-contact 검증의 `motion_checks_passed`와 `physics_checks_passed`는 true였으나,
+종료 중 contact guard가 비정상 종료했습니다. `ListControllers` 응답을 C 확장에서 Python 메시지로
+변환하던 시점에 SIGINT가 들어와 `KeyboardInterrupt`가 `SystemError: take_response ... exception set`으로
+감싸졌고, 검증기는 이를 `failure_stage: shutdown`으로 올바르게 보고했습니다.
+
+contact guard는 SIGINT·SIGTERM을 종료 요청 플래그로 기록합니다. 현재 콜백이 끝나면
+0.1초 timeout의 spin 루프를 빠져나와 노드·ROS 컨텍스트를 정리합니다. 정리 중에도 같은 신호 처리를 유지하고,
+마지막에 이전 핸들러를 복원합니다. 일반 `SystemError`나 실제 콜백 예외를 무시하지 않으며,
+검증기의 비정상 종료 판정·네이티브 접촉 래치·양팔 정지 정책은 유지합니다.
