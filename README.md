@@ -56,7 +56,7 @@ python3 operator_console.py --domain 89 --port 8765
 현재 대상은 FR5·UR5e 공동 장면입니다. 기존 MuJoCo·RViz·CLI도 계속 사용할 수 있습니다.
 [사용 방법·연결·기록·검증 범위](docs/operator_console.md)
 
-[현재 뷰어 상태와 접근·후퇴 비교 영상](docs/operator/picking-comparison-2026-10-22/index.html)을 정리했습니다. 실제 뷰어 조작·MuJoCo·RViz를 같은 세션에서 촬영했으며, 물체 파지는 제외합니다.
+[현재 뷰어 상태와 접근·후퇴 비교 영상](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html) · [저장소 HTML](docs/operator/picking-comparison-2026-10-22/index.html)을 정리했습니다. 실제 뷰어 조작·MuJoCo·RViz를 같은 세션에서 촬영했으며, 물체 파지는 제외합니다.
 
 [![목표 입력·실행·완료 표시를 포함한 뷰어 조작부 확대 화면](docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.png)](docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4)
 

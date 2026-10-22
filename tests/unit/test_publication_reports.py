@@ -61,6 +61,145 @@ class PublicationReportTests(unittest.TestCase):
         path.write_text(json_text(self.data))
         return path
 
+    def demo_fixture(self):
+        demo = self.temporary / "operator" / "demo"
+        demo.mkdir(parents=True, exist_ok=True)
+        (demo / "index.html").write_text('<h1>Demo</h1><video src="motion.mp4"></video><a href="manifest.json">Evidence</a>')
+        (demo / "motion.mp4").write_bytes(b"test-only media fixture")
+        self.demo_manifest = {"schema_version": 1, "assets": {
+            name: hashlib.sha256((demo / name).read_bytes()).hexdigest()
+            for name in ("index.html", "motion.mp4")}}
+        self.demo_registry = {"schema_version": 1, "demos": [dict(
+            id="demo", title="시연 <자료>", published_date="2026-10-22",
+            overview="단일 기능 사례이며 성능 표본에 합산하지 않음", manifest_sha256="0" * 64)]}
+        self.save_demo(demo)
+        return demo
+
+    def save_demo(self, demo):
+        manifest = demo / "manifest.json"
+        manifest.write_text(json_text(self.demo_manifest))
+        self.demo_registry["demos"][0]["manifest_sha256"] = hashlib.sha256(manifest.read_bytes()).hexdigest()
+        (self.root / "operator-demos.json").write_text(json_text(self.demo_registry))
+
+    def test_demo_export_keeps_measured_catalog_separate_and_uses_reviewed_allowlist(self):
+        demo = self.demo_fixture()
+        (demo / "private.env").write_text("not reviewed")
+        unlisted = demo.parent / "unreviewed"
+        unlisted.mkdir()
+        (unlisted / "index.html").write_text("do not publish")
+        build(self.root)
+        output = self.temporary / "demo-site"
+        export_site(self.root, output)
+        self.assertEqual(len(read_json(output / "catalog.json")["reports"]), 1)
+        catalog = ReportLinks((output / "index.html").read_text())
+        self.assertEqual(catalog.reports, 1)
+        self.assertTrue(any(a["href"] == "operator/demo/index.html" for a in catalog.links))
+        self.assertIn("시연 &lt;자료&gt;", (output / "index.html").read_text())
+        names = {str(p.relative_to(output)) for p in output.rglob("*") if p.is_file()}
+        self.assertEqual({n for n in names if n.startswith("operator/")}, {
+            "operator/demo/index.html", "operator/demo/motion.mp4", "operator/demo/manifest.json"})
+        manifest = read_json(output / "site-manifest.json")
+        self.assertEqual(set(manifest["files"]), names - {"site-manifest.json"})
+        for name, metadata in manifest["files"].items():
+            raw = (output / name).read_bytes()
+            self.assertEqual(metadata, dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest()))
+        build(self.root, check=True)
+
+    def test_demo_manifest_and_video_tampering_block_publication(self):
+        demo = self.demo_fixture()
+        (demo / "manifest.json").write_text(json_text({**self.demo_manifest, "extra": "changed after review"}))
+        with self.assertRaisesRegex(ReportError, "manifest hash mismatch"):
+            collect(self.root)
+        self.save_demo(demo)
+        (demo / "motion.mp4").write_bytes(b"replaced video")
+        with self.assertRaisesRegex(ReportError, "asset hash mismatch"):
+            collect(self.root)
+
+    def test_demo_registry_rejects_duplicate_ids_and_unrecognized_fields(self):
+        self.demo_fixture()
+        self.demo_registry["demos"].append(copy.deepcopy(self.demo_registry["demos"][0]))
+        path = self.root / "operator-demos.json"
+        path.write_text(json_text(self.demo_registry))
+        with self.assertRaisesRegex(ReportError, "Duplicate demo IDs"):
+            collect(self.root)
+        self.demo_registry["demos"].pop()
+        self.demo_registry["demos"][0]["source_path"] = "/tmp/unreviewed"
+        path.write_text(json_text(self.demo_registry))
+        with self.assertRaisesRegex(ReportError, "Demo registry schema"):
+            collect(self.root)
+
+    def test_demo_ids_and_dates_cannot_escape_registered_directories(self):
+        demo = self.demo_fixture()
+        for field, value in (("id", "../demo"), ("id", "/tmp/demo"), ("id", "demo\n"),
+                             ("published_date", "2026-02-30"), ("manifest_sha256", "bad")):
+            with self.subTest(field=field, value=value):
+                changed = copy.deepcopy(self.demo_registry)
+                changed["demos"][0][field] = value
+                (self.root / "operator-demos.json").write_text(json_text(changed))
+                with self.assertRaisesRegex(ReportError, "Demo registry schema"):
+                    collect(self.root)
+        self.save_demo(demo)
+
+    def test_demo_asset_paths_and_symlinked_assets_are_rejected(self):
+        demo = self.demo_fixture()
+        original = copy.deepcopy(self.demo_manifest)
+        for name in ("../outside.txt", "/tmp/outside.txt", "nested/../../outside.txt", "a%2Fb", "x#fragment"):
+            with self.subTest(name=name):
+                self.demo_manifest = copy.deepcopy(original)
+                self.demo_manifest["assets"][name] = "a" * 64
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "relative publication path"):
+                    collect(self.root)
+        self.demo_manifest = original
+        self.save_demo(demo)
+        (demo / "motion.mp4").unlink()
+        (demo / "motion.mp4").symlink_to(self.asset)
+        with self.assertRaisesRegex(ReportError, "Symlink"):
+            collect(self.root)
+
+    def test_symlinked_demo_registry_parent_directory_and_manifest_are_rejected(self):
+        demo = self.demo_fixture()
+        for path in (self.root / "operator-demos.json", demo / "manifest.json", demo, demo.parent):
+            with self.subTest(path=path):
+                saved = path.with_name(path.name + "-saved")
+                path.rename(saved)
+                path.symlink_to(saved, target_is_directory=saved.is_dir())
+                try:
+                    with self.assertRaisesRegex(ReportError, "[Ss]ymlink"):
+                        collect(self.root)
+                finally:
+                    path.unlink()
+                    saved.rename(path)
+
+    def test_demo_requires_entrypoint_known_version_and_valid_digests(self):
+        demo = self.demo_fixture()
+        original = copy.deepcopy(self.demo_manifest)
+        variants = [dict(schema_version=2, assets=original["assets"]),
+                    dict(schema_version=True, assets=original["assets"]),
+                    dict(schema_version=1, assets={"motion.mp4": "a" * 64}),
+                    dict(schema_version=1, assets={**original["assets"], "manifest.json": "a" * 64}),
+                    dict(schema_version=1, assets={**original["assets"], "motion.mp4": 123})]
+        for variant in variants:
+            with self.subTest(variant=variant):
+                self.demo_manifest = variant
+                self.save_demo(demo)
+                with self.assertRaises(ReportError):
+                    collect(self.root)
+
+    def test_demo_missing_assets_and_nonportable_links_block_export(self):
+        demo = self.demo_fixture()
+        (demo / "motion.mp4").unlink()
+        with self.assertRaisesRegex(ReportError, "Missing asset"):
+            collect(self.root)
+        (demo / "motion.mp4").write_bytes(b"test-only media fixture")
+        for url in ("../../../README.md", "http://127.0.0.1:8765/", "missing.html"):
+            with self.subTest(url=url):
+                (demo / "index.html").write_text('<a href="' + url + '">bad link</a>')
+                self.demo_manifest["assets"]["index.html"] = hashlib.sha256((demo / "index.html").read_bytes()).hexdigest()
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "Nonportable|Broken HTML"):
+                    collect(self.root)
+
     def test_repeated_build_is_deterministic_and_check_does_not_write(self):
         build(self.root)
         before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()}

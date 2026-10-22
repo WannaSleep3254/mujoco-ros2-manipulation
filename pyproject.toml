@@ -42,6 +42,6 @@ dependencies = {file = ["requirements.txt"]}
 where = ["src"]
 
 [tool.setuptools.package-data]
-"mujoco_ros2_manipulation.reporting" = ["report.schema.json", "templates/*.html", "templates/*.css"]
+"mujoco_ros2_manipulation.reporting" = ["report.schema.json", "operator-demos.schema.json", "templates/*.html", "templates/*.css"]
 
 "mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js"]
