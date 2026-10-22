@@ -112,6 +112,9 @@ def collect(root):
     entries.sort(key=lambda entry: (entry["published_date"], entry["report_id"]), reverse=True)
     generated["catalog.json"] = json_text({"schema_version": 1, "reports": entries}).encode()
     demos, demo_site = collect_demos(root)
+    overlap = site.keys() & demo_site.keys()
+    if overlap:
+        raise ReportError("Duplicate publication paths: " + ", ".join(sorted(overlap)))
     site.update(demo_site)
     generated["index.html"] = catalog_html(entries, demos).encode()
     site.update({name: generated[name] for name in ("catalog.json", "index.html")})

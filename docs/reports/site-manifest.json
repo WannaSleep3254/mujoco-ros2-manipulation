@@ -2,7 +2,7 @@
   "schema_version": 1,
   "generator": {
     "version": "1.2",
-    "fingerprint": "38bf9dee9c6162dd7d619783804cde2659fa564f21e1a4928e1cbe717c12724c",
+    "fingerprint": "9bea715fba7a38d28698f914914523e33ec493a21a26026f82a1f2236a7dc8f4",
     "files": {
       "__init__.py": {
         "bytes": 125,
@@ -17,8 +17,8 @@
         "sha256": "aba012b1f4d915d27749cc02e4827f9993e1ca6de1f85269112c1cc35e0b5c6d"
       },
       "publish.py": {
-        "bytes": 7373,
-        "sha256": "fb7db98e762dcc57fbf6db05b529bea1decbbd7464c5e0d23a967c7a5045df8d"
+        "bytes": 7522,
+        "sha256": "924cc7538b553da49af4ba471aed812bff137996abd10f0bbea5d5d02f1f065e"
       },
       "report.schema.json": {
         "bytes": 5126,
@@ -73,7 +73,7 @@
     },
     "2026-10-21-phase1/report-manifest.json": {
       "bytes": 2695,
-      "sha256": "4f4efd8a8fae77a674c0bc08d48e976dc2765985eb4f14d2d96bcb172f196e4e"
+      "sha256": "b0ea192c4214188433893ec3ebdf714377fc36b6fe868c0b5453caf82c046547"
     },
     "2026-10-21-phase1/report.json": {
       "bytes": 21357,
@@ -93,7 +93,7 @@
     },
     "2026-10-21-random-motion/report-manifest.json": {
       "bytes": 2134,
-      "sha256": "f32e6f30a8580258f4377f4f2d0f9abe802315751a0f32a3db36b3b281b238e2"
+      "sha256": "540462f6ef65d7c95b5eb444106194a9eb9f3cc30e097416c67d4fd77f3a44ec"
     },
     "2026-10-21-random-motion/report.json": {
       "bytes": 25604,
@@ -113,7 +113,7 @@
     },
     "2026-10-21-request-timing/report-manifest.json": {
       "bytes": 2132,
-      "sha256": "a4802f3992773a7582afe8ba8fa2eb4ced7c2bea0ee5257818ee05cc2d8c4302"
+      "sha256": "626b465d757503932470090fa1cb17c104b583e02ff1850f2d79300f5502239e"
     },
     "2026-10-21-request-timing/report.json": {
       "bytes": 27217,
@@ -137,7 +137,7 @@
     },
     "2026-10-21-search-optimization/report-manifest.json": {
       "bytes": 2411,
-      "sha256": "8b1ddcf9c9f81279f4ce5cefb0e33bd831b8447ca2634098dcebc17b4a2e13ac"
+      "sha256": "760375993f30594dbc4867cffa158a278e9c50b5ffea866057478c5a323619e0"
     },
     "2026-10-21-search-optimization/report.json": {
       "bytes": 27403,

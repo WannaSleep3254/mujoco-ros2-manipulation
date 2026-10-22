@@ -105,6 +105,22 @@ class PublicationReportTests(unittest.TestCase):
             self.assertEqual(metadata, dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest()))
         build(self.root, check=True)
 
+    def test_demo_cannot_overwrite_an_existing_report_asset(self):
+        self.demo_fixture()
+        new_directory = self.root / "operator"
+        self.directory.rename(new_directory)
+        self.directory = new_directory
+        self.data["report_id"] = "operator"
+        asset = self.directory / "demo/index.html"
+        asset.parent.mkdir()
+        asset.write_text("<p>Preserve reviewed report asset</p>")
+        self.data["assets"].append(dict(path="demo/index.html", label="report evidence", role="legacy_report",
+            sha256=hashlib.sha256(asset.read_bytes()).hexdigest()))
+        self.save()
+        with self.assertRaisesRegex(ReportError, "Duplicate publication paths"):
+            collect(self.root)
+        self.assertIn("Preserve reviewed report asset", asset.read_text())
+
     def test_demo_manifest_and_video_tampering_block_publication(self):
         demo = self.demo_fixture()
         (demo / "manifest.json").write_text(json_text({**self.demo_manifest, "extra": "changed after review"}))

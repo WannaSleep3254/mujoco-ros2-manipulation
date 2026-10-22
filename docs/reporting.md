@@ -115,7 +115,7 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 공개 주소는 `operator/<시연ID>/index.html`입니다. 목록의 **기능 시연** 구역에서 연결하며,
 성능평가 `catalog.json`의 `reports`와 검색 개수·표본에는 넣지 않습니다.
 manifest에 등록한 파일과 manifest만 복사하고, 미등록 파일·다른 시연 폴더·runtime은 복사하지 않습니다.
-중복 ID, 미지원 manifest 버전, 파일 변조·누락, 경로 이탈·심볼릭 링크를 거부합니다.
+중복 ID·공개 경로, 미지원 manifest 버전, 파일 변조·누락, 경로 이탈·심볼릭 링크를 거부합니다.
 전체 사이트의 `site-manifest.json`은 기능 시연 파일과 등록 목록도 포함합니다.
 
 공개 HTML은 내보낸 폴더에서 링크가 모두 해결되어야 합니다. 저장소 README·실행 안내는 GitHub HTTPS 링크를 사용합니다.
