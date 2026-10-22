@@ -3,7 +3,7 @@ unset AMENT_PREFIX_PATH COLCON_PREFIX_PATH CMAKE_PREFIX_PATH LD_LIBRARY_PATH PYT
 task_manipulation_env_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "${task_manipulation_env_root}/ros2_env.sh"
 # Match the tested local middleware instead of inheriting the host default.
-export RMW_IMPLEMENTATION="${MANIPULATION_RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+source "${task_manipulation_env_root}/scripts/ros_middleware_env.sh"
 export ROS_DOMAIN_ID="${MANIPULATION_ROS_DOMAIN_ID:-89}"
 export ROS_LOG_DIR=/tmp/manipulation_ros2_logs
 task_manipulation_env_runtime="${task_manipulation_env_root}/runtime/root/opt/ros/humble"

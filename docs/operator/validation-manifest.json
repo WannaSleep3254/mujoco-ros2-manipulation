@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "evaluation_commit": "9e6a0c67a9f8c9992cfc56b6e2288d5b71853bc1",
+  "evidence": {
+    "path": "validation.json.gz",
+    "bytes": 17659,
+    "sha256": "356e57c0460d38068f6a61288e320b6e512ed38787d116f009c4bfb1a3bd100e"
+  },
+  "images": [
+    {
+      "path": "images/console-desktop.png",
+      "sha256": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87",
+      "size": [
+        1600,
+        1305
+      ]
+    },
+    {
+      "path": "images/console-mobile.png",
+      "sha256": "0796533a61fa108f7eb2c2a1f0b52fa22e56b068ddba943db2ba28224c7a0c8f",
+      "size": [
+        390,
+        1985
+      ]
+    },
+    {
+      "path": "images/console-cancelled.png",
+      "sha256": "5f016b6fdfbebc19fa99d396483623b27605823313cea2de32c854384c450864",
+      "size": [
+        1600,
+        1404
+      ]
+    },
+    {
+      "path": "images/console-history.png",
+      "sha256": "9527d71212d91b6c68bfc4ec8d687d0398f96b2854b499e62647d7a3e1574bff",
+      "size": [
+        1600,
+        1240
+      ]
+    }
+  ]
+}
