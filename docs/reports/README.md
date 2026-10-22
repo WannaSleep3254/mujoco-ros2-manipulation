@@ -36,5 +36,6 @@ GitHub 파일 화면은 HTML 소스를 표시합니다. 로컬 브라우저로 �
 ## 설계·개발 리포트
 
 [뷰어 개발 방향성](../operator/viewer-direction-2026-10-22/index.html)은 이기종 복수 로봇의 통합 조작 방향과 현재 구현·검증 범위, 대안·개선 계획을 정리합니다.
+[모션플래닝 개발 방향성](../operator/motion-planning-direction-2026-10-22/index.html)은 빈피킹 우선 요구와 현재 양팔 계획, 지연·최소 우회 개선, 기술 비교·실물 전환·검증 계획을 정리합니다.
 게시 목록에서는 **설계·개발 리포트**로 구분하며 성능평가 표본에는 합산하지 않습니다.
 새 방향성 리포트는 [작성 기준 v1.9](../reporting/report-style-guide.md)와 [HTML 템플릿](../reporting/templates/engineering-report-v1.9.html)을 기본으로 사용합니다.

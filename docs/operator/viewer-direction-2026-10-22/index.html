@@ -129,6 +129,24 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 .stage .completion-criteria>li:last-child{margin-bottom:0}
 @media(max-width:760px){.stage .completion-block{padding:14px}.stage .completion-criteria{padding-left:18px}}
 @media print{.stage .completion-block{break-inside:auto;padding:10px 12px}.stage .completion-criteria>li{break-inside:avoid;margin-bottom:4px}}
+</style><style id="report-media-style">
+.media-player{position:relative;aspect-ratio:var(--media-ratio);background:#0c171b;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.media-player>.report-video,.media-cover{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;border:0;border-radius:0;object-fit:contain}
+.media-player>.report-video[hidden],.media-cover[hidden]{display:none}
+.media-cover{padding:0;color:white;background:#0c171b;cursor:pointer;text-align:center}
+.media-cover>img{display:block;width:100%;height:100%;object-fit:contain;border:0;border-radius:0}
+.media-play-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:10px;max-width:90%;padding:13px 20px;border-radius:999px;background:rgba(16,44,52,.94);color:white;font-size:16px;font-weight:650;line-height:1.4;box-shadow:0 3px 14px #0005}
+.media-play-icon{font-size:20px;line-height:1}
+.media-cover:hover .media-play-label{background:#126268}
+.media-cover:focus-visible{outline:3px solid #c86b27;outline-offset:-5px}
+.report-video:focus-visible{outline:3px solid #c86b27;outline-offset:-5px}
+.media-print-poster{display:none}
+.media-caption{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+.media-caption a{white-space:nowrap}
+.media-status{font-size:14px;color:var(--warm-ink);margin:10px 0}
+.media-status[hidden]{display:none}
+@media(max-width:760px){.media-play-label{font-size:14px;padding:10px 15px;gap:8px}}
+@media print{.media-player{aspect-ratio:auto;background:white;overflow:visible}.media-player>.report-video,.media-cover,.media-status{display:none!important}.media-player>.media-print-poster{display:block;width:100%;height:auto;border:0;border-radius:0}}
 </style></head>
 <body>
 <header>
@@ -170,7 +188,11 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <p class="small">접촉·시계 감시는 기존 네이티브/ROS 계층이 담당합니다. 표시용 렌더러는 물리를 적분하거나 제어 명령·시계를 발행하지 않습니다.</p>
 <div aria-label="소스 코드의 현재 설정" class="facts"><div class="fact"><strong>960 × 640</strong><span>표시용 원본 이미지 크기</span></div><div class="fact"><strong>최대 5 fps</strong><span>렌더러 설정 상한 · 실측 아님</span></div><div class="fact"><strong>250 ms</strong><span>HTTP 상태 조회 예약 간격</span></div><div class="fact"><strong>프리셋 3개</strong><span>전체 · 정면 · 상단 카메라</span></div></div>
 <p class="small">JPEG 품질 설정은 88입니다. 250 ms는 약 4 Hz의 조회 예약 간격이며 응답 완료 주기나 실제 표시 FPS를 보장하지 않습니다. 위 설정은 물리·제어 주기와 별개입니다. <a href="#src-code">[코드 1]</a></p>
-<figure aria-labelledby="figure-title-1"><img alt="FR5·UR5e 로봇 이미지와 12관절 목표 입력, 계획·실행·취소, 요청 이력을 한 화면에 배치한 실제 통합 조작 화면" height="1305" loading="lazy" src="current-console.png" width="1600"/><figcaption><span class="visual-title" id="figure-title-1">그림 1. FR5·UR5e 통합 조작 화면</span><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/7a71402e2a04fd002f8d863ac9908341103a9f00/docs/operator/images/console-desktop.png">원본 보기</a></figcaption></figure>
+<figure aria-labelledby="figure-title-1"><div class="media-player" style="--media-ratio:2400/1796">
+<video aria-describedby="viewer-demo-video-description" aria-label="영상 1. 통합 조작 화면 시연" class="report-video" controls="" data-src="viewer-demo.mp4" data-status="viewer-demo-video-status" hidden="" id="viewer-demo-video" playsinline="" poster="viewer-demo-poster.png" preload="none" tabindex="-1">브라우저가 영상을 지원하지 않습니다. <a href="viewer-demo.mp4">영상 원본 열기</a></video>
+<button aria-controls="viewer-demo-video" aria-label="FR5·UR5e 통합 조작 화면의 목표 입력·계획·실행 영상 재생" class="media-cover" data-play-video="viewer-demo-video" type="button"><img alt="FR5·UR5e 조작부의 관절 목표 입력, 계획·실행 버튼과 요청 진행·완료 표시가 보이는 녹화 시연 표지" height="1796" loading="lazy" src="viewer-demo-poster.png" width="2400"/><span class="media-play-label"><span aria-hidden="true" class="media-play-icon">▶</span><span>시연 영상 재생</span></span></button>
+<img alt="FR5·UR5e 조작부의 관절 목표 입력, 계획·실행 버튼과 요청 진행·완료 표시가 보이는 녹화 시연 표지" class="media-print-poster" height="1796" src="viewer-demo-poster.png" width="2400"/>
+</div><p aria-live="polite" class="media-status" hidden="" id="viewer-demo-video-status" role="status"></p><figcaption class="media-caption"><span class="visual-title" id="figure-title-1">영상 1. 통합 조작 화면 시연</span><a href="viewer-demo.mp4">영상 원본 열기</a><a href="current-console.png">전체 화면 원본 보기</a></figcaption><noscript>시연 영상: <a href="viewer-demo.mp4">영상 원본 열기</a></noscript></figure><p class="small" id="viewer-demo-video-description">목표 입력·계획·실행과 요청의 진행·완료 표시를 녹화한 시연입니다. 실제 물체 파지는 포함하지 않습니다.</p>
 <h3>채택 배경: 분산된 조작 흐름의 통합</h3>
 <div class="copy-paragraphs" id="copy-review-5">
 <p>웹 조작 화면의 도입 목적은 <strong>다수의 터미널과 MuJoCo·RViz로 분산된 조작 흐름을 통합하는 것</strong>입니다.</p>
@@ -302,5 +324,25 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <div class="footer"><span class="review-origin">문서 v1.9 · 이기종 복수 로봇의 통합 조작 방향과 현재 구현 사례 구분</span><span>문서 유형: 개발 사례 / 기술 설계</span><span>대안 비교 상태: 평가 설계</span><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation">프로젝트 저장소</a><a href="#decision">처음으로 ↑</a></div>
 </main>
 <script>document.getElementById('print').addEventListener('click',()=>window.print());</script>
-</body>
+<script id="report-media-script">
+document.querySelectorAll('[data-play-video]').forEach(button=>{
+  const video=document.getElementById(button.dataset.playVideo);
+  const status=document.getElementById(video.dataset.status);
+  const restoreCover=()=>{
+    const hadFocus=document.activeElement===video;
+    video.pause();video.hidden=true;video.tabIndex=-1;button.hidden=false;
+    status.textContent='영상을 재생하지 못했습니다. 재생 버튼으로 다시 시도하거나 아래 영상 원본 링크를 이용하세요.';
+    status.hidden=false;
+    if(hadFocus)button.focus({preventScroll:true});
+  };
+  video.addEventListener('error',restoreCover);
+  button.addEventListener('click',()=>{
+    status.hidden=true;status.textContent='';button.hidden=true;
+    video.hidden=false;video.tabIndex=0;video.src=video.dataset.src;
+    video.focus({preventScroll:true});
+    const playback=video.play();
+    if(playback&&typeof playback.catch==='function')playback.catch(restoreCover);
+  });
+});
+</script></body>
 </html>

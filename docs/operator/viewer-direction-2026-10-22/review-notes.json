@@ -252,7 +252,7 @@
       "scope": "Document display and navigation only; no new viewer, ROS or performance benchmark."
     }
   },
-  "reviewed_html_sha256": "2bc5f0b6d709f82afc32bae66cbf975a474c93866ac47c3ecb233efe17e17c63",
+  "reviewed_html_sha256": "8e256fb427ba55d0a8d6761f50a8ba4f609116ca80c98a5f07e73b7c51f15f13",
   "previous_document_validation_v1_2": {
     "status": "passed",
     "document_version": "1.2",
@@ -345,8 +345,8 @@
     "document_version": "1.9",
     "structure": {
       "structural_check": "passed",
-      "assets_checked": 4,
-      "source_baseline_hashes_checked": 14,
+      "assets_checked": 6,
+      "source_baseline_hashes_checked": 16,
       "completion_criteria_preserved": 16
     },
     "browser": {
@@ -451,5 +451,85 @@
     "publication_unit_tests": "47 tests passed: test_publication_reports and test_published_reports",
     "motion_tests": "not run; document and publication-only change",
     "new_performance_measurements": false
+  },
+  "media_changes": [
+    {
+      "area": "inline_demonstration_video",
+      "date": "2026-10-22",
+      "change": "표지 클릭·키보드 활성화 후 같은 위치에서 영상 재생. 자동 재생·사전 영상 요청 없음. 기본 재생 컨트롤·오류 재시도·원본 링크·인쇄용 포스터 제공.",
+      "video_file": "viewer-demo.mp4",
+      "poster_file": "viewer-demo-poster.png",
+      "original_recording_reused": true,
+      "new_motion_or_performance_measurement": false,
+      "before_html_sha256": "2bc5f0b6d709f82afc32bae66cbf975a474c93866ac47c3ecb233efe17e17c63"
+    }
+  ],
+  "inline_video_validation": {
+    "status": "passed",
+    "scope": "Document media playback only; no new simulation or performance measurements.",
+    "results": [
+      {
+        "document": "viewer-repo",
+        "width": 1104,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 2400,
+          "height": 1796,
+          "duration": 44.25,
+          "time": 0.066961,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "viewer-repo",
+        "width": 390,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 2400,
+          "height": 1796,
+          "duration": 44.25,
+          "time": 0.063851,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "viewer-repo",
+        "width": 320,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 2400,
+          "height": 1796,
+          "duration": 44.25,
+          "time": 0.064007,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "viewer-repo",
+        "errorRecovery": true,
+        "retryPlayback": true,
+        "scriptErrors": []
+      }
+    ],
+    "visual_inspection": [
+      "poster with central play button",
+      "mobile native controls",
+      "same media frame before and after playback"
+    ]
   }
 }

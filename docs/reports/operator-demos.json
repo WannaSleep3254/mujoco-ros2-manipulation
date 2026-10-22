@@ -14,7 +14,15 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "이기종 복수 로봇의 통합 시뮬레이션 조작 방향과 현재 FR5·UR5e 구현 상태, 렌더링 대안·단계별 개선·검증 계획을 정리합니다. 성능 순위는 미측정입니다.",
-      "manifest_sha256": "d436edb7de915b1a9dc67efdbdc01f5191d54208a202fc6da9c7cc0cf417886f"
+      "manifest_sha256": "5304fdb834d7f0bc1fa403c65ac3707fb54ebf5253b1aa852cd6da558172672d"
+    },
+    {
+      "id": "motion-planning-direction-2026-10-22",
+      "title": "모션플래닝 개발 방향성",
+      "published_date": "2026-10-22",
+      "document_type": "design_review",
+      "overview": "빈피킹 우선의 작업 계획과 현재 양팔 구현, 지연·최소 우회 진단, 계획 기술 비교와 실물 전환·검증 순서를 정리합니다. 신규 대안의 성능은 미측정입니다.",
+      "manifest_sha256": "a8436db716d5b45972146f4d1cee22f7c387913e0644a9feb2511303fb916ac9"
     }
   ]
 }
