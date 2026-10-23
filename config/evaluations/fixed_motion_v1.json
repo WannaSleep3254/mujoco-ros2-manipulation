@@ -1,0 +1,729 @@
+{
+  "schema_version": 1,
+  "id": "fixed-motion-v1",
+  "compute_budget_wall_sec": 5.0,
+  "initial_tolerance_rad": 0.0015,
+  "policy": {
+    "min_inter_arm_distance_m": 0.02,
+    "tracking_reserve_m": 0.01,
+    "sample_dt_sec": 0.01,
+    "delay_step_sec": 0.1,
+    "max_delay_sec": 4.0
+  },
+  "variants": [
+    {
+      "id": "single",
+      "max_plan_candidates": 1
+    },
+    {
+      "id": "bounded",
+      "max_plan_candidates": 12
+    }
+  ],
+  "workcell_fingerprints": {
+    "fr5_ur5e": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+    "fr5_ur5e_eval_post": "9ad5b82d28ebd758c92176cbc382157e4fd36ca651a275168691e5e371291a8c"
+  },
+  "cases": [
+    {
+      "case_id": "local_small",
+      "label": "근거리 양팔 목표",
+      "category": "local",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": 0.12,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.12,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "defined",
+        "parameters": {
+          "initial": "base_workcell_nominal_home",
+          "first_joint_offsets_rad": {
+            "left_j1": 0.12,
+            "right_shoulder_pan_joint": 0.12
+          }
+        }
+      }
+    },
+    {
+      "case_id": "random_0001",
+      "label": "기존 고정 랜덤 목표 1",
+      "category": "fixed_random",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": 0.05543520716758654,
+        "left_j2": -1.3381621904939056,
+        "left_j3": 1.6221411374607637,
+        "left_j4": -2.0870170535445647,
+        "left_j5": -1.6425951504315484,
+        "left_j6": -0.22304791833603838,
+        "right_shoulder_pan_joint": 0.1717272630323048,
+        "right_shoulder_lift_joint": -1.5925743301478144,
+        "right_elbow_joint": 1.4576105739366616,
+        "right_wrist_1_joint": -1.0807013666537688,
+        "right_wrist_2_joint": -2.149037547988631,
+        "right_wrist_3_joint": 0.21753561459194148
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.initial_rad"
+          },
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.cases[0].target_rad"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "random_0002",
+      "label": "기존 고정 랜덤 목표 2",
+      "category": "fixed_random",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": 0.1039259311190508,
+        "left_j2": -1.7257115085109211,
+        "left_j3": 1.1540723598768772,
+        "left_j4": -1.9913989295742534,
+        "left_j5": -1.730261423412773,
+        "left_j6": 0.4175931096684312,
+        "right_shoulder_pan_joint": -0.2890557039051365,
+        "right_shoulder_lift_joint": -1.9562987638524285,
+        "right_elbow_joint": 1.1538887149434767,
+        "right_wrist_1_joint": -1.0019868226279038,
+        "right_wrist_2_joint": -1.3883197983819557,
+        "right_wrist_3_joint": -0.4628814723532464
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.initial_rad"
+          },
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.cases[1].target_rad"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "random_0003",
+      "label": "기존 고정 랜덤 목표 3",
+      "category": "fixed_random",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": -0.5398996376857915,
+        "left_j2": -0.7106906421196495,
+        "left_j3": 0.804191255788687,
+        "left_j4": -1.2049015070050442,
+        "left_j5": -2.0846679133493886,
+        "left_j6": 0.10549853645332141,
+        "right_shoulder_pan_joint": -0.1606708620811182,
+        "right_shoulder_lift_joint": -1.5364142672369858,
+        "right_elbow_joint": 1.1536229525984336,
+        "right_wrist_1_joint": -1.8071050567580877,
+        "right_wrist_2_joint": -1.6175852078146722,
+        "right_wrist_3_joint": 0.42727412551033794
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.initial_rad"
+          },
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.cases[2].target_rad"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "random_0004",
+      "label": "기존 고정 랜덤 목표 4",
+      "category": "fixed_random",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": -0.4790234545111919,
+        "left_j2": -1.5414517739320446,
+        "left_j3": 1.0757412014089038,
+        "left_j4": -1.9858535724201323,
+        "left_j5": -0.9357388581381827,
+        "left_j6": -0.09138365855143937,
+        "right_shoulder_pan_joint": -0.35572884988128195,
+        "right_shoulder_lift_joint": -2.1526372146174575,
+        "right_elbow_joint": 1.365558300990474,
+        "right_wrist_1_joint": -1.3675578767273564,
+        "right_wrist_2_joint": -1.850421696678395,
+        "right_wrist_3_joint": 0.27427609361051597
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.initial_rad"
+          },
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.cases[3].target_rad"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "random_0005",
+      "label": "기존 고정 랜덤 목표 5",
+      "category": "fixed_random",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": 0.13606130717137266,
+        "left_j2": -1.7638296532908226,
+        "left_j3": 0.6882560286081348,
+        "left_j4": -1.783817700799586,
+        "left_j5": -1.8099800371325863,
+        "left_j6": 0.14317167990678525,
+        "right_shoulder_pan_joint": 0.5359860353633416,
+        "right_shoulder_lift_joint": -1.793664079095625,
+        "right_elbow_joint": 1.1834302961701284,
+        "right_wrist_1_joint": -1.5386909873592387,
+        "right_wrist_2_joint": -1.0663833412539707,
+        "right_wrist_3_joint": -0.49791645243313787
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.initial_rad"
+          },
+          {
+            "path": "docs/reports/2026-10-21-random-motion/evidence.json.gz",
+            "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45",
+            "selector": "workload.cases[4].target_rad"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "crossing",
+      "label": "양팔 교차",
+      "category": "crossing",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": -0.7003719616048037,
+        "left_j2": -1.0993768507293427,
+        "left_j3": 1.1021007718928157,
+        "left_j4": -1.3980744790593163,
+        "left_j5": -1.5007920086570083,
+        "left_j6": 0.09812048167502507,
+        "right_shoulder_pan_joint": -0.7009970265161246,
+        "right_shoulder_lift_joint": -1.4510758213596417,
+        "right_elbow_joint": 1.4481901488257571,
+        "right_wrist_1_joint": -1.4997781655495055,
+        "right_wrist_2_joint": -1.5681949181218633,
+        "right_wrist_3_joint": 0.09720736597524957
+      },
+      "target_rad": {
+        "left_j1": 0.3,
+        "left_j2": -1.1,
+        "left_j3": 1.1,
+        "left_j4": -1.4,
+        "left_j5": -1.5,
+        "left_j6": 0.1,
+        "right_shoulder_pan_joint": 0.3,
+        "right_shoulder_lift_joint": -1.45,
+        "right_elbow_joint": 1.45,
+        "right_wrist_1_joint": -1.5,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.1
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": -0.7003719616048037,
+            "left_j2": -1.0993768507293427,
+            "left_j3": 1.1021007718928157,
+            "left_j4": -1.3980744790593163,
+            "left_j5": -1.5007920086570083,
+            "left_j6": 0.09812048167502507,
+            "right_shoulder_pan_joint": -0.7009970265161246,
+            "right_shoulder_lift_joint": -1.4510758213596417,
+            "right_elbow_joint": 1.4481901488257571,
+            "right_wrist_1_joint": -1.4997781655495055,
+            "right_wrist_2_joint": -1.5681949181218633,
+            "right_wrist_3_joint": 0.09720736597524957
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/timing_coordination/bundle.json.gz",
+            "sha256": "6d48d7e9da09f83e1cfcfb17a95bc908f3a9fda3513a02bf824733ba24fd8095",
+            "selector": "initial_rad"
+          },
+          {
+            "path": "docs/timing_coordination/bundle.json.gz",
+            "sha256": "6d48d7e9da09f83e1cfcfb17a95bc908f3a9fda3513a02bf824733ba24fd8095",
+            "selector": "goal_rad"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "home_return",
+      "label": "고정 시작 자세에서 홈 복귀",
+      "category": "home_return",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": -1.0447443956818114,
+        "left_j2": -0.7963021319753804,
+        "left_j3": 0.7137792909646499,
+        "left_j4": -1.4971116478434303,
+        "left_j5": 0.00016933655719556683,
+        "left_j6": -0.00015466075949284648,
+        "right_shoulder_pan_joint": 0.0012873119842261077,
+        "right_shoulder_lift_joint": -1.5700321859734698,
+        "right_elbow_joint": 1.5752527531135911,
+        "right_wrist_1_joint": -1.5713641912922784,
+        "right_wrist_2_joint": -1.5700017942794187,
+        "right_wrist_3_joint": -0.0023158592171967024
+      },
+      "target_rad": {
+        "left_j1": 0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0,
+        "right_shoulder_pan_joint": 0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "home_fixture",
+        "fixture": "config/reproductions/home_return_clearance.json"
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "config/reproductions/home_return_clearance.json",
+            "sha256": "d81251326239aa2edcb5e37fa4448f6ab13363f7e6229d1a213fd403fb6d6f84",
+            "selector": "initial_rad"
+          },
+          {
+            "path": "config/reproductions/home_return_clearance.json",
+            "sha256": "d81251326239aa2edcb5e37fa4448f6ab13363f7e6229d1a213fd403fb6d6f84",
+            "selector": "target_rad"
+          },
+          {
+            "path": "config/reproductions/home_return_clearance.json",
+            "sha256": "d81251326239aa2edcb5e37fa4448f6ab13363f7e6229d1a213fd403fb6d6f84",
+            "selector": "setup"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "environment_post",
+      "label": "고정 기둥을 포함한 환경",
+      "category": "environment",
+      "workcell": "fr5_ur5e_eval_post",
+      "policy_name": "eval_post_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": 2.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": -2.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "expectation": "valid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "defined",
+        "parameters": {
+          "initial": "base_workcell_nominal_home",
+          "first_joint_offsets_rad": {
+            "left_j1": 2.0,
+            "right_shoulder_pan_joint": -2.0
+          },
+          "fixed_obstacle": {
+            "name": "evaluation_post",
+            "shape": "box",
+            "size": [
+              0.16,
+              0.16,
+              1.0
+            ],
+            "xyz": [
+              -0.45,
+              0.72,
+              0.5
+            ],
+            "rpy": [
+              0,
+              0,
+              0
+            ],
+            "rgba": [
+              1.0,
+              0.15,
+              0.02,
+              1.0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_id": "invalid_goal",
+      "label": "공개 기록의 충돌 목표 거부",
+      "category": "invalid_goal",
+      "workcell": "fr5_ur5e",
+      "policy_name": "dual_arm_timing",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": -0.4715699418799669,
+        "left_j2": -0.32525296396731107,
+        "left_j3": 0.6095012592103892,
+        "left_j4": -0.8048651709065434,
+        "left_j5": -2.2402765781713723,
+        "left_j6": 0.3761360288833638,
+        "right_shoulder_pan_joint": 0.2503919582783712,
+        "right_shoulder_lift_joint": -0.8690168190391562,
+        "right_elbow_joint": 1.4828183609557888,
+        "right_wrist_1_joint": -1.9897901876427866,
+        "right_wrist_2_joint": -2.0216255350322716,
+        "right_wrist_3_joint": -0.7779694063425553
+      },
+      "expectation": "invalid_goal",
+      "preparation": {
+        "kind": "joint_goal",
+        "targets": [
+          {
+            "left_j1": 0.0,
+            "left_j2": -1.2,
+            "left_j3": 1.2,
+            "left_j4": -1.5,
+            "left_j5": -1.5,
+            "left_j6": 0.0,
+            "right_shoulder_pan_joint": 0.0,
+            "right_shoulder_lift_joint": -1.5708,
+            "right_elbow_joint": 1.5708,
+            "right_wrist_1_joint": -1.5708,
+            "right_wrist_2_joint": -1.5708,
+            "right_wrist_3_joint": 0.0
+          }
+        ]
+      },
+      "provenance": {
+        "kind": "public_source",
+        "refs": [
+          {
+            "path": "docs/reports/2026-10-21-request-timing/evidence.json",
+            "sha256": "3eb2adf6464b3af9ac2f774711207ced674a4e8998237371416b0b5018deea90",
+            "selector": "requests[6].command.target_rad"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1369 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-23-fixed-motion",
+  "published_date": "2026-10-23",
+  "title": "고정 목표·동일 계산 예산의 공간 재계획 예비 평가",
+  "status": "preliminary",
+  "overview": "FR5·UR5e의 고정 초기·목표 상태에서 공간 후보 상한 1과 12를 공통 5wall초 예산으로 비교했습니다. 정상 목표의 동작·계획 실패와 의도한 무효 목표 거부를 분리합니다.",
+  "findings": [
+    "고정 사례 10개 중 정상 목표 9개와 부정 대조 1개를 분리했습니다. 사례·조건당 예정 반복은 3회입니다.",
+    "후보 상한 1: 정상 목표 선택 27회, 동작 성공 23회, 계획 실패 4회, 추적 확보 27회. 성공 중 후속 후보 선택 성공 0/23회입니다. 부정 대조는 기대한 invalid_goal 거부 3/3회로 별도 집계합니다.",
+    "후보 상한 12: 정상 목표 선택 27회, 동작 성공 24회, 계획 실패 3회, 추적 확보 27회. 성공 중 후속 후보 선택 성공 0/24회입니다. 부정 대조는 기대한 invalid_goal 거부 3/3회로 별도 집계합니다.",
+    "완료된 동작 성공 47회는 모두 첫 후보를 선택했습니다. 이 측정에서 후속 후보에 의한 회복 성공은 관측되지 않았습니다.",
+    "고정 시작 자세에서 홈 복귀: 선택한 6회 모두 추적을 확보했으나 동작 성공은 없었습니다. 계획 실패 6/6회, Action 전송 0개입니다. 이 고정 입력·예산·후보 정책에서의 결과이며 전역적으로 해가 없음을 뜻하지 않습니다.",
+    "전체 예정 60행을 보존했습니다. 발행 시도 60, 추적 확보 60, 미실행 0, 검증 실패 0행입니다.",
+    "같은 고정 입력을 각 조건에서 별도 계획했으며, 계산·경로 표의 차이만으로 후보 상한의 성능 우열을 확정하지 않습니다."
+  ],
+  "limitations": [
+    "소수의 고정 FR5·UR5e 사례를 같은 기구·준비 절차에서 반복한 예비 평가입니다. 사례 간 상관이 있으며 일반 로봇·장애물·모션플래너의 성능으로 확대하지 않습니다.",
+    "사례·조건당 예정 n=3이며 존재하는 값만 중앙값으로 표시합니다. p95/p99·신뢰구간·통계적 유의성을 주장하지 않습니다.",
+    "조건 간 OMPL/RRT의 내부 난수·최초 제안 경로를 고정하거나 공유하지 않았습니다. 둘 다 첫 후보를 고른 경우에도 시간·경로 차이가 날 수 있어 상한 변경의 인과 효과와 분리해야 합니다.",
+    "초기 상태는 명목값에서 최대 0.0015rad 이내로 맞췄습니다. 초기화·보정·warmup·시뮬레이터 시작은 요청 지표에서 제외하며 서로 다른 시작 상태·시계의 과거 리포트와 직접 합산하지 않습니다.",
+    "계획 최소 간격은 완전 경로와 부분 경로를 구분합니다. 부분 경로의 prefix 최소값을 전체 경로 최소값으로 사용하지 않으며 native 샘플 검사는 연속 시간 또는 실제 장치 안전 인증이 아닙니다.",
+    "계산 예산은 blocking 호출을 강제로 중단하는 실시간 deadline이 아닙니다. 실제 초과와 실패를 포함해 기록하며 미실행·발행 후 결과 불명 요청은 근거에서 숨기지 않습니다.",
+    "공개 근거는 원본 SHA와 선별한 수치·구성만 보존합니다. 전체 곡선은 포함하지 않아 이 공개 자료만으로 기하 재평가를 수행할 수 없습니다. 원본 runtime 경로·프로세스 명령·개인 식별값·원문 오류 메시지는 공개하지 않습니다."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "e97cc9af7e7d58cc1e9675b9d52fad1155ee9754",
+    "workcell": "fr5_ur5e, fr5_ur5e_eval_post",
+    "models": [
+      "Fairino FR5",
+      "Universal Robots UR5e"
+    ],
+    "scenario": "fixed-motion-v1",
+    "input_kind": "fixed_joint_targets"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "python": "3.10.12",
+    "ros": "ROS 2; middleware: rmw_cyclonedds_cpp; 배포판은 세션에 미기록",
+    "native_mujoco": "MuJoCo 3.12.0",
+    "mode": "headless; each selected row uses a fresh owned session",
+    "measurement_worktree": "clean",
+    "recorder": "request-local wall clock; simulation trajectory stamps are separate"
+  },
+  "sample_groups": [
+    {
+      "id": "local-small-single",
+      "label": "근거리 양팔 목표 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "local-small-bounded",
+      "label": "근거리 양팔 목표 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0001-single",
+      "label": "기존 고정 랜덤 목표 1 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0001-bounded",
+      "label": "기존 고정 랜덤 목표 1 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0002-single",
+      "label": "기존 고정 랜덤 목표 2 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0002-bounded",
+      "label": "기존 고정 랜덤 목표 2 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0003-single",
+      "label": "기존 고정 랜덤 목표 3 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0003-bounded",
+      "label": "기존 고정 랜덤 목표 3 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0004-single",
+      "label": "기존 고정 랜덤 목표 4 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0004-bounded",
+      "label": "기존 고정 랜덤 목표 4 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0005-single",
+      "label": "기존 고정 랜덤 목표 5 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "random-0005-bounded",
+      "label": "기존 고정 랜덤 목표 5 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "crossing-single",
+      "label": "양팔 교차 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 2,
+      "failures": 1,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 2/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "crossing-bounded",
+      "label": "양팔 교차 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "home-return-single",
+      "label": "고정 시작 자세에서 홈 복귀 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 0,
+      "failures": 3,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 0/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "home-return-bounded",
+      "label": "고정 시작 자세에서 홈 복귀 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 0,
+      "failures": 3,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 0/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "environment-post-single",
+      "label": "고정 기둥을 포함한 환경 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "environment-post-bounded",
+      "label": "고정 기둥을 포함한 환경 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": 3,
+      "failures": 0,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 물리·종료 검증까지 완료한 동작 성공 3/3. 초기화·보정·warmup은 채점에서 제외합니다."
+    },
+    {
+      "id": "invalid-goal-single",
+      "label": "공개 기록의 충돌 목표 거부 · 후보 상한 1",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 부정 대조: invalid_goal 거부 3/3, 관측 이동 0회, Action 전송 0개. 정상 목표의 성공률 분모에서 제외합니다."
+    },
+    {
+      "id": "invalid-goal-bounded",
+      "label": "공개 기록의 충돌 목표 거부 · 후보 상한 12",
+      "kind": "headless",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "초기·목표 관절은 고정, 반복별 조건 순서는 교대. MoveIt RRT 내부 seed와 샘플 경로는 조건 간 공유하지 않습니다.",
+      "description": "예정 3, 선택 3, 발행 시도 3, 추적 확보 3, 미실행 0, 결과 불명 0. 부정 대조: invalid_goal 거부 3/3, 관측 이동 0회, Action 전송 0개. 정상 목표의 성공률 분모에서 제외합니다."
+    }
+  ],
+  "stages": [
+    {
+      "id": "preparation",
+      "label": "초기화·상태 맞춤·warmup",
+      "clock": "wall",
+      "coverage": "unmeasured",
+      "note": "채점 전 절차이며 이 리포트의 지연·성공 분모에서 제외합니다."
+    },
+    {
+      "id": "computation",
+      "label": "계획·후보 선택·안전검사",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "요청 수신 뒤 5wall초 공통 예산. 실제 반환 초과와 계획 실패를 포함합니다."
+    },
+    {
+      "id": "planned-path",
+      "label": "계획 경로 품질",
+      "clock": "simulation",
+      "coverage": "partial",
+      "note": "전체 native 보간이 완료된 경로만 본표에 표시하고 부분 최소값은 별도 근거로 남깁니다."
+    },
+    {
+      "id": "motion",
+      "label": "관측 최초 이동",
+      "clock": "wall",
+      "coverage": "partial",
+      "note": "이동이 관측된 요청의 /joint_states 기준이며 예약 출발 대기를 포함합니다."
+    },
+    {
+      "id": "observed-path",
+      "label": "관측 경로 품질",
+      "clock": "simulation",
+      "coverage": "partial",
+      "note": "완전한 실행 후 native 관측 검사가 있는 요청만 집계합니다."
+    },
+    {
+      "id": "result",
+      "label": "최종 결과·물리·종료 검증",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "요청 실패를 남기고 실행·물리·정상 종료까지 검증한 경우만 완료로 분류합니다."
+    }
+  ],
+  "metrics": [
+    {
+      "id": "compute",
+      "label": "계산 구간 wall 시간",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 0.379345435,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 0.369557394,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 0.6305267,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 0.610311416,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 0.620556484,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 0.600702375,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 0.619789189,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 0.639859688,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 0.630601201,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 0.629558175,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 0.620831562,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 0.60082723,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 1.709769323,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 1.359820096,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": 0.133929279,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": 4.126574381,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 1.962112634,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 2.392208786,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": 0.001945579,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": 0.001838274,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "계획 실패를 포함해 모든 확보된 요청을 집계합니다. 양 조건의 계산 예산은 5wall초이며 checkpoint 방식이므로 반환 직후의 초과를 숨기지 않습니다."
+    },
+    {
+      "id": "first-motion",
+      "label": "수신 → 관측 최초 이동",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 1.475209219,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 1.466436836,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 1.728673181,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 1.708857686,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 1.718934117,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 1.698340469,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 1.718788662,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 1.739122656,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 1.728702583,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 1.729142375,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 1.716397299,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 1.698281422,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 3.8290563955,
+          "sample_count": 2,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 2.454783655,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 3.056309853,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 3.485856395,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "이동이 관측된 요청만 포함합니다. /joint_states의 0.001rad 초과 변화 기준이며 예약 출발 대기를 포함합니다. 사용자 클릭 지연은 포함하지 않습니다."
+    },
+    {
+      "id": "terminal",
+      "label": "수신 → 최종 결과",
+      "unit": "s",
+      "clock": "wall",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 3.834704826,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 3.824607246,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 6.703470104,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 6.683516245,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 6.623183278,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 6.620338422,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 6.695310855,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 6.714849295,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 6.704111738,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 6.704070182,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 6.602709762,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 6.572225199,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 18.731784085,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 15.173325442,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": 0.227011748,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": 4.219841692,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 20.499006213,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 25.148279294,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": 0.094661965,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": 0.093870767,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "정상·계획 실패·부정 대조의 최종 기록까지이며 초기 구동·보정·warmup 시간은 제외합니다."
+    },
+    {
+      "id": "candidates",
+      "label": "검사한 공간 후보 수",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": 12,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 1,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": 0,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": 0,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "상한 1 또는 12에 도달하기 전에 유효한 첫 후보를 고릅니다. 상한 12가 매번 12개를 계산한다는 뜻은 아닙니다."
+    },
+    {
+      "id": "planned-duration",
+      "label": "완전 계획 경로의 시간 길이",
+      "unit": "s",
+      "clock": "simulation",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 2.202392447,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 2.212202205,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 4.839959025,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 4.846884078,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 4.7696006010000005,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 4.762309749,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 4.82501762,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 4.82657972,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 4.831025037,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 4.822957936,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 4.752741723,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 4.748969073,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 24.2977069925,
+          "sample_count": 2,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 12.533044811,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 17.2577122,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 21.484388593,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "전체 native 보간 검사가 완료된 계획 경로만 포함합니다. 계획 실패의 부분 경로와 실제 wall 실행 시간은 합치지 않습니다."
+    },
+    {
+      "id": "planned-joint-travel",
+      "label": "완전 계획 경로의 관절 이동 합",
+      "unit": "rad",
+      "clock": "not_applicable",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 0.25402965713841275,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 0.25516347319526317,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 3.1573307919592906,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 3.159453472455833,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 4.116023318286277,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 4.124945907317625,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 3.727065511920302,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 3.731636086069092,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 3.9861682279110298,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 3.9783923707900444,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 4.127368954183657,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 4.132923437215705,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 22.790115106233642,
+          "sample_count": 2,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 7.65000478351676,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 14.458833600040116,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 23.05146870259178,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "양팔 모든 관절의 샘플 간 절대 변화 합입니다. 같은 최초 후보를 공유하지 않으므로 두 조건의 경로 차이를 상한의 인과 효과로 해석하지 않습니다."
+    },
+    {
+      "id": "planned-clearance",
+      "label": "완전 계획 경로의 샘플 최소 간격",
+      "unit": "mm",
+      "clock": "not_applicable",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 186.21895358375627,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 186.21807626923552,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 186.21834435439249,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 186.21776045838428,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 186.2188631066053,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 186.21852693056985,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 44.328943759555685,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 44.63552607114098,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 178.86587739597272,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 179.04039692309328,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 186.22212495884932,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 186.2179410461037,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 289.8064086280434,
+          "sample_count": 2,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 38.52471613116948,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 185.7717257146796,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 161.5538885162395,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "완전 검사된 경로만 집계하며 계획 기준은 30mm입니다. prefix 최소값은 공개 근거의 별도 필드로 남기고 이 표에 넣지 않습니다. 연속 시간 안전성 증명은 아닙니다."
+    },
+    {
+      "id": "observed-clearance",
+      "label": "완전 관측 경로의 샘플 최소 간격",
+      "unit": "mm",
+      "clock": "not_applicable",
+      "scope": "각 고정 사례·후보 상한별 관측 반복. 표의 n은 해당 값이 존재하는 요청 수입니다.",
+      "values": [
+        {
+          "group_id": "local-small-single",
+          "value": 183.61393051614223,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "local-small-bounded",
+          "value": 183.6130860819327,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-single",
+          "value": 183.6130195002375,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0001-bounded",
+          "value": 183.61249019591776,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-single",
+          "value": 183.61370393300248,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0002-bounded",
+          "value": 183.61330890336333,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-single",
+          "value": 44.676626034872704,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0003-bounded",
+          "value": 44.9925790396958,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-single",
+          "value": 178.12992070430894,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0004-bounded",
+          "value": 178.3077501209259,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-single",
+          "value": 183.61680780659032,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "random-0005-bounded",
+          "value": 183.61271229929676,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-single",
+          "value": 288.2841254087884,
+          "sample_count": 2,
+          "statistic": "median"
+        },
+        {
+          "group_id": "crossing-bounded",
+          "value": 35.790460711639604,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "home-return-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "home-return-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "environment-post-single",
+          "value": 182.85884797937007,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "environment-post-bounded",
+          "value": 159.9696645655241,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "invalid-goal-single",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "invalid-goal-bounded",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "관측 검사가 완료된 실제 관절 상태 경로만 집계하며 실행 후 기준은 20mm입니다. 관측 누락 구간과 실물 안전성을 보장하지 않습니다."
+    }
+  ],
+  "assets": [
+    {
+      "path": "evidence.json.gz",
+      "label": "전체 예정 행·측정 구성·원본 SHA를 포함한 공개 추출 근거",
+      "role": "data",
+      "sha256": "fc07f4718261a22ae77a8173cd1f89feadeddb33a4f6d6622c41c11d2287d520"
+    }
+  ],
+  "references": [
+    {
+      "label": "측정 당시 구현 커밋",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/e97cc9af7e7d58cc1e9675b9d52fad1155ee9754"
+    }
+  ]
+}

@@ -102,3 +102,46 @@ python3 verify_motion_replanning.py --domain 159
 최종 Action 전송 직전 시험용 취소 플래그를 설정하는 회귀 사례도 포함합니다.
 이미 검사를 통과한 경로라도 첫 비동기 전송이 차단되고, 두 팔이 정지하며, 다음 정상 요청이 실행되는지 확인합니다.
 이 플래그 주입은 OS 신호나 취소 토픽의 전달 지연을 측정하지 않습니다.
+
+
+## 고정 입력의 후보 수 비교
+
+```bash
+source ./manipulation_env.sh
+# 기존 단일 모델 생성 후, 별도 기둥 장면만 추가 생성합니다.
+PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
+python3 benchmark_fixed_motion.py --list
+python3 benchmark_fixed_motion.py --repeats 3 --domain 171
+```
+
+[고정 사례](../../config/evaluations/fixed_motion_v1.json)는 근거리, 기존 랜덤 목표 5개,
+양팔 교차, 홈 복귀, 환경 기둥, 잘못된 목표의 10개입니다. 후보 1개와 최대 12개를
+같은 5초 계산 예산으로 비교하며, 순서를 번갈아 3회 반복합니다. 각 행은 새 시뮬레이션과
+별도 빈 ROS 도메인을 사용합니다. 기본 실행은 도메인 171~230을 사용하며, 사용 중이면 중단합니다.
+
+준비·워밍업·실제 시작 자세 보정·끝점 사전 검사는 채점 시간에서 제외합니다.
+보정은 정상 명령 경로로 0.03 rad 이하, 최대 3회만 수행하며 실제 시작 오차는 0.0015 rad 이내여야 합니다.
+기둥은 URDF와 MJCF에 함께 포함합니다. 실제 MoveIt 장면에서 시작·목표의 유효성과
+직선 관절 보간의 기둥 충돌을 먼저 확인합니다. 이는 회피 경로의 존재나 최단 경로를 보장하지 않습니다.
+
+정상적인 후보 소진·예산 소진은 실패 결과로 보존하고 다음 행을 평가합니다. 준비·전송·실행·물리·정리 오류는
+평가를 중단하며, 남은 행은 미실행으로 남깁니다. 잘못된 목표는 동작 성공률과 별도로 집계합니다.
+부분 경로에서 발견한 최소 거리를 전체 경로의 최솟값으로 취급하지 않습니다.
+`--cases local_small environment_post invalid_goal --repeats 1`은 CI 확인용 부분 실행이며,
+전체 사례와 미실행 행도 결과에 보존합니다. 원본은 `runtime/validation/fixed-suites`에 저장합니다.
+
+
+측정이 종료된 뒤 `scripts/export_fixed_motion.py --source <fixed-benchmark.json> --output <새-evidence.json.gz>`로
+원본 bytes와 전체 요약을 다시 대조한 공개 근거를 만들 수 있습니다. 출력 파일이 이미 있으면 덮어쓰지 않습니다.
+세션의 구현 SHA·모델·환경이 행 사이에 달라졌거나 원본이 누락되면 추출을 거부합니다.
+`scripts/import_fixed_motion_report.py --evidence <공개-evidence.json.gz> --output <새-리포트-디렉터리>`는
+공개 근거만 읽어 예비 리포트를 만듭니다. 원본 경로·프로세스 환경·식별값·원문 오류는 공개하지 않습니다.
+
+2026-10-23의 [60행 예비 평가](../../docs/reports/2026-10-23-fixed-motion/index.html)는 성공 47회,
+계획 실패 7회, 의도한 무효 목표 거부 6회를 포함합니다. 성공은 모두 첫 후보였으며 홈 복귀는 6회 모두
+Action 전송 없이 거부됐습니다. 후보 상한 증가에 의한 회복 성공이나 홈 복귀 해결을 주장하지 않습니다.
+보존된 공개 근거와 보고서의 일치는 다음 명령으로 확인합니다.
+
+```bash
+PYTHONPATH=src runtime/report-tools/bin/python scripts/import_fixed_motion_report.py --check docs/reports/2026-10-23-fixed-motion
+```

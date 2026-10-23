@@ -147,13 +147,33 @@
       "bytes": 236594,
       "sha256": "c7c01fb21f64009ead43e2ddcd8bbfebb567f20ec4d0feeb45d186be7dea4192"
     },
+    "2026-10-23-fixed-motion/evidence.json.gz": {
+      "bytes": 36901,
+      "sha256": "fc07f4718261a22ae77a8173cd1f89feadeddb33a4f6d6622c41c11d2287d520"
+    },
+    "2026-10-23-fixed-motion/index.html": {
+      "bytes": 110629,
+      "sha256": "46571add3cc11811b6e3e7fa63ea32ec1eb33599c6813a44ad177399541647a7"
+    },
+    "2026-10-23-fixed-motion/metrics.csv": {
+      "bytes": 66639,
+      "sha256": "6d05e3b21f081f078476e7a4404e06ca6767df83493a68bcc73ac2f147d766a5"
+    },
+    "2026-10-23-fixed-motion/report-manifest.json": {
+      "bytes": 2132,
+      "sha256": "f2f28f4ac06e45375c952e0e5c4831b89e83eb912ca06049ba239f13ee6f47f2"
+    },
+    "2026-10-23-fixed-motion/report.json": {
+      "bytes": 48604,
+      "sha256": "1994a86fadd7d69649c767e7141a2e157c8567148dd648ddd976f2e9da8cad41"
+    },
     "catalog.json": {
-      "bytes": 2709,
-      "sha256": "a40d051b259eaaf77c198b3d17230a35a977cd95312e8534118a8252efe322e9"
+      "bytes": 3433,
+      "sha256": "134445d2667ee68abcb938e5847c5b2f34b5dc990c54cac35040b2b7f15117ad"
     },
     "index.html": {
-      "bytes": 11757,
-      "sha256": "39147f93d02ae253f6be91b4b00db010bb4a5fef0a5351296f1aa401f9d1a41b"
+      "bytes": 12425,
+      "sha256": "3a829fdff2adc4a3b0d2bab7aeab1d1a357600c5cf0708a7191c1d7b394f7a86"
     },
     "operator-demos.json": {
       "bytes": 2490,
