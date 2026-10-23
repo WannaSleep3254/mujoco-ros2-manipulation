@@ -77,7 +77,7 @@ async function detail(id){try{const data=await request('/api/requests/'+id);$('h
 function render(data){
  state=data;const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
  if(demoActive(data.demo?.current))badge($('connection'),'running',data.demo.current.status==='cancel_requested'?'시연 중단 중':'시연 진행 중');
- elsebadge($('connection'),latched?'blocked':ready?'ready':active?'running':'offline',latched?'정지 잠금':ready?'실행 가능':active?'요청 처리 중':data.lifecycle.phase==='starting'?'시뮬레이터 준비 중':data.simulation_verified?'연결됨 · 준비 확인':'연결 대기');
+ else badge($('connection'),latched?'blocked':ready?'ready':active?'running':'offline',latched?'정지 잠금':ready?'실행 가능':active?'요청 처리 중':data.lifecycle.phase==='starting'?'시뮬레이터 준비 중':data.simulation_verified?'연결됨 · 준비 확인':'연결 대기');
  $('sim-time').textContent=value(data.simulation_sec,3,' s');$('state-age').textContent=value(data.state_age_sec*1000,0,' ms');
  if(data.state_age_sec===null)$('state-age').textContent='—';
  $('guard-state').textContent=latched?'정지 잠금':data.guard?.phase==='ready'?'감시 중':'연결 대기';$('guard-state').className=latched?'bad':data.guard?.phase==='ready'?'good':'';
