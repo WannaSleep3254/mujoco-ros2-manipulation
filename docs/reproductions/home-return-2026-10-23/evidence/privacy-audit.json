@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "scope": "Privacy-filtered public candidates for these validated motion records; no general personal-data detection guarantee and no publication performed",
+  "extract_count": 13,
+  "retained_measurements_unchanged": true,
+  "public_extract_checks": [
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/25b471eee55042848109d714ae1d78a5.json",
+      "kind": "trace",
+      "bytes": 148355,
+      "sha256": "e7cfd09101ecf53ff99e41da94175af48edce6ca4eff7f225bf8decbb895cb43",
+      "raw_source_sha256": "e41d68c80b945d9b3f13270868ec7fe141af02669ead05e650036a4905108ff1",
+      "audit": {
+        "passed": true,
+        "checked_strings": 2704,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/6f93ff9f80b54a9eb6ae67784f020d9e.json.gz",
+      "kind": "setup",
+      "bytes": 431834,
+      "sha256": "d1c6ec121127c2639915555b1e45391a8e2457899278092291876485638d2e42",
+      "raw_source_sha256": "67d980837e3f7f215fcea89d02ca5ad32ae272cbf956dd277fdde21b450f4e9d",
+      "audit": {
+        "passed": true,
+        "checked_strings": 5715,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/73089b16e01c4eb380b4dab68f2f1f40.json.gz",
+      "kind": "setup",
+      "bytes": 98116,
+      "sha256": "2ca1965de8347333796ce667203b59808793b665ead95e40b437c5e6c4020b6c",
+      "raw_source_sha256": "360400bc344ca90edd3b26b488ebb21df263a048b98d9394fc97508c05892cf0",
+      "audit": {
+        "passed": true,
+        "checked_strings": 1319,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/806ff644305b4ec097c4d879c73d2d3e.json.gz",
+      "kind": "setup",
+      "bytes": 71623,
+      "sha256": "3cb0e90dfe45166c89bdc78d5a79d8822307aa3001cecc89eaef076b5854d966",
+      "raw_source_sha256": "877c51a06d70f64ebd3b47b793220528e584a2a1372bd3cafe785e2bf3bc980f",
+      "audit": {
+        "passed": true,
+        "checked_strings": 987,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/bc850a2b98574a17b92e0cef511cf7f4.json.gz",
+      "kind": "setup",
+      "bytes": 31064,
+      "sha256": "e9e0fb02723b039047dbcc9a1836eac595da09e09baaf6e0b4a59a90f5a2246e",
+      "raw_source_sha256": "5927a610577979f32f08a86edeba292db4f5a28b10d6b5ea29f6f36237a6eb41",
+      "audit": {
+        "passed": true,
+        "checked_strings": 459,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/c5ecfdd06cdf48d0959c983ebf5224d9.json",
+      "kind": "trace",
+      "bytes": 5792,
+      "sha256": "e60580fdb320584de5cb0055663b0427062bcf353f7fcb2ac360cc0ebf986cdf",
+      "raw_source_sha256": "1c39cfdf8dabf6eca29635584915653f5f782737b21229693e5f1705835ccadf",
+      "audit": {
+        "passed": true,
+        "checked_strings": 178,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/session.json",
+      "kind": "session",
+      "bytes": 6532,
+      "sha256": "e156a1ce32f072d42077c82a555b3ea16c99a5eb925008f2f53986e880515e50",
+      "raw_source_sha256": "5bf442f2418563fcdf5f76aa4208eca95be06df17c2aa117fd3946231d4333aa",
+      "audit": {
+        "passed": true,
+        "checked_strings": 182,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/current/1cf122732af04ead802e28427f85a8b6.json",
+      "kind": "trace",
+      "bytes": 461118,
+      "sha256": "e04c182283f4f9e395b9a8b2ebc8fbac2ad4e9af3a1606618f57b8b44af5b4c1",
+      "raw_source_sha256": "82d8381ab4f5df070f3fa3538f497f147b59abb696e4ce2683e323664acd2d8a",
+      "audit": {
+        "passed": true,
+        "checked_strings": 4426,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/current/df73769d843e4bd4bc30f9f05786bfe2.json",
+      "kind": "trace",
+      "bytes": 555051,
+      "sha256": "e15aa013f71f0ab94f275bcfc43f0af8949289d0be5ddf523beb5313e693c311",
+      "raw_source_sha256": "e3a85f63ee4522cb5f89e4a826dd9b65ae21ee174a1795b18403bba84ce59f21",
+      "audit": {
+        "passed": true,
+        "checked_strings": 1847,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/current/physics.json",
+      "kind": "physics",
+      "bytes": 2129,
+      "sha256": "78915ac28ff7b13b742cca641856d4b7e9fb3b5e7172a10769130585093305eb",
+      "raw_source_sha256": "eab48691fe256995743299edb47c9669cb03d8d1d01faa38f2d7788ed2b4a064",
+      "audit": {
+        "passed": true,
+        "checked_strings": 82,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/current/result.json",
+      "kind": "result",
+      "bytes": 1868,
+      "sha256": "39202926536643cd76cfa0950d14714be69a58617d39af2768228ffff1c291fc",
+      "raw_source_sha256": "32be8078520d675901cd649791aa3e0d3d24a89b579c03362ca57bcc259e47e7",
+      "audit": {
+        "passed": true,
+        "checked_strings": 66,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/current/session.json",
+      "kind": "session",
+      "bytes": 17539,
+      "sha256": "5d8e3145bc7718b0c10133c022f8e19a7ec2142a40c768520ed88fedff08fe95",
+      "raw_source_sha256": "1aa2655f0a33444f25f228cd4671e21c151f353555c085347c48c39a62914a6f",
+      "audit": {
+        "passed": true,
+        "checked_strings": 518,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    },
+    {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/current/verification.json",
+      "kind": "verification",
+      "bytes": 13657,
+      "sha256": "b04114b1503b5086d3a66626e505040b9cb953f48fcffb63adb1f95036b8281d",
+      "raw_source_sha256": "ec4c615ac55ea1c0e0d8e708049764a4bbb12748b37774e3d27a2bef6e4c5901",
+      "audit": {
+        "passed": true,
+        "checked_strings": 378,
+        "absolute_paths": false,
+        "host_environment_metadata": false,
+        "monotonic_origin": false
+      }
+    }
+  ],
+  "source_fields_excluded": [
+    "host",
+    "runtime",
+    "code_worktree_dirty",
+    "clock.origin_ns",
+    "contact_guard",
+    "pid",
+    "absolute local paths",
+    "observations"
+  ],
+  "note": "Complete originals are retained locally. Public readers can verify extract hashes and retained measurement consistency, but cannot independently recover or recheck omitted original fields from hashes alone."
+}

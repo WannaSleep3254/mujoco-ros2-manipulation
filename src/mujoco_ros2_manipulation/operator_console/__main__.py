@@ -20,6 +20,7 @@ def main():
     os.environ["ROS_DOMAIN_ID"] = os.environ["MANIPULATION_ROS_DOMAIN_ID"] = str(args.domain)
     from ..workcells.config import load_workcell
     from ..workcells.integrity import check_workcell
+    from ..workcells.contracts import describe_workcell
     from .state import ConsoleState
     from .http_server import ConsoleHTTPServer, Handler
     cell = load_workcell(args.workcell)
@@ -34,7 +35,7 @@ def main():
     configuration = dict(workcell=cell.id, label=cell.label, domain=args.domain, home_rad=dict(zip(cell.joints, cell.home)),
         joint_limits=metadata["joint_limits"], instances=[dict(id=i.id, model=i.profile.id, label=i.profile.label, joints=i.joints) for i in cell.instances],
         targets=dict(home=dict(zip(cell.joints, cell.home)), sample={n:v for i in cell.instances for n,v in zip(i.joints,i.plan_target)}),
-        render_enabled=not args.no_render)
+        render_enabled=not args.no_render, workcell_contract=describe_workcell(cell, metadata))
     state = ConsoleState(configuration)
     node = ConsoleBridge(state, cell)
     folder = cell.root/"runtime/operator"/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"-"+uuid.uuid4().hex[:8])

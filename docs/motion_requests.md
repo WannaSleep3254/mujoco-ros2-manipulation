@@ -138,3 +138,9 @@ CI 자료를 다른 경로로 다운로드했으면 `--traces`로 command sessio
 명령 노드의 `--compute-budget` 기본값은 30wall초입니다. 상태 스냅샷 후 계획·탐색·최종 검사·상태 재확인 구간에 협력식으로 적용하고, 초과 시 이동 지령 전에 실패합니다. 각 RPC와 네이티브 샘플을 선점하지 않으므로 실제 초과 시간이 기록될 수 있습니다. 실행·예약 시간과 구분합니다. `compute_budget`와 `computation_started/done` 이벤트, 출발 탐색의 후보별 비용을 원본에 추가했습니다.
 
 [고정 seed 랜덤 목표 비교](random_motion_benchmark.md)는 두 전략에 같은 목표·예산을 적용하고, 복귀·워밍업을 별도로 보존합니다.
+
+## 고정 홈 복귀 재현
+
+[고정 입력·원본·명령과 해석](reproductions/home-return-2026-10-23/README.md)에서 시작·홈 목표·중간 거부 표본을 구분합니다.
+새 trace에는 `clearance_endpoints`, 거부된 `planned_trajectories`/`source_trajectories`, `failure_stage`와 계획 후 `state_recheck` 구간을 추가했습니다.
+기존 명령 v1·거리 기준·예산·취소·최종 검사는 유지합니다. 작업장면 identity와 단위·frame은 [공통 모듈 계약](module_boundaries.md)에 정리했습니다.

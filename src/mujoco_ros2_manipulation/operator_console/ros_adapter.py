@@ -34,7 +34,8 @@ class ConsoleBridge(Node):
         self.create_timer(0.5, self.discover)
 
     def joints(self, message):
-        self.state.joints(list(message.name), list(message.position), list(message.velocity))
+        self.state.joints(list(message.name), list(message.position), list(message.velocity),
+                          source_stamp=message.header.stamp.sec + message.header.stamp.nanosec / 1e9)
 
     def guard(self, message):
         with self.state.lock:

@@ -35,6 +35,8 @@ from mujoco_ros2_manipulation.workcells.motion_request import (
 )
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget
+from mujoco_ros2_manipulation.workcells.contracts import describe_workcell
+from mujoco_ros2_manipulation.workcells.motion_diagnostics import measure_endpoints, path_clearance_diagnostic
 
 
 def status_qos():
@@ -77,14 +79,15 @@ class MotionCommandServer(WorkcellVerification):
         self.dispatch_observer = self.action_event
         self.dispatch_abort = self.check_abort
         atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
-            workcell=cell.id, model_manifest=self.metadata, policy=self.policy,
+            workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
             runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
                          middleware=get_rmw_implementation_identifier()),
             code_commit=subprocess.check_output(["git", "-C", str(cell.root), "rev-parse", "HEAD"], text=True).strip(),
+            code_worktree_dirty=bool(subprocess.check_output(["git", "-C", str(cell.root), "status", "--porcelain"], text=True).strip()),
             compute_budget_sec=self.compute_budget_sec,
             implementation_sha256={name: file_sha256(cell.root / "src/mujoco_ros2_manipulation/workcells" / name)
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py")},
+                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py")},
             note="Warm persistent server; simulator startup excluded from request latency. Simulation only."))
 
     def destroy_node(self):
@@ -283,6 +286,10 @@ class MotionCommandServer(WorkcellVerification):
             self.event("computation_started")
             target = trace.data["command"]["target_rad"]
             strategy = trace.data["command"]["strategy"]
+            threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
+            self.event("endpoint_clearance")
+            with trace.span("endpoint_clearance"):
+                trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold, checkpoint=self.compute_checkpoint)
             if max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001:
                 trace.data["no_motion_required"] = True
                 trace.skip("planning", "Target already within the 0.001rad movement threshold")
@@ -301,6 +308,7 @@ class MotionCommandServer(WorkcellVerification):
                 independent = [(i, self.plan(i.group, {n: target[n] for n in i.joints}, initial)) for i in self.cell.instances]
                 duration = max(Spline.from_ros(t).duration for _, t in independent)
                 source = [Spline.from_ros(stretch(t, duration)) for _, t in independent]
+                trace.data["source_trajectories"] = [c.record() for c in source]
                 self.event("departure_search")
                 trace.data["departure_search"] = {}
                 with trace.span("departure_search"):
@@ -308,12 +316,14 @@ class MotionCommandServer(WorkcellVerification):
                         diagnostics=trace.data["departure_search"], checkpoint=self.compute_checkpoint)
                 trace.data["departure_search"] = {k: v for k, v in chosen.items() if k != "curves"}
                 curves = [Spline(**record) for record in chosen["curves"]]
+            trace.data["planned_trajectories"] = [c.record() for c in curves]
             self.check_abort()
             self.event("safety_checks")
             with trace.span("safety_checks"):
                 threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
                 planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"], reject_below=threshold, checkpoint=self.compute_checkpoint)
                 trace.data["planned_clearance"] = planned
+                trace.data["clearance_diagnostic"] = path_clearance_diagnostic(trace.data["clearance_endpoints"], planned, max(c.duration for c in curves))
                 require(planned["complete"], "Planned clearance below 30mm policy")
                 samples = 0
                 for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
@@ -321,8 +331,10 @@ class MotionCommandServer(WorkcellVerification):
                     require(self.validity_of(state).valid, "MoveIt rejected interpolated schedule")
                     samples += 1
                 trace.data["moveit_safety_samples"] = samples
-            self.quiet()
-            require(max(abs(self.state()[n] - initial[n]) for n in self.joint_names) < 0.002, "Robot moved while planning; stale plan refused")
+            self.event("state_recheck")
+            with trace.span("state_recheck"):
+                self.quiet()
+                require(max(abs(self.state()[n] - initial[n]) for n in self.joint_names) < 0.002, "Robot moved while planning; stale plan refused")
             self.finish_computation(trace)
             self.motion_start = self.clock_last + 1.0
             trace.data["scheduled_start_simulation_sec"] = self.motion_start
