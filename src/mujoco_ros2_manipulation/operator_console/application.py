@@ -182,7 +182,7 @@ class ConsoleApplication:
             if path.is_relative_to((self.cell.root/"runtime").resolve()) and path.name == identifier+".json" and path.is_file() and path.stat().st_size <= 32*1024*1024:
                 data = json.loads(path.read_text())
                 if data["request_id"] == identifier:
-                    record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results")})
+                    record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results", "plan_selection", "failure_kind", "clearance_diagnostic", "endpoint_moveit_validity")})
                     record["departure_search"] = (data.get("departure_search") or {}).get("profiling")
         return record
 

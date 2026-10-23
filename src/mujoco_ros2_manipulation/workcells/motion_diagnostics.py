@@ -37,6 +37,27 @@ def path_clearance_diagnostic(endpoints, evaluation, duration_sec):
                 witness_semantics="Minimum of evaluated samples; sampling stops at first policy violation")
 
 
+def update_candidate_path_diagnostic(trace_data, candidates):
+    """Associate the latest available curve only with its own native assessment.
+
+    Candidate curves are already validated spline records. An interrupted new
+    assessment retains its candidate-local partial evidence, never an older
+    curve's top-level clearance or witness.
+    """
+    last = next((candidate for candidate in reversed(candidates) if candidate.get("curve")), None)
+    if last is None:
+        return
+    trace_data["planned_trajectories"] = [deepcopy(last["curve"])]
+    trace_data["planned_candidate_attempt"] = last["attempt"]
+    if last.get("native"):
+        trace_data["planned_clearance"] = deepcopy(last["native"])
+        trace_data["clearance_diagnostic"] = path_clearance_diagnostic(
+            trace_data["clearance_endpoints"], last["native"], last["curve"]["points"][-1]["t"])
+    else:
+        trace_data.pop("planned_clearance", None)
+        trace_data.pop("clearance_diagnostic", None)
+
+
 def timing_breakdown(trace):
     """Expose wall spans and simulation events separately; never infer DDS latency."""
     return dict(

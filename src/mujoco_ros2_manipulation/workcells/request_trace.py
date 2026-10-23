@@ -15,7 +15,7 @@ class RequestTrace:
             received_utc=datetime.now(timezone.utc).isoformat(),
             clock=dict(wall="time.monotonic_ns in this recorder process", origin_ns=self.origin,
                        simulation="ROS joint-state /clock seconds; never added to wall durations"),
-            events=[], spans=[], metrics={}, error=None, dispatched_goals=0)
+            events=[], spans=[], metrics={}, error=None, failure_kind=None, dispatched_goals=0)
         self.event("received")
 
     def elapsed(self):
@@ -69,4 +69,4 @@ class RequestTrace:
         return dict(schema_version=1, session_id=session_id, request_id=self.data["request_id"],
             status=self.data["status"], stage=self.data["events"][-1]["name"],
             trace_path=str(path), metrics=deepcopy(self.data["metrics"]), error=self.data["error"],
-            failure_stage=self.data.get("failure_stage"))
+            failure_stage=self.data.get("failure_stage"), failure_kind=self.data.get("failure_kind"))

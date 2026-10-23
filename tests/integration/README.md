@@ -84,3 +84,17 @@ python3 verify_operator_demos.py --domain 156 --port 8879 --no-render
 중첩 launch의 종료를 실제 HTTP·ROS 경로로 확인합니다. CI는 같은 검사를 도메인 155에서 실행합니다.
 로컬에서 `--no-render`를 빼면 각 새 실행의 job·run·모델 해시에 맞는 최신 뷰어 프레임도 요구합니다.
 원본 결과·계획·물리 기록은 `runtime/validation`과 해당 콘솔 세션에 보존하며 소개 사이트에 자동 게시하지 않습니다.
+
+
+## 일반 요청의 공간 후보 재선택
+
+```bash
+source ./manipulation_env.sh
+python3 verify_motion_replanning.py --domain 159
+```
+
+실제 명령 토픽과 MuJoCo 양팔 실행을 사용해 정상 계획, 시험용 실패 응답 뒤의 같은 요청 경로 재선택,
+후보 1개 상한, 후보 계산 중 취소 토픽 수신, 0.01 wall초 계산 예산, 이후 정상 복구를 확인합니다.
+시험용 계획 응답과 실제 MoveIt 호출을 구분해 기록하며 성공률·속도 평가로 사용하지 않습니다.
+실패·취소에는 전송 수 0과 최초 이동 null을, 성공에는 양팔 Action 완료와 최종 검사·전체 물리 스텝 접촉 0을 요구합니다.
+현재 사용 중인 도메인이면 실행을 거부합니다. 자세한 동작과 기록 항목은 [명령 안내](../../docs/motion_requests.md#일반-요청의-제한된-공간-재계획)에 있습니다.
