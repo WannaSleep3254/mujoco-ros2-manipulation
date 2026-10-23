@@ -32,7 +32,9 @@ class ReplanningVerification(MotionCommandServer):
     The withheld candidate is real MoveIt output for this exact initial state and
     goal, checked against the current native and MoveIt scene before reuse. Its
     first reported failure is deliberately injected; it is not a measured solver
-    failure or a performance result. Every later production execution gate runs.
+    failure or a performance result. A separate pre-send cancellation sets a
+    test-only flag in the production goal observer; it is not a cancellation
+    latency measurement. Every later production execution gate runs.
     """
     def __init__(self, cell, progress, output=None):
         super().__init__(cell, output or ROOT/'runtime/validation/replanning-sessions'/uuid.uuid4().hex,
@@ -45,7 +47,7 @@ class ReplanningVerification(MotionCommandServer):
         self.result_record = dict(
             schema_version=1, status='running', session_id=self.session_id,
             source_sha256=file_sha256(Path(__file__)), checks=[], maintenance=[],
-            note='Simulation-only functional regression. Explicit failed proposals and same-request saved successful MoveIt output are test-only; not solver success-rate or speed measurements.')
+            note='Simulation-only functional regression. Explicit failed proposals, same-request saved successful MoveIt output and a pre-send cancel flag are test-only; not solver success-rate, speed or cancellation-latency measurements.')
         self.save_checks()
 
     def save_checks(self):
@@ -75,8 +77,22 @@ class ReplanningVerification(MotionCommandServer):
             source_curve_sha256=hashlib.sha256(encoded).hexdigest(),
             source_native=assessment, source_moveit_samples=samples)
 
+    def action_event(self, name, arm, **details):
+        super().action_event(name, arm, **details)
+        if self.proposal_mode != 'cancel_before_first_send' or name != 'goal_sent':
+            return
+        injection = self.active.data['verification_injection']
+        require(not injection.get('triggered') and arm == self.cell.instances[0].id
+                and self.dispatched == injection['dispatched_goals_at_submission'],
+                'The pre-send cancellation must be injected once, before the first async goal')
+        injection.update(triggered=True, source='Verification-only cancellation flag; no OS signal or cancellation topic is sent',
+            trigger='production goal_sent observer completed, before send_goal_async', arm=arm,
+            dispatched_goals_before_trigger=self.dispatched-injection['dispatched_goals_at_submission'])
+        self.cancel_requested = True
+        self.event('verification_dispatch_boundary_cancel_requested', arm=arm)
+
     def plan(self, group, target, start_state=None):
-        if self.proposal_mode is None:
+        if self.proposal_mode in (None, 'cancel_before_first_send'):
             return super().plan(group, target, start_state)
         self.compute_checkpoint()
         self.proposal_calls += 1
@@ -154,7 +170,9 @@ class ReplanningVerification(MotionCommandServer):
                     'Verification command was rejected or another request owns the server')
             if mode:
                 self.pending.data['verification_injection'] = dict(
-                    mode=mode, scope='Verification-only proposal injection; no production command field changed')
+                    mode=mode, scope='Verification-only proposal or cancellation flag injection; no production command field changed')
+                if mode == 'cancel_before_first_send':
+                    self.pending.data['verification_injection']['dispatched_goals_at_submission'] = self.dispatched
             self.process_next()
         finally:
             self.proposal_mode, self.saved_proposal = None, None
@@ -185,6 +203,39 @@ class ReplanningVerification(MotionCommandServer):
                     and record['metrics']['received_to_first_motion_wall_sec'] is None
                     and not record['action_results'], 'Failed/cancelled planning dispatched or moved')
         return record
+
+    def check_dispatch_boundary_cancellation(self, record):
+        injection = record['verification_injection']
+        sent = [event for event in record['events'] if event['name'] == 'goal_sent']
+        require(record.get('failure_kind') == 'cancelled'
+                and record.get('failure_stage') == 'dispatch_to_action_results'
+                and injection.get('triggered') is True
+                and injection['dispatched_goals_before_trigger'] == 0
+                and len(sent) == 1 and sent[0]['arm'] == self.cell.instances[0].id
+                and any(event['name'] == 'verification_dispatch_boundary_cancel_requested' for event in record['events'])
+                and not any(event['name'] in ('goal_acceptance', 'goal_result') for event in record['events']),
+                'The cancellation did not stop the first async goal at its production observer boundary')
+        require(record['plan_selection']['selected_attempt'] is not None
+                and record['planned_clearance']['complete']
+                and any(span['name'] == 'final_state_recheck' and span['status'] == 'completed' for span in record['spans']),
+                'The pre-send regression never reached dispatch with an actually validated path')
+        before_count = self.joint_count
+        self.quiet()
+        stationary_samples = self.joint_count-before_count
+        state = self.state()
+        drift = {instance.id:max(abs(state[name]-record['initial_state_rad'][name]) for name in instance.joints)
+                 for instance in self.cell.instances}
+        velocity = {instance.id:max(abs(self.latest_velocities.get(name, float('inf'))) for name in instance.joints)
+                    for instance in self.cell.instances}
+        require(stationary_samples >= 10 and max(drift.values()) < .001
+                and max(velocity.values()) < .0001, 'An arm moved after the first-send cancellation')
+        self.result_record['checks'][-1]['dispatch_boundary_verification'] = dict(
+            test_only_flag_injection=True, first_async_goal_prevented=True, dispatched_goals=record['dispatched_goals'],
+            stationary_samples=stationary_samples, observed_state_rad=state,
+            arm_max_drift_rad=drift, stationary_drift_tolerance_rad=.001,
+            arm_max_velocity_rad_sec=velocity, stationary_velocity_tolerance_rad_sec=.0001,
+            note='Observer-boundary functional regression; no OS signal, cancellation-topic delivery or cancellation-latency claim.')
+        self.save_checks()
 
     def check_waypoint_execution(self, record):
         selection = record['plan_selection']
@@ -292,6 +343,10 @@ class ReplanningVerification(MotionCommandServer):
             waypoint = self.submit(target, case='actual_arm_order_waypoint', expected='succeeded', mode='force_waypoint')
             self.check_waypoint_execution(waypoint)
             reset()
+            self.progress('replanning_cancel_before_first_async_send')
+            boundary_cancelled = self.submit(target, case='cancel_before_first_async_send', expected='cancelled',
+                mode='cancel_before_first_send')
+            self.check_dispatch_boundary_cancellation(boundary_cancelled)
             self.progress('replanning_normal_after_failures')
             self.submit(target, case='normal_after_failures', expected='succeeded')
             reset()

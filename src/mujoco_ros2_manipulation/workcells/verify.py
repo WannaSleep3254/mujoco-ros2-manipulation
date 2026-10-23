@@ -223,6 +223,9 @@ class WorkcellVerification(Verification):
                 goal = FollowJointTrajectory.Goal()
                 goal.trajectory = trajectory
                 self.dispatch_event("goal_sent", inst.id)
+                abort = getattr(self, "dispatch_abort", None)
+                if abort is not None:
+                    abort()
                 pending.append((inst, self.arm_clients[inst.id].send_goal_async(goal)))
                 self.dispatched += 1
             rejected = []
