@@ -132,6 +132,7 @@ class TimingVerification(InterferenceVerification):
             )
             + 1
         )
+        self.progress("timing_observe_tail")
         self.until(
             lambda: self.clock_last >= start + horizon,
             horizon + 5,

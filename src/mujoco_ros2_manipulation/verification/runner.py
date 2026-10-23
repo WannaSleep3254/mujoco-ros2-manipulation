@@ -48,7 +48,7 @@ def stop_process(process):
 
 def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=None,
                      validator=None, command_builder=None, report_prefix="",
-                     launch_environment=None, finalize=None, expected_crash=None):
+                     launch_environment=None, finalize=None, expected_crash=None, on_launch=None):
     mode = 'gui' if args.gui else 'headless'
     if args.stop_mode == 'window':
         mode += '_window'
@@ -76,6 +76,8 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
             process = subprocess.Popen(command,
                 cwd=root, stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
                 env=launch_environment(report, args) if launch_environment else None)
+        if on_launch is not None:
+            on_launch(report, profile, args, process)
         report.stage('ros_initialization')
         ros.init()
         node = factory(profile, progress=report.stage)

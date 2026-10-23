@@ -14,6 +14,7 @@ import uuid
 from ..verification.reports import atomic_json
 from ..verification.runner import stop_process
 from ..workcells.motion_request import request_id
+from .demo_jobs import DemoJobs
 
 
 class ConsoleApplication:
@@ -35,6 +36,7 @@ class ConsoleApplication:
         self.worker = None
         self.render_attempted = False
         self.render_suspended = False
+        self.demos = DemoJobs(self)
         self.audit("console_started")
         self.monitor = threading.Thread(target=self.watch, daemon=True)
         self.monitor.start()
@@ -57,7 +59,7 @@ class ConsoleApplication:
         if set(options) != {"native_gui", "planning_case"} or type(options["native_gui"]) is not bool or options["planning_case"] not in ("none", "dual_arm_crossing"):
             raise ValueError("실행 옵션이 올바르지 않습니다.")
         with self.lock, self.state.lock:
-            if self.phase in ("starting", "running", "stopping") or any(p.poll() is None for k,p in self.children.items() if k != "renderer"):
+            if self.demos.busy or self.phase in ("starting", "running", "stopping") or any(p.poll() is None for k,p in self.children.items() if k != "renderer"):
                 raise RuntimeError("이 화면에서 시작한 실행이 이미 있습니다.")
             if self.state.clock()-self.state.started < 2:
                 raise RuntimeError("ROS 연결 확인이 끝난 뒤 실행하세요.")
@@ -67,11 +69,8 @@ class ConsoleApplication:
             elif self.state.graph["clock"] or self.state.graph["joints"] or self.state.graph["status"]:
                 raise RuntimeError("이 ROS 도메인에 기존 실행이 있습니다. 새 실행 대신 기존 상태를 확인하세요.")
             else:
-                self.state.clock_backwards = False
-                self.state.simulation_sec = self.state.clock_at = self.state.clock_advanced_at = None
-                self.state.joint_state_stamp_simulation_sec = None
-                self.state.positions = self.state.joint_at = self.state.guard = self.state.server = None
-                self.state.identity = False
+                self.reset_observation()
+                self.clear_frames()
             self.phase, self.error = "starting", None
             self.state.admission_suspended = False
             self.render_suspended = False
@@ -145,7 +144,7 @@ class ConsoleApplication:
 
     def submit(self, payload):
         with self.lock:
-            if self.phase in ("starting", "stopping") or self.closing.is_set():
+            if self.demos.busy or self.phase in ("starting", "stopping") or self.closing.is_set():
                 raise RuntimeError("실행 준비 또는 종료 중입니다.")
             if self.state.reserve(payload):
                 try:
@@ -159,6 +158,8 @@ class ConsoleApplication:
             return dict(request_id=payload["request_id"])
 
     def cancel(self, identifier):
+        if self.demos.busy:
+            raise RuntimeError("시연 종료 버튼으로 현재 시연을 종료하세요.")
         request_id(identifier)
         with self.state.lock:
             if identifier != self.state.active:
@@ -197,6 +198,7 @@ class ConsoleApplication:
             with self.lock:
                 if self.phase == "running":
                     failure = self.process_failure()
+                self.demos.tick()
                 live = self.state.snapshot()
                 if not self.render_suspended and self.phase != "stopping" and self.render_enabled and not self.render_attempted and live["simulation_verified"] and live["state_age_sec"] is not None and live["state_age_sec"] < 0.5:
                     self.render_attempted = True
@@ -214,6 +216,19 @@ class ConsoleApplication:
                         self.phase = "stopping"
                 if failed:
                     self.stop(error=failure)
+
+    def reset_observation(self):
+        with self.state.lock:
+            self.state.clock_backwards = False
+            self.state.simulation_sec = self.state.clock_at = self.state.clock_advanced_at = None
+            self.state.joint_state_stamp_simulation_sec = None
+            self.state.positions = self.state.joint_at = self.state.guard = self.state.server = None
+            self.state.identity = False
+            self.state.observed_model_path = None
+
+    def clear_frames(self):
+        for name in ("frame.json", "frame.jpg"):
+            (self.directory/name).unlink(missing_ok=True)
 
     def suspend_dispatch(self):
         with self.state.lock:
@@ -235,6 +250,7 @@ class ConsoleApplication:
             return self._stop(error=error)
 
     def _stop(self, *, error=None):
+        self.demos._stop_sync()
         with self.lock:
             self.phase = "stopping"
             self.generation += 1
@@ -291,8 +307,11 @@ class ConsoleApplication:
             data.update(lifecycle=dict(phase=self.phase, error=self.error,
                 owned={k:p.poll() is None for k,p in self.children.items()}, session_id=self.session_id,
                 last_launch_directory=None if self.last_launch is None else str(self.last_launch)), frame=frame)
-            if self.phase in ("starting", "stopping"):
+            data["demo"] = self.demos.snapshot()
+            if self.demos.busy or self.phase in ("starting", "stopping"):
                 data["can_submit"] = False
+                if self.demos.busy:
+                    data["reason"] = "시연 진행 중입니다. 종료 후 일반 관절 조작을 시작하세요."
             return data
 
     def close(self):
@@ -300,6 +319,7 @@ class ConsoleApplication:
         self.suspend_dispatch()
         if self.worker and self.worker is not threading.current_thread():
             self.worker.join(timeout=1)
+        self.demos.stop_sync()
         with self.state.lock:
             active = self.state.active if self.state.active in self.state.ui_ids else None
         if active and "commands" not in self.children:

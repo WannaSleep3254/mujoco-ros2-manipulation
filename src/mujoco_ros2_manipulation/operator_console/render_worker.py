@@ -1,5 +1,6 @@
 """Render received ROS joint states; never integrate physics or send commands."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
     parser.add_argument("--directory", type=Path, required=True)
+    parser.add_argument("--model", type=Path)
+    parser.add_argument("--model-sha256")
+    parser.add_argument("--job-id")
+    parser.add_argument("--run-id")
     args = parser.parse_args()
     os.environ.setdefault("MUJOCO_GL", "egl")
     import mujoco
@@ -23,6 +28,7 @@ def main():
     from ..workcells.config import load_workcell
     from ..workcells.integrity import check_workcell
     from ..verification.reports import atomic_json
+    from ..model_build.integrity import file_sha256
     cell = load_workcell(args.workcell)
     directory = args.directory.resolve()
     if not directory.is_relative_to((cell.root/"runtime").resolve()):
@@ -33,7 +39,23 @@ def main():
     node = renderer = None
     try:
         check_workcell(cell)
-        model = mujoco.MjModel.from_xml_path(str(cell.output/"cell.xml"))
+        model_path = (cell.output/"cell.xml").resolve()
+        identity = {}
+        if any((args.model, args.model_sha256, args.job_id, args.run_id)):
+            if not all((args.model, args.model_sha256, args.job_id, args.run_id)):
+                raise ValueError("Complete demo model identity is required")
+            if len(args.job_id) != 32 or any(c not in "0123456789abcdef" for c in args.job_id):
+                raise ValueError("Invalid demonstration identity")
+            run = cell.root/"runtime/validation/runs"/args.run_id
+            if run.parent != cell.root/"runtime/validation/runs":
+                raise ValueError("Invalid demonstration run")
+            model_path = args.model.resolve()
+            if model_path not in {(cell.output/"cell.xml").resolve(), (run/"contact_test.xml").resolve()}:
+                raise ValueError("Unowned demonstration model")
+            if file_sha256(model_path) != args.model_sha256:
+                raise ValueError("Demonstration model hash mismatch")
+            identity = dict(job_id=args.job_id, run_id=args.run_id, model_sha256=args.model_sha256)
+        model = mujoco.MjModel.from_xml_path(str(model_path))
         model.vis.global_.offwidth, model.vis.global_.offheight = 960, 640
         data = mujoco.MjData(model)
         identifiers = {n:mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, n) for n in cell.joints}
@@ -72,11 +94,12 @@ def main():
             pixels = renderer.render()
             temporary = directory/"frame.tmp.jpg"
             Image.fromarray(pixels).save(temporary, quality=88)
+            jpeg_sha256 = hashlib.sha256(temporary.read_bytes()).hexdigest()
             temporary.replace(directory/"frame.jpg")
             sequence += 1
-            atomic_json(directory/"frame.json", dict(sequence=sequence, rendered_monotonic=time.monotonic(),
+            atomic_json(directory/"frame.json", dict(sequence=sequence, jpeg_sha256=jpeg_sha256, rendered_monotonic=time.monotonic(),
                 source_state_age_sec=now-latest["at"], simulation_sec=latest["simulation_sec"], view=view,
-                renderer="MuJoCo "+mujoco.__version__, kind="ROS joint-state visualization; not a second physics simulation"))
+                renderer="MuJoCo "+mujoco.__version__, **identity, kind="ROS joint-state visualization; not a second physics simulation"))
     except Exception as error:
         atomic_json(directory/"frame.json", dict(error=type(error).__name__+": "+str(error)))
         raise
