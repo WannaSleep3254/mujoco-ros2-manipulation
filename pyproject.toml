@@ -35,6 +35,7 @@ manipulation-reproduce-motion = "mujoco_ros2_manipulation.workcells.reproduce_mo
 manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
 manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main"
 manipulation-verify-operator = "mujoco_ros2_manipulation.operator_console.verify:main"
+manipulation-verify-demos = "mujoco_ros2_manipulation.operator_console.verify_demos:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

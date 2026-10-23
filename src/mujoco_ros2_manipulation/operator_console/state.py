@@ -23,6 +23,7 @@ class ConsoleState:
         self.clock_backwards = False
         self.graph = dict(clock=0, joints=0, status=0, commands=0, guards=0)
         self.identity = False
+        self.observed_model_path = None
         self.guard = None
         self.server = None
         self.server_at = None

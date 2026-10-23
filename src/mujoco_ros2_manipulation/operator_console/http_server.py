@@ -1,13 +1,15 @@
 """Loopback HTTP API with bounded JSON, exact origins and fixed file routes."""
 import hmac
+import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
 import json
 import mimetypes
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from ..reporting.data import ReportError, safe_asset
+from .catalog import describe_scenarios
 from ..workcells.motion_request import decode_message, command, validate_command
 
 
@@ -82,14 +84,29 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/api/bootstrap":
                 catalog = json.loads((app.cell.root/"docs/reports/catalog.json").read_text())
-                return self.respond(dict(config=app.state.config, reports=catalog["reports"], token=self.server.token))
+                return self.respond(dict(config=app.state.config, reports=catalog["reports"], demos=describe_scenarios(), token=self.server.token))
             if path == "/api/state":
                 return self.respond(app.snapshot())
             if path.startswith("/api/requests/"):
                 return self.respond(app.request_details(path.removeprefix("/api/requests/")))
             if path == "/api/frame":
+                # JPEG and metadata are separate atomic files. Require their digest
+                # to agree and never answer an old scene identity with a new image.
+                metadata = app.directory/"frame.json"
                 image = app.directory/"frame.jpg"
-                return self.respond(image.read_bytes(), mime="image/jpeg") if image.is_file() else self.respond(b"", 204)
+                if not metadata.is_file() or not image.is_file():
+                    return self.respond(b"", 204)
+                before = metadata.read_bytes()
+                frame = json.loads(before)
+                query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                for name in ("job_id", "run_id", "model_sha256", "sequence"):
+                    if name in query and query[name] != [str(frame.get(name, ""))]:
+                        return self.respond(b"", 204)
+                pixels = image.read_bytes()
+                if (metadata.read_bytes() != before or not frame.get("jpeg_sha256")
+                        or hashlib.sha256(pixels).hexdigest() != frame["jpeg_sha256"]):
+                    return self.respond(b"", 204)
+                return self.respond(pixels, mime="image/jpeg")
             if path == "/api/logs":
                 logs = []
                 for stream in app.files[-4:]:
@@ -127,7 +144,11 @@ class Handler(BaseHTTPRequestHandler):
             payload = decode_message(self.rfile.read(length).decode("utf-8"))
             path = urlsplit(self.path).path
             app = self.server.application
-            if path == "/api/start":
+            if path == "/api/demos/start":
+                result = app.demos.start(payload)
+            elif path == "/api/demos/stop" and set(payload) == {"job_id"}:
+                result = app.demos.request_stop(payload["job_id"])
+            elif path == "/api/start":
                 result = app.start(payload)
             elif path == "/api/attach":
                 if payload:

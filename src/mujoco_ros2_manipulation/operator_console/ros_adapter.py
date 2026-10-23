@@ -59,6 +59,7 @@ class ConsoleBridge(Node):
                 guards=self.count_publishers("/workcell/contact_stop"))
             if self.state.graph["clock"] != 1 or self.state.graph["joints"] != 1 or not self.parameters.service_is_ready():
                 self.state.identity = False
+                self.state.observed_model_path = None
             if self.identity_future:
                 if self.identity_future.done():
                     try:
@@ -66,16 +67,19 @@ class ConsoleBridge(Node):
                         robot = ET.fromstring(values[0].string_value)
                         hardware = robot.find("ros2_control/hardware")
                         model = hardware.find("param[@name='mujoco_model']").text
-                        self.state.identity = (values[1].bool_value and hardware.find("plugin").text == "mujoco_ros2_control/MujocoSystemInterface"
-                            and model == str(self.cell.output / "cell.xml")
+                        verified = (values[1].bool_value and hardware.find("plugin").text == "mujoco_ros2_control/MujocoSystemInterface"
                             and {j.get("name") for j in robot.findall("ros2_control/joint")} == set(self.cell.joints))
+                        self.state.observed_model_path = model if verified else None
+                        self.state.identity = verified and model == str(self.cell.output / "cell.xml")
                     except Exception:
                         self.state.identity = False
+                        self.state.observed_model_path = None
                     self.identity_future = None
                 elif time.monotonic()-self.last_identity > 3:
                     self.identity_future.cancel()
                     self.identity_future = None
                     self.state.identity = False
+                    self.state.observed_model_path = None
             if not self.identity_future and time.monotonic()-self.last_identity > 2 and self.parameters.service_is_ready():
                 self.last_identity = time.monotonic()
                 self.identity_future = self.parameters.call_async(GetParameters.Request(names=["robot_description", "use_sim_time"]))
