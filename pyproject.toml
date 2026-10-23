@@ -31,6 +31,7 @@ manipulation-verify-contact-stop = "mujoco_ros2_manipulation.workcells.verify_co
 manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
 manipulation-motion-server = "mujoco_ros2_manipulation.workcells.motion_server:main"
 manipulation-command = "mujoco_ros2_manipulation.workcells.motion_client:main"
+manipulation-verify-replanning = "mujoco_ros2_manipulation.workcells.verify_motion_replanning:main"
 manipulation-reproduce-motion = "mujoco_ros2_manipulation.workcells.reproduce_motion:main"
 manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
 manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main"

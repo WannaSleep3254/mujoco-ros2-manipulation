@@ -2,7 +2,9 @@
 from copy import deepcopy
 import unittest
 
-from mujoco_ros2_manipulation.workcells.motion_diagnostics import measure_endpoints, path_clearance_diagnostic, timing_breakdown
+from mujoco_ros2_manipulation.workcells.motion_diagnostics import (
+    measure_endpoints, path_clearance_diagnostic, timing_breakdown, update_candidate_path_diagnostic,
+)
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
 
 
@@ -62,6 +64,54 @@ class MotionDiagnosticsTests(unittest.TestCase):
         self.assertEqual(trace.summary("trace.json", "session")["failure_stage"], "safety_checks")
         summary["events"].clear()
         self.assertEqual(len(trace.data["events"]), 4)
+
+
+    def test_new_partial_curve_removes_previous_witness_but_keeps_candidate_prefix(self):
+        endpoints = measure_endpoints({"joint": .1}, {"joint": .2}, Evaluator(), .03)
+        trace = dict(clearance_endpoints=endpoints)
+        bad = dict(attempt=1, curve=dict(names=["joint"], points=[dict(t=0, p=[0]), dict(t=2, p=[1])]),
+                   native=dict(complete=False, samples=101, minimum=dict(time_sec=1, distance_m=.029)))
+        update_candidate_path_diagnostic(trace, [bad])
+        self.assertEqual(trace["clearance_diagnostic"]["witness"]["distance_m"], .029)
+        before = deepcopy(trace)
+        update_candidate_path_diagnostic(trace, [dict(attempt=2, moveit_error_code=-1)])
+        self.assertEqual(trace, before)  # A response without a curve changes no path evidence.
+        partial = dict(attempt=2, status="interrupted", stage="native",
+                       curve=dict(names=["joint"], points=[dict(t=0, p=[0]), dict(t=3, p=[2])]),
+                       native_progress=dict(samples=2, minimum=dict(state_rad=dict(joint=.01), distance_m=.05)))
+        candidates = [bad, partial]
+        trace["plan_selection"] = dict(candidates=candidates)
+        inputs = deepcopy(candidates)
+        update_candidate_path_diagnostic(trace, candidates)
+        self.assertEqual(trace["planned_candidate_attempt"], 2)
+        self.assertEqual(trace["planned_trajectories"], [partial["curve"]])
+        self.assertNotIn("planned_clearance", trace)
+        self.assertNotIn("clearance_diagnostic", trace)
+        self.assertEqual(trace["plan_selection"]["candidates"][-1]["native_progress"]["samples"], 2)
+        self.assertEqual(candidates, inputs)
+
+    def test_available_native_result_is_tied_to_same_attempt_and_detached_from_inputs(self):
+        for complete in (True, False):
+            with self.subTest(complete=complete):
+                endpoints = measure_endpoints({"joint": .1}, {"joint": .2}, Evaluator(), .03)
+                previous = dict(attempt=1, curve=dict(names=["joint"], points=[dict(t=0, p=[0]), dict(t=2, p=[1])]),
+                                native=dict(complete=False, minimum=dict(time_sec=1, distance_m=.02)))
+                current = dict(attempt=6, curve=dict(names=["joint"], points=[dict(t=0, p=[0]), dict(t=3, p=[2])]),
+                               native=dict(complete=complete, samples=301,
+                               minimum=dict(time_sec=3, state_rad=dict(joint=2), distance_m=.04 if complete else .029)))
+                candidates = [previous, current, dict(attempt=7, moveit_error_code=-1)]
+                inputs = deepcopy((candidates, endpoints))
+                trace = dict(clearance_endpoints=endpoints)
+                update_candidate_path_diagnostic(trace, candidates)
+                self.assertEqual(trace["planned_candidate_attempt"], 6)
+                self.assertEqual(trace["planned_trajectories"], [current["curve"]])
+                self.assertEqual(trace["planned_clearance"], current["native"])
+                self.assertEqual(trace["clearance_diagnostic"]["witness"], current["native"]["minimum"])
+                self.assertEqual(trace["clearance_diagnostic"]["violation_location"], None if complete else "goal")
+                trace["planned_trajectories"][0]["points"][-1]["p"][0] = 99
+                trace["planned_clearance"]["minimum"]["distance_m"] = 99
+                trace["clearance_diagnostic"]["witness"]["state_rad"]["joint"] = 99
+                self.assertEqual((candidates, endpoints), inputs)
 
 
 if __name__ == "__main__":

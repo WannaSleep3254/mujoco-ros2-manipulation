@@ -84,7 +84,7 @@ class MotionReproduction(MotionCommandServer):
                 original_goal_tolerance_rad=.003)
             trajectory = self.anchored(to_ros(curve))
         self.active.data.setdefault("plans", []).append(dict(group=group, source="saved_preparation_anchored",
-            wall_sec=None, server_planning_sec=None, requested_planner_id=None,
+            wall_sec=None, server_planning_sec=None, requested_planner_id=None, goal_tolerance_rad=.003,
             note="No MoveIt planning RPC; the current full final checks still apply"))
         self.compute_checkpoint()
         return trajectory

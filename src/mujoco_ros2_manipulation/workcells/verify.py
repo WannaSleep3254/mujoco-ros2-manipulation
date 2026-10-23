@@ -184,10 +184,11 @@ class WorkcellVerification(Verification):
         )
         return answer
 
-    def anchored(self, trajectory):
+    def anchored(self, trajectory, *, initial=None):
         trajectory = deepcopy(trajectory)
         first = trajectory.points[0]
-        first.positions = [self.commanded[name] for name in trajectory.joint_names]
+        state = self.commanded if initial is None else initial
+        first.positions = [state[name] for name in trajectory.joint_names]
         first.velocities = [0.0] * len(trajectory.joint_names)
         first.accelerations = [0.0] * len(trajectory.joint_names)
         return trajectory
@@ -222,6 +223,9 @@ class WorkcellVerification(Verification):
                 goal = FollowJointTrajectory.Goal()
                 goal.trajectory = trajectory
                 self.dispatch_event("goal_sent", inst.id)
+                abort = getattr(self, "dispatch_abort", None)
+                if abort is not None:
+                    abort()
                 pending.append((inst, self.arm_clients[inst.id].send_goal_async(goal)))
                 self.dispatched += 1
             rejected = []
