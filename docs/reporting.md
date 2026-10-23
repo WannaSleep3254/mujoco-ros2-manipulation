@@ -106,11 +106,13 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 
 ## 기능 시연의 등록과 게시
 
-성능 측정이 아닌 조작·기능 시연과 설계·개발 리포트는 `docs/operator/<자료ID>`에 보관합니다.
+성능 측정이 아닌 프로젝트 소개·조작 시연·설계·개발 리포트는 `docs/operator/<자료ID>`에 보관합니다.
 [시연 등록 목록](reports/operator-demos.json)은 [별도 스키마](../src/mujoco_ros2_manipulation/reporting/operator-demos.schema.json)로 검사합니다.
 목록의 ID로 형제 폴더 `docs/operator/<자료ID>`만 찾으며 임의 소스 경로는 받지 않습니다.
 등록 목록이 없는 다른 리포트 루트는 기존 동작을 유지합니다.
-설계·개발 리포트는 registry 항목과 manifest 모두에 `document_type: design_review`를 지정합니다.
+프로젝트 소개는 registry 항목과 manifest 모두에 `document_type: project_overview`를 지정합니다.
+공개 목록의 평가 이력 위에 **프로젝트 소개**로 표시합니다.
+설계·개발 리포트는 두 파일 모두에 `document_type: design_review`를 지정합니다.
 유형을 생략하거나 `functional_demo`로 지정하면 기존 기능 시연으로 해석합니다. 두 파일의 유형은 일치해야 합니다.
 
 1. 독립 HTML과 필요한 영상·그림·근거를 준비하고 브라우저에서 검토합니다.
@@ -121,7 +123,7 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 4. `validate` → `build` → `build --check` → 새 폴더 `site` 내보내기로 자료와 출력을 확인합니다.
    자료 정정 시 자산 해시, manifest 해시, 생성 파일을 함께 갱신하고 PR에서 검토합니다.
 
-공개 주소는 `operator/<자료ID>/index.html`입니다. 유형에 따라 목록의 **기능 시연** 또는 **설계·개발 리포트** 구역에서 연결하며,
+공개 주소는 `operator/<자료ID>/index.html`입니다. 유형에 따라 목록의 **프로젝트 소개**·**기능 시연**·**설계·개발 리포트** 구역에서 연결하며,
 성능평가 `catalog.json`의 `reports`와 검색 개수·표본에는 넣지 않습니다.
 manifest에 등록한 파일과 manifest만 복사하고, 미등록 파일·다른 시연 폴더·runtime은 복사하지 않습니다.
 중복 ID·공개 경로, 미지원 manifest 버전, 파일 변조·누락, 경로 이탈·심볼릭 링크를 거부합니다.

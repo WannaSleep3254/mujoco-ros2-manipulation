@@ -2,7 +2,7 @@
   "schema_version": 1,
   "generator": {
     "version": "1.2",
-    "fingerprint": "427bcf6216c15e13e9780e046d635f8da736b8a4a1db652952401eeaa5ed7874",
+    "fingerprint": "9e762a0ce87365a13e5b72a109fc11ddc9d8f4b0be4fe44a416306322bcf9bcd",
     "files": {
       "__init__.py": {
         "bytes": 125,
@@ -13,8 +13,8 @@
         "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
       },
       "render.py": {
-        "bytes": 12008,
-        "sha256": "c282adc8e90dd50b110a9c8023d0728bbc2cbb3809a4b22e609183606adddf2c"
+        "bytes": 12733,
+        "sha256": "994083bd8dd22d7ef0db15b60646aad716d272eac1e2bd0030bf5d6deb2d61e3"
       },
       "publish.py": {
         "bytes": 7522,
@@ -25,12 +25,12 @@
         "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
       },
       "operator_demos.py": {
-        "bytes": 4045,
-        "sha256": "1decf90baa0b42d6a012ee6604d135aadb67955edf51d4bc0aeed78715b78ee4"
+        "bytes": 4070,
+        "sha256": "441ee2dcc11cee1c777530f30493d92dd912a14bf33341e94dae815aa64246d9"
       },
       "operator-demos.schema.json": {
-        "bytes": 1398,
-        "sha256": "3ae8ac708f7a2860cfd425aed03b48940b66704e4ba4e29b54aa2993006dda80"
+        "bytes": 1422,
+        "sha256": "fd7ca25e239e88f305aeeb1865cd76085fed22879836c410504bf9907e29aea5"
       },
       "templates/page.html": {
         "bytes": 518,
@@ -73,7 +73,7 @@
     },
     "2026-10-21-phase1/report-manifest.json": {
       "bytes": 2695,
-      "sha256": "5c990aec43cc10b833a05099d78634621ac1dbe3eac04c53a5ecf5e4621db45b"
+      "sha256": "32130cf90f6ba1a80ef6cea1dfe8989869a93d4fad62048d2c51608527ac4cee"
     },
     "2026-10-21-phase1/report.json": {
       "bytes": 21357,
@@ -93,7 +93,7 @@
     },
     "2026-10-21-random-motion/report-manifest.json": {
       "bytes": 2134,
-      "sha256": "6c670c41889f6a97d8afe77d818138d468a0d997f162f56e088f3bc7f5a12164"
+      "sha256": "19c5240abe4875ce4734b80f133608322778d02c3fe2f0a49e6cf80021d2a7e5"
     },
     "2026-10-21-random-motion/report.json": {
       "bytes": 25604,
@@ -113,7 +113,7 @@
     },
     "2026-10-21-request-timing/report-manifest.json": {
       "bytes": 2132,
-      "sha256": "d7bf29f2fd2315a696fff828644a2b9d677ee52a4514bdd702a9b3dfe327f610"
+      "sha256": "da94c5692446bc514cce803b1a1739cb988845a98e22201c52c4e2b3459b5486"
     },
     "2026-10-21-request-timing/report.json": {
       "bytes": 27217,
@@ -137,7 +137,7 @@
     },
     "2026-10-21-search-optimization/report-manifest.json": {
       "bytes": 2411,
-      "sha256": "d10ac987a515368335bf00be45b9e7d78176b58719e3964b0d1a91dcc8385dad"
+      "sha256": "80aa44eb9a859ba30a4d8464b660b2d6652d8a6a8a64ecc904cc05e200f0c82b"
     },
     "2026-10-21-search-optimization/report.json": {
       "bytes": 27403,
@@ -152,12 +152,12 @@
       "sha256": "a40d051b259eaaf77c198b3d17230a35a977cd95312e8534118a8252efe322e9"
     },
     "index.html": {
-      "bytes": 9581,
-      "sha256": "dada60fc8479185565fa42e92f19a19d68f24768a0a1c8bad6386b48ae8bd726"
+      "bytes": 10289,
+      "sha256": "be5b42f11fc5a688eaff12aa260fe4792741d49f4a322deb349f6d7d2ff34d5a"
     },
     "operator-demos.json": {
-      "bytes": 1561,
-      "sha256": "d271a4eda13a2acb389a4b973b84c3140a30951f7328364a78718e44832f0b1a"
+      "bytes": 2139,
+      "sha256": "e9a0436da3659701550e702fe7899b86b09cd1aaec118d21289e0facf8d14db9"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -176,16 +176,16 @@
       "sha256": "43e0f478521ffa7957578108a9873b5f3e59e4676567ef29b8c9f22717be5846"
     },
     "operator/motion-planning-direction-2026-10-22/index.html": {
-      "bytes": 73554,
-      "sha256": "409c6a093054d43dfa9f0a572eb97edca61d5012c883f2f2df51de180cc0a95d"
+      "bytes": 73634,
+      "sha256": "fa0dbee51abe38b7c3c833ba61983763b198c79e8138e5d44073093e7c9e8ff4"
     },
     "operator/motion-planning-direction-2026-10-22/manifest.json": {
       "bytes": 1011,
-      "sha256": "a8436db716d5b45972146f4d1cee22f7c387913e0644a9feb2511303fb916ac9"
+      "sha256": "25fd56edc0643b8cf659fc6204fa61fdc5d5cc35da43dba6ef36fe31b566f9ca"
     },
     "operator/motion-planning-direction-2026-10-22/review-notes.json": {
-      "bytes": 9840,
-      "sha256": "2dbfdbdb1905c0aea79dd1fb7fd82f883aef9f5e51810234688dc5f898ae65f0"
+      "bytes": 11226,
+      "sha256": "5c4804bbc94aec18b0919a41a967b9517abe4b5732a054fb2e8ee5ef2a09c7cf"
     },
     "operator/motion-planning-direction-2026-10-22/timing-comparison.mp4": {
       "bytes": 699421,
@@ -259,25 +259,61 @@
       "bytes": 1226621,
       "sha256": "38aa19f75c5b1db88bd9097c36e2faf34ee682905222f7d8308d77259ac69023"
     },
+    "operator/project-overview-2026-10-23/evidence.json": {
+      "bytes": 6789,
+      "sha256": "e724adea471486f5b350de41b5bb73439bfbc86e0bcc531f18dddf391711a83c"
+    },
+    "operator/project-overview-2026-10-23/fr10-home.png": {
+      "bytes": 35811,
+      "sha256": "deacde644e33f8e48b1c09d81e60b778bd23beddf3bf69095abc101bbd4b3e89"
+    },
+    "operator/project-overview-2026-10-23/fr5-home.png": {
+      "bytes": 42146,
+      "sha256": "2928dce0fb8e73a2ea29be5b540f3f8e54ff5b3295cec714d1883fa4cd0ffc73"
+    },
+    "operator/project-overview-2026-10-23/index.html": {
+      "bytes": 42284,
+      "sha256": "5da1b4f1f6a3ff2401c95eed30feabcd49e054c24aaf97ea7d7a41e6a47b04e1"
+    },
+    "operator/project-overview-2026-10-23/manifest.json": {
+      "bytes": 929,
+      "sha256": "f031909801ef86b06de132b63a6e782ddeecbf9ac19364a5bfdfcb9e3ffd3a8a"
+    },
+    "operator/project-overview-2026-10-23/operation-demo.mp4": {
+      "bytes": 1226621,
+      "sha256": "38aa19f75c5b1db88bd9097c36e2faf34ee682905222f7d8308d77259ac69023"
+    },
+    "operator/project-overview-2026-10-23/operation-poster.png": {
+      "bytes": 339327,
+      "sha256": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9"
+    },
+    "operator/project-overview-2026-10-23/review-notes.json": {
+      "bytes": 4690,
+      "sha256": "f5cec8f8e53368a93b57caeca366fbd6b8af1451c190a792a3115348d053ffe4"
+    },
+    "operator/project-overview-2026-10-23/ur5e-home.png": {
+      "bytes": 42589,
+      "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
+    },
     "operator/viewer-direction-2026-10-22/current-console.png": {
       "bytes": 215361,
       "sha256": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87"
     },
     "operator/viewer-direction-2026-10-22/index.html": {
-      "bytes": 63747,
-      "sha256": "8e256fb427ba55d0a8d6761f50a8ba4f609116ca80c98a5f07e73b7c51f15f13"
+      "bytes": 63867,
+      "sha256": "ae2037e3285e93134c9200c0d3ffd261b8062428459f4c0ff1c80ca8742ee49f"
     },
     "operator/viewer-direction-2026-10-22/manifest.json": {
       "bytes": 2764,
-      "sha256": "5304fdb834d7f0bc1fa403c65ac3707fb54ebf5253b1aa852cd6da558172672d"
+      "sha256": "befd86718f47c3b32965cf90c07f162bfdcc5b7f89fedcc3c572f0a61e79ec4e"
     },
     "operator/viewer-direction-2026-10-22/review-data.json": {
       "bytes": 5906,
       "sha256": "e69c92e9ec1c25c3b5ddf249e215171f3e0f2dfbe21af18369e1dc9dcf0df7c4"
     },
     "operator/viewer-direction-2026-10-22/review-notes.json": {
-      "bytes": 18290,
-      "sha256": "c2be1565bc8bf0c45da36635af2a0aded1ed58796228306f02e9c0ecc0894349"
+      "bytes": 19157,
+      "sha256": "a8d6c159d39d3af1dbe35853bd02b17af655922178f751ada8873d247ff1d2dd"
     },
     "operator/viewer-direction-2026-10-22/viewer-demo-poster.png": {
       "bytes": 323052,

@@ -1,4 +1,4 @@
-"""Publish registered functional demos and design reviews outside measured reports."""
+"""Publish registered demos, design reviews, and project overviews outside measurements."""
 import hashlib
 import json
 from importlib.resources import files
@@ -9,7 +9,7 @@ from .data import ReportError, read_json, safe_asset
 
 
 REGISTRY = "operator-demos.json"
-DOCUMENT_TYPES = ("functional_demo", "design_review")
+DOCUMENT_TYPES = ("functional_demo", "design_review", "project_overview")
 
 
 def collect_demos(root):

@@ -14,7 +14,7 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "이기종 복수 로봇의 통합 시뮬레이션 조작 방향과 현재 FR5·UR5e 구현 상태, 렌더링 대안·단계별 개선·검증 계획을 정리합니다. 성능 순위는 미측정입니다.",
-      "manifest_sha256": "5304fdb834d7f0bc1fa403c65ac3707fb54ebf5253b1aa852cd6da558172672d"
+      "manifest_sha256": "befd86718f47c3b32965cf90c07f162bfdcc5b7f89fedcc3c572f0a61e79ec4e"
     },
     {
       "id": "motion-planning-direction-2026-10-22",
@@ -22,7 +22,15 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "빈피킹 우선의 작업 계획과 현재 양팔 구현, 지연·최소 우회 진단, 계획 기술 비교와 실물 전환·검증 순서를 정리합니다. 신규 대안의 성능은 미측정입니다.",
-      "manifest_sha256": "a8436db716d5b45972146f4d1cee22f7c387913e0644a9feb2511303fb916ac9"
+      "manifest_sha256": "25fd56edc0643b8cf659fc6204fa61fdc5d5cc35da43dba6ef36fe31b566f9ca"
+    },
+    {
+      "id": "project-overview-2026-10-23",
+      "title": "프로젝트 소개 · MuJoCo·ROS 2 로봇 제어 시뮬레이션",
+      "published_date": "2026-10-23",
+      "document_type": "project_overview",
+      "overview": "로봇 시뮬레이션·동작 검증 개발 환경 구축을 목표로 하는 MuJoCo·ROS 2 개인 개발 프로젝트입니다. 개발 목표와 현재 구현 기능·시연·초기 테스트 구성·기존 검증 범위를 소개합니다.",
+      "manifest_sha256": "f031909801ef86b06de132b63a6e782ddeecbf9ac19364a5bfdfcb9e3ffd3a8a"
     }
   ]
 }

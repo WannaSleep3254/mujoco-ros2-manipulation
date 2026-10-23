@@ -37,7 +37,7 @@ class ReportLinks(HTMLParser):
         if tag == "section":
             self.sections.append(attrs.get("id"))
             self.section_stack.append(attrs.get("id"))
-        for marker in ("data-demo", "data-design-report"):
+        for marker in ("data-demo", "data-design-report", "data-project-overview"):
             if marker in attrs:
                 self.article_sections.append((marker, self.section_stack[-1]))
 
@@ -109,6 +109,8 @@ class PublicationReportTests(unittest.TestCase):
         self.assertEqual(catalog.reports, 1)
         self.assertEqual(catalog.article_sections, [("data-demo", "demos")])
         self.assertNotIn("design-reports", catalog.sections)
+        self.assertNotIn("project-overview", catalog.sections)
+        self.assertFalse(any(a["href"] == "#project-overview" for a in catalog.links))
         self.assertTrue(any(a["href"] == "operator/demo/index.html" for a in catalog.links))
         self.assertIn("시연 &lt;자료&gt;", (output / "index.html").read_text())
         names = {str(p.relative_to(output)) for p in output.rglob("*") if p.is_file()}
@@ -147,7 +149,9 @@ class PublicationReportTests(unittest.TestCase):
     def test_document_types_must_match_the_reviewed_manifest(self):
         demo = self.demo_fixture()
         for registry_type, manifest_type in ((None, "design_review"), ("functional_demo", "design_review"),
-                                             ("design_review", None), ("design_review", "functional_demo")):
+                                             ("design_review", None), ("design_review", "functional_demo"),
+                                             ("project_overview", None), (None, "project_overview"),
+                                             ("project_overview", "design_review"), ("design_review", "project_overview")):
             with self.subTest(registry_type=registry_type, manifest_type=manifest_type):
                 for target, value in ((self.demo_registry["demos"][0], registry_type),
                                       (self.demo_manifest, manifest_type)):
@@ -204,20 +208,67 @@ class PublicationReportTests(unittest.TestCase):
         self.assertFalse((output / "operator/design-review/private.env").exists())
         build(self.root, check=True)
 
-    def test_design_review_links_and_text_are_escaped_without_a_demo_section(self):
-        url = 'operator/review/index.html?title="detail"&next=<review>'
-        page = catalog_html([], [dict(document_type="design_review", url=url,
-            title='검토 </a><script>alert("x")</script>', published_date="2026-10-22",
-            overview='내용 <img src=x onerror="alert(1)">')])
+    def test_project_overview_precedes_measurements_and_exports_reviewed_assets(self):
+        self.demo_fixture()
+        contents = {}
+        for identifier, document_type in (("design-review", "design_review"),
+                                           ("project-introduction", "project_overview")):
+            directory = self.temporary / "operator" / identifier
+            directory.mkdir()
+            html = f'<h1>{identifier}</h1><a href="manifest.json">Evidence</a>'.encode()
+            (directory / "index.html").write_bytes(html)
+            manifest = json_text(dict(schema_version=1, document_type=document_type,
+                assets={"index.html": hashlib.sha256(html).hexdigest()})).encode()
+            (directory / "manifest.json").write_bytes(manifest)
+            (directory / "private.env").write_text("not reviewed")
+            contents[identifier] = html, manifest
+            self.demo_registry["demos"].append(dict(id=identifier, document_type=document_type,
+                title=identifier, published_date="2026-10-23", overview="테스트 문서이며 측정 표본 아님",
+                manifest_sha256=hashlib.sha256(manifest).hexdigest()))
+        (self.root / "operator-demos.json").write_text(json_text(self.demo_registry))
+        entries, _ = collect_demos(self.root)
+        self.assertEqual({entry["id"]: entry["document_type"] for entry in entries},
+                         {"demo": "functional_demo", "design-review": "design_review",
+                          "project-introduction": "project_overview"})
+        build(self.root)
+        output = self.temporary / "overview-site"
+        export_site(self.root, output)
+        self.assertEqual([entry["report_id"] for entry in read_json(output / "catalog.json")["reports"]],
+                         ["sample"])
+        page = (output / "index.html").read_text()
         catalog = ReportLinks(page)
-        self.assertEqual(catalog.reports, 0)
-        self.assertEqual(catalog.article_sections, [("data-design-report", "design-reports")])
-        self.assertNotIn("demos", catalog.sections)
-        self.assertFalse(any(a["href"] == "#demos" for a in catalog.links))
-        self.assertTrue(any(a["href"] == url for a in catalog.links))
-        self.assertIn('href="operator/review/index.html?title=&quot;detail&quot;&amp;next=&lt;review&gt;"', page)
-        self.assertNotIn('<script>alert("x")</script>', page)
-        self.assertNotIn('<img src=x', page)
+        self.assertEqual(catalog.sections, ["project-overview", None, "demos", "design-reports"])
+        self.assertLess(page.index('<h2>프로젝트 소개</h2>'), page.index('<h2>평가 이력</h2>'))
+        self.assertIn('<h1>MuJoCo·ROS 2 로봇 제어 시뮬레이션</h1>', page)
+        self.assertIn('프로젝트 소개 · 현재 개발 상태 · 검증·평가 자료', page)
+        self.assertEqual(catalog.links[0]["href"], "#project-overview")
+        self.assertEqual(catalog.article_sections, [("data-project-overview", "project-overview"),
+                         ("data-demo", "demos"), ("data-design-report", "design-reports")])
+        self.assertEqual(catalog.reports, 1)
+        self.assertTrue(any(a["href"] == "operator/project-introduction/index.html" for a in catalog.links))
+        for identifier, (html, manifest) in contents.items():
+            self.assertEqual((output / "operator" / identifier / "index.html").read_bytes(), html)
+            self.assertEqual((output / "operator" / identifier / "manifest.json").read_bytes(), manifest)
+            self.assertFalse((output / "operator" / identifier / "private.env").exists())
+        build(self.root, check=True)
+
+    def test_nonmeasurement_document_links_and_text_are_escaped_without_a_demo_section(self):
+        url = 'operator/review/index.html?title="detail"&next=<review>'
+        for document_type, section_id, marker in (("design_review", "design-reports", "data-design-report"),
+                                                 ("project_overview", "project-overview", "data-project-overview")):
+            with self.subTest(document_type=document_type):
+                page = catalog_html([], [dict(document_type=document_type, url=url,
+                    title='검토 </a><script>alert("x")</script>', published_date="2026-10-22",
+                    overview='내용 <img src=x onerror="alert(1)">')])
+                catalog = ReportLinks(page)
+                self.assertEqual(catalog.reports, 0)
+                self.assertEqual(catalog.article_sections, [(marker, section_id)])
+                self.assertNotIn("demos", catalog.sections)
+                self.assertFalse(any(a["href"] == "#demos" for a in catalog.links))
+                self.assertTrue(any(a["href"] == url for a in catalog.links))
+                self.assertIn('href="operator/review/index.html?title=&quot;detail&quot;&amp;next=&lt;review&gt;"', page)
+                self.assertNotIn('<script>alert("x")</script>', page)
+                self.assertNotIn('<img src=x', page)
 
     def test_demo_cannot_overwrite_an_existing_report_asset(self):
         self.demo_fixture()

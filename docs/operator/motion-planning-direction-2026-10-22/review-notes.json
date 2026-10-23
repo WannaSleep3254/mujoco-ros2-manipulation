@@ -321,5 +321,44 @@
       "mobile bin-picking stage and completion criteria"
     ],
     "new_motion_or_performance_measurement": false
-  }
+  },
+  "presentation_changes": [
+    {
+      "date": "2026-10-23",
+      "area": "table 4 first two integration/selection cells",
+      "change": "Separated each sentence and its official source link with explicit line breaks; wording and source targets preserved.",
+      "validation": {
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "line_breaks_per_cell": 2,
+        "print": "passed",
+        "script_errors": []
+      }
+    },
+    {
+      "date": "2026-10-23",
+      "area": "table 4 final-column rows 3-7 and role-column rows 5-6",
+      "change": "Added sentence breaks and separate source-link lines in seven annotated cells. Existing first-two-row breaks, wording and links preserved.",
+      "validation": {
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "final_column_breaks_each": 2,
+        "annotated_role_column_breaks_each": 1,
+        "print": "passed",
+        "script_errors": []
+      }
+    },
+    {
+      "date": "2026-10-23",
+      "area": "table 1 coordinated plan behavior",
+      "change": "Placed the note distinguishing one response path from three internal MoveIt attempts on its own line. Wording and code token preserved.",
+      "validation": {
+        "status": "passed",
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "print_breaks": "preserved",
+        "script_errors": []
+      }
+    }
+  ]
 }

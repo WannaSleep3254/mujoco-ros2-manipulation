@@ -1,0 +1,93 @@
+{
+  "document_type": "project_overview",
+  "document_version": "1.3",
+  "layout_baseline": "1.9",
+  "checked_date": "2026-10-23",
+  "status": "editorial_and_static_validation_passed",
+  "scope": "Merged visitor introduction; current capabilities and historical verification only; no new performance or robot measurement.",
+  "editorial_decisions": [
+    "Retain v1.2 repository title, purpose/implementation distinction, three goals and owner-confirmed selection background",
+    "Restore v1.1 four implementation areas as concise single-paragraph cards",
+    "Show the existing demonstration before technical details",
+    "Restore three initial-test model reference images with brief configuration labels",
+    "Summarize original verification in three dated items, preserve interpretation limits",
+    "Link detailed architecture and future plans rather than restoring long tables",
+    "Keep separate private local-viewer background and source list collapsed",
+    "Preserve the user-requested sentence breaks in the current-focus paragraph"
+  ],
+  "validation": {
+    "static": {
+      "status": "passed",
+      "sections": 4,
+      "goals": 3,
+      "features": 4,
+      "models": 3,
+      "verification_items": 3,
+      "local_assets_and_anchors": "passed",
+      "aria_and_ids": "passed",
+      "responsive_and_print_rules": "retained_and_reviewed",
+      "video_component_and_scripts": "unchanged",
+      "private_paths_and_urls": []
+    },
+    "independent_editorial_review": "Passed: concise purpose and goals, actual features and initial test references, dated verification scope, video vs separate cancellation tests, future module/CAD goals, private-viewer context and responsive/print CSS logic.",
+    "browser": {
+      "status": "not_rerun_for_v1.3",
+      "reason": "Browser tool blocks local file protocol; no workaround attempted. Existing media/scripts and v1.9 responsive and print components are retained."
+    },
+    "new_robot_or_performance_measurement": false,
+    "publication": {
+      "status": "passed",
+      "schema_and_assets": 71,
+      "repository_checks": "Syntax, links, build manifest, three robot profiles and scenes passed",
+      "publication_unit_tests": 48,
+      "measurement_originals_preserved": 15,
+      "pre_push_diff_review": "No unexpected runtime changes, private assets or modified measurement originals found."
+    }
+  },
+  "previous_revision": {
+    "document_version": "1.2",
+    "validation": {
+      "static": {
+        "status": "passed",
+        "sections": 3,
+        "goals": 3,
+        "title_and_purpose": "passed",
+        "owner_confirmed_ros2_motives": "passed",
+        "local_images": "passed",
+        "video_component_and_print_poster": "preserved",
+        "narrow_layout_rules": "reviewed",
+        "private_paths_or_urls": []
+      },
+      "independent_editorial_review": "Passed: purpose vs implementation, concise visitor flow, three development goals, owner-confirmed ROS 2 selection motives, initial test robots and later expansion, original recording scope and private-viewer context.",
+      "responsive_and_print_review": "Existing v1.9 responsive and print rules retained; goal and resource grids use one column at narrow widths; video print poster and source-details print handling preserved.",
+      "browser": {
+        "status": "not_rerun_for_v1.2",
+        "reason": "Browser tool blocks file-protocol access; no protocol or browser-surface workaround attempted. Previous revision browser results are identified separately."
+      },
+      "publication": {
+        "status": "passed",
+        "schema_and_assets": 68,
+        "generated_files_match": 15,
+        "publication_unit_tests": 37,
+        "measurement_originals_preserved": 15,
+        "repository_checks": "Syntax, local links, build manifest, three profiles and scenes passed",
+        "export": {
+          "status": "passed",
+          "main_title": "MuJoCo·ROS 2 로봇 제어 시뮬레이션",
+          "introduction_link": "operator/project-overview-2026-10-23/index.html",
+          "measured_reports": 4,
+          "publication_files": 68,
+          "video_component_and_scripts": "identical_to_v1.1_browser_verified_revision"
+        }
+      },
+      "new_robot_or_performance_measurement": false
+    }
+  },
+  "presentation_changes": [
+    {
+      "date": "2026-10-23",
+      "change": "Added a compact four-stage execution flow and seven direct baseline-pinned original-record links in the three verification summaries.",
+      "validation": "Passed: four stages, seven direct record links, baseline source hashes, anchors and duplicate IDs; print arrow direction explicit. Related publication tests: 48 passed."
+    }
+  ]
+}

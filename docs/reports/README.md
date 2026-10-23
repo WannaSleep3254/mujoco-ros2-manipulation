@@ -27,6 +27,11 @@ GitHub 파일 화면은 HTML 소스를 표시합니다. 로컬 브라우저로 �
 공개 사이트는 main의 리포트 관련 변경 후 검증된 파일을 GitHub Pages에 게시합니다.
 배포 상태와 공개 파일 검증은 [게시 안내](../reporting.md#html-게시와-운영)에서 확인합니다.
 
+## 프로젝트 소개
+
+[프로젝트 소개](../operator/project-overview-2026-10-23/index.html)는 개발 환경 구축이라는 목적과 MuJoCo·ROS 2 기반 구현의 관계, 개발 목표·현재 기능·시연·초기 테스트 구성과 검증 범위를 소개합니다.
+공개 목록 상단의 **프로젝트 소개**에서 열며, 두 방향성 리포트 및 성능평가 표본과 구분합니다.
+
 ## 기능 시연
 
 공개 목록 아래의 **기능 시연**에서 [뷰어 상태·피킹 접근·후퇴 비교](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html)를 엽니다.

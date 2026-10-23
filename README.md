@@ -1,5 +1,7 @@
 # mujoco-ros2-manipulation
 
+[**프로젝트 소개 · 개발 목표와 현재 상태**](docs/operator/project-overview-2026-10-23/index.html)
+
 MuJoCo와 ROS 2 Humble, ros2_control, MoveIt 2를 연결한 로봇팔 시뮬레이션 프로젝트입니다.
 FAIRINO FR5·FR10과 Universal Robots UR5e를 공통 실행기로 선택하며,
 제조사 모델 변환부터 경로 계획·실행, 관절 상태 기반 완료 확인과 정상 종료까지 검증했습니다.

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Reviewed functional demo and design review registry (separate from performance reports)",
+  "title": "Reviewed nonmeasurement document registry (separate from performance reports)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -29,7 +29,8 @@
             "type": "string",
             "enum": [
               "functional_demo",
-              "design_review"
+              "design_review",
+              "project_overview"
             ]
           },
           "id": {

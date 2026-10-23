@@ -100,6 +100,21 @@
       ],
       "review_source": "User browser comments and assistant editorial review; no independent Figma AI assessment",
       "reviewed_preview_sha256": "62c76b195d7e5ce0637f7d9ef1bd9c01342096a5e60df7883e8fb20e27d1c37e"
+    },
+    {
+      "date": "2026-10-23",
+      "area": "annotated rationale, comparison, technical-review cells and P3 list items",
+      "change": "Added semantic sentence breaks and separate source-link lines in 18 annotated nodes, including the Foxglove benefit cell. Wording, source targets and numbering preserved.",
+      "nodes": 18,
+      "added_line_breaks": 24,
+      "validation": {
+        "status": "passed",
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "print_breaks": "preserved",
+        "script_errors": []
+      },
+      "before_reviewed_html_sha256": "8e256fb427ba55d0a8d6761f50a8ba4f609116ca80c98a5f07e73b7c51f15f13"
     }
   ],
   "previous_document_validation": {
@@ -252,7 +267,7 @@
       "scope": "Document display and navigation only; no new viewer, ROS or performance benchmark."
     }
   },
-  "reviewed_html_sha256": "8e256fb427ba55d0a8d6761f50a8ba4f609116ca80c98a5f07e73b7c51f15f13",
+  "reviewed_html_sha256": "ae2037e3285e93134c9200c0d3ffd261b8062428459f4c0ff1c80ca8742ee49f",
   "previous_document_validation_v1_2": {
     "status": "passed",
     "document_version": "1.2",
@@ -450,7 +465,15 @@
     "repository_check": "passed: syntax, local Markdown links, build configuration, profiles and scenes",
     "publication_unit_tests": "47 tests passed: test_publication_reports and test_published_reports",
     "motion_tests": "not run; document and publication-only change",
-    "new_performance_measurements": false
+    "new_performance_measurements": false,
+    "annotation_line_break_review": {
+      "status": "passed",
+      "desktop_width": 1104,
+      "mobile_width": 390,
+      "print_breaks": "preserved",
+      "script_errors": [],
+      "nodes": 18
+    }
   },
   "media_changes": [
     {
