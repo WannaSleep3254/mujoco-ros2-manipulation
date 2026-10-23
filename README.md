@@ -26,6 +26,7 @@ FAIRINO FR5·FR10과 Universal Robots UR5e를 초기 기능 구현·검증 기�
 2026-10-22 기록의 FR5 이동·접근·후퇴·홈 복귀 4개 요청이며, 물체 파지는 포함하지 않습니다.
 통합 화면에는 실행·취소·상태·오류·이력을 연결했습니다.
 취소·복구 등의 별도 기능 검증은 [조작 화면 검증 기록](docs/operator_console.md#검증)에 정리했습니다.
+[문제 해결 시연: 접촉 시 양팔 정지·무장애물 대조 실행](docs/contact_comparison.md)
 
 ## 직접 구현한 부분
 
@@ -34,15 +35,15 @@ MoveIt 2·OMPL은 모션 계획을 담당합니다.
 MuJoCo와 ros2_control의 연동에는 [mujoco_ros2_control](https://github.com/ros-controls/mujoco_ros2_control)을 사용합니다.
 이 프로젝트에서는 제조사 모델과 이 기반들을 연결하는 설정·생성·검사·실행·관측 기능을 구현하고, 필요한 런타임 패치를 관리합니다.
 
-| 개발 항목 | 해결한 문제와 구현 | 코드·검증 근거 |
+| 개발 항목 | 해결한 문제와 구현 | 결과 기록·구현 코드 |
 |---|---|---|
-| 모델·설정 공통화 | 로봇별 차이를 YAML 프로필로 관리하고 관절 이름으로 연결합니다. 생성물 해시와 URDF·MJCF 순기구학 비교로 구성·변환 오류를 검사합니다. | [프로필](config/robots/) · [생성물 검사](src/mujoco_ros2_manipulation/model_build/integrity.py) · [변환 회귀 검사](tests/model/test_conversion.py) |
-| 실행 결과 검증 | Action 성공과 관절 오차의 연속 충족을 함께 확인합니다. 실행 성공·목표 도달·취소·정상 종료를 구분해 기록합니다. | [상태 기반 판정](src/mujoco_ros2_manipulation/verification/ros_checks.py) · [검증 절차](docs/verification.md) · [요청·취소 기록](docs/motion_requests.md) |
-| 양팔 동작·계산 개선 | 공간 경로를 유지한 출발 시점 조정과 중복 평가 재사용·후보 가지치기를 구현했습니다. 요청 ID로 계산과 실제 이동 구간을 나눠 계측합니다. | [출발 탐색](src/mujoco_ros2_manipulation/workcells/timing.py) · [요청 계측](src/mujoco_ros2_manipulation/workcells/request_trace.py) · [동일 입력 A/B](docs/search_optimization.md) |
-| 오류 분석·실패 대응 | UI 자원 해제 순서를 수정하고 접촉·시계 이상 시 물리 고정과 양팔 취소를 연결했습니다. MoveIt 플러그인 수명 문제는 환경 한정 우회로 구분합니다. | [종료 패치](patches/mujoco_ros2_control-0.1.2-shutdown.patch) · [원인 분석·우회](docs/troubleshooting.md) · [물리 스텝 감시](native/step_monitor.hpp) · [접촉 대조 실행](docs/contact_comparison.md) |
+| 모델·설정 공통화 | 로봇별 차이를 YAML 프로필로 관리하고 관절 이름으로 연결합니다. 생성물 해시와 URDF·MJCF 순기구학 비교로 구성·변환 오류를 검사합니다. | [모델별 실행 기록](docs/usage-and-validation.md#검증-환경과-결과) · [프로필](config/robots/) · [생성물 검사](src/mujoco_ros2_manipulation/model_build/integrity.py) · [변환 회귀 검사](tests/model/test_conversion.py) |
+| 실행 결과 검증 | Action 성공과 관절 오차의 연속 충족을 함께 확인합니다. 실행 성공·목표 도달·취소·정상 종료를 구분해 기록합니다. | [요청 회귀 결과](https://wannasleep3254.github.io/mujoco-ros2-manipulation/2026-10-21-request-timing/index.html) · [검증 절차](docs/verification.md) · [상태 기반 판정](src/mujoco_ros2_manipulation/verification/ros_checks.py) |
+| 양팔 동작·계산 개선 | 공간 경로를 유지한 출발 시점 조정과 중복 평가 재사용·후보 가지치기를 구현했습니다. 요청 ID로 계산과 실제 이동 구간을 나눠 계측합니다. | [동일 입력 A/B](docs/search_optimization.md) · [출발 탐색](src/mujoco_ros2_manipulation/workcells/timing.py) · [요청 계측](src/mujoco_ros2_manipulation/workcells/request_trace.py) |
+| 오류 분석·실패 대응 | UI 자원 해제 순서를 수정하고 접촉·시계 이상 시 물리 고정과 양팔 취소를 연결했습니다. MoveIt 플러그인 수명 문제는 환경 한정 우회로 구분합니다. | [접촉 대조 실행](docs/contact_comparison.md) · [종료 원인·검증](docs/troubleshooting.md) · [종료 패치](patches/mujoco_ros2_control-0.1.2-shutdown.patch) · [물리 스텝 감시](native/step_monitor.hpp) |
 
-출발 탐색 최적화는 고정 입력 6개 × 두 방식 × 5회 비교에서 선택 결과의 일치를 확인했습니다.
-교차 입력의 탐색 중앙값 **1.975 → 1.537 s(wall)**는 오프라인 탐색 구간의 기존 결과입니다.
+기존 순차 탐색과 중복 평가·후보 생략을 적용한 탐색을 고정 입력 6개 × 두 방식 × 5회로 비교했습니다.
+선택 팔·출발 지연·전체 궤적·거리 평가의 일치를 확인했으며, 교차 입력의 탐색 중앙값은 **1.975 → 1.537 s**(실제 경과 시간)입니다.
 전체 지령 지연·일반 작업 성능이나 최소 우회 경로를 보장하는 수치는 아닙니다.
 [측정 조건과 원본](https://wannasleep3254.github.io/mujoco-ros2-manipulation/2026-10-21-search-optimization/index.html)
 
@@ -63,19 +64,24 @@ FR5·UR5e 공동 장면은 물리 세계·시계·전체 관절 상태 하나와
 
 ## 실행 시작하기
 
+검증 환경: **Ubuntu 22.04 · Python 3.10 · ROS 2 Humble · amd64**
 **새 PC에서는 [설치와 빌드 안내](docs/setup.md)를 먼저 진행해야 합니다.**
-아래 명령은 의존성 설치, ROS 런타임 빌드와 모델 생성이 완료된 저장소 루트에서 실행합니다.
+아래 명령은 의존성·네이티브 런타임 설치가 완료된 저장소 루트에서 실행합니다.
+실행 중인 시뮬레이션을 종료한 뒤 공동 장면을 준비합니다.
 
 ```bash
+python3 build_workspace.py --component models --workcell fr5_ur5e
 source ./manipulation_env.sh
 python3 operator_console.py --domain 89 --port 8765
 ```
 
 [로컬 조작 화면](http://127.0.0.1:8765/)에서
-**시뮬레이션 시작 → 양팔 관절 목표 설정 → 계획 후 실행** 순서로 조작합니다.
+**시뮬레이션 시작 → 실행 가능 확인 → 양팔 목표 설정 → 계획 후 실행** 순서로 조작합니다.
+요청 상태가 **성공**(Action 완료·관절 수렴 확인)인지 확인합니다.
+종료는 **실행 종료 → 화면 서버 터미널 Ctrl+C** 순서이며, 브라우저 탭만 닫으면 종료되지 않습니다.
 현재 웹 조작 대상은 FR5·UR5e 공동 장면이며, MuJoCo·RViz·CLI도 사용할 수 있습니다.
 
-단일 로봇은 준비된 환경에서 다음과 같이 실행합니다.
+단일 로봇은 공동 장면과 화면 서버를 종료한 뒤 같은 터미널 환경에서 실행합니다.
 
 ```bash
 bash run_sim.sh robot:=fr5
@@ -93,6 +99,7 @@ bash run_sim.sh robot:=fr5
 
 - **현재 모델·장면:** FR5·FR10·UR5e, FR5·UR5e 공동 장면, 박스·원통 기반 고정 형상
 - **현재 목표 입력:** 관절 목표 기반 계획·실행, 공동 계획 또는 출발 시점 조정
+- **경로 거부:** 거리 조건 미달 경로는 전송하지 않으며, 일반 요청의 대체 공간 경로 자동 탐색은 후속 범위
 - **검증의 경계:** 전체 작업 공간 성공률·장시간 안정성·실제 파지·실물 제어는 미검증
 
 후속 개발에서는 다음 범위를 다룹니다.

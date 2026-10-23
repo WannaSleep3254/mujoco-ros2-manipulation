@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-23",
+  "executed_at": "2026-10-23T05:14:16.754498+00:00",
+  "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+  "main_commit": "58010ae74477dbd92959e98a35c06a98fb5ebb37",
+  "main_protected": true,
+  "open_pull_requests_before_cleanup": [],
+  "delete_branch_on_merge": true,
+  "remote_deletion": {
+    "atomic": true,
+    "exact_sha_leases": true,
+    "all_candidates_contained_in_main": true
+  },
+  "executed_deletions": [
+    {
+      "branch": "codex/contact-performance-validation",
+      "sha": "004a54054c0ef0afeca72bb0e171196541b23f2e",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/contact-stop-interlock",
+      "sha": "914177460707715d692ef761dfbbc8113fdd7dcb",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/dependabot-python-weekly",
+      "sha": "3c7bcfbac244289946fde16117b32a42a04fa4b5",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/dependabot-range-guards",
+      "sha": "4b9cbba780cc5c1b39a97fff4cfac47a18e51644",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/dual-arm-interference-avoidance",
+      "sha": "649a729a68cff27011c8acfc12c25c04763e671a",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/dual-arm-timing-evaluation",
+      "sha": "4225e5dad6d85f60bb7ac50cf762ee4586ff72c1",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/dual-arm-workcell",
+      "sha": "81a8d68882a4824705370834d5a5ea2aba8b4e2c",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/motion-request-tracing",
+      "sha": "f6afe5e449a2762949c76d2e4a7a5e27d78a535e",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/operator-console",
+      "sha": "50b549b24ff33b9286e4ac7545c01d893c1ac193",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/operator-demo-pages",
+      "sha": "e01cb4295ff33dde08c86933be7100a2d4769c8f",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/operator-picking-comparison",
+      "sha": "00d72f0cd35bcb093b9c84e2b5d95fc6cd09da98",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/package-workcells-ci",
+      "sha": "3f58145bf38917434986947c7d254a4de1a2decf",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/phase1-performance-report",
+      "sha": "5b1026109ab15af044bfc4309c8809de906a2475",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/random-motion-benchmark",
+      "sha": "944c82d6440afa55278c97cc82ae7907e9ed7772",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/report-detail-links",
+      "sha": "36ed87d945a584f5e60f43beb2e370067c97455d",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/report-pages",
+      "sha": "15f82231fe0ac51b7ffbd1835c8c8687621f8d79",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/report-standardization",
+      "sha": "bf145a66720cc90b2451380e7e37bea402c46534",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/search-optimization-simulator-status",
+      "sha": "619624fb40d5fdd19684a5d3f4f6a4edd4dbd14b",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/verification-artifact-integrity",
+      "sha": "8de21a988cbdae8541b235606cf955fb71366340",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/viewer-direction-report",
+      "sha": "17334374ec2880e21552b10d97d2e1682e969879",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/workcell-clock-stall-watchdog",
+      "sha": "aa199db3f755700c9d5830ca0662fb42c9f3f720",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    },
+    {
+      "branch": "codex/workcell-process-crash-verification",
+      "sha": "e15e4c475066914e1d9bf0798a9173efb8e7d4b3",
+      "main_contains_tip": true,
+      "commits_not_in_main": 0,
+      "remote_ref_deleted": true,
+      "local_ref_deleted": true
+    }
+  ],
+  "preserved_local_branches": [
+    "main",
+    "codex/readme-local-report-followup"
+  ],
+  "remote_branches_after_cleanup": [
+    "main"
+  ],
+  "commits_or_worktree_files_deleted": false,
+  "readme_original": {
+    "commit": "37b96ecdf3189ed234b57ec8c041f7b84edcd732",
+    "preserved_in_main": true,
+    "details_moved_to": "docs/usage-and-validation.md"
+  },
+  "note": "Cleanup snapshot before publishing the follow-up PR. Only merged branch references were removed; commit history remains reachable from main. Supersedes the 2026-10-22 recommendations, including the then-active operator-picking-comparison exception."
+}

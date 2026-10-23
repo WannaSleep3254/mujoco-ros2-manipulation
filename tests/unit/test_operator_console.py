@@ -1,6 +1,7 @@
 """Admission, read-only reconnect and loopback HTTP mutation boundaries."""
 from copy import deepcopy
 from pathlib import Path
+import hashlib
 import json
 import queue
 import tempfile
@@ -10,6 +11,7 @@ from types import SimpleNamespace as NS
 from unittest.mock import patch
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from urllib.parse import quote
 
 from mujoco_ros2_manipulation.operator_console.state import ConsoleState
 from mujoco_ros2_manipulation.operator_console.application import ConsoleApplication
@@ -160,6 +162,100 @@ class ConsoleHTTPTests(unittest.TestCase):
         self.server.shutdown();self.server.server_close();self.thread.join();self.temp.cleanup()
     def post(self,path,body,**headers):
         return urlopen(Request(self.url+path,data=body,headers={'Content-Type':'application/json','Origin':self.url,'X-Operator-Token':'test-token',**headers}),timeout=3)
+
+    def publication_fixture(self):
+        root=self.app.cell.root
+        assets={
+            'index.html':b'<a href="operator/demo/index.html">Demo</a>',
+            'catalog.json':b'{"reports":[]}',
+            'sample/index.html':b'<a href="../index.html">Report catalog</a>',
+            'operator/demo/index.html':b'<img src="poster.png"><video src="motion.mp4"></video>',
+            'operator/demo/poster.png':b'\x89PNG\r\n\x1a\nHTTP transport fixture',
+            'operator/demo/motion.mp4':b'\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isommp41',
+            'operator/demo/\ud55c\uae00 \uc774\ubbf8\uc9c0.png':b'\x89PNG\r\n\x1a\nEncoded path fixture',
+        }
+        for name,content in assets.items():
+            if name.startswith('operator/'):
+                destination=root/'docs'/name
+            else:
+                destination=root/'docs/reports'/name
+            destination.parent.mkdir(parents=True,exist_ok=True)
+            destination.write_bytes(content)
+        metadata={name:dict(bytes=len(content),sha256=hashlib.sha256(content).hexdigest())
+                  for name,content in assets.items()}
+        (root/'docs/reports/site-manifest.json').write_text(json.dumps(dict(files=metadata)))
+        return assets
+
+    def test_report_and_operator_publication_assets_keep_their_original_urls(self):
+        assets=self.publication_fixture()
+        for name,content in assets.items():
+            with self.subTest(name=name),urlopen(self.url+'/reports/'+quote(name,safe='/'),timeout=3) as response:
+                self.assertEqual(response.status,200)
+                self.assertEqual(response.read(),content)
+                if name.endswith('.png'):self.assertEqual(response.headers.get_content_type(),'image/png')
+                if name.endswith('.mp4'):self.assertEqual(response.headers.get_content_type(),'video/mp4')
+        for route,name in (('/reports/','index.html'),('/reports/sample/','sample/index.html'),
+                           ('/reports/operator/demo/','operator/demo/index.html')):
+            with self.subTest(route=route),urlopen(self.url+route,timeout=3) as response:
+                self.assertEqual(response.read(),assets[name])
+        with urlopen(self.url+'/reports/site-manifest.json',timeout=3) as response:
+            self.assertEqual(response.read(),(self.app.cell.root/'docs/reports/site-manifest.json').read_bytes())
+
+    def test_report_routes_reject_unregistered_files_and_encoded_path_escapes(self):
+        self.publication_fixture()
+        root=self.app.cell.root
+        for path in (root/'private.env',root/'docs/private.env',root/'docs/operator/demo/private.env'):
+            path.write_bytes(b'NEVER SERVE THIS FILE')
+        manifest_path=root/'docs/reports/site-manifest.json'
+        manifest=json.loads(manifest_path.read_text())
+        # Even a malformed allowlist must not make a noncanonical path readable.
+        for name in ('../private.env','operator/demo/../../private.env','operator/demo/./index.html',
+                     'operator/demo//index.html','operator\\demo\\index.html',
+                     'operator/demo/%2e%2e/private.env',str(root/'private.env')):
+            manifest['files'][name]={}
+        manifest_path.write_text(json.dumps(manifest))
+        routes=('/reports/operator/demo/private.env','/reports/../private.env','/reports/%2e%2e/private.env',
+                '/reports/operator/demo/%2e%2e/%2e%2e/private.env',
+                '/reports/operator/demo/%252e%252e/private.env','/reports/operator%5cdemo%5cindex.html',
+                '/reports/operator/demo/./index.html','/reports/operator/demo//index.html',
+                '/reports/'+str(root/'private.env'))
+        for route in routes:
+            with self.subTest(route=route),self.assertRaises(HTTPError) as caught:
+                urlopen(self.url+route,timeout=3)
+            self.assertEqual(caught.exception.code,404)
+            self.assertNotIn(b'NEVER SERVE THIS FILE',caught.exception.read())
+
+    def test_report_routes_reject_symlinked_assets_and_publication_directories(self):
+        self.publication_fixture()
+        root=self.app.cell.root
+        private=root/'private.env';private.write_bytes(b'NEVER SERVE THIS FILE')
+        linked=root/'docs/operator/demo/linked.png';linked.symlink_to(private)
+        linked_directory=root/'docs/operator/demo/linked';linked_directory.symlink_to(root,target_is_directory=True)
+        manifest_path=root/'docs/reports/site-manifest.json'
+        manifest=json.loads(manifest_path.read_text())
+        manifest['files'].update({'operator/demo/linked.png':{},'operator/demo/linked/private.env':{}})
+        manifest_path.write_text(json.dumps(manifest))
+        for route in ('/reports/operator/demo/linked.png','/reports/operator/demo/linked/private.env'):
+            with self.subTest(route=route),self.assertRaises(HTTPError) as caught:
+                urlopen(self.url+route,timeout=3)
+            self.assertEqual(caught.exception.code,404)
+        for path,route in ((root/'docs','/reports/index.html'),
+                           (root/'docs/reports','/reports/index.html'),
+                           (root/'docs/operator','/reports/operator/demo/index.html'),
+                           (root/'docs/operator/demo','/reports/operator/demo/index.html'),
+                           (root/'docs/reports/sample','/reports/sample/index.html'),
+                           (manifest_path,'/reports/operator/demo/index.html')):
+            with self.subTest(path=path):
+                saved=path.with_name(path.name+'-saved')
+                is_directory=path.is_dir()
+                path.rename(saved)
+                path.symlink_to(saved,target_is_directory=is_directory)
+                try:
+                    with self.assertRaises(HTTPError) as caught:urlopen(self.url+route,timeout=3)
+                    self.assertEqual(caught.exception.code,404)
+                finally:
+                    path.unlink();saved.rename(path)
+
     def test_closed_port_can_restart_but_running_listener_cannot_be_shared(self):
         address=self.server.server_address
         with self.assertRaises(OSError):ConsoleHTTPServer(address,Handler)

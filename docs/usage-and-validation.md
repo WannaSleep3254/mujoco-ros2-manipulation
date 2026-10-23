@@ -59,13 +59,25 @@ MoveIt 2 / ROS 2 JointTrajectory 명령
 
 ## 전용 조작 화면
 
+[설치와 기본 런타임 빌드](setup.md)를 마친 뒤, 실행 중인 시뮬레이션을 종료하고 공동 장면을 준비합니다.
+기본 단일 모델 빌드만으로는 웹 조작용 공동 장면이 생성되지 않습니다.
+
 ```bash
+python3 build_workspace.py --component models --workcell fr5_ur5e
 source ./manipulation_env.sh
 python3 operator_console.py --domain 89 --port 8765
 ```
 
 [로컬 화면](http://127.0.0.1:8765/)에서 **시뮬레이션 시작 → 목표 설정 → 계획 후 실행**을 사용합니다.
 현재 대상은 FR5·UR5e 공동 장면입니다. 기존 MuJoCo·RViz·CLI도 계속 사용할 수 있습니다.
+
+1. **시뮬레이션 시작** 후 **실행 가능**을 확인합니다.
+2. 양팔 목표를 설정해 **계획 후 실행**을 누르고, 요청의 **성공**·Action 완료·관절 수렴을 확인합니다.
+3. **실행 종료**로 이 화면이 시작한 장면을 종료한 뒤, 화면 서버 터미널에서 **Ctrl+C**를 누릅니다.
+
+브라우저 탭 닫기는 화면 서버 종료나 모션 취소가 아닙니다.
+단일 모델·독립 검증으로 바꾸기 전에는 공동 장면과 화면 서버를 종료합니다.
+외부에서 시작한 장면은 원래 launch 터미널에서 Ctrl+C로 종료합니다.
 [사용 방법·연결·기록·검증 범위](operator_console.md)
 
 [현재 뷰어 상태와 접근·후퇴 비교 영상](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html) · [저장소 HTML 원본](operator/picking-comparison-2026-10-22/index.html)
