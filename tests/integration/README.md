@@ -145,3 +145,27 @@ Action 전송 없이 거부됐습니다. 후보 상한 증가에 의한 회복 �
 ```bash
 PYTHONPATH=src runtime/report-tools/bin/python scripts/import_fixed_motion_report.py --check docs/reports/2026-10-23-fixed-motion
 ```
+
+
+## 로컬 3D 표시와 읽기 전용 미리보기
+
+```bash
+source ./manipulation_env.sh
+python3 verify_operator_views.py --domain 231 --port 8890 --with-demos
+```
+
+별도 빈 도메인과 포트에서 콘솔을 시작해 준비된 FR5·FR10·UR5e 모델, 실제 ROS 관절
+상태, 이 콘솔에서 완료한 요청의 저장 계획을 확인합니다. 모델이나 계획을 미리보는 동안
+명령·시뮬레이션 시작·시연 시작을 거부하고, 계획 재생이 실제 관절을 움직이지 않는지도
+확인합니다. CPU 장면 worker는 물리를 진행하거나 ROS 명령을 보내지 않습니다.
+정리 검사는 이 실행에서 소유한 콘솔과 worker만 대상으로 합니다.
+
+이 검사는 WebGL 브라우저 검사가 아닙니다. 브라우저에서는 드래그 회전, 확대·이동,
+모델 전환, 저장 경로의 재생·스크럽, 오래된 상태 표시와 반응형 배치를 따로 확인합니다.
+`tests/js/*.mjs`는 GPU를 만들지 않고 식별자·형상·카메라·비동기 UI 경계를 검사합니다.
+
+기본 표시는 로컬 3D입니다. 기존 `verify_operator_console.py`와 `verify_operator_demos.py`는
+`--no-render`가 없으면 서버 이미지 방식을 명시적으로 선택해 JPEG 호환 동작을 검사합니다.
+`--no-render`는 두 표시 worker를 모두 끄며 기존 ROS 실행·취소 검사를 유지합니다.
+
+`--with-demos`를 추가하면 접촉 비교 2회와 경로·출발 시점 비교 3회의 새 실행에서도 모델·실행 식별자, 진행하는 실제 자세, 종료 후 마지막 자세와 증가하는 수신 나이를 확인합니다. CI도 이 옵션을 사용합니다.

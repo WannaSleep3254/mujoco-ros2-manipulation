@@ -1,4 +1,4 @@
-"""Actual HTTP comparison jobs, including matched evidence and owned cleanup."""
+"""Actual HTTP comparison jobs with explicit JPEG fallback and owned cleanup."""
 import argparse
 import hashlib
 from datetime import datetime
@@ -126,7 +126,8 @@ def main():
             launch = current.get("active_launch")
             if launch and frame_matches(state.get("frame"), identifier, launch["run_id"], launch.get("model_sha256")):
                 frame = state["frame"]
-                query = urlencode({key:frame[key] for key in ("job_id", "run_id", "model_sha256", "sequence")})
+                query = urlencode({key:frame[key] for key in ("job_id", "run_id", "model_sha256", "sequence", "generation", "operator_session_id")
+                                   if key in frame})
                 with urlopen(url+"/api/frame?"+query, timeout=5) as response:
                     if response.status == 204:
                         return state  # A newer frame arrived; observe it on the next poll.
@@ -194,6 +195,10 @@ def main():
         require(bootstrap["config"]["domain"] == args.domain, "Console is on another ROS domain")
         require({s["id"] for s in bootstrap["demos"]} == {"contact_comparison", "timing_comparison"},
                 "Fixed demonstration catalog is incomplete")
+        if not args.no_render:
+            display = api("/api/view/display", dict(mode="image"))
+            require(display.get("display_mode") == "image", "JPEG fallback was not selected")
+            report.update(display_mode="image", renderer_scope="Explicit JPEG fallback; web 3D has a separate verifier")
         until(lambda: api("/api/state")["demo"]["can_start"], 10, "isolated console readiness")
         reject("/api/demos/start", dict(scenario="unknown", native_gui=False), 400)
 

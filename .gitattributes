@@ -1,3 +1,6 @@
 * text=auto eol=lf
 # Unified patches have space-prefixed blank context lines; preserve them.
 *.patch -whitespace
+
+# Keep pinned upstream Three.js sources byte-identical to vendor-manifest.json.
+src/mujoco_ros2_manipulation/operator_console/static/vendor/*.js -whitespace

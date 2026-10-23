@@ -286,6 +286,7 @@ class DemoApplicationTests(unittest.TestCase):
 
     def test_renderer_waits_for_exact_actual_model_and_rejects_changed_model_hash(self):
         self.app.render_enabled = True
+        self.app.image_render_enabled = True
         self.start_job()
         record = self.launch()
         self.status(status='running', active_launch=record)

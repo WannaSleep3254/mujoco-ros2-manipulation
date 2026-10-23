@@ -39,6 +39,7 @@ manipulation-import-fixed-report = "mujoco_ros2_manipulation.reporting.fixed_mot
 manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
 manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main"
 manipulation-verify-operator = "mujoco_ros2_manipulation.operator_console.verify:main"
+manipulation-verify-views = "mujoco_ros2_manipulation.operator_console.verify_views:main"
 manipulation-verify-demos = "mujoco_ros2_manipulation.operator_console.verify_demos:main"
 
 [tool.setuptools.dynamic]
@@ -50,4 +51,4 @@ where = ["src"]
 [tool.setuptools.package-data]
 "mujoco_ros2_manipulation.reporting" = ["report.schema.json", "operator-demos.schema.json", "templates/*.html", "templates/*.css"]
 
-"mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js"]
+"mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js", "static/*.mjs", "static/vendor/*.js", "static/vendor/*.json", "static/vendor/LICENSE"]

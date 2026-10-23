@@ -24,6 +24,7 @@ class ConsoleState:
         self.graph = dict(clock=0, joints=0, status=0, commands=0, guards=0)
         self.identity = False
         self.observed_model_path = None
+        self.identity_requested_at = self.identity_checked_at = None
         self.guard = None
         self.server = None
         self.server_at = None
