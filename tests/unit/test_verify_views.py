@@ -32,6 +32,21 @@ class VerifyViewsTests(unittest.TestCase):
             with self.assertRaises((RuntimeError,ValueError)):
                 verify_views.checked_pose(candidate,manifest,binding,live=True)
 
+    def test_ready_server_cannot_admit_a_prelaunch_or_previous_session_scene(self):
+        state=dict(server=dict(session_id='b'*32),view=dict(status='ready',binding_id='d'*64,
+            binding=dict(source_id='workcell:manual',motion_session_id=None),mode='live',
+            manifest_descriptor=dict(sha256='e'*64),pose_ready=False))
+        self.assertIs(verify_views.ready_view_state(state,'workcell:manual','live'),state)
+        self.assertIsNone(verify_views.ready_view_state(state,'workcell:manual','live',live=True))
+        state['view']['pose_ready']=True
+        for motion in (None,'c'*32):
+            state['view']['binding']['motion_session_id']=motion
+            self.assertIsNone(verify_views.ready_view_state(state,'workcell:manual','live',live=True))
+        state['view']['binding']['motion_session_id']='b'*32
+        self.assertIs(verify_views.ready_view_state(state,'workcell:manual','live',live=True),state)
+        state['view']['status']='error'
+        with self.assertRaises(RuntimeError):verify_views.ready_view_state(state,'workcell:manual','live',live=True)
+
     def test_live_age_and_simulation_stamp_are_required(self):
         binding,value,manifest=fixture()
         for change in (lambda v:v.update(source_state_age_sec=.5),lambda v:v.update(source_state_age_sec=None),

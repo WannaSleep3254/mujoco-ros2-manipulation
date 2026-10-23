@@ -190,6 +190,20 @@ def checked_retained_pose(first, current, *, minimum_growth=.5):
     return current
 
 
+def ready_view_state(state, source_id, mode, *, live=False):
+    """A ready command server may precede the scene monitor's new run epoch."""
+    view = state['view']
+    require(view.get('status') != 'error', 'CPU scene host reported an error')
+    binding = view.get('binding') or {}
+    ready = (view.get('status') == 'ready' and view.get('binding_id')
+        and binding.get('source_id') == source_id and view.get('mode') == mode
+        and view.get('manifest_descriptor'))
+    if live:
+        motion = (state.get('server') or {}).get('session_id')
+        ready = ready and motion is not None and binding.get('motion_session_id') == motion and view.get('pose_ready') is True
+    return state if ready else None
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--domain',type=int,default=168)
@@ -208,10 +222,14 @@ def main():
         request=Request(url+route) if body is None else Request(url+route,
             data=json.dumps(body,allow_nan=False).encode(),headers={'Content-Type':'application/json',
                 'Origin':url,'X-Operator-Token':token})
-        with urlopen(request,timeout=5) as response:
-            raw=response.read(maximum+1)
-            require(len(raw)<=maximum,'Loopback acceptance response exceeded its bound')
-            return response.status,response.headers.get_content_type(),raw
+        try:
+            with urlopen(request,timeout=5) as response:
+                raw=response.read(maximum+1)
+                require(len(raw)<=maximum,'Loopback acceptance response exceeded its bound')
+                return response.status,response.headers.get_content_type(),raw
+        except HTTPError as error:
+            error.verification_route=route
+            raise
 
     def api(route,body=None):
         status,mime,raw=http(route,body)
@@ -256,14 +274,10 @@ def main():
         require(not any(row.get('action')=='process_started' and row.get('kind')=='renderer' for row in events),
                 'An EGL/JPEG renderer was spawned during CPU-only acceptance')
 
-    def ready_view(source_id,mode,timeout=35):
+    def ready_view(source_id,mode,timeout=35,*,live=False):
         def ready():
             state=api('/api/state');no_image_worker(state)
-            view=state['view']
-            require(view.get('status')!='error','CPU scene host reported an error')
-            return state if (view.get('status')=='ready' and view.get('binding_id')
-                and view.get('binding',{}).get('source_id')==source_id and view.get('mode')==mode
-                and view.get('manifest_descriptor')) else None
+            return ready_view_state(state,source_id,mode,live=live)
         state=until(ready,timeout,'ready CPU scene '+source_id)
         return check_view(state,source_id,mode)
 
@@ -548,7 +562,7 @@ def main():
         until(lambda:api('/api/state')['demo']['can_start'],10,'empty isolated ROS graph')
         api('/api/start',dict(native_gui=False,planning_case='dual_arm_crossing'))
         until(lambda:api('/api/state')['can_submit'],70,'normal command readiness')
-        current,manifest,folder=ready_view(base,'live')
+        current,manifest,folder=ready_view(base,'live',live=True)
         launch=owned_launch(current)
         first_pose=pose_for(current,manifest,live=True)
         next_pose=pose_for(current,manifest,live=True,after=first_pose['sequence'])
@@ -605,7 +619,7 @@ def main():
         report.stage('restore_live_readiness_and_owned_shutdown')
         api('/api/view/select',dict(mode='live',source_id=base))
         until(lambda:api('/api/state')['can_submit'],15,'restored ordinary live readiness')
-        restored,manifest,_=ready_view(base,'live');pose_for(restored,manifest,live=True)
+        restored,manifest,_=ready_view(base,'live',live=True);pose_for(restored,manifest,live=True)
         require(history_ids(restored)==history and restored['view']['binding_id']!=identifier,
                 'Returning live replayed a command or reused a preview identity')
         api('/api/stop',{})
@@ -629,7 +643,11 @@ def main():
             run_cpu_demo('timing_comparison',('prepare','baseline','timing'),900)
             report.update(view_checks=checks,no_jpeg_renderer_checked=True)
     except (Exception,KeyboardInterrupt) as error:
-        failed=True;report.update(error=dict(type=type(error).__name__,message=str(error)),failure_stage=report.data['stage'])
+        failed=True;details=dict(type=type(error).__name__,message=str(error))
+        if isinstance(error,HTTPError):
+            details.update(http_route=getattr(error,'verification_route',None),http_status=error.code,
+                http_payload=error.read(65537).decode('utf-8',errors='replace')[:65536])
+        report.update(error=details,failure_stage=report.data['stage'])
     finally:
         token=None
         if process is not None:
