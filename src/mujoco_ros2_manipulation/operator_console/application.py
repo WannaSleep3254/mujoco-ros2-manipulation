@@ -19,7 +19,9 @@ from .console_views import ConsoleViews
 
 
 class ConsoleApplication:
-    def __init__(self, cell, state, bridge, directory, *, render=True):
+    def __init__(self, cell, state, bridge, directory, *, render=True, view_sources=()):
+        if type(view_sources) not in (tuple,list) or len(view_sources)>8 or (view_sources and not render):
+            raise ValueError('장면 표시를 켜고 읽기 전용 장면을 최대 8개까지 명시적으로 등록하세요.')
         self.cell, self.state, self.bridge = cell, state, bridge
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=False)
@@ -40,7 +42,7 @@ class ConsoleApplication:
         self.demos = DemoJobs(self)
         self.display_mode = "web3d"
         self.image_render_enabled = False
-        self.views = ConsoleViews(self, enabled=render)
+        self.views = ConsoleViews(self, enabled=render,extra_sources=view_sources)
         self.audit("console_started")
         self.monitor = threading.Thread(target=self.watch, daemon=True)
         self.monitor.start()

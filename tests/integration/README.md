@@ -169,3 +169,18 @@ python3 verify_operator_views.py --domain 231 --port 8890 --with-demos
 `--no-render`는 두 표시 worker를 모두 끄며 기존 ROS 실행·취소 검사를 유지합니다.
 
 `--with-demos`를 추가하면 접촉 비교 2회와 경로·출발 시점 비교 3회의 새 실행에서도 모델·실행 식별자, 진행하는 실제 자세, 종료 후 마지막 자세와 증가하는 수신 나이를 확인합니다. CI도 이 옵션을 사용합니다.
+
+
+## 로컬 설계환경의 기하와 읽기 전용 미리보기
+
+```bash
+.venv/bin/python verify_environment_overlay.py --native --catalog-output runtime/validation/environment-preview-catalog.json
+source ./manipulation_env.sh
+python3 verify_environment_views.py --catalog runtime/validation/environment-preview-catalog.json --domain 148 --port 8895
+```
+
+첫 명령은 합성 메시 fixture로 새 장면을 만들고 단위·축·설치, 두 형식의 변조 거부와 native 3.12 기하를 검사합니다.
+로컬에 FreeCADCmd가 설치돼 있으면 `--with-freecad`로 직접 만든 STEP의 실제 변환과 단위 오류 거부도 추가합니다.
+둘째 명령은 빈 도메인의 소유 콘솔에서 미리보기·명령 차단·기본 장면 불변과 프로세스 정리를 확인합니다.
+설비가 포함된 ROS 실행·환경 여유 거리 검증을 수행하는 명령은 아닙니다. 결과·메시는 `runtime/`에만 보존합니다.
+같은 catalog 출력은 덮어쓰지 않으므로 재실행에는 새 경로를 지정합니다. [자세한 절차](../../docs/environment_design_import.md)를 참고합니다.

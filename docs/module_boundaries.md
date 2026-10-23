@@ -16,7 +16,7 @@ ROS 2 없는 실행 경로를 구현한 상태는 아닙니다.
 | 계획·후처리 | Spline의 이름·상대 시간·위치·속도·가속도, 출발 조정 및 경로 평가 함수 | 상시 서버가 WorkcellVerification을 상속하며 MoveIt 계획·유효성 검사와 ROS 액션을 직접 호출합니다. |
 | 거리 검사 | `evaluator.at(완전한 상태)`의 거리·최근접 점·tip 위치 | 기본 DistanceEvaluator는 고정한 네이티브 MuJoCo 라이브러리와 충돌 형상을 사용합니다. |
 | 실행·취소 | 요청 ID, 양팔 소유권, 상태·종료 기록 | FollowJointTrajectory와 ros2_control의 spline 보간, MuJoCo 접촉·시계 인터록을 사용합니다. |
-| 표시·조작 | ConsoleState, HTTP API, 명령 규약, 요청별 기록 | ROS bridge의 장면 확인과 상태 수신, MuJoCo 영상 생성 프로세스, 시작·종료 명령이 현재 스택을 전제로 합니다. |
+| 표시·조작 | ConsoleState, HTTP API, 명령 규약, 요청별 기록 | ROS bridge의 장면 확인과 상태 수신, 별도 CPU 표시 worker와 선택형 MuJoCo 영상 생성, 시작·종료 명령이 현재 스택을 전제로 합니다. |
 
 주요 구현은 [설정](../src/mujoco_ros2_manipulation/workcells/config.py),
 [명령](../src/mujoco_ros2_manipulation/workcells/motion_request.py),
@@ -131,7 +131,8 @@ Workcell fingerprint는 장면 설정과 프로필의 식별값이며, 전체 �
 | 뷰어 | 같은 자산·frame·이름 기반 상태, 수신 정지·재연결 표시입니다. 표시용 로봇을 두 번째 제어용 물리 인스턴스로 취급하지 않습니다. |
 
 현재 `evaluator.at(state)`와 Spline record를 비교 경계로 사용할 수 있습니다.
-다음 분리 후보는 MoveIt 요청/응답 변환, FJT 실행·취소, 상태 수신·identity 확인, 표시용 상태 공급입니다.
+표시용 상태 공급은 별도 CPU scene worker와 세션·모델·관절 이름 계약으로 분리했습니다.
+다음 분리 후보는 MoveIt 요청/응답 변환, FJT 실행·취소, 상태 수신·identity 확인입니다.
 이 후보는 후속 설계이며 범용 `Planner`·`Executor`·`Simulator` 플러그인을 이미 제공한다는 의미가 아닙니다.
 비공개 QML 로컬뷰어와도 필요할 경우 자산·좌표·관절 대응 규약을 맞출 수 있지만, ROS 2 없는 실행이나 CAD 변환의
 정확성을 이번 설명 함수만으로 검증하지는 않습니다.
@@ -145,3 +146,12 @@ ROS·MuJoCo·NumPy·YAML import를 차단한 상태로 설명을 만들 수 있�
 원천 stamp가 수신 지연 판정을 바꾸지 않는지 확인합니다. 실제 콘솔 검증기는 bootstrap의 identity·관절 규약과
 실제 수신 상태의 원천 stamp 존재도 검사합니다.
 실제 엔진의 동작·충돌·계획 성공률과 어댑터 교체 후 호환성은 이 단위 검사 범위가 아닙니다.
+
+
+## 로컬 환경 자산과 표시 경계
+
+[설계파일 반영 절차](environment_design_import.md)는 단위·좌표계가 명시된 로컬 자산과 설치 목록을
+별도 `environment-overlay-v1`로 합성합니다. 기존 Workcell v1 생성기를 바꾸거나 `source.json` 호환성을 가장하지 않습니다.
+순수 파일·해시 검사와 별도 CPU 기하 검사를 나누고, 검증한 로컬 목록만 읽기 전용 뷰어에 등록합니다.
+이 선택은 ROS 제어 장면을 바꾸지 않습니다. 환경이 포함된 실제 실행에는 시뮬레이터·MoveIt·명령 서버의
+모델 일치를 함께 확인하는 별도 어댑터와 실행 검증이 필요합니다.

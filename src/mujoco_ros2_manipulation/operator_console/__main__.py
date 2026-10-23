@@ -2,6 +2,7 @@
 import argparse
 from datetime import datetime, timezone
 import os
+from pathlib import Path
 import secrets
 import signal
 import threading
@@ -14,9 +15,12 @@ def main():
     parser.add_argument("--domain", type=int, default=int(os.environ.get("ROS_DOMAIN_ID", "89")))
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--no-render", action="store_true", help="Disable local 3D scene workers and the optional image renderer (headless CI)")
+    parser.add_argument("--view-scene-catalog", type=Path, help="Explicit local overlay catalog for read-only model previews; checked once before ROS starts")
     args = parser.parse_args()
     if not 0 <= args.domain <= 232 or not 1024 <= args.port <= 65535:
         parser.error("ROS domain must be 0..232; port must be 1024..65535")
+    if args.no_render and args.view_scene_catalog is not None:
+        parser.error("--view-scene-catalog requires scene display; remove --no-render")
     os.environ["ROS_DOMAIN_ID"] = os.environ["MANIPULATION_ROS_DOMAIN_ID"] = str(args.domain)
     from ..workcells.config import load_workcell
     from ..workcells.integrity import check_workcell
@@ -25,7 +29,13 @@ def main():
     from .http_server import ConsoleHTTPServer, Handler
     cell = load_workcell(args.workcell)
     metadata = check_workcell(cell)
-    # Reserve the port before creating ROS entities or child processes.
+    view_sources=()
+    if args.view_scene_catalog is not None:
+        from .environment_sources import load_scene_catalog
+        # All paths and CPU receipts are fixed before ROS imports/entities or
+        # application threads. No browser endpoint can replace this registry.
+        view_sources=load_scene_catalog(args.view_scene_catalog,cell)
+    # Reserve the port before creating ROS entities or application workers.
     server = ConsoleHTTPServer(("127.0.0.1", args.port), Handler)
     import rclpy
     from rclpy.signals import SignalHandlerOptions
@@ -39,7 +49,7 @@ def main():
     state = ConsoleState(configuration)
     node = ConsoleBridge(state, cell)
     folder = cell.root/"runtime/operator"/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"-"+uuid.uuid4().hex[:8])
-    app = ConsoleApplication(cell, state, node, folder, render=not args.no_render)
+    app = ConsoleApplication(cell, state, node, folder, render=not args.no_render,view_sources=view_sources)
     server.application, server.token = app, secrets.token_urlsafe(32)
     stopped = threading.Event()
     ros_stopped = threading.Event()
