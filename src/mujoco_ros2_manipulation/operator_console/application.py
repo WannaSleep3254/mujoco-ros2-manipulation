@@ -15,6 +15,7 @@ from ..verification.reports import atomic_json
 from ..verification.runner import stop_process
 from ..workcells.motion_request import request_id
 from .demo_jobs import DemoJobs
+from .console_views import ConsoleViews
 
 
 class ConsoleApplication:
@@ -37,6 +38,9 @@ class ConsoleApplication:
         self.render_attempted = False
         self.render_suspended = False
         self.demos = DemoJobs(self)
+        self.display_mode = "web3d"
+        self.image_render_enabled = False
+        self.views = ConsoleViews(self, enabled=render)
         self.audit("console_started")
         self.monitor = threading.Thread(target=self.watch, daemon=True)
         self.monitor.start()
@@ -59,6 +63,8 @@ class ConsoleApplication:
         if set(options) != {"native_gui", "planning_case"} or type(options["native_gui"]) is not bool or options["planning_case"] not in ("none", "dual_arm_crossing"):
             raise ValueError("실행 옵션이 올바르지 않습니다.")
         with self.lock, self.state.lock:
+            if self.views.preview:
+                raise RuntimeError("미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "running", "stopping") or any(p.poll() is None for k,p in self.children.items() if k != "renderer"):
                 raise RuntimeError("이 화면에서 시작한 실행이 이미 있습니다.")
             if self.state.clock()-self.state.started < 2:
@@ -143,7 +149,9 @@ class ConsoleApplication:
             self.stop(error=str(error))
 
     def submit(self, payload):
-        with self.lock:
+        with self.lock, self.state.lock:
+            if self.views.preview:
+                raise RuntimeError("미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "stopping") or self.closing.is_set():
                 raise RuntimeError("실행 준비 또는 종료 중입니다.")
             if self.state.reserve(payload):
@@ -192,21 +200,75 @@ class ConsoleApplication:
         atomic_json(self.directory/"camera.json", dict(view=view))
         return dict(view=view)
 
+    def set_display(self, mode):
+        if mode not in ("web3d", "image") or not isinstance(mode, str):
+            raise ValueError("지원하는 장면 표시 방식을 선택하세요.")
+        with self.lock, self.state.lock:
+            if not self.render_enabled:
+                raise RuntimeError("이 실행은 장면 표시가 비활성화되어 있습니다.")
+            if self.demos.busy or self.state.active or self.phase in ("starting", "stopping", "demo") or self.closing.is_set():
+                raise RuntimeError("진행 중인 요청이나 시연이 끝난 뒤 표시 방식을 바꾸세요.")
+            if mode == "image" and self.views.preview:
+                raise RuntimeError("모델·계획 미리보기는 웹 3D에서 표시합니다.")
+            if mode != self.display_mode:
+                renderer = self.children.get("renderer")
+                try:
+                    self.demos.stop_renderer(clear=True)  # Only our renderer, never simulation/commands.
+                except Exception:
+                    if renderer is not None:
+                        self.children["renderer"] = renderer  # Retain ownership if cleanup failed.
+                    raise
+                # A JPEG worker starts its sequence at one. Use a new generation
+                # so a late frame from an earlier worker cannot look current.
+                self.generation += 1
+                self.display_mode = mode
+                self.image_render_enabled = mode == "image"
+                self.audit("display_selected", mode=mode)
+            return dict(display_mode=self.display_mode)
+
+    def update_views(self):
+        """A display failure must not kill supervision or stop robot processes."""
+        try:
+            self.views.tick()
+        except Exception as error:
+            failure = dict(code="view_update_failed", message="장면 상태를 갱신하지 못했습니다. 실시간 보기를 다시 선택하세요.")
+            changed = self.views.error != failure
+            self.views.error = failure
+            try:
+                if self.views.host is not None:
+                    self.views.host.invalidate()
+            except Exception:
+                pass
+            if changed:
+                try:
+                    self.audit("view_update_failed", error_type=type(error).__name__)
+                except Exception:
+                    pass  # Even a display-log failure must not kill supervision.
+
     def watch(self):
-        while not self.closing.wait(0.5):
+        next_supervision = 0.
+        while not self.closing.wait(0.1):
             failure = None
             with self.lock:
-                if self.phase == "running":
-                    failure = self.process_failure()
-                self.demos.tick()
-                live = self.state.snapshot()
-                if not self.render_suspended and self.phase != "stopping" and self.render_enabled and not self.render_attempted and live["simulation_verified"] and live["state_age_sec"] is not None and live["state_age_sec"] < 0.5:
+                now = time.monotonic()
+                supervise = now >= next_supervision
+                if supervise:
+                    next_supervision = now + 0.5
+                    if self.phase == "running":
+                        failure = self.process_failure()
+                    self.demos.tick()
+                # Feed current observed states more often than the 500ms stale
+                # limit. Child/source validation remains in SceneHost's thread.
+                self.update_views()
+                live = self.state.snapshot() if supervise else None
+                if supervise and not self.render_suspended and self.phase != "stopping" and self.image_render_enabled and not self.render_attempted and live["simulation_verified"] and live["state_age_sec"] is not None and live["state_age_sec"] < 0.5:
                     self.render_attempted = True
                     folder = self.directory/"frames"
                     folder.mkdir(exist_ok=True)
                     try:
                         self.spawn("renderer", [str(self.cell.root/".venv/bin/python"), "-m", "mujoco_ros2_manipulation.operator_console.render_worker",
-                            "--workcell", self.cell.id, "--directory", str(self.directory)], folder, MUJOCO_GL="egl")
+                            "--workcell", self.cell.id, "--directory", str(self.directory),
+                            "--generation", str(self.generation), "--operator-session-id", self.session_id], folder, MUJOCO_GL="egl")
                     except Exception as error:
                         atomic_json(self.directory/"frame.json", dict(error=str(error)))
             if failure:
@@ -225,6 +287,7 @@ class ConsoleApplication:
             self.state.positions = self.state.joint_at = self.state.guard = self.state.server = None
             self.state.identity = False
             self.state.observed_model_path = None
+            self.state.identity_requested_at = self.state.identity_checked_at = None
 
     def clear_frames(self):
         for name in ("frame.json", "frame.jpg"):
@@ -306,12 +369,20 @@ class ConsoleApplication:
                 frame["error"] = frame.get("error", "렌더러가 종료됐습니다. 실행 로그를 확인하세요.")
             data.update(lifecycle=dict(phase=self.phase, error=self.error,
                 owned={k:p.poll() is None for k,p in self.children.items()}, session_id=self.session_id,
+                generation=self.generation,
                 last_launch_directory=None if self.last_launch is None else str(self.last_launch)), frame=frame)
             data["demo"] = self.demos.snapshot()
+            data["view"] = self.views.snapshot()
+            base = self.views.base
+            data["view"].update(display_mode=self.display_mode,
+                config_source_id=base.id if base is not None else self.state.config.get("workcell"))
             if self.demos.busy or self.phase in ("starting", "stopping"):
                 data["can_submit"] = False
                 if self.demos.busy:
                     data["reason"] = "시연 진행 중입니다. 종료 후 일반 관절 조작을 시작하세요."
+            if self.views.preview:
+                data["can_submit"] = False
+                data["reason"] = "미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요."
             return data
 
     def close(self):
@@ -327,7 +398,10 @@ class ConsoleApplication:
             deadline = time.monotonic()+8
             while self.state.active == active and time.monotonic() < deadline:
                 time.sleep(0.05)
-        self.stop()
-        self.monitor.join(timeout=2)
-        for stream in self.files:
-            stream.close()
+        try:
+            self.views.close()
+        finally:
+            self.stop()
+            self.monitor.join(timeout=2)
+            for stream in self.files:
+                stream.close()

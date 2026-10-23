@@ -51,7 +51,13 @@ class DemoJobs:
         return self.process is not None or self.stopping
 
     def reason(self):
+        with self.app.lock, self.app.state.lock:
+            return self._reason()
+
+    def _reason(self):
         app = self.app
+        if app.views.preview:
+            return "미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요."
         if self.busy or app.phase in ("starting", "running", "stopping"):
             return "진행 중인 실행을 종료한 뒤 시연을 시작하세요."
         if app.closing.is_set():
@@ -92,7 +98,7 @@ class DemoJobs:
             args = ["/usr/bin/python3", "-m", "mujoco_ros2_manipulation.operator_console.demo_worker", "--directory", str(folder), "--scenario", options["scenario"], "--domain", str(app.state.config["domain"]), "--console-directory", str(app.directory)]
             if options["native_gui"]:
                 args.append("--native-gui")
-            if not app.render_enabled:
+            if not app.image_render_enabled:
                 args.append("--no-render")
             try:
                 self.process = app.spawn("demo", args, folder)
@@ -179,7 +185,7 @@ class DemoJobs:
             if key != self.render_key:
                 self.stop_renderer(clear=key is not None)
                 self.render_key = key
-            if not key or not app.render_enabled or app.render_attempted:
+            if not key or not app.image_render_enabled or app.render_attempted:
                 return
             live = app.state.snapshot()
             if (not matching_process(launch) or live["graph"]["clock"] != 1 or live["graph"]["joints"] != 1 or live["state_age_sec"] is None or live["state_age_sec"] > .5 or app.state.observed_model_path != launch["model_path"]):
@@ -189,7 +195,7 @@ class DemoJobs:
             app.render_attempted = True
             folder = app.directory/"frames"
             folder.mkdir(exist_ok=True)
-            app.spawn("renderer", [str(app.cell.root/".venv/bin/python"), "-m", "mujoco_ros2_manipulation.operator_console.render_worker", "--workcell", app.cell.id, "--directory", str(app.directory), "--model", launch["model_path"], "--model-sha256", key[2], "--job-id", key[0], "--run-id", key[1]], folder, MUJOCO_GL="egl")
+            app.spawn("renderer", [str(app.cell.root/".venv/bin/python"), "-m", "mujoco_ros2_manipulation.operator_console.render_worker", "--workcell", app.cell.id, "--directory", str(app.directory), "--model", launch["model_path"], "--model-sha256", key[2], "--job-id", key[0], "--run-id", key[1], "--generation", str(app.generation), "--operator-session-id", app.session_id], folder, MUJOCO_GL="egl")
         except Exception as error:
             self.monitor_error = str(error)
             self.current.update(error=str(error))

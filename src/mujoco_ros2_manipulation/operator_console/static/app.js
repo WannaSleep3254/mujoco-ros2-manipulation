@@ -1,5 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id);
+let sceneControls=null;
 let config,token,state,targets={},arm=0,unit='deg',polling=false,latestRequest=null,detailsAt=0,demoCatalog=[],selectedDemo=null;
 const labels={interrupted:'중단',starting:'준비 중',cancel_requested:'중단 요청 중',passed:'검증 통과',ready:'실행 가능',queued:'접수',submitting:'전송 확인 대기',running:'진행 중',succeeded:'성공',failed:'실패',cancelled:'취소 완료',rejected:'거부',blocked:'재시작 필요',unknown:'결과 미확인'};
 const terminal=new Set(['succeeded','failed','cancelled','rejected','unknown']);
@@ -14,7 +15,7 @@ function value(v,decimals=3,suffix=' s'){return typeof v==='number'&&Number.isFi
 function displayed(v){return unit==='deg'?v*180/Math.PI:v;}
 function radians(v){return unit==='deg'?v*Math.PI/180:v;}
 function badge(el,status,text){el.className='badge'+(status==='succeeded'||status==='passed'||status==='ready'?' good':status==='failed'||status==='blocked'||status==='rejected'?' bad':status==='running'||status==='starting'||status==='cancel_requested'||status==='queued'||status==='submitting'?' busy':'');el.textContent=text||labels[status]||status;}
-function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트'}[view];if(state)updateLiveFrames(state);}
+function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트'}[view];if(state)updateLiveFrames(state);sceneControls?.mount();}
 function fields(){
  const container=$('joint-fields');container.replaceChildren();$('unit-label').textContent=unit;
  config.instances[arm].joints.forEach((name,index)=>{
@@ -36,9 +37,9 @@ function validTargets(){return config&&Object.entries(config.joint_limits).every
 function refreshControls(){
  if(!state)return;
  const owned=state.lifecycle.owned,phase=state.lifecycle.phase,transition=['starting','stopping'].includes(phase),demoBusy=demoActive(state.demo?.current);
- $('start').disabled=demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
+ $('start').disabled=Boolean(state.view?.preview_active)||demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
  $('stop').disabled=demoBusy||transition||!(owned.simulation||owned.commands);
- $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=demoBusy||transition;
+ $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=Boolean(state.view?.preview_active)||demoBusy||transition;
  $('execute').disabled=demoBusy||!state.can_submit||!validTargets();document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=demoBusy||!state.active_request_id);
  $('use-current').disabled=!state.positions_rad||state.state_age_sec>0.5;
  $('planning-case').disabled=demoBusy||transition||owned.simulation||state.graph.clock>0;$('native-gui').disabled=$('planning-case').disabled;
@@ -70,7 +71,7 @@ function history(records){
   const id=document.createElement('td');id.append(textNode('code',record.request_id.slice(0,12)+'…'));row.append(id);
   const result=document.createElement('td'),tag=document.createElement('span');badge(tag,record.status);result.append(tag);row.append(result);
   row.append(textNode('td',record.stage||'—'),textNode('td',value(record.metrics?.received_to_first_motion_wall_sec)),textNode('td',value(record.metrics?.received_to_terminal_wall_sec)));
-  const action=document.createElement('td'),button=textNode('button','상세');button.addEventListener('click',()=>detail(record.request_id));action.append(button);row.append(action);body.append(row);
+  const action=document.createElement('td'),button=textNode('button','상세');button.addEventListener('click',()=>detail(record.request_id));action.append(button);if(sceneControls&&record.status==='succeeded'&&record.trace_path){const preview=textNode('button','계획 보기');preview.disabled=Boolean(state?.active_request_id)||demoActive(state?.demo?.current);preview.addEventListener('click',()=>sceneControls.previewRequest(record.request_id));action.append(preview);}row.append(action);body.append(row);
  }
 }
 async function detail(id){try{const data=await request('/api/requests/'+id);$('history-detail').hidden=false;$('detail-error').textContent=data.error?.message||'';$('detail-content').textContent=JSON.stringify(data,null,2);}catch(error){notice(error.message);}}
@@ -158,12 +159,14 @@ function renderDemos(demo){
  for(const job of history.slice(0,6)){const row=document.createElement('li'),identity=document.createElement('span');identity.append(textNode('strong',demoTitle(job.scenario)),textNode('code',String(job.job_id||'').slice(0,12)+'…'));const status=document.createElement('span');badge(status,job.status);row.append(identity,status);$('demo-history').append(row);}
 }
 function updateLiveFrames(data){
+ if(sceneControls&&!data.view){sceneControls.destroy();sceneControls=null;document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent='ROS 관절 상태 → 서버 이미지';}
+ if(sceneControls){sceneControls.update(data);if(!sceneControls.isImage())return;}
  const frame=data.frame||{},job=data.demo?.current,sequence=frame.sequence,hasSequence=typeof sequence==='number'&&Number.isFinite(sequence)&&sequence>=0;
  const matchesDemo=Boolean(job&&frame.job_id===job.job_id&&frame.run_id&&frame.run_id===job.run_id&&frame.model_sha256&&frame.model_sha256===(job.active_launch?.model_sha256||job.model_sha256));
  const hasFrame=hasSequence&&!frame.error&&(!demoActive(job)||matchesDemo);
- const stale=hasFrame&&(frame.age_sec>1||frame.source_state_age_sec>0.5||data.state_age_sec===null||data.state_age_sec>0.5);
+ const stale=hasFrame&&(frame.age_sec>1||frame.source_state_age_sec>0.5||data.state_age_sec===null||data.state_age_sec>0.5||data.graph?.clock!==1||data.graph?.joints!==1||data.clock_age_sec===null||data.clock_age_sec>.5);
  const token=[frame.job_id||'manual',frame.run_id||data.lifecycle?.session_id||'',frame.model_sha256||'',frame.generation??data.lifecycle?.generation??'',sequence].join(':');
- function image(id,empty,visible,section){const element=$(id);if(!visible){element.hidden=true;element.removeAttribute('src');delete element.dataset.frameToken;$(empty).hidden=false;return;}element.hidden=false;$(empty).hidden=true;if(!$(section).hidden&&element.dataset.frameToken!==token){element.dataset.frameToken=token;const parameters=new URLSearchParams({sequence:String(sequence),job_id:frame.job_id||'',run_id:frame.run_id||'',model_sha256:frame.model_sha256||'',generation:String(frame.generation??data.lifecycle?.generation??'')});element.src='/api/frame?'+parameters.toString();}}
+ function image(id,empty,visible,section){const element=$(id);if(!visible){element.hidden=true;element.removeAttribute('src');delete element.dataset.frameToken;$(empty).hidden=false;return;}element.hidden=false;$(empty).hidden=true;if(!$(section).hidden&&element.dataset.frameToken!==token){element.dataset.frameToken=token;const parameters=new URLSearchParams({sequence:String(sequence),job_id:frame.job_id||'',run_id:frame.run_id||'',model_sha256:frame.model_sha256||'',generation:String(frame.generation??data.lifecycle?.generation??''),operator_session_id:frame.operator_session_id||data.lifecycle?.session_id||''});element.src='/api/frame?'+parameters.toString();}}
  image('frame','frame-empty',hasFrame,'operate');image('demo-frame','demo-frame-empty',hasFrame&&matchesDemo,'demos');
  $('view-dot').classList.toggle('live',hasFrame&&!stale);$('stale-frame').hidden=!stale;
  $('frame-label').textContent=frame.error?'렌더링 오류':hasFrame?(stale?'갱신 대기':'현재 관절 자세'):config.render_enabled?'관절 상태 대기':'렌더링 비활성화';$('frame-age').textContent=hasFrame?value(frame.age_sec*1000,0,' ms 전 갱신'):'—';
@@ -177,6 +180,7 @@ async function boot(){
  const bootstrap=await request('/api/bootstrap');config=bootstrap.config;token=bootstrap.token;targets={...config.home_rad};demoCatalog=(bootstrap.demos||[]).filter(item=>['contact_comparison','timing_comparison'].includes(item.id));mountDemos();
  $('cell-label').textContent=config.label;$('domain').textContent='ROS DOMAIN '+config.domain;
  fields();
+ if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('operate')});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'장면 표시 비활성화';}
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));
  $('dismiss').addEventListener('click',()=>$('notice').hidden=true);
  $('unit').addEventListener('change',()=>{unit=$('unit').value;fields();refreshControls();});
@@ -196,7 +200,7 @@ async function boot(){
   const result=await action('/api/command',payload);if(result)latestRequest=null;
  });
  document.querySelectorAll('[data-cancel]').forEach(el=>el.addEventListener('click',()=>{if(state?.active_request_id)action('/api/cancel',{request_id:state.active_request_id}).then(r=>{if(r)notice('양팔 취소를 요청했습니다. 취소 완료 상태를 확인하세요.');});}));
- document.querySelectorAll('[data-camera]').forEach(el=>el.addEventListener('click',async()=>{if(await action('/api/camera',{view:el.dataset.camera}))document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b===el));}));
+ document.querySelectorAll('[data-camera]').forEach(el=>el.addEventListener('click',async()=>{if(sceneControls&&!sceneControls.isImage()){sceneControls.camera(el.dataset.camera);document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b.dataset.camera===el.dataset.camera));}else if(await action('/api/camera',{view:el.dataset.camera}))document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b.dataset.camera===el.dataset.camera));}));
  $('import-target').addEventListener('click',()=>$('target-file').click());
  $('target-file').addEventListener('change',async()=>{
   const file=$('target-file').files[0];if(!file)return;

@@ -16,7 +16,11 @@ def main():
     parser.add_argument("--model-sha256")
     parser.add_argument("--job-id")
     parser.add_argument("--run-id")
+    parser.add_argument("--generation", type=int)
+    parser.add_argument("--operator-session-id")
     args = parser.parse_args()
+    if ((args.generation is None) != (args.operator_session_id is None) or (args.generation is not None and (args.generation < 0 or len(args.operator_session_id) != 32 or any(c not in "0123456789abcdef" for c in args.operator_session_id)))):
+        parser.error("Complete operator session/generation identity is required")
     os.environ.setdefault("MUJOCO_GL", "egl")
     import mujoco
     import rclpy
@@ -40,7 +44,9 @@ def main():
     try:
         check_workcell(cell)
         model_path = (cell.output/"cell.xml").resolve()
-        identity = {}
+        identity = dict(model_sha256=file_sha256(model_path))
+        if args.generation is not None:
+            identity.update(generation=args.generation, operator_session_id=args.operator_session_id)
         if any((args.model, args.model_sha256, args.job_id, args.run_id)):
             if not all((args.model, args.model_sha256, args.job_id, args.run_id)):
                 raise ValueError("Complete demo model identity is required")
@@ -54,8 +60,10 @@ def main():
                 raise ValueError("Unowned demonstration model")
             if file_sha256(model_path) != args.model_sha256:
                 raise ValueError("Demonstration model hash mismatch")
-            identity = dict(job_id=args.job_id, run_id=args.run_id, model_sha256=args.model_sha256)
+            identity.update(job_id=args.job_id, run_id=args.run_id, model_sha256=args.model_sha256)
         model = mujoco.MjModel.from_xml_path(str(model_path))
+        if file_sha256(model_path) != identity["model_sha256"]:
+            raise ValueError("Renderer model changed during compilation")
         model.vis.global_.offwidth, model.vis.global_.offheight = 960, 640
         data = mujoco.MjData(model)
         identifiers = {n:mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, n) for n in cell.joints}

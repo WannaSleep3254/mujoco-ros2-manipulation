@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--workcell", default="fr5_ur5e")
     parser.add_argument("--domain", type=int, default=int(os.environ.get("ROS_DOMAIN_ID", "89")))
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--no-render", action="store_true", help="Disable the separate joint-state image renderer (headless CI)")
+    parser.add_argument("--no-render", action="store_true", help="Disable local 3D scene workers and the optional image renderer (headless CI)")
     args = parser.parse_args()
     if not 0 <= args.domain <= 232 or not 1024 <= args.port <= 65535:
         parser.error("ROS domain must be 0..232; port must be 1024..65535")
@@ -35,7 +35,7 @@ def main():
     configuration = dict(workcell=cell.id, label=cell.label, domain=args.domain, home_rad=dict(zip(cell.joints, cell.home)),
         joint_limits=metadata["joint_limits"], instances=[dict(id=i.id, model=i.profile.id, label=i.profile.label, joints=i.joints) for i in cell.instances],
         targets=dict(home=dict(zip(cell.joints, cell.home)), sample={n:v for i in cell.instances for n,v in zip(i.joints,i.plan_target)}),
-        render_enabled=not args.no_render, workcell_contract=describe_workcell(cell, metadata))
+        render_enabled=not args.no_render, scene_view_version=1, workcell_contract=describe_workcell(cell, metadata))
     state = ConsoleState(configuration)
     node = ConsoleBridge(state, cell)
     folder = cell.root/"runtime/operator"/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"-"+uuid.uuid4().hex[:8])
