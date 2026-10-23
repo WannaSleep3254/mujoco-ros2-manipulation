@@ -129,3 +129,19 @@ python3 benchmark_fixed_motion.py --repeats 3 --domain 171
 부분 경로에서 발견한 최소 거리를 전체 경로의 최솟값으로 취급하지 않습니다.
 `--cases local_small environment_post invalid_goal --repeats 1`은 CI 확인용 부분 실행이며,
 전체 사례와 미실행 행도 결과에 보존합니다. 원본은 `runtime/validation/fixed-suites`에 저장합니다.
+
+
+측정이 종료된 뒤 `scripts/export_fixed_motion.py --source <fixed-benchmark.json> --output <새-evidence.json.gz>`로
+원본 bytes와 전체 요약을 다시 대조한 공개 근거를 만들 수 있습니다. 출력 파일이 이미 있으면 덮어쓰지 않습니다.
+세션의 구현 SHA·모델·환경이 행 사이에 달라졌거나 원본이 누락되면 추출을 거부합니다.
+`scripts/import_fixed_motion_report.py --evidence <공개-evidence.json.gz> --output <새-리포트-디렉터리>`는
+공개 근거만 읽어 예비 리포트를 만듭니다. 원본 경로·프로세스 환경·식별값·원문 오류는 공개하지 않습니다.
+
+2026-10-23의 [60행 예비 평가](../../docs/reports/2026-10-23-fixed-motion/index.html)는 성공 47회,
+계획 실패 7회, 의도한 무효 목표 거부 6회를 포함합니다. 성공은 모두 첫 후보였으며 홈 복귀는 6회 모두
+Action 전송 없이 거부됐습니다. 후보 상한 증가에 의한 회복 성공이나 홈 복귀 해결을 주장하지 않습니다.
+보존된 공개 근거와 보고서의 일치는 다음 명령으로 확인합니다.
+
+```bash
+PYTHONPATH=src runtime/report-tools/bin/python scripts/import_fixed_motion_report.py --check docs/reports/2026-10-23-fixed-motion
+```
