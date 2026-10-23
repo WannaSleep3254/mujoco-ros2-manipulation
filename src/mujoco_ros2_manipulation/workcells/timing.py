@@ -1,6 +1,7 @@
 """Bounded departure-delay search: preserve every moving spline segment exactly."""
 from copy import deepcopy
 import math
+import re
 import time
 from pathlib import Path
 import yaml
@@ -11,8 +12,10 @@ from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path
 from mujoco_ros2_manipulation.verification.reports import atomic_json
 
 
-def load_policy(cell):
-    path = cell.root / "config/planning/dual_arm_timing.yaml"
+def load_policy(cell, policy_name="dual_arm_timing"):
+    if not isinstance(policy_name, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", policy_name):
+        raise ValueError("Invalid timing policy name")
+    path = cell.root / "config/planning" / (policy_name + ".yaml")
     data = yaml.safe_load(path.read_text())
     keys = {
         "schema_version",

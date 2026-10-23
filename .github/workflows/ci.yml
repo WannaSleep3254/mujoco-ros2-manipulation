@@ -94,6 +94,7 @@ jobs:
           set -o pipefail
           if [[ '${{ matrix.robot }}' == 'workcell' ]]; then
             python3 build_workspace.py --download-debs --workcell '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
+            PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi
@@ -124,6 +125,11 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_motion_replanning.py --domain 159
+      - name: Fixed motion suite and obstacle scene smoke test
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 benchmark_fixed_motion.py --cases local_small environment_post invalid_goal --repeats 1 --domain 171
       - name: Fixed home clearance witness and fresh request traces
         if: matrix.robot == 'workcell'
         run: |

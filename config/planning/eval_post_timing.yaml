@@ -1,0 +1,9 @@
+# Simulation comparison policy; inter-arm clearance is not environment clearance.
+schema_version: 1
+workcell: fr5_ur5e_eval_post
+case: eval_post
+min_inter_arm_distance_m: 0.02
+tracking_reserve_m: 0.01
+sample_dt_sec: 0.01
+delay_step_sec: 0.1
+max_delay_sec: 4.0

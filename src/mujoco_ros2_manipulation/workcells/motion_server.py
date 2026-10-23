@@ -71,7 +71,7 @@ class MotionStateChanged(RuntimeError):
 class MotionCommandServer(WorkcellVerification):
     split = InterferenceVerification.split
 
-    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES):
+    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing"):
         PlanningBudget(compute_budget_sec)  # Validate before creating a ROS node/output directory.
         if type(max_plan_candidates) is not int or not 1 <= max_plan_candidates <= MAX_PLAN_CANDIDATES:
             raise ValueError(f"Expected 1..{MAX_PLAN_CANDIDATES} plan candidates")
@@ -83,7 +83,7 @@ class MotionCommandServer(WorkcellVerification):
         self.compute_budget = None
         self.goal_tolerance_rad = 0.003
         self.metadata = check_workcell(cell)
-        _, self.policy = load_policy(cell)
+        policy_path, self.policy = load_policy(cell, policy_name)
         self.directory = Path(output).resolve()
         require(self.directory.is_relative_to((cell.root / "runtime").resolve()), "Command traces must be under runtime/")
         self.directory.mkdir(parents=True, exist_ok=False)
@@ -106,6 +106,7 @@ class MotionCommandServer(WorkcellVerification):
         self.dispatch_abort = self.check_abort
         atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
             workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
+            policy_name=policy_name, policy_sha256=file_sha256(policy_path),
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
             runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
                          middleware=get_rmw_implementation_identifier()),
@@ -579,6 +580,7 @@ class MotionCommandServer(WorkcellVerification):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
+    parser.add_argument("--policy", default="dual_arm_timing", help="Named policy under config/planning for the selected workcell")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--compute-budget", type=float, default=30.0, help="Cooperative planning/validation wall seconds, excludes execution")
     parser.add_argument("--max-plan-candidates", type=int, default=MAX_PLAN_CANDIDATES,
@@ -591,7 +593,7 @@ def main():
     node = None
     previous_handlers = {}
     try:
-        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates)
+        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates, policy_name=args.policy)
         def stop(signum, frame):
             node.stop_requested = True
         for signum in (signal.SIGINT, signal.SIGTERM):
