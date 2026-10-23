@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "request_id": "c5ecfdd06cdf48d0959c983ebf5224d9",
+  "status": "failed",
+  "command": {
+    "schema_version": 1,
+    "request_id": "c5ecfdd06cdf48d0959c983ebf5224d9",
+    "strategy": "coordinated",
+    "target_rad": {
+      "left_j1": 0,
+      "left_j2": -1.2,
+      "left_j3": 1.2,
+      "left_j4": -1.5,
+      "left_j5": -1.5,
+      "left_j6": 0,
+      "right_shoulder_pan_joint": 0,
+      "right_shoulder_lift_joint": -1.5708,
+      "right_elbow_joint": 1.5708,
+      "right_wrist_1_joint": -1.5708,
+      "right_wrist_2_joint": -1.5708,
+      "right_wrist_3_joint": 0
+    }
+  },
+  "initial_state_rad": {
+    "left_j1": -1.0447443956818114,
+    "left_j2": -0.7963021319753804,
+    "left_j3": 0.7137792909646499,
+    "left_j4": -1.4971116478434303,
+    "left_j5": 0.00016933655719556683,
+    "left_j6": -0.00015466075949284648,
+    "right_shoulder_pan_joint": 0.0012873119842261077,
+    "right_shoulder_lift_joint": -1.5700321859734698,
+    "right_elbow_joint": 1.5752527531135911,
+    "right_wrist_1_joint": -1.5713641912922784,
+    "right_wrist_2_joint": -1.5700017942794187,
+    "right_wrist_3_joint": -0.0023158592171967024
+  },
+  "joint_state_stamp_simulation_sec": 54645.824010215,
+  "state_receive_age_wall_sec": 1.6204e-05,
+  "clock_receive_age_wall_sec": 0.000258125,
+  "plans": [
+    {
+      "group": "both_arms",
+      "wall_sec": 0.04070155299268663,
+      "server_planning_sec": 0.028257715,
+      "requested_pipeline_id": "ompl",
+      "requested_planner_id": "RRTConnectkConfigDefault",
+      "selected_planner_id": null,
+      "attempts": 3,
+      "allowed_planning_sec": 5.0,
+      "goal_tolerance_rad": 0.003,
+      "error_code": 1
+    }
+  ],
+  "events": [
+    {
+      "name": "received",
+      "wall_sec": 5.3011e-05,
+      "simulation_sec": null
+    },
+    {
+      "name": "state_snapshot",
+      "wall_sec": 0.000383185,
+      "simulation_sec": 54645.730010215
+    },
+    {
+      "name": "computation_started",
+      "wall_sec": 0.093426057,
+      "simulation_sec": 54645.824010215
+    },
+    {
+      "name": "planning_both_arms",
+      "wall_sec": 0.093753532,
+      "simulation_sec": 54645.824010215
+    },
+    {
+      "name": "safety_checks",
+      "wall_sec": 0.1399402,
+      "simulation_sec": 54645.862010215
+    },
+    {
+      "name": "terminal",
+      "wall_sec": 0.169384417,
+      "simulation_sec": null
+    }
+  ],
+  "spans": [
+    {
+      "name": "state_snapshot",
+      "start_wall_sec": 0.000599593,
+      "status": "completed",
+      "end_wall_sec": 0.093420013,
+      "duration_wall_sec": 0.09282042
+    },
+    {
+      "name": "planning:both_arms",
+      "start_wall_sec": 0.093977286,
+      "status": "completed",
+      "end_wall_sec": 0.134692154,
+      "duration_wall_sec": 0.040714868000000015
+    },
+    {
+      "name": "departure_search",
+      "status": "not_applicable",
+      "duration_wall_sec": null,
+      "reason": "Coordinated joint-space plan; no departure-only search"
+    },
+    {
+      "name": "safety_checks",
+      "start_wall_sec": 0.140364187,
+      "status": "failed",
+      "error": "RuntimeError",
+      "end_wall_sec": 0.169378938,
+      "duration_wall_sec": 0.029014751000000005
+    }
+  ],
+  "metrics": {
+    "received_to_first_motion_wall_sec": null,
+    "received_to_actions_done_wall_sec": null,
+    "received_to_settled_wall_sec": null,
+    "received_to_terminal_wall_sec": 0.169384417
+  },
+  "planned_clearance": {
+    "complete": false,
+    "samples": 650,
+    "minimum": {
+      "time_sec": 4.329451118100254,
+      "state_rad": {
+        "left_j1": -0.4343310111717421,
+        "left_j2": -1.0335270227422357,
+        "left_j3": 0.9976756369779431,
+        "left_j4": -1.499778477598167,
+        "left_j5": -0.8732549397890482,
+        "left_j6": -0.0015928481568048,
+        "right_shoulder_pan_joint": 0.0002037103449310026,
+        "right_shoulder_lift_joint": -1.5689818299550664,
+        "right_elbow_joint": 1.5710576040687925,
+        "right_wrist_1_joint": -1.5694856709325051,
+        "right_wrist_2_joint": -1.5708735716734792,
+        "right_wrist_3_joint": 0.0005871611431514647
+      },
+      "distance_m": 0.029852370939098594,
+      "bodies": [
+        "left_wrist3_link",
+        "right_wrist_3_link"
+      ],
+      "nearest_points_m": [
+        [
+          0.09554535488265287,
+          -0.14761096437702909,
+          0.8814294591985836
+        ],
+        [
+          0.12056844132953369,
+          -0.13950783524763344,
+          0.8955485418058143
+        ]
+      ],
+      "tips_m": [
+        [
+          0.04085656801627329,
+          -0.20791866702785589,
+          0.9276934573164953
+        ],
+        [
+          0.1576947069410467,
+          -0.13339259683777535,
+          0.8867481273178762
+        ]
+      ]
+    }
+  },
+  "compute_budget": {
+    "limit_wall_sec": 30.0,
+    "elapsed_wall_sec": 0.075966755,
+    "exceeded": false,
+    "enforcement": "Cooperative checks between bounded native samples and ROS calls; calls are not preempted"
+  },
+  "dispatched_goals": 0,
+  "action_results": [],
+  "error": {
+    "type": "RuntimeError",
+    "message": "Planned clearance below 30mm policy"
+  },
+  "evidence_export": {
+    "schema_version": 1,
+    "kind": "trace",
+    "raw_source_sha256": "1c39cfdf8dabf6eca29635584915653f5f782737b21229693e5f1705835ccadf",
+    "retained_fields": [
+      "schema_version",
+      "request_id",
+      "status",
+      "command",
+      "initial_state_rad",
+      "joint_state_stamp_simulation_sec",
+      "state_receive_age_wall_sec",
+      "clock_receive_age_wall_sec",
+      "plans",
+      "events",
+      "spans",
+      "metrics",
+      "planned_clearance",
+      "compute_budget",
+      "dispatched_goals",
+      "action_results",
+      "error"
+    ],
+    "note": "privacy-filtered extract; complete original retained locally"
+  }
+}

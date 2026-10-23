@@ -49,13 +49,18 @@ class RequestTrace:
     def finish(self, status, error=None):
         if status not in ("succeeded", "failed", "cancelled", "rejected"):
             raise ValueError("Expected a terminal command status")
+        failed = next((s["name"] for s in reversed(self.data["spans"]) if s["status"] == "failed"), None)
+        self.data["failure_stage"] = (failed or self.data["events"][-1]["name"]) if status != "succeeded" else None
         self.event("terminal")
         self.data.update(status=status, error=error)
         first = lambda name: next((e["wall_sec"] for e in self.data["events"] if e["name"] == name), None)
         self.data["metrics"] = dict(received_to_first_motion_wall_sec=first("first_motion"),
             received_to_actions_done_wall_sec=first("actions_done"),
             received_to_settled_wall_sec=first("settled"),
-            received_to_terminal_wall_sec=first("terminal"))
+            received_to_terminal_wall_sec=first("terminal"),
+            received_to_state_snapshot_wall_sec=first("state_snapshot"),
+            received_to_computation_started_wall_sec=first("computation_started"),
+            received_to_computation_done_wall_sec=first("computation_done"))
 
     def save(self, path):
         atomic_json(path, self.data)
@@ -63,4 +68,5 @@ class RequestTrace:
     def summary(self, path, session_id):
         return dict(schema_version=1, session_id=session_id, request_id=self.data["request_id"],
             status=self.data["status"], stage=self.data["events"][-1]["name"],
-            trace_path=str(path), metrics=deepcopy(self.data["metrics"]), error=self.data["error"])
+            trace_path=str(path), metrics=deepcopy(self.data["metrics"]), error=self.data["error"],
+            failure_stage=self.data.get("failure_stage"))

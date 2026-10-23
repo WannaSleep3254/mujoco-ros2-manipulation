@@ -119,6 +119,12 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_motion_commands.py --domain 138
+      - name: Fixed home clearance witness and fresh request traces
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 reproduce_motion.py --mode witness
+          python3 reproduce_motion.py --mode live --domain 154
       - name: Operator console HTTP to actual ROS motion and cancellation
         if: matrix.robot == 'workcell'
         run: |

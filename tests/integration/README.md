@@ -60,3 +60,15 @@ python3 verify_interference.py --domain 127
 합성 궤적의 교차 간섭을 전송 전에 차단한 뒤, 같은 조건의 `both_arms` 계획만 실행합니다.
 두 Action 성공·실제 목표 수렴·네이티브 전체 스텝 접촉 0까지 검사합니다.
 [엄격한 후처리 설정과 재현 자료](../../docs/interference_avoidance.md)를 참고합니다.
+
+## 고정 홈 복귀 입력과 실패 경로 재현
+
+```bash
+source ./manipulation_env.sh
+python3 reproduce_motion.py --mode witness
+python3 reproduce_motion.py --mode live --domain 154
+```
+
+과거 기하 표본은 고정 자산·정책으로 재평가하며 새 ROS 요청의 경로는 별도로 저장합니다.
+기존 사용자 시뮬레이션과 다른 빈 도메인을 사용합니다. 새 경로가 통과하는 경우도 결과에 보존하며, 과거와 같은 실패를 강제하지 않습니다.
+[입력·완료 기준·한계](../../docs/reproductions/home-return-2026-10-23/README.md)를 함께 확인합니다.

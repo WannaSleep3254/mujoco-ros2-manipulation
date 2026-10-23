@@ -2,6 +2,7 @@
 import argparse
 import os
 import json
+import math
 from pathlib import Path
 import shutil
 import signal
@@ -17,6 +18,7 @@ from mujoco_ros2_manipulation.verification.runner import group_gone, stop_proces
 from mujoco_ros2_manipulation.verification.diagnostics import check_physics
 from mujoco_ros2_manipulation.workcells.config import load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import check_workcell
+from mujoco_ros2_manipulation.workcells.contracts import describe_workcell
 from mujoco_ros2_manipulation.workcells.motion_request import command
 
 
@@ -36,7 +38,8 @@ def main():
     args=parser.parse_args()
     if not 0<=args.domain<=232 or not 1024<=args.port<=65535:parser.error('Invalid domain or port')
     if not 1<=args.startup_cycles<=10 or not 0<=args.startup_hold_seconds<=60:parser.error('Invalid startup cycles or hold duration')
-    cell=load_workcell();check_workcell(cell)
+    cell=load_workcell();metadata=check_workcell(cell)
+    expected_contract=describe_workcell(cell,metadata)
     mode='native_gui' if args.native_gui else ('headless' if args.no_render else 'render')
     report=VerificationReport(ROOT,'operator_console',mode,args.domain)
     process=None;session=None;failed=False;cleanup=[];token=None
@@ -75,6 +78,12 @@ def main():
             process=subprocess.Popen(['/usr/bin/python3',str(ROOT/'operator_console.py'),'--domain',str(args.domain),'--port',str(args.port)]+(['--no-render'] if args.no_render else []),
                 cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         bootstrap=until(lambda:api('/api/bootstrap'),15,'console HTTP readiness');token=bootstrap['token']
+        contract=bootstrap['config']['workcell_contract']
+        require(contract['schema_version']==1 and contract['kind']=='workcell_description' and contract['workcell_id']==cell.id,'Wrong bootstrap workcell description')
+        require(contract['identity']==expected_contract['identity'],'Bootstrap contract belongs to different model assets')
+        require(contract['joint_names']==cell.joints and contract['home_rad']==bootstrap['config']['home_rad']
+                and contract['joint_limits']==bootstrap['config']['joint_limits'],'Bootstrap contract joint mapping differs from console configuration')
+        report.update(workcell_contract=contract,workcell_contract_checked=True)
         until(lambda:api('/api/state')['reason']!='ROS 연결을 확인하고 있습니다.',5,'ROS graph discovery')
         startup_checks=[]
         report.update(native_gui=args.native_gui,dds_configuration_uri=os.environ.get('CYCLONEDDS_URI'),
@@ -85,6 +94,8 @@ def main():
             api('/api/start',dict(native_gui=args.native_gui,planning_case='dual_arm_crossing'))
             until(ready,65,'MuJoCo identity / shared-state / command readiness')
             initial=api('/api/state');session=Path(initial['lifecycle']['last_launch_directory']).parent
+            source_stamp=initial['joint_state_stamp_simulation_sec']
+            require(type(source_stamp) in (int,float) and math.isfinite(source_stamp) and source_stamp>=0,'Console state is missing its source JointState simulation stamp')
             require(session.resolve().is_relative_to((ROOT/'runtime/operator').resolve()),'Unexpected console session path')
             if not args.no_render:
                 until(lambda:api('/api/state')['frame'].get('sequence',0)>2,25,'live joint-state renderer')
@@ -93,7 +104,8 @@ def main():
                 require(ready(),'Readiness lost during startup hold')
                 time.sleep(.1)
             check=dict(cycle=cycle+1,ready_and_hold_wall_sec=time.monotonic()-started,
-                launch_directory=initial['lifecycle']['last_launch_directory'])
+                launch_directory=initial['lifecycle']['last_launch_directory'],
+                joint_state_stamp_simulation_sec=source_stamp,state_receive_age_wall_sec=initial['state_age_sec'])
             startup_checks.append(check);report.update(startup_checks=startup_checks)
             if cycle<args.startup_cycles-1:
                 api('/api/stop',{})

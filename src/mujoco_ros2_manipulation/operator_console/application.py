@@ -69,6 +69,7 @@ class ConsoleApplication:
             else:
                 self.state.clock_backwards = False
                 self.state.simulation_sec = self.state.clock_at = self.state.clock_advanced_at = None
+                self.state.joint_state_stamp_simulation_sec = None
                 self.state.positions = self.state.joint_at = self.state.guard = self.state.server = None
                 self.state.identity = False
             self.phase, self.error = "starting", None
