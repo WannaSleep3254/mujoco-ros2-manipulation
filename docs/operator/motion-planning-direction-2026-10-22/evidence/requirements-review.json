@@ -1,0 +1,69 @@
+{
+  "document_version": "0.2",
+  "review_date": "2026-10-22",
+  "input_scope": [
+    "User-supplied motion-planning questions dated 2026-10-21",
+    "Subsequent joint-path, timing, clearance and hardware-interface review"
+  ],
+  "private_source_handling": "Questions and reviewed decisions are summarized; full private conversations and attachment are not published.",
+  "questions": [
+    {
+      "topic": "Approximately two-second latency",
+      "decision": "Reuse current instrumentation; identify the actual request and separate planning, departure search, final validation and reservation.",
+      "report_sections": [
+        "#latency",
+        "#roadmap-p0",
+        "#roadmap-p4"
+      ]
+    },
+    {
+      "topic": "MoveIt alternatives and sampling versus optimization",
+      "decision": "Keep MoveIt 2 as baseline; compare OMPL direct, Tesseract/TrajOpt, cuRoboV2, MJPC, CasADi and Crocoddyl by layer and integration cost.",
+      "report_sections": [
+        "#alternatives"
+      ]
+    },
+    {
+      "topic": "Bin picking as priority; palletizing and assembly",
+      "decision": "Add scene/TCP/gripper, grasp/IK prefilter, ranked planning, approach-grasp-retreat and attached-object state; distinguish contact control.",
+      "report_sections": [
+        "#roadmap-p2",
+        "#roadmap-p3",
+        "#roadmap-p5"
+      ]
+    },
+    {
+      "topic": "Shorter collision-free detours and failed home return",
+      "decision": "Retain 30 mm planning clearance, diagnose endpoints, introduce budget-aware spatial candidates, compare feasible path quality and completion time.",
+      "report_sections": [
+        "#current",
+        "#roadmap-p0",
+        "#roadmap-p1"
+      ]
+    },
+    {
+      "topic": "Simulator-to-real transition",
+      "decision": "Match units, joint semantics, frames, tool, limits, clock, controller input, feedback and cancellation contract; validate model error and contact separately.",
+      "report_sections": [
+        "#roadmap-p5",
+        "#evaluation"
+      ]
+    }
+  ],
+  "claims_not_adopted": [
+    "RRTstar or ROS is proven to cause the observed two seconds",
+    "0.1-second planning budget guarantees 10-50 ms response",
+    "Sampling guarantees a path in finite time",
+    "Tesseract excludes sampling",
+    "MJPC has zero latency or is exclusively derivative-based",
+    "CasADi is offline-only or Crocoddyl is legged-only",
+    "Increasing collision discretization fraction to 0.05 is universally safe",
+    "Changing use_sim_time completes a real-robot transition"
+  ],
+  "historical_state_corrections": [
+    "Current explicit RRTConnect request and timing instrumentation supersede earlier unspecified-planner/no-timing notes",
+    "Common floor/pedestal generation and web operator UI are already implemented",
+    "Current departure candidates are not grasp or IK candidates"
+  ],
+  "new_motion_or_performance_measurements": false
+}

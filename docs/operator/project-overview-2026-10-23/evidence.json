@@ -1,0 +1,116 @@
+{
+  "document_type": "project_overview",
+  "document_version": "1.3",
+  "layout_baseline": "1.9",
+  "checked_date": "2026-10-23",
+  "code_review_commit": "d2d506f921a545a543b5856faa6d82b42e1dbf46",
+  "new_robot_or_performance_measurements": false,
+  "purpose": "Visitor introduction combining concise goals and technology background with implemented features, actual demonstration, initial test models and a short evidence-based verification summary.",
+  "source_sha256": {
+    "README.md": "fddcca32fd73142c6c5fd029e705fbfc306b96de54ab7e0fe3b6f77fcc299bfc",
+    "docs/simulator_status.md": "8b9f3c54af19cab043c3e84811bc8c9e9284ef9d303f87dae2a129b11905778e",
+    "docs/operator_console.md": "eedaeac7fa4eb57ca5d15119e1e46623532ed75f8e14457a5b49fd99afd7b8e8",
+    "docs/motion_requests.md": "56e9daa2923d5a639a984c2bef151e413a398da87fead12b330185ebd247b20c",
+    "docs/timing_coordination.md": "fe1a096b621a47aa5fe748c756fb05ece792ff55257a69517cd622a00bd8f70d",
+    "docs/architecture.md": "4e851ceb32b8cb912f3cfdf13aa28691d6a6f68df836c57eb0854162adb83bd3",
+    "docs/contact_stop.md": "e3482fe34b75cec76ebe52d1302300c9a45eb66ca456e66b575f699ca963d66c",
+    "docs/clock_stop.md": "bbda6ac1e545d11fe2bf98de05647dfd2684aaf5b427606ac99135d6dacb8806",
+    "docs/fr5_shutdown_validation.json": "074d2ab6f70309757a894a0d559903a1193411d55d8bfab80143237ffbf14456",
+    "docs/fr10_validation.json": "8993cbf72ce46c5b5e69629d92f8de530efd75f222801c86bd9a30357a5f5c6e",
+    "docs/ur5e_validation.json": "91491ce58512cd7e274c42a35d3fcbe26a0fb5768f57154961d401b0b3e64847",
+    "docs/operator/gui-startup-validation-manifest.json": "2cd32122b67d0f7fd35bb103ff761751dd47274cff8eea836e20be20e84363c5",
+    "docs/operator/picking-comparison-2026-10-22/manifest.json": "5799f878f7fb3c356f94b7e143abfd93755e133a57352ce2ecb30911b981ce65",
+    "docs/reporting/templates/engineering-report-v1.9.html": "c7f44dd1838c84fbd3b79785d268001b64d6757b148c5106de50d1522be0a55c",
+    "docs/robots/fr5/README.md": "54570e28e5a13def7ab4aae503a251ed0a9433dcd15a92b4abf415adfb1982ad",
+    "docs/robots/fr10/README.md": "c13fb342ebe091e4f5c071248ca8741cdfd14a2375536be7c39f16de103a2928",
+    "docs/robots/ur5e/README.md": "d2e2a18b9484fef3234efb38dabd2873e9f38ee705f3199057b41021f24656ff",
+    "docs/reports/2026-10-21-random-motion/report.json": "d9187e336ec7188949e6e9f098c7b1ed5387c0eedc10fc16492b6abaa8d4136b",
+    "docs/reports/2026-10-21-search-optimization/report.json": "ad1d2d1adb8d5e0c9b829a54b50617e82e97463b5581c727206f285e087c0213",
+    "docs/reports/2026-10-21-request-timing/report.json": "308abc9d6d0b45576a30685dcf00155d47a4ebc213db61e91a5f1127fc4cdb8e"
+  },
+  "asset_provenance": {
+    "operation-poster.png": {
+      "repository_path": "docs/operator/picking-comparison-2026-10-22/operation-poster.png",
+      "sha256": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9"
+    },
+    "operation-demo.mp4": {
+      "repository_path": "docs/operator/picking-comparison-2026-10-22/viewer-mujoco-rviz.mp4",
+      "sha256": "38aa19f75c5b1db88bd9097c36e2faf34ee682905222f7d8308d77259ac69023"
+    },
+    "fr5-home.png": {
+      "repository_path": "docs/robots/fr5/images/home.png",
+      "sha256": "2928dce0fb8e73a2ea29be5b540f3f8e54ff5b3295cec714d1883fa4cd0ffc73"
+    },
+    "fr10-home.png": {
+      "repository_path": "docs/robots/fr10/images/home.png",
+      "sha256": "deacde644e33f8e48b1c09d81e60b778bd23beddf3bf69095abc101bbd4b3e89"
+    },
+    "ur5e-home.png": {
+      "repository_path": "docs/robots/ur5e/images/home.png",
+      "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
+    }
+  },
+  "recording": {
+    "recorded_date": "2026-10-22",
+    "evaluated_code_commit": "50b549b24ff33b9286e4ac7545c01d893c1ac193",
+    "duration_sec": 44.25,
+    "encoded_fps": 12,
+    "live_renderer_cap_fps": 5,
+    "successful_requests": 4,
+    "actual_grasp": false,
+    "note": "Reused existing recording. Repeated frames preserve recording duration; not a frame-level latency or rendering benchmark."
+  },
+  "support_scope": {
+    "single_models": [
+      "FR5",
+      "FR10",
+      "UR5e"
+    ],
+    "web_workcell": "FR5 + UR5e",
+    "arbitrary_robot_count": false,
+    "pose_ik_web_input": false,
+    "gripper_object_grasp": false,
+    "real_robot_control": false,
+    "scope_kind": "Current implementation and initial test cases, not a fixed target robot roster"
+  },
+  "validation_scope": {
+    "single_model_records": "2026-10-06 through 2026-10-07",
+    "gui_startup_record": "2026-10-22: three startups with 15-second ready holds; functional motion/cancel/recovery; not endurance",
+    "evaluation_records": "2026-10-21: small fixed/near-home inputs and offline A/B; original provenance unchanged"
+  },
+  "publication": {
+    "registry": "docs/reports/operator-demos.json",
+    "document_type": "project_overview",
+    "measured_catalog_member": false,
+    "pages_requires_main_merge": true
+  },
+  "owner_confirmed_direction": {
+    "confirmed_date": "2026-10-23",
+    "basis": "Project owner clarification and approved introduction outline",
+    "goals": [
+      "Replaceable robot, simulator, motion planner, control interface and viewer modules",
+      "Site-specific design files and placement reflected in the work environment",
+      "Robot planning, execution and collision validation in the configured environment"
+    ],
+    "current_project_focus": "Motion validation",
+    "initial_test_basis": "FAIRINO and Universal Robots; expand supported robot types after feature implementation",
+    "parallel_work": "Separate private QML local viewer without ROS 2, focused on design-file loading and visualization; private because of design-file security",
+    "private_assets_or_source_republished": false,
+    "overall_goal": "Build a robot simulation and motion-validation development environment",
+    "repository_implementation": "Implement MuJoCo/ROS 2 robot-control simulation as a means toward the overall goal",
+    "ros2_choice": "Continuity with the existing development stack, developer preference, and a goal to expand integration and use of other sensors and SDKs",
+    "presentation": "Combine v1.1 implementation and verification context with v1.2 concise introduction; retain the distinction between overall purpose and this repository implementation."
+  },
+  "current_environment_scope": {
+    "fixed_shapes": [
+      "box",
+      "cylinder"
+    ],
+    "external_environment_design_import": "development_goal",
+    "generic_backend_interchange": "development_goal"
+  },
+  "presentation_refinement": {
+    "execution_flow": "MoveIt 2 planning -> ros2_control trajectory execution -> MuJoCo physics -> web/RViz state display",
+    "verification_sources": "Direct, baseline-pinned original records linked from all three verification summary items"
+  }
+}

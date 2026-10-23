@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "review_type": "self_review",
+  "draft_version": "0.1",
+  "revised_version": "1.9",
+  "review_date": "2026-10-22",
+  "checks": [
+    {
+      "id": "R1",
+      "finding": "추천과 확정을 구분",
+      "improvement": "웹 UI 재사용과 3D 기술 선정을 분리하고, Three.js는 성능 우위가 확인된 확정안이 아니라 우선 비교 후보로 명시했습니다.",
+      "status": "addressed"
+    },
+    {
+      "id": "R2",
+      "finding": "요구 조건별 선택 기준 추가",
+      "improvement": "기존 UI 유지, 설치형 제품, ROS·로그 분석이라는 조건별로 대안의 역할을 구분했습니다. 진단 도구를 함께 사용하는 구성도 포함했습니다. Qt/QML UI와 Qt Quick 3D·QOpenGLWidget 표시 모듈도 구분했습니다.",
+      "status": "addressed"
+    },
+    {
+      "id": "R3",
+      "finding": "기본 표시 성능의 오해 제거",
+      "improvement": "5fps 렌더 상한·250ms 조회 예약·물리/제어 주기·12fps 시연 영상을 구분하고, 자유 카메라의 최소 확장만으로 부드러움이 보장되지 않음을 보강했습니다.",
+      "status": "addressed"
+    },
+    {
+      "id": "R4",
+      "finding": "모델·시간 검증 보강",
+      "improvement": "3.12/3.14 표시 경로의 버전 차이, 링크 변환·관절 단위·설치 좌표, 원격 시계 비교와 보간 중단 조건을 명시했습니다.",
+      "status": "addressed"
+    },
+    {
+      "id": "R5",
+      "finding": "개선 단계의 완료 조건 보강",
+      "improvement": "단계마다 재현 입력·자료·통과 조건을 추가하고, TCP 드래그와 실제 실행 사이의 검사·미리보기 경계를 분리했습니다.",
+      "status": "addressed"
+    },
+    {
+      "id": "R6",
+      "finding": "자료 유형과 구현 상태 명확화",
+      "improvement": "설계 제안·기존 기능 검증·새 성능 측정을 구분했습니다. 404는 확인한 개선 과제이며 이번 작업에서 수정한 것으로 기록하지 않았습니다.",
+      "status": "addressed"
+    }
+  ],
+  "checks_not_performed": [
+    "Independent external review",
+    "New comparison benchmark",
+    "New ROS/GUI motion validation",
+    "Hardware robot validation"
+  ],
+  "remaining_decisions": [
+    "Required desktop operating systems and packaging",
+    "Local-only versus remote operation",
+    "Post-baseline numeric acceptance thresholds",
+    "Whether Qt prototype must be included"
+  ],
+  "draft_sha256": "3619fef3da0f1d853e1f9e474aebba48b96c12ffc17c92109d60e4638c6f14e3",
+  "document_revisions": [
+    {
+      "from_version": "1.0",
+      "to_version": "1.1",
+      "date": "2026-10-22",
+      "reason": "Portfolio-oriented third-person technical narrative",
+      "previous_html_sha256": "35de73f1f00eff70ff3ab25dbd96fc2ce6f381b7c20cfa755fce367096caa819",
+      "changes": [
+        "Reframed introduction around the engineering problem and implementation.",
+        "Separated implemented features, design decisions and proposed extensions.",
+        "Replaced conversation history and AI-answer corrections with technical review criteria.",
+        "Replaced authoring-process section with design review scope and remaining validation.",
+        "Preserved technical settings, baseline source links and proposed status."
+      ]
+    },
+    {
+      "from_version": "1.1",
+      "to_version": "1.2",
+      "date": "2026-10-22",
+      "reason": "Developer-facing introduction and presentation narrative",
+      "previous_html_sha256": "27132cc2da0d38e0246b274d16bba6d09d4a5053aa2d62ec45d460d2e938c192",
+      "changes": [
+        "Opened with the implemented dual-arm console and the fragmented workflow it addresses.",
+        "Placed implementation decisions and verified functional results before future architecture.",
+        "Added a validation-scope table using existing records without introducing new performance claims.",
+        "Connected current free-camera and update-rate limits to the next prototype comparison.",
+        "Kept proposed renderers and unresolved deployment requirements explicitly conditional."
+      ]
+    },
+    {
+      "from_version": "1.2",
+      "to_version": "1.9",
+      "date": "2026-10-22",
+      "reason": "Apply reviewed v1.9 layout, wording and report format",
+      "previous_html_sha256": "1706aa2b187c89ceed6bdd14405fbc2384d83d0eb434d0309a28847a7d0a3e71",
+      "changes": [
+        "Generalized the introduction to heterogeneous multiple robots while retaining FR5/UR5e as the implemented example.",
+        "Applied the user-approved summary wording, matched overview cards, and selective label/value rows.",
+        "Used ordinary bullets for feature cards, execution environments and roadmap tasks; preserved role and comparison identifiers.",
+        "Separated all five completion blocks and preserved their sixteen criteria.",
+        "Standardized figure/table/diagram titles, technical terms, units and explanatory sentence endings.",
+        "Linked directly to the existing separate demo video; no new video or performance result added."
+      ],
+      "review_source": "User browser comments and assistant editorial review; no independent Figma AI assessment",
+      "reviewed_preview_sha256": "62c76b195d7e5ce0637f7d9ef1bd9c01342096a5e60df7883e8fb20e27d1c37e"
+    },
+    {
+      "date": "2026-10-23",
+      "area": "annotated rationale, comparison, technical-review cells and P3 list items",
+      "change": "Added semantic sentence breaks and separate source-link lines in 18 annotated nodes, including the Foxglove benefit cell. Wording, source targets and numbering preserved.",
+      "nodes": 18,
+      "added_line_breaks": 24,
+      "validation": {
+        "status": "passed",
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "print_breaks": "preserved",
+        "script_errors": []
+      },
+      "before_reviewed_html_sha256": "8e256fb427ba55d0a8d6761f50a8ba4f609116ca80c98a5f07e73b7c51f15f13"
+    }
+  ],
+  "previous_document_validation": {
+    "structure": {
+      "structural_check": "passed",
+      "local_links_checked": 17,
+      "source_baseline_hashes_checked": 14,
+      "assets_checked": 4,
+      "review_improvements": 6,
+      "source_baseline": "7a71402e2a04fd002f8d863ac9908341103a9f00"
+    },
+    "browser": {
+      "status": "passed",
+      "page": "docs/operator/viewer-direction-2026-10-22/index.html",
+      "layouts": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 1920,
+          "documentWidth": 1920,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 768,
+          "documentWidth": 768,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 390,
+          "documentWidth": 390,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 95.78125,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 320,
+          "documentWidth": 320,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 135.171875,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        }
+      ],
+      "scriptErrors": [],
+      "failedResources": [],
+      "printStyle": "passed",
+      "scope": "Document display and navigation only; no new viewer, ROS or performance benchmark."
+    },
+    "repository_check": "passed: syntax, Markdown links, build config, profiles and scenes",
+    "existing_generated_reports": "passed: 15 generated files match source",
+    "visual_inspection": [
+      "desktop overview",
+      "desktop alternative comparison table",
+      "desktop improvement roadmap",
+      "320px overview"
+    ],
+    "motion_tests": "not run; documentation-only change"
+  },
+  "previous_reviewed_html_sha256": "35de73f1f00eff70ff3ab25dbd96fc2ce6f381b7c20cfa755fce367096caa819",
+  "intermediate_document_validation_v1_1": {
+    "structure": {
+      "structural_check": "passed",
+      "local_links_checked": 17,
+      "source_baseline_hashes_checked": 14,
+      "assets_checked": 4,
+      "review_improvements": 6,
+      "source_baseline": "7a71402e2a04fd002f8d863ac9908341103a9f00"
+    },
+    "browser": {
+      "status": "passed",
+      "page": "docs/operator/viewer-direction-2026-10-22/index.html",
+      "layouts": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 1920,
+          "documentWidth": 1920,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 768,
+          "documentWidth": 768,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 390,
+          "documentWidth": 390,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 95.78125,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 320,
+          "documentWidth": 320,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 135.171875,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        }
+      ],
+      "scriptErrors": [],
+      "failedResources": [],
+      "printStyle": "passed",
+      "scope": "Document display and navigation only; no new viewer, ROS or performance benchmark."
+    }
+  },
+  "reviewed_html_sha256": "ae2037e3285e93134c9200c0d3ffd261b8062428459f4c0ff1c80ca8742ee49f",
+  "previous_document_validation_v1_2": {
+    "status": "passed",
+    "document_version": "1.2",
+    "structure": {
+      "structural_check": "passed",
+      "local_links_checked": 18,
+      "source_baseline_hashes_checked": 14,
+      "assets_checked": 4,
+      "review_improvements": 6,
+      "source_baseline": "7a71402e2a04fd002f8d863ac9908341103a9f00"
+    },
+    "browser": {
+      "status": "passed",
+      "page": "docs/operator/viewer-direction-2026-10-22/index.html",
+      "layouts": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 1920,
+          "documentWidth": 1920,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 768,
+          "documentWidth": 768,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 60.390625,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 390,
+          "documentWidth": 390,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 95.78125,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        },
+        {
+          "width": 320,
+          "documentWidth": 320,
+          "imageLoaded": true,
+          "headingCount": 7,
+          "navHeight": 135.171875,
+          "anchorsVisible": true,
+          "detailsMouseAndKeyboard": true,
+          "printAction": true
+        }
+      ],
+      "scriptErrors": [],
+      "failedResources": [],
+      "printStyle": "passed",
+      "scope": "Document display and navigation only; no new viewer, ROS or performance benchmark."
+    },
+    "content_review": [
+      "Developer-oriented problem/implementation/decision/evidence/roadmap narrative",
+      "Conversation-specific references removed",
+      "Existing functional checks separated from unmeasured performance comparisons",
+      "Implemented features separated from proposed rendering clients",
+      "Fixed technical source URLs retained"
+    ],
+    "visual_inspection": [
+      "desktop developer overview",
+      "mobile developer overview",
+      "verified functional results and limitations"
+    ],
+    "repository_check": "passed",
+    "existing_generated_reports": "15 files match source",
+    "motion_tests": "not run; prose and documentation-only change"
+  },
+  "current_document_validation": {
+    "status": "passed",
+    "document_version": "1.9",
+    "structure": {
+      "structural_check": "passed",
+      "assets_checked": 6,
+      "source_baseline_hashes_checked": 16,
+      "completion_criteria_preserved": 16
+    },
+    "browser": {
+      "status": "passed",
+      "layouts": [
+        {
+          "kind": "report",
+          "width": 1440,
+          "documentWidth": 1440,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "report",
+          "width": 1104,
+          "documentWidth": 1104,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "report",
+          "width": 768,
+          "documentWidth": 768,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "report",
+          "width": 390,
+          "documentWidth": 390,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "report",
+          "width": 320,
+          "documentWidth": 320,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "template",
+          "width": 1440,
+          "documentWidth": 1440,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "template",
+          "width": 1104,
+          "documentWidth": 1104,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "template",
+          "width": 768,
+          "documentWidth": 768,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "template",
+          "width": 390,
+          "documentWidth": 390,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "kind": "template",
+          "width": 320,
+          "documentWidth": 320,
+          "sections": 7,
+          "completedBlocks": 5,
+          "brokenAnchors": [],
+          "overflowingText": []
+        }
+      ],
+      "scriptErrors": [],
+      "printStyle": "passed",
+      "scope": "Document and reusable template layout, links and controls; no new motion or performance measurement."
+    },
+    "repository_check": "passed: syntax, local Markdown links, build configuration, profiles and scenes",
+    "publication_unit_tests": "47 tests passed: test_publication_reports and test_published_reports",
+    "motion_tests": "not run; document and publication-only change",
+    "new_performance_measurements": false,
+    "annotation_line_break_review": {
+      "status": "passed",
+      "desktop_width": 1104,
+      "mobile_width": 390,
+      "print_breaks": "preserved",
+      "script_errors": [],
+      "nodes": 18
+    }
+  },
+  "media_changes": [
+    {
+      "area": "inline_demonstration_video",
+      "date": "2026-10-22",
+      "change": "표지 클릭·키보드 활성화 후 같은 위치에서 영상 재생. 자동 재생·사전 영상 요청 없음. 기본 재생 컨트롤·오류 재시도·원본 링크·인쇄용 포스터 제공.",
+      "video_file": "viewer-demo.mp4",
+      "poster_file": "viewer-demo-poster.png",
+      "original_recording_reused": true,
+      "new_motion_or_performance_measurement": false,
+      "before_html_sha256": "2bc5f0b6d709f82afc32bae66cbf975a474c93866ac47c3ecb233efe17e17c63"
+    }
+  ],
+  "inline_video_validation": {
+    "status": "passed",
+    "scope": "Document media playback only; no new simulation or performance measurements.",
+    "results": [
+      {
+        "document": "viewer-repo",
+        "width": 1104,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 2400,
+          "height": 1796,
+          "duration": 44.25,
+          "time": 0.066961,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "viewer-repo",
+        "width": 390,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 2400,
+          "height": 1796,
+          "duration": 44.25,
+          "time": 0.063851,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "viewer-repo",
+        "width": 320,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 2400,
+          "height": 1796,
+          "duration": 44.25,
+          "time": 0.064007,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "viewer-repo",
+        "errorRecovery": true,
+        "retryPlayback": true,
+        "scriptErrors": []
+      }
+    ],
+    "visual_inspection": [
+      "poster with central play button",
+      "mobile native controls",
+      "same media frame before and after playback"
+    ]
+  }
+}

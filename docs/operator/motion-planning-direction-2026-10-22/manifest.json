@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "document_type": "design_review",
+  "document_version": "0.2",
+  "layout_baseline": "1.9",
+  "baseline_commit": "17572af3b1376960bf7e8db8f9d88ca834f87837",
+  "assets": {
+    "evidence/random-motion-metrics.csv": "41cf72eb8d834b2b4b276c6166a4dfc958acfa5b26f5cb155bdd3350f78741f7",
+    "evidence/requirements-review.json": "cfeaf9ff38a32ebfee6a93e3f498fe7c38476278eca3409a44b8c0c71e06656e",
+    "evidence/review-data.json": "d09a0103889b8f9b51bd2572b2d8c4065c7a10a74aa9bab8091783f33da1351e",
+    "evidence/search-optimization-metrics.csv": "43e0f478521ffa7957578108a9873b5f3e59e4676567ef29b8c9f22717be5846",
+    "index.html": "fa0dbee51abe38b7c3c833ba61983763b198c79e8138e5d44073093e7c9e8ff4",
+    "review-notes.json": "5c4804bbc94aec18b0919a41a967b9517abe4b5732a054fb2e8ee5ef2a09c7cf",
+    "timing-comparison.mp4": "5a97325e5d21a59541807d9e4dbc624239ba6c582f0d960fdff6dc3f4a419f9d",
+    "timing-comparison.png": "0b4e1bb32cd5a134f9700929b11a4753592934074572f041526f54b327d1a750"
+  }
+}

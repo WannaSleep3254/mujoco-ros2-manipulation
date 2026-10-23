@@ -1,0 +1,364 @@
+{
+  "document_version": "0.2",
+  "layout_baseline": "1.9",
+  "review_date": "2026-10-22",
+  "status": "editorial_and_browser_validation_passed",
+  "scope": "Repository direction-review artifact and reused inline media; planner implementation, parameters and original measurement artifacts unchanged.",
+  "checks": [
+    "General server and dedicated selector scope distinguished",
+    "Endpoint infeasibility separated from intermediate path failure",
+    "20 mm observed threshold is post-execution, not a realtime stop trigger",
+    "Candidate helper needs budget/cancel integration before general server reuse",
+    "Historical evaluation commits and timing scopes retained",
+    "Official source facts distinguished from project recommendations"
+  ],
+  "publication": {
+    "registry": "docs/reports/operator-demos.json",
+    "registry_document_type": "design_review",
+    "measurement_catalog_registered": false,
+    "pages_requires_main_merge": true,
+    "note": "Design review registered separately from measured performance samples."
+  },
+  "editorial_review": [
+    "Defined wall and simulation clocks at first use",
+    "Separated duration stretching from spatial path length",
+    "Clarified server startup compute-budget setting; no per-request budget field in schema v1",
+    "Kept historical document state in review metadata rather than current implementation narrative",
+    "Covered original bin-picking/technology/sim-to-real questions and later minimum-detour/cuRoboV2 review",
+    "Fixed narrow-screen overflow in new long technology labels without changing report layout baseline"
+  ],
+  "layout_reference": {
+    "repository_path": "docs/reporting/templates/engineering-report-v1.9.html",
+    "commit": "17572af3b1376960bf7e8db8f9d88ca834f87837",
+    "sha256": "c7f44dd1838c84fbd3b79785d268001b64d6757b148c5106de50d1522be0a55c"
+  },
+  "media_changes": [
+    {
+      "area": "inline_demonstration_video",
+      "date": "2026-10-22",
+      "change": "표지 클릭·키보드 활성화 후 같은 위치에서 영상 재생. 자동 재생·사전 영상 요청 없음. 기본 재생 컨트롤·오류 재시도·원본 링크·인쇄용 포스터 제공.",
+      "video_file": "timing-comparison.mp4",
+      "poster_file": "timing-comparison.png",
+      "original_recording_reused": true,
+      "new_motion_or_performance_measurement": false,
+      "before_html_sha256": "27821e9f23b6a1b4ca1eca8bf4efcabf261d3eb9f3d5f435951844d02423f7ad"
+    }
+  ],
+  "inline_video_validation": {
+    "status": "passed",
+    "scope": "Document media playback only; no new simulation or performance measurements.",
+    "results": [
+      {
+        "document": "motion",
+        "width": 1104,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 1800,
+          "height": 716,
+          "duration": 28.125,
+          "time": 0.055585,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "motion",
+        "width": 390,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 1800,
+          "height": 716,
+          "duration": 28.125,
+          "time": 0.057057,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "motion",
+        "width": 320,
+        "noVideoRequestBeforeActivation": true,
+        "keyboardActivation": true,
+        "playing": {
+          "width": 1800,
+          "height": 716,
+          "duration": 28.125,
+          "time": 0.058993,
+          "controls": true,
+          "inline": true,
+          "focused": true
+        },
+        "layoutShiftPx": 0,
+        "printPoster": true
+      },
+      {
+        "document": "motion",
+        "errorRecovery": true,
+        "retryPlayback": true,
+        "scriptErrors": []
+      }
+    ],
+    "visual_inspection": [
+      "poster with central play button",
+      "mobile native controls",
+      "same media frame before and after playback"
+    ]
+  },
+  "content_changes": [
+    "Recovered original technology questions and bin-picking priority",
+    "Added planning-layer and tool comparison including session-reviewed cuRoboV2",
+    "Distinguished grasp/IK candidates from existing departure/joint-path candidates",
+    "Added current instrumentation and historical-state corrections",
+    "Added bin-picking model, candidate pipeline and simulator-to-real/contact contract"
+  ],
+  "previous_validation": {
+    "browser": {
+      "status": "passed",
+      "layouts": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "sections": 7,
+          "stages": 5,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 1104,
+          "documentWidth": 1104,
+          "sections": 7,
+          "stages": 5,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 768,
+          "documentWidth": 768,
+          "sections": 7,
+          "stages": 5,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 390,
+          "documentWidth": 390,
+          "sections": 7,
+          "stages": 5,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 320,
+          "documentWidth": 320,
+          "sections": 7,
+          "stages": 5,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        }
+      ],
+      "scriptErrors": [],
+      "printStyle": "passed",
+      "scope": "Draft document display and controls only; no motion or performance measurement."
+    },
+    "structural_checks": "passed: seven sections, four table captions, two diagrams, one image, five roadmap stages, fifteen completion criteria and local/anchor/ARIA references",
+    "pinned_source_hashes_verified": 12,
+    "historical_metric_rounding": "passed against copied original CSVs",
+    "editorial_review": "independent source-scope and presentation passes completed; compute-budget configuration and duration-stretch wording corrected"
+  },
+  "validation": {
+    "browser": {
+      "status": "passed",
+      "layouts": [
+        {
+          "width": 1440,
+          "documentWidth": 1440,
+          "sections": 7,
+          "tables": 7,
+          "stages": 6,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 1104,
+          "documentWidth": 1104,
+          "sections": 7,
+          "tables": 7,
+          "stages": 6,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 768,
+          "documentWidth": 768,
+          "sections": 7,
+          "tables": 7,
+          "stages": 6,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 390,
+          "documentWidth": 390,
+          "sections": 7,
+          "tables": 7,
+          "stages": 6,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        },
+        {
+          "width": 320,
+          "documentWidth": 320,
+          "sections": 7,
+          "tables": 7,
+          "stages": 6,
+          "criteria": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "imageLoaded": true,
+          "brokenAnchors": [],
+          "overflowingText": []
+        }
+      ],
+      "scriptErrors": [],
+      "printStyle": "passed",
+      "scope": "Draft document display and controls only; no motion or performance measurement."
+    },
+    "structural_checks": "passed: seven sections, seven table captions, two diagrams, six roadmap stages, eighteen completion criteria; local files, anchors, ARIA, duplicate IDs and private-path scan checked",
+    "pinned_source_hashes_verified": 13,
+    "historical_metric_rounding": "preserved against copied original CSVs; crossing-specific search A/B scope clarified",
+    "independent_review": "Requirements/code-scope and source/presentation reviews passed; contact-test wording and actual requirement anchors corrected",
+    "visual_inspection": [
+      "desktop overview and technology comparison",
+      "mobile bin-picking stage and completion criteria"
+    ],
+    "new_motion_or_performance_measurement": false
+  },
+  "presentation_changes": [
+    {
+      "date": "2026-10-23",
+      "area": "table 4 first two integration/selection cells",
+      "change": "Separated each sentence and its official source link with explicit line breaks; wording and source targets preserved.",
+      "validation": {
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "line_breaks_per_cell": 2,
+        "print": "passed",
+        "script_errors": []
+      }
+    },
+    {
+      "date": "2026-10-23",
+      "area": "table 4 final-column rows 3-7 and role-column rows 5-6",
+      "change": "Added sentence breaks and separate source-link lines in seven annotated cells. Existing first-two-row breaks, wording and links preserved.",
+      "validation": {
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "final_column_breaks_each": 2,
+        "annotated_role_column_breaks_each": 1,
+        "print": "passed",
+        "script_errors": []
+      }
+    },
+    {
+      "date": "2026-10-23",
+      "area": "table 1 coordinated plan behavior",
+      "change": "Placed the note distinguishing one response path from three internal MoveIt attempts on its own line. Wording and code token preserved.",
+      "validation": {
+        "status": "passed",
+        "desktop_width": 1104,
+        "mobile_width": 390,
+        "print_breaks": "preserved",
+        "script_errors": []
+      }
+    }
+  ]
+}

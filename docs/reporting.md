@@ -6,6 +6,13 @@ ROS·물리 엔진을 실행하거나 import하지 않고 기존 측정 파일�
 기존 단일 로봇·공동 장면 검증기의 실행 결과 형식은 유지합니다.
 그 원본을 발행 리포트로 옮길 때 어댑터를 사용합니다.
 
+## 문서 양식 기준 v1.9
+
+새 개발 사례·기술 설계·방향성 리포트의 기본 양식은 [리포트 작성 기준 v1.9](reporting/report-style-guide.md)입니다.
+[HTML 템플릿](reporting/templates/engineering-report-v1.9.html)을 복사하고, 검토한 [뷰어 개발 방향성](operator/viewer-direction-2026-10-22/index.html)을 기준 구현으로 참고합니다.
+항목명과 설명, 일반 목록, 순서 목록을 내용에 맞게 선택하며 현재 구현·계획·실측을 구분합니다.
+기존 성능평가의 JSON 스키마와 자동 생성·원본 검증 계약은 유지합니다.
+
 ## 위치와 파일 역할
 
 ```text
@@ -14,16 +21,16 @@ docs/reports/
   index.html                 # 자동 생성: 전체 목록·검색
   catalog.json               # 자동 생성: 목록 API용 JSON
   site-manifest.json         # 자동 생성: 게시 파일 전체 해시, 자기 자신 제외
-  operator-demos.json        # 선택 입력: 기능 시연 ID·설명·검토한 manifest 해시
+  operator-demos.json        # 선택 입력: 기능 시연·설계 리포트 ID·유형·검토한 manifest 해시
   <날짜>-<평가ID>/
     report.json              # 작성·검토할 공통 입력
     index.html               # 자동 생성: 표준 요약
     metrics.csv              # 자동 생성: 동일 지표와 단위·시계·n
     report-manifest.json     # 자동 생성: 파일 해시·크기·생성기 버전/지문
     ...                      # report.json에 선언한 근거·그림·기존 상세 HTML
-docs/operator/<시연ID>/
+docs/operator/<자료ID>/
   manifest.json              # assets: 검토한 파일명 → SHA-256
-  index.html                 # 독립 기능 시연 HTML
+  index.html                 # 독립 기능 시연 또는 설계 리포트 HTML
   ...                        # manifest에 등록한 영상·그림·근거
 runtime/report-site-<ID>/     # 새 폴더에만 내보내는 게시용 파일; Git 제외
 ```
@@ -99,10 +106,15 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 
 ## 기능 시연의 등록과 게시
 
-성능 측정이 아닌 조작·기능 시연은 `docs/operator/<시연ID>`에 보관합니다.
+성능 측정이 아닌 프로젝트 소개·조작 시연·설계·개발 리포트는 `docs/operator/<자료ID>`에 보관합니다.
 [시연 등록 목록](reports/operator-demos.json)은 [별도 스키마](../src/mujoco_ros2_manipulation/reporting/operator-demos.schema.json)로 검사합니다.
-목록의 ID로 형제 폴더 `docs/operator/<시연ID>`만 찾으며 임의 소스 경로는 받지 않습니다.
+목록의 ID로 형제 폴더 `docs/operator/<자료ID>`만 찾으며 임의 소스 경로는 받지 않습니다.
 등록 목록이 없는 다른 리포트 루트는 기존 동작을 유지합니다.
+프로젝트 소개는 registry 항목과 manifest 모두에 `document_type: project_overview`를 지정합니다.
+홈은 **프로젝트 소개 → 기능 시연 → 설계·개발 리포트 → 검증·평가 이력** 순서로 표시하며 각 구역의 이동 링크를 제공합니다.
+소개 본문은 독립 페이지로 유지하고 홈에는 목적과 현재 구현 요약을 표시합니다.
+설계·개발 리포트는 두 파일 모두에 `document_type: design_review`를 지정합니다.
+유형을 생략하거나 `functional_demo`로 지정하면 기존 기능 시연으로 해석합니다. 두 파일의 유형은 일치해야 합니다.
 
 1. 독립 HTML과 필요한 영상·그림·근거를 준비하고 브라우저에서 검토합니다.
 2. 해당 폴더의 `manifest.json`에 `schema_version: 1`과 `assets`를 기록합니다.
@@ -112,7 +124,13 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 4. `validate` → `build` → `build --check` → 새 폴더 `site` 내보내기로 자료와 출력을 확인합니다.
    자료 정정 시 자산 해시, manifest 해시, 생성 파일을 함께 갱신하고 PR에서 검토합니다.
 
-공개 주소는 `operator/<시연ID>/index.html`입니다. 목록의 **기능 시연** 구역에서 연결하며,
+홈에 대표 시연 이미지를 표시하려면 registry 항목에 선택 객체 `preview`를 추가합니다.
+`image`는 해당 manifest의 `assets`에 이미 등록된 PNG·JPEG·WebP 상대 경로여야 합니다.
+`alt`, `caption`, 양의 정수 `width`·`height`를 모두 지정합니다. 임의 폴더나 외부 URL에서 이미지를 가져오지 않습니다.
+기능 시연 중 날짜순으로 첫 미리보기 하나를 표시하고, 클릭하면 해당 독립 시연 페이지로 이동합니다.
+홈에서는 영상을 자동 재생하거나 내려받지 않으며 영상 재생은 시연 페이지에서 선택합니다.
+
+공개 주소는 `operator/<자료ID>/index.html`입니다. 유형에 따라 목록의 **프로젝트 소개**·**기능 시연**·**설계·개발 리포트** 구역에서 연결하며,
 성능평가 `catalog.json`의 `reports`와 검색 개수·표본에는 넣지 않습니다.
 manifest에 등록한 파일과 manifest만 복사하고, 미등록 파일·다른 시연 폴더·runtime은 복사하지 않습니다.
 중복 ID·공개 경로, 미지원 manifest 버전, 파일 변조·누락, 경로 이탈·심볼릭 링크를 거부합니다.

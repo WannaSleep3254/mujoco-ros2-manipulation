@@ -1,0 +1,279 @@
+{
+  "document_type": "design_review",
+  "status": "draft",
+  "document_version": "0.2",
+  "layout_baseline": "1.9",
+  "review_date": "2026-10-22",
+  "code_review_commit": "17572af3b1376960bf7e8db8f9d88ca834f87837",
+  "motion_code_unchanged_from": "7a71402e2a04fd002f8d863ac9908341103a9f00",
+  "new_performance_measurements": false,
+  "new_ros_or_simulation_runs": false,
+  "current_implementation": {
+    "strategies": [
+      "coordinated",
+      "departure_timing"
+    ],
+    "coordinated_server_candidates": 1,
+    "dedicated_validation_max_candidates": 12,
+    "general_server_reuses_validation_selector": false,
+    "planning_inter_arm_clearance_mm": 30,
+    "planning_clearance_components_mm": [
+      20,
+      10
+    ],
+    "observed_inter_arm_threshold_mm": 20,
+    "observed_threshold_check_phase": "after_action_and_settling",
+    "sample_dt_sec": 0.01,
+    "default_compute_budget_wall_sec": 30,
+    "abort_mode": "cooperative_checkpoints",
+    "compute_budget_configuration": "motion server startup --compute-budget; not a command-schema-v1 field",
+    "moveit_internal_planning_attempts": 3,
+    "requested_planner": "RRTConnect",
+    "grasp_candidate_planning_implemented": false
+  },
+  "historical_metrics": {
+    "random-motion": {
+      "report_path": "docs/reports/2026-10-21-random-motion",
+      "original_provenance": {
+        "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+        "commit": "b1fa994398beba36b91133f252888ca7b5abc669",
+        "workcell": "fr5_ur5e",
+        "models": [
+          "FR5",
+          "UR5e"
+        ],
+        "scenario": "paired_seeded_joint_goals",
+        "input_kind": "random_joint_targets"
+      },
+      "metrics_csv_sha256": "41cf72eb8d834b2b4b276c6166a4dfc958acfa5b26f5cb155bdd3350f78741f7",
+      "selected_rows": [
+        {
+          "report_id": "2026-10-21-random-motion",
+          "metric_id": "first-motion-median",
+          "label": "수신 → 관측 최초 이동 (median)",
+          "group_id": "coordinated",
+          "value": "1.458723358",
+          "unit": "s",
+          "clock": "wall",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "성공 요청의 유효 표본",
+          "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+        },
+        {
+          "report_id": "2026-10-21-random-motion",
+          "metric_id": "first-motion-median",
+          "label": "수신 → 관측 최초 이동 (median)",
+          "group_id": "departure-timing",
+          "value": "1.65973577",
+          "unit": "s",
+          "clock": "wall",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "성공 요청의 유효 표본",
+          "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+        },
+        {
+          "report_id": "2026-10-21-random-motion",
+          "metric_id": "compute-median",
+          "label": "계획·검증 예산 구간 (median)",
+          "group_id": "coordinated",
+          "value": "0.35978002",
+          "unit": "s",
+          "clock": "wall",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "실패를 포함한 유효 표본",
+          "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+        },
+        {
+          "report_id": "2026-10-21-random-motion",
+          "metric_id": "compute-median",
+          "label": "계획·검증 예산 구간 (median)",
+          "group_id": "departure-timing",
+          "value": "0.560332008",
+          "unit": "s",
+          "clock": "wall",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "실패를 포함한 유효 표본",
+          "note": "이동 지연은 1초 sim 예약 포함. 네이티브 시간은 탐색 전체의 일부로 중복 합산하지 않음. 미사용 구간은 null."
+        }
+      ]
+    },
+    "search-optimization": {
+      "report_path": "docs/reports/2026-10-21-search-optimization",
+      "original_provenance": {
+        "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+        "commit": "8c46b5f35a1fdffe76a9f86c01df7925e949bcf5",
+        "workcell": "fr5_ur5e",
+        "models": [
+          "FR5",
+          "UR5e"
+        ],
+        "scenario": "exact_departure_search_ab",
+        "input_kind": "fixed_joint_targets"
+      },
+      "metrics_csv_sha256": "43e0f478521ffa7957578108a9873b5f3e59e4676567ef29b8c9f22717be5846",
+      "selected_rows": [
+        {
+          "report_id": "2026-10-21-search-optimization",
+          "metric_id": "search-median",
+          "label": "탐색 시간 중앙값",
+          "group_id": "crossing-reference",
+          "value": "1.974795338",
+          "unit": "s",
+          "clock": "wall",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "같은 고정 입력의 오프라인 출발 탐색",
+          "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+        },
+        {
+          "report_id": "2026-10-21-search-optimization",
+          "metric_id": "search-median",
+          "label": "탐색 시간 중앙값",
+          "group_id": "crossing-optimized",
+          "value": "1.537405855",
+          "unit": "s",
+          "clock": "wall",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "같은 고정 입력의 오프라인 출발 탐색",
+          "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+        },
+        {
+          "report_id": "2026-10-21-search-optimization",
+          "metric_id": "native-calls",
+          "label": "네이티브 거리 호출",
+          "group_id": "crossing-reference",
+          "value": "39917",
+          "unit": "count",
+          "clock": "not_applicable",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "같은 고정 입력의 오프라인 출발 탐색",
+          "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+        },
+        {
+          "report_id": "2026-10-21-search-optimization",
+          "metric_id": "native-calls",
+          "label": "네이티브 거리 호출",
+          "group_id": "crossing-optimized",
+          "value": "30784",
+          "unit": "count",
+          "clock": "not_applicable",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "같은 고정 입력의 오프라인 출발 탐색",
+          "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+        },
+        {
+          "report_id": "2026-10-21-search-optimization",
+          "metric_id": "candidates",
+          "label": "실제 평가 후보",
+          "group_id": "crossing-reference",
+          "value": "58",
+          "unit": "count",
+          "clock": "not_applicable",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "같은 고정 입력의 오프라인 출발 탐색",
+          "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+        },
+        {
+          "report_id": "2026-10-21-search-optimization",
+          "metric_id": "candidates",
+          "label": "실제 평가 후보",
+          "group_id": "crossing-optimized",
+          "value": "46",
+          "unit": "count",
+          "clock": "not_applicable",
+          "sample_count": "5",
+          "statistic": "median",
+          "scope": "같은 고정 입력의 오프라인 출발 탐색",
+          "note": "모델 로딩·ROS 왕복·예약 대기·물리 실행 제외. native 시간은 전체 탐색 시간의 일부이며 따로 더하지 않음."
+        }
+      ]
+    }
+  },
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/workcells/motion_request.py": "0d2b5741451be03495f7a8c657e7b7e33b707deddc51c3a1818ee68b5a2b67c7",
+    "src/mujoco_ros2_manipulation/workcells/motion_server.py": "2448774bff49d177c20e713085fdeff1ee5de782eff9179288ea42c798e97c07",
+    "src/mujoco_ros2_manipulation/workcells/prepare.py": "2143c50a866bb743773411fd7c65d5eccb6ebbb20bb8a4cb80a4603dcc4259e5",
+    "src/mujoco_ros2_manipulation/workcells/plan_selection.py": "2ef404ebbb898a791d0d36f2fcffcda8383a62f52335662499b6893ad5ceddf9",
+    "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "ab6aaeb32cf18de14da8f3f36308bd5309b3032a6c18f196eabde1e6876983b4",
+    "src/mujoco_ros2_manipulation/workcells/planning_budget.py": "3f4edc1a522bbf7a62cc6d23f1b063a10f5380ff1270a815f0ba268aff53ef7f",
+    "src/mujoco_ros2_manipulation/workcells/path_quality.py": "761613fc2eeef2307aeb0443761f309d1667f71b0deb68a172b2ea80d72320a3",
+    "src/mujoco_ros2_manipulation/workcells/timing.py": "27cbf2a212694479d8e462f29f10fb6e2d72b3c14c8dd02116b16534002ce861",
+    "src/mujoco_ros2_manipulation/workcells/distance.py": "1ae5c9cec73e97d96ab509a67b7efd78dd484666bbebef9c9ab9e1644cac2523",
+    "config/planning/dual_arm_timing.yaml": "0da805b06d76b81832ea5daf02acff206e7402dd4b220f181764204c157c81b6",
+    "docs/simulator_status.md": "8b9f3c54af19cab043c3e84811bc8c9e9284ef9d303f87dae2a129b11905778e",
+    "docs/timing_coordination.md": "fe1a096b621a47aa5fe748c756fb05ece792ff55257a69517cd622a00bd8f70d",
+    "src/mujoco_ros2_manipulation/workcells/verify.py": "180e35699ed48953c38d69b925b52080c777a4167f7485137946eb91a62abfbc"
+  },
+  "official_sources": [
+    {
+      "url": "https://moveit.picknik.ai/humble/doc/concepts/motion_planning.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://moveit.picknik.ai/humble/doc/examples/ompl_interface/ompl_interface_tutorial.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://moveit.picknik.ai/humble/doc/examples/time_parameterization/time_parameterization_tutorial.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://moveit.picknik.ai/humble/doc/examples/pilz_industrial_motion_planner/pilz_industrial_motion_planner.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://moveit.picknik.ai/main/doc/tutorials/pick_and_place_with_moveit_task_constructor/pick_and_place_with_moveit_task_constructor.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://ompl.kavrakilab.org/",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://github.com/tesseract-robotics/tesseract_planning",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://github.com/google-deepmind/mujoco_mpc",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://web.casadi.org/docs/",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://github.com/loco-3d/crocoddyl",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://github.com/NVlabs/curobo",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://control.ros.org/humble/doc/ros2_controllers/joint_trajectory_controller/doc/userdoc.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://moveit.picknik.ai/humble/doc/examples/move_group_interface/move_group_interface_tutorial.html",
+      "accessed_date": "2026-10-22"
+    },
+    {
+      "url": "https://web.casadi.org/",
+      "accessed_date": "2026-10-22"
+    }
+  ],
+  "requirements_review": "evidence/requirements-review.json",
+  "publication": {
+    "registry": "docs/reports/operator-demos.json",
+    "registry_document_type": "design_review",
+    "measurement_catalog_registered": false
+  }
+}

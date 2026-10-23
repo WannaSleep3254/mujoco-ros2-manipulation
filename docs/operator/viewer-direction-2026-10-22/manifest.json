@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "document_type": "design_review",
+  "baseline_commit": "7a71402e2a04fd002f8d863ac9908341103a9f00",
+  "assets": {
+    "current-console.png": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87",
+    "index.html": "ae2037e3285e93134c9200c0d3ffd261b8062428459f4c0ff1c80ca8742ee49f",
+    "review-data.json": "e69c92e9ec1c25c3b5ddf249e215171f3e0f2dfbe21af18369e1dc9dcf0df7c4",
+    "review-notes.json": "a8d6c159d39d3af1dbe35853bd02b17af655922178f751ada8873d247ff1d2dd",
+    "viewer-demo.mp4": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba",
+    "viewer-demo-poster.png": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1"
+  },
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/operator_console/__main__.py": "43aaeb9d467e4e30f5f0c220f017c86c71f75bf8f31b0d5a364b5e30cdea73d4",
+    "src/mujoco_ros2_manipulation/operator_console/render_worker.py": "1255ead0ca9c1bc6366e81cd9e2679d67d7a9e3ac85a50ea2b93f4b07efeb42d",
+    "src/mujoco_ros2_manipulation/operator_console/http_server.py": "66ed755093865b68b8b5ae83e4e93cb907a6e5572751477250c3301ce1a370d4",
+    "src/mujoco_ros2_manipulation/operator_console/application.py": "28890630ea3d9c83827dc77f2d3754ed399d889020b17f9a720a5bfb55bade8a",
+    "src/mujoco_ros2_manipulation/operator_console/ros_adapter.py": "5a9c610cc7a4b3306e21272adbe8617879adccc50dc31751a1a49f123e21da84",
+    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "94b077b614ccbab6076a3170b07a82d933fc33d6cc5d9fd72bce100399459a4c",
+    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "e21f89a097bda3354223a8d89d537aac120e44f6c360502b7234d1fa0c23537d",
+    "src/mujoco_ros2_manipulation/workcells/motion_request.py": "0d2b5741451be03495f7a8c657e7b7e33b707deddc51c3a1818ee68b5a2b67c7",
+    "native/step_monitor.hpp": "11ea5c7004d01300fc14a2ed21dcbf09f30d398e65fd395c36332c416c82e2f3",
+    "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",
+    "config/build.yaml": "c6d70b3fa6804690196400055f79b5f7a3390986ae718fff25ccd138db85a320",
+    "docs/operator_console.md": "51e391b76ad412a43f838955065d5b39a9d967eddef270b55f3b7bc98deda0c8",
+    "docs/operator/picking-comparison-2026-10-22/manifest.json": "5799f878f7fb3c356f94b7e143abfd93755e133a57352ce2ecb30911b981ce65",
+    "docs/operator/images/console-desktop.png": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87",
+    "docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba",
+    "docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.png": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1"
+  },
+  "document_version": "1.9"
+}
