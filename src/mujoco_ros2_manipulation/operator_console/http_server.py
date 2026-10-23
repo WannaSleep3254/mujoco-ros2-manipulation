@@ -24,13 +24,19 @@ def _report_asset(root, relative):
         allowlist = set(json.loads(manifest.read_text())["files"]) | {"index.html", "catalog.json", "site-manifest.json"}
         if relative not in allowlist:
             return None
+        # Keep measurement report IDs (including "operator") in their original
+        # directory. The publisher rejects overlapping measurement/demo URLs.
+        candidates = [(reports, relative)]
         if relative.startswith("operator/"):
-            directory, name = docs / "operator", relative.removeprefix("operator/")
-        else:
-            directory, name = reports, relative
-        if directory.is_symlink():
-            return None
-        return safe_asset(directory, name)
+            candidates.append((docs / "operator", relative.removeprefix("operator/")))
+        for directory, name in candidates:
+            if directory.is_symlink():
+                continue
+            try:
+                return safe_asset(directory, name)
+            except ReportError:
+                continue
+        return None
     except ReportError:
         return None
 

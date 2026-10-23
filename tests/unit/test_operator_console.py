@@ -201,6 +201,25 @@ class ConsoleHTTPTests(unittest.TestCase):
         with urlopen(self.url+'/reports/site-manifest.json',timeout=3) as response:
             self.assertEqual(response.read(),(self.app.cell.root/'docs/reports/site-manifest.json').read_bytes())
 
+    def test_measurement_report_named_operator_keeps_its_existing_source(self):
+        self.publication_fixture()
+        root=self.app.cell.root
+        assets={'operator/index.html':b'Measurement report named operator',
+                'operator/figures/chart.png':b'\x89PNG\r\n\x1a\nMeasurement evidence'}
+        manifest_path=root/'docs/reports/site-manifest.json'
+        manifest=json.loads(manifest_path.read_text())
+        for name,content in assets.items():
+            source=root/'docs/reports'/name
+            source.parent.mkdir(parents=True,exist_ok=True);source.write_bytes(content)
+            manifest['files'][name]=dict(bytes=len(content),sha256=hashlib.sha256(content).hexdigest())
+        manifest_path.write_text(json.dumps(manifest))
+        (root/'docs/operator/index.html').write_bytes(b'Do not shadow the existing measurement route')
+        for name,content in assets.items():
+            with self.subTest(name=name),urlopen(self.url+'/reports/'+name,timeout=3) as response:
+                self.assertEqual(response.read(),content)
+        with urlopen(self.url+'/reports/operator/',timeout=3) as response:
+            self.assertEqual(response.read(),assets['operator/index.html'])
+
     def test_report_routes_reject_unregistered_files_and_encoded_path_escapes(self):
         self.publication_fixture()
         root=self.app.cell.root
