@@ -41,6 +41,10 @@ manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main
 manipulation-verify-operator = "mujoco_ros2_manipulation.operator_console.verify:main"
 manipulation-verify-views = "mujoco_ros2_manipulation.operator_console.verify_views:main"
 manipulation-verify-demos = "mujoco_ros2_manipulation.operator_console.verify_demos:main"
+manipulation-import-step = "mujoco_ros2_manipulation.workcells.import_step:main"
+manipulation-prepare-environment = "mujoco_ros2_manipulation.workcells.environment_cli:main"
+manipulation-verify-environment = "mujoco_ros2_manipulation.workcells.verify_environment_overlay:main"
+manipulation-verify-environment-views = "mujoco_ros2_manipulation.operator_console.verify_environment_views:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

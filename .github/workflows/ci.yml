@@ -56,6 +56,10 @@ jobs:
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --workcell fr5_ur5e
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-import-fixed-report --check "$GITHUB_WORKSPACE/docs/reports/2026-10-23-fixed-motion"
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-views --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-import-step --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare-environment --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment-views --help
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: python-distributions
@@ -110,6 +114,15 @@ jobs:
       - name: Model regression checks
         if: matrix.scene == 'default' || matrix.robot == 'workcell'
         run: PYTHONPATH=src .venv/bin/python -m unittest discover -s tests/model -t . -v
+      - name: Local environment units, installation and native geometry
+        if: matrix.robot == 'workcell'
+        run: |
+          .venv/bin/python verify_environment_overlay.py --native --catalog-output runtime/validation/environment-preview-catalog.json
+      - name: Read-only allowlisted environment previews and blocked mutations
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_environment_views.py --catalog runtime/validation/environment-preview-catalog.json --domain 148 --port 8895
       - name: Actual ROS / MoveIt headless verification
         run: |
           source ./manipulation_env.sh
