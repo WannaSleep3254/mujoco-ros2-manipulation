@@ -53,6 +53,41 @@
           "manifest_sha256": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "preview": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "image",
+              "alt",
+              "width",
+              "height",
+              "caption"
+            ],
+            "properties": {
+              "image": {
+                "type": "string",
+                "minLength": 1
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16384
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16384
+              },
+              "caption": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
           }
         }
       }

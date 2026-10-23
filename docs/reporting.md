@@ -111,7 +111,8 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
 목록의 ID로 형제 폴더 `docs/operator/<자료ID>`만 찾으며 임의 소스 경로는 받지 않습니다.
 등록 목록이 없는 다른 리포트 루트는 기존 동작을 유지합니다.
 프로젝트 소개는 registry 항목과 manifest 모두에 `document_type: project_overview`를 지정합니다.
-공개 목록의 평가 이력 위에 **프로젝트 소개**로 표시합니다.
+홈은 **프로젝트 소개 → 기능 시연 → 설계·개발 리포트 → 검증·평가 이력** 순서로 표시하며 각 구역의 이동 링크를 제공합니다.
+소개 본문은 독립 페이지로 유지하고 홈에는 목적과 현재 구현 요약을 표시합니다.
 설계·개발 리포트는 두 파일 모두에 `document_type: design_review`를 지정합니다.
 유형을 생략하거나 `functional_demo`로 지정하면 기존 기능 시연으로 해석합니다. 두 파일의 유형은 일치해야 합니다.
 
@@ -122,6 +123,12 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory runtime/report-site-rev
    검토한 `manifest.json`의 `manifest_sha256`을 추가합니다. 날짜는 YYYY-MM-DD입니다.
 4. `validate` → `build` → `build --check` → 새 폴더 `site` 내보내기로 자료와 출력을 확인합니다.
    자료 정정 시 자산 해시, manifest 해시, 생성 파일을 함께 갱신하고 PR에서 검토합니다.
+
+홈에 대표 시연 이미지를 표시하려면 registry 항목에 선택 객체 `preview`를 추가합니다.
+`image`는 해당 manifest의 `assets`에 이미 등록된 PNG·JPEG·WebP 상대 경로여야 합니다.
+`alt`, `caption`, 양의 정수 `width`·`height`를 모두 지정합니다. 임의 폴더나 외부 URL에서 이미지를 가져오지 않습니다.
+기능 시연 중 날짜순으로 첫 미리보기 하나를 표시하고, 클릭하면 해당 독립 시연 페이지로 이동합니다.
+홈에서는 영상을 자동 재생하거나 내려받지 않으며 영상 재생은 시연 페이지에서 선택합니다.
 
 공개 주소는 `operator/<자료ID>/index.html`입니다. 유형에 따라 목록의 **프로젝트 소개**·**기능 시연**·**설계·개발 리포트** 구역에서 연결하며,
 성능평가 `catalog.json`의 `reports`와 검색 개수·표본에는 넣지 않습니다.

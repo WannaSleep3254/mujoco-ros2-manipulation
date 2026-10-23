@@ -4,7 +4,7 @@
   "source_commit": "b1fa994398beba36b91133f252888ca7b5abc669",
   "generator": {
     "version": "1.2",
-    "fingerprint": "9e762a0ce87365a13e5b72a109fc11ddc9d8f4b0be4fe44a416306322bcf9bcd",
+    "fingerprint": "25fee969dfa2719e7703b37ce35fe1df7ee0f78d4f34ed7bf3056c9b19ba77aa",
     "files": {
       "__init__.py": {
         "bytes": 125,
@@ -15,8 +15,8 @@
         "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
       },
       "render.py": {
-        "bytes": 12733,
-        "sha256": "994083bd8dd22d7ef0db15b60646aad716d272eac1e2bd0030bf5d6deb2d61e3"
+        "bytes": 13550,
+        "sha256": "b09e315e496001a288dc9cfdebf76ce5af96867c0e1c3a2ea3dc774420edfd79"
       },
       "publish.py": {
         "bytes": 7522,
@@ -27,20 +27,20 @@
         "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
       },
       "operator_demos.py": {
-        "bytes": 4070,
-        "sha256": "441ee2dcc11cee1c777530f30493d92dd912a14bf33341e94dae815aa64246d9"
+        "bytes": 4612,
+        "sha256": "8b770dd5936bb4089964a8509113b70f3c1c3ebc484a889f5880a3603e7cb9eb"
       },
       "operator-demos.schema.json": {
-        "bytes": 1422,
-        "sha256": "fd7ca25e239e88f305aeeb1865cd76085fed22879836c410504bf9907e29aea5"
+        "bytes": 2330,
+        "sha256": "7566b7422d8ac62b0fd6f106286cd3525eba154ad4d28de6a019e8b4b1a65143"
       },
       "templates/page.html": {
         "bytes": 518,
         "sha256": "3f4c20747e7656c059754449fb570f98a98fceb2ddb53f5a5b045306a2afc26a"
       },
       "templates/style.css": {
-        "bytes": 3677,
-        "sha256": "e9d3c5b77ed017369f79126b2a8bfa0b39f8e3edc256e909e5b0a04b9298cbd9"
+        "bytes": 4538,
+        "sha256": "549f64751aea2d0abdd460fec3af39ff3aaa99b63dd152e80d35a4c713b054c8"
       }
     }
   },
@@ -50,8 +50,8 @@
       "sha256": "de54c8236464dfd280adaa90379a9e6433687e885c2513e300c9b0dd29283f45"
     },
     "index.html": {
-      "bytes": 33815,
-      "sha256": "d32a60c98d0ba271e9a426cc3b64960851c3fde4f9c1caff2531b8c1a7948d20"
+      "bytes": 34676,
+      "sha256": "c0967d2e86dbe3ab242a8c966a010b9eb1f6c51388626af71a33921b86c2c3c4"
     },
     "metrics.csv": {
       "bytes": 16427,

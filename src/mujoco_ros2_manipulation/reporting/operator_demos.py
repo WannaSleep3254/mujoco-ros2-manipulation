@@ -3,6 +3,7 @@ import hashlib
 import json
 from importlib.resources import files
 from pathlib import Path
+from urllib.parse import quote
 import re
 
 from .data import ReportError, read_json, safe_asset
@@ -71,8 +72,16 @@ def collect_demos(root):
             if hashlib.sha256(content).hexdigest() != digest:
                 raise ReportError(f"Demo asset hash mismatch: {identifier}/{name}")
             site[prefix + name] = content
-        entries.append({key: entry[key] for key in ("id", "title", "published_date", "overview")}
-                       | {"url": prefix + "index.html", "document_type": document_type})
+        catalog = {key: entry[key] for key in ("id", "title", "published_date", "overview")}
+        catalog.update(url=prefix + "index.html", document_type=document_type)
+        if "preview" in entry:
+            preview = entry["preview"]
+            image = preview["image"]
+            if image not in assets or Path(image).suffix.lower() not in (".png", ".jpg", ".jpeg", ".webp"):
+                raise ReportError(f"Demo preview must be a reviewed raster image: {identifier}/{image}")
+            catalog["preview"] = {key: preview[key] for key in ("alt", "width", "height", "caption")}
+            catalog["preview"]["url"] = prefix + quote(image, safe="/")
+        entries.append(catalog)
     entries.sort(key=lambda entry: (entry["published_date"], entry["id"]), reverse=True)
     return entries, site
 

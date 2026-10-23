@@ -123,6 +123,53 @@ class PublicationReportTests(unittest.TestCase):
             self.assertEqual(metadata, dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest()))
         build(self.root, check=True)
 
+    def test_demo_preview_exports_only_reviewed_image_and_links_to_full_demo(self):
+        demo = self.demo_fixture()
+        (demo / "poster.png").write_bytes(b"reviewed raster fixture")
+        self.demo_manifest["assets"]["poster.png"] = hashlib.sha256((demo / "poster.png").read_bytes()).hexdigest()
+        self.demo_registry["demos"][0]["preview"] = dict(image="poster.png", alt='상태 <화면> & "보기"',
+            width=1920, height=1080, caption='<script>alert(1)</script>')
+        self.save_demo(demo)
+        build(self.root)
+        output = self.temporary / "preview-site"
+        export_site(self.root, output)
+        page = (output / "index.html").read_text()
+        self.assertIn('src="operator/demo/poster.png"', page)
+        self.assertIn('width="1920" height="1080" loading="lazy"', page)
+        self.assertIn('alt="상태 &lt;화면&gt; &amp; &quot;보기&quot;"', page)
+        self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', page)
+        self.assertNotIn('<script>alert(1)</script>', page)
+        self.assertIn('<a href="operator/demo/index.html" aria-label="시연 영상 보기">', page)
+        self.assertEqual((output / "operator/demo/poster.png").read_bytes(), (demo / "poster.png").read_bytes())
+        self.assertEqual(len(read_json(output / "catalog.json")["reports"]), 1)
+        entries, _ = collect_demos(self.root)
+        second = dict(entries[0], id="second-demo")
+        self.assertEqual(catalog_html([], entries + [second]).count('class="demo-preview"'), 1)
+
+    def test_demo_preview_rejects_unreviewed_and_nonraster_paths(self):
+        demo = self.demo_fixture()
+        (demo / "private.png").write_bytes(b"not reviewed")
+        for image in ("private.png", "../outside.png", "https://example.com/poster.png", "motion.mp4"):
+            with self.subTest(image=image):
+                self.demo_registry["demos"][0]["preview"] = dict(image=image, alt="시연 화면",
+                    width=1920, height=1080, caption="시험 픽스처")
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "Demo preview must be a reviewed raster image"):
+                    collect_demos(self.root)
+
+    def test_demo_preview_requires_complete_labels_and_positive_dimensions(self):
+        demo = self.demo_fixture()
+        preview = dict(image="poster.png", alt="시연 화면", width=1920, height=1080, caption="시험 픽스처")
+        invalid = [{key: value for key, value in preview.items() if key != missing} for missing in preview]
+        invalid += [dict(preview, width=0), dict(preview, height=-1), dict(preview, width="1920"),
+                    dict(preview, alt=""), dict(preview, caption=""), dict(preview, unexpected=True)]
+        for value in invalid:
+            with self.subTest(preview=value):
+                self.demo_registry["demos"][0]["preview"] = value
+                self.save_demo(demo)
+                with self.assertRaisesRegex(ReportError, "Demo registry schema"):
+                    collect_demos(self.root)
+
     def test_legacy_and_explicit_functional_demo_types_are_compatible(self):
         demo = self.demo_fixture()
         for registry_type, manifest_type in ((None, None), ("functional_demo", None),
@@ -237,10 +284,10 @@ class PublicationReportTests(unittest.TestCase):
                          ["sample"])
         page = (output / "index.html").read_text()
         catalog = ReportLinks(page)
-        self.assertEqual(catalog.sections, ["project-overview", None, "demos", "design-reports"])
-        self.assertLess(page.index('<h2>프로젝트 소개</h2>'), page.index('<h2>평가 이력</h2>'))
+        self.assertEqual(catalog.sections, ["project-overview", "demos", "design-reports", "evaluations"])
+        self.assertLess(page.index('<h2>프로젝트 소개</h2>'), page.index('<h2>검증·평가 이력</h2>'))
         self.assertIn('<h1>MuJoCo·ROS 2 로봇 제어 시뮬레이션</h1>', page)
-        self.assertIn('프로젝트 소개 · 현재 개발 상태 · 검증·평가 자료', page)
+        self.assertIn('개인 개발 프로젝트 · 개발 진행 중', page)
         self.assertEqual(catalog.links[0]["href"], "#project-overview")
         self.assertEqual(catalog.article_sections, [("data-project-overview", "project-overview"),
                          ("data-demo", "demos"), ("data-design-report", "design-reports")])

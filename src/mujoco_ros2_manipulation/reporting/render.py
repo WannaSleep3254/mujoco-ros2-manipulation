@@ -138,22 +138,24 @@ def catalog_entry(data):
 
 
 def catalog_html(entries, demos=()):
-    body = ['<section><h2>평가 이력</h2><p>같은 조건에서 측정한 지표끼리 비교하세요. 예비 평가와 미측정 구간을 함께 표시합니다.</p>'
+    evaluations = ['<section id="evaluations"><h2>검증·평가 이력</h2><p>같은 조건에서 측정한 지표끼리 비교하세요. 예비 평가와 미측정 구간을 함께 표시합니다.</p>'
             '<div class="controls"><label>리포트 검색 <input id="search" type="search" placeholder="모델·평가명·날짜"></label>'
             '<a href="catalog.json">목록 JSON</a></div><p id="count" class="note" aria-live="polite"></p>'
             '<div class="table-wrap"><table class="catalog"><thead><tr><th>날짜 / 상태</th><th>리포트</th><th>모델·기준</th><th>평가 범위</th></tr></thead><tbody>']
     for entry in entries:
         links = (f'<a data-report-link="summary" href="{esc(entry["url"])}">요약 보기</a>'
                  + resource_links(entry.get("resources", [])))
-        body.append(f'<tr data-report><td>{entry["published_date"]}<br><span class="tag">{STATUS[entry["status"]]}</span></td>'
+        evaluations.append(f'<tr data-report><td>{entry["published_date"]}<br><span class="tag">{STATUS[entry["status"]]}</span></td>'
             f'<td><a href="{esc(entry["url"])}">{esc(entry["title"])}</a>'
             f'<div class="report-links">{links}</div><code>{entry["report_id"]}</code></td>'
             f'<td>{esc(", ".join(entry["models"]))}<br><code>{entry["commit"][:12]}</code></td><td>{esc(entry["overview"])}</td></tr>')
-    body.append('</tbody></table></div></section>')
+    evaluations.append('</tbody></table></div></section>')
+    body = []
     grouped = {"functional_demo": [], "design_review": [], "project_overview": []}
     for demo in demos:
         grouped[demo.get("document_type", "functional_demo")].append(demo)
     navigation = []
+    featured_demo = next((demo for demo in grouped['functional_demo'] if 'preview' in demo), None)
     for document_type, section_id, title, marker, description in (
         ("project_overview", "project-overview", "프로젝트 소개", "data-project-overview",
          "프로젝트의 목적과 현재 개발·검증 범위를 정리한 자료입니다."),
@@ -166,20 +168,27 @@ def catalog_html(entries, demos=()):
             continue
         navigation.append(f'<a href="#{section_id}">{title}</a>')
         is_overview = document_type == "project_overview"
-        section_description = description if is_overview else f"{description} 위 성능평가 목록과 표본 수에 합산하지 않습니다."
+        section_description = description if is_overview else f"{description} 아래 검증·평가 목록과 표본 수에 합산하지 않습니다."
         section = [f'<section id="{section_id}"><h2>{title}</h2>'
                    f'<p>{section_description}</p>']
         for demo in grouped[document_type]:
             section.append(f'<article {marker}><h3><a href="{esc(demo["url"])}">{esc(demo["title"])}</a></h3>'
                            f'<p><span class="tag">{esc(demo["published_date"])} / {title}</span></p>'
-                           f'<p>{esc(demo["overview"])}</p></article>')
+                           f'<p>{esc(demo["overview"])}</p>')
+            if demo is featured_demo:
+                preview = demo["preview"]
+                section.append(f'<figure class="demo-preview"><a href="{esc(demo["url"])}" aria-label="시연 영상 보기">'
+                               f'<img src="{esc(preview["url"])}" alt="{esc(preview["alt"])}" '
+                               f'width="{preview["width"]}" height="{preview["height"]}" loading="lazy" decoding="async">'
+                               f'<span class="preview-action">▶ 시연 영상 보기</span></a>'
+                               f'<figcaption>{esc(preview["caption"])}</figcaption></figure>')
+            section.append('</article>')
         section.append('</section>')
-        if is_overview:
-            body[:0] = section
-        else:
-            body.extend(section)
+        body.extend(section)
+    body.extend(evaluations)
+    navigation.append('<a href="#evaluations">검증·평가</a>')
     script = """'use strict';const rows=[...document.querySelectorAll('[data-report]')];function filter(){const q=document.getElementById('search').value.trim().toLowerCase();let n=0;for(const row of rows){row.hidden=!row.textContent.toLowerCase().includes(q);if(!row.hidden)n++}document.getElementById('count').textContent=n+' / '+rows.length+'개 리포트'}document.getElementById('search').addEventListener('input',filter);filter();window.reportReady=true;"""
     title = 'MuJoCo·ROS 2 로봇 제어 시뮬레이션' if grouped['project_overview'] else '로봇 제어 성능평가 리포트'
-    subtitle = ('프로젝트 소개 · 현재 개발 상태 · 검증·평가 자료' if grouped['project_overview']
+    subtitle = ('개인 개발 프로젝트 · 개발 진행 중' if grouped['project_overview']
                 else '원본 저장소에서 관리하는 평가 이력 · ROS 2 / MuJoCo / MoveIt')
     return _page(title, subtitle, ''.join(body), '<nav>' + ''.join(navigation) + '</nav>' if navigation else '', script)
