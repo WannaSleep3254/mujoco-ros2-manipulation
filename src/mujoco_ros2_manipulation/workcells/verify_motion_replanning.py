@@ -4,6 +4,7 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import time
 import uuid
 
 import rclpy
@@ -34,7 +35,9 @@ class ReplanningVerification(MotionCommandServer):
     first reported failure is deliberately injected; it is not a measured solver
     failure or a performance result. A separate pre-send cancellation sets a
     test-only flag in the production goal observer; it is not a cancellation
-    latency measurement. Every later production execution gate runs.
+    latency measurement. A request-scoped full-snapshot delay hook checks that
+    execution uses the event journal; it is not a filesystem performance test.
+    Every later production execution gate runs.
     """
     def __init__(self, cell, progress, output=None):
         super().__init__(cell, output or ROOT/'runtime/validation/replanning-sessions'/uuid.uuid4().hex,
@@ -47,7 +50,7 @@ class ReplanningVerification(MotionCommandServer):
         self.result_record = dict(
             schema_version=1, status='running', session_id=self.session_id,
             source_sha256=file_sha256(Path(__file__)), checks=[], maintenance=[],
-            note='Simulation-only functional regression. Explicit failed proposals, same-request saved successful MoveIt output and a pre-send cancel flag are test-only; not solver success-rate, speed or cancellation-latency measurements.')
+            note='Simulation-only functional regression. Failed proposals, same-request saved MoveIt output, a pre-send cancel flag and a slow full-snapshot hook are test-only; not solver success-rate, speed, cancellation-latency or filesystem-performance measurements.')
         self.save_checks()
 
     def save_checks(self):
@@ -92,7 +95,7 @@ class ReplanningVerification(MotionCommandServer):
         self.event('verification_dispatch_boundary_cancel_requested', arm=arm)
 
     def plan(self, group, target, start_state=None):
-        if self.proposal_mode in (None, 'cancel_before_first_send'):
+        if self.proposal_mode in (None, 'cancel_before_first_send', 'slow_execution_snapshot'):
             return super().plan(group, target, start_state)
         self.compute_checkpoint()
         self.proposal_calls += 1
@@ -159,10 +162,35 @@ class ReplanningVerification(MotionCommandServer):
             raise RuntimeError('Cancellation checkpoint unexpectedly allowed another proposal')
         raise RuntimeError('Unknown verification-only proposal mode')
 
+    def wrap_slow_execution_snapshot(self, trace):
+        probe = dict(delay_wall_sec=.35, delayed_execution_full_writes=0,
+                     planning_full_writes=0, terminal_full_writes=0, delayed_at_events=[])
+        trace.data['verification_injection'].update(
+            source='Verification-only delay of nonterminal full snapshots after the computation checkpoint or scheduling; actual planning is unchanged',
+            full_snapshot_probe=probe)
+        original_save = trace.save
+
+        def save(path):
+            terminal = trace.data['status'] in ('succeeded', 'failed', 'cancelled', 'rejected')
+            if terminal:
+                probe['terminal_full_writes'] += 1
+            elif ('scheduled_start_simulation_sec' in trace.data
+                  or trace.data['events'][-1]['name'] == 'computation_done'):
+                probe['delayed_execution_full_writes'] += 1
+                probe['delayed_at_events'].append(trace.data['events'][-1]['name'])
+                time.sleep(probe['delay_wall_sec'])
+            else:
+                probe['planning_full_writes'] += 1
+            original_save(path)
+
+        trace.save = save
+        return original_save
+
     def submit(self, target, *, case, expected, mode=None, limit=12, budget=30.0, maintenance=False):
         payload = command(target, 'coordinated')
         self.proposal_mode, self.proposal_calls, self.saved_proposal = mode, 0, None
         self.max_plan_candidates, self.compute_budget_sec = limit, budget
+        wrapped_trace, original_save = None, None
         try:
             self.command_publisher.publish(String(data=json.dumps(payload)))
             self.until(lambda:self.pending is not None or payload['request_id'] in self.replies, 5, 'replanning command topic receipt')
@@ -170,11 +198,16 @@ class ReplanningVerification(MotionCommandServer):
                     'Verification command was rejected or another request owns the server')
             if mode:
                 self.pending.data['verification_injection'] = dict(
-                    mode=mode, scope='Verification-only proposal or cancellation flag injection; no production command field changed')
+                    mode=mode, scope='Verification-only proposal, cancellation flag or snapshot-write injection; no production command field changed')
                 if mode == 'cancel_before_first_send':
                     self.pending.data['verification_injection']['dispatched_goals_at_submission'] = self.dispatched
+                elif mode == 'slow_execution_snapshot':
+                    wrapped_trace = self.pending
+                    original_save = self.wrap_slow_execution_snapshot(wrapped_trace)
             self.process_next()
         finally:
+            if wrapped_trace is not None:
+                wrapped_trace.save = original_save
             self.proposal_mode, self.saved_proposal = None, None
             self.max_plan_candidates, self.compute_budget_sec = 12, 30.0
         path = self.directory/(payload['request_id']+'.json')
@@ -203,6 +236,49 @@ class ReplanningVerification(MotionCommandServer):
                     and record['metrics']['received_to_first_motion_wall_sec'] is None
                     and not record['action_results'], 'Failed/cancelled planning dispatched or moved')
         return record
+
+    def check_execution_snapshot_isolation(self, record):
+        probe = record['verification_injection']['full_snapshot_probe']
+        require(probe['delay_wall_sec'] == .35 and probe['planning_full_writes'] > 0
+                and probe['terminal_full_writes'] > 0
+                and probe['delayed_execution_full_writes'] == 0 and not probe['delayed_at_events'],
+                'Execution attempted a delayed full snapshot or did not preserve normal planning/terminal snapshots')
+        journal_path = self.directory/(record['request_id']+'.events.jsonl')
+        require(journal_path.is_file(), 'Execution event journal was not preserved')
+        journal = [json.loads(line) for line in journal_path.read_text().splitlines()]
+        require(journal and len(journal) <= len(record['events']), 'Execution journal is empty or duplicates final events')
+        for index, row in enumerate(journal):
+            require(row.get('schema_version') == 1 and row.get('request_id') == record['request_id']
+                    and row.get('event_index') == index and row.get('event') == record['events'][index],
+                    'Execution journal is not a continuous, matching prefix of the final request events')
+        names = [row['event']['name'] for row in journal]
+        require(all(name in names for name in ('computation_done', 'dispatch', 'first_motion', 'actions_done', 'settled'))
+                and record['events'][-1]['name'] == 'terminal',
+                'Execution or final terminal events were lost while snapshots were deferred')
+        for instance in self.cell.instances:
+            for name in ('goal_sent', 'goal_acceptance', 'goal_result'):
+                require(any(row['event']['name'] == name and row['event'].get('arm') == instance.id for row in journal),
+                        'An arm action event was lost from the execution journal')
+        observations = record['observations']
+        require(record['trajectories'] and record['trajectories'] == record['planned_trajectories']
+                and len(observations) >= 2
+                and all(set(sample['state_rad']) == set(record['initial_state_rad']) for sample in observations)
+                and record['observed_clearance']['complete']
+                and record['observed_clearance']['minimum']['distance_m'] >= self.policy['min_inter_arm_distance_m'],
+                'The terminal full snapshot did not retain trajectories and complete observed execution evidence')
+        require(all(any(span['name'] == name and span['status'] == 'completed' for span in record['spans'])
+                    for name in ('final_state_recheck', 'dispatch_to_action_results', 'settling', 'observed_clearance')),
+                'The terminal full snapshot lost completed execution spans')
+        self.result_record['checks'][-1]['execution_snapshot_isolation'] = dict(
+            test_only_delay_hook=True, delay_wall_sec=probe['delay_wall_sec'],
+            delayed_execution_full_writes=probe['delayed_execution_full_writes'],
+            planning_full_writes=probe['planning_full_writes'], terminal_full_writes=probe['terminal_full_writes'],
+            journal_file=journal_path.name, journal_sha256=file_sha256(journal_path),
+            journal_events=len(journal), final_events=len(record['events']),
+            matching_final_event_prefix=True, observed_states=len(observations),
+            final_snapshot_has_trajectories=True, final_snapshot_has_terminal=True,
+            note='Functional regression with a fixed test-only delay hook; not a filesystem-speed or request-latency measurement.')
+        self.save_checks()
 
     def check_dispatch_boundary_cancellation(self, record):
         injection = record['verification_injection']
@@ -347,6 +423,11 @@ class ReplanningVerification(MotionCommandServer):
             boundary_cancelled = self.submit(target, case='cancel_before_first_async_send', expected='cancelled',
                 mode='cancel_before_first_send')
             self.check_dispatch_boundary_cancellation(boundary_cancelled)
+            self.progress('replanning_slow_execution_snapshot')
+            isolated_snapshot = self.submit(target, case='slow_execution_snapshot', expected='succeeded',
+                mode='slow_execution_snapshot')
+            self.check_execution_snapshot_isolation(isolated_snapshot)
+            reset()
             self.progress('replanning_normal_after_failures')
             self.submit(target, case='normal_after_failures', expected='succeeded')
             reset()

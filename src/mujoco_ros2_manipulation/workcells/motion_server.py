@@ -77,6 +77,8 @@ class MotionCommandServer(WorkcellVerification):
             raise ValueError(f"Expected 1..{MAX_PLAN_CANDIDATES} plan candidates")
         self.max_plan_candidates = max_plan_candidates
         self._last_compute_spin_ns = 0
+        self._defer_trace_persist = False
+        self._trace_journal_cursor = 0
         self.compute_budget_sec = float(compute_budget_sec)
         self.compute_budget = None
         self.goal_tolerance_rad = 0.003
@@ -135,7 +137,14 @@ class MotionCommandServer(WorkcellVerification):
         return self.directory / (trace.data["request_id"] + ".json")
 
     def persist(self, trace):
-        trace.save(self.path(trace))
+        if trace is self.active and self._defer_trace_persist:
+            # Rewriting large candidate curves at every action event can consume
+            # the shared start reservation. Keep small append-only event records
+            # here; the complete in-memory trace is saved once at termination.
+            journal = self.path(trace).with_suffix(".events.jsonl")
+            self._trace_journal_cursor = trace.append_events(journal, self._trace_journal_cursor)
+        else:
+            trace.save(self.path(trace))
         reply = trace.summary(self.path(trace), self.session_id)
         self.replies[trace.data["request_id"]] = reply
         self.publish(reply)
@@ -400,6 +409,8 @@ class MotionCommandServer(WorkcellVerification):
             return
         trace, self.pending = self.pending, None
         self.active = trace
+        self._defer_trace_persist = False
+        self._trace_journal_cursor = 0
         self.handles = []
         self.motion_start = None
         self.observations, self.first_by_arm = [], set()
@@ -477,10 +488,14 @@ class MotionCommandServer(WorkcellVerification):
                     require(self.validity_of(state).valid, "MoveIt rejected interpolated schedule")
                     samples += 1
                 trace.data["moveit_safety_samples"] = samples
+            trace.data["trajectories"] = [c.record() for c in curves]
+            # Persist the full validated path before refreshing state and choosing
+            # an execution start time. Later execution updates remain compact.
             self.event("state_recheck")
             with trace.span("state_recheck"):
                 self.quiet()
                 self.confirm_start_unchanged(initial)
+            self._defer_trace_persist = True
             self.finish_computation(trace)
             # finish_computation may pump a newer state/cancel callback. Check that
             # last received state again, with no intervening spin before dispatch.
@@ -488,7 +503,6 @@ class MotionCommandServer(WorkcellVerification):
                 self.confirm_start_unchanged(initial)
             self.motion_start = self.clock_last + 1.0
             trace.data["scheduled_start_simulation_sec"] = self.motion_start
-            trace.data["trajectories"] = [c.record() for c in curves]
             commands = self.split(to_ros(curves[0]), self.motion_start) if len(curves) == 1 else [(inst, to_ros(curve, self.motion_start)) for inst, curve in zip(self.cell.instances, curves)]
             self.event("dispatch")
             with trace.span("dispatch_to_action_results"):
@@ -542,6 +556,7 @@ class MotionCommandServer(WorkcellVerification):
             trace.data["action_results"] = [dict(status=f.result().status, error_code=f.result().result.error_code) for _, f in self.handles if f.done() and f.result() is not None]
             trace.data["observations"] = self.observations
             trace.data["contact_guard"] = deepcopy(self.contact_guard)
+            self._defer_trace_persist = False
             self.persist(trace)
             self.active = None
             self.motion_start = None

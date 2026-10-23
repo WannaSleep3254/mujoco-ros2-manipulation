@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import datetime, timezone
+import json
 import time
 
 from mujoco_ros2_manipulation.verification.reports import atomic_json
@@ -64,6 +65,39 @@ class RequestTrace:
 
     def save(self, path):
         atomic_json(path, self.data)
+
+
+    def append_events(self, path, since=0):
+        """Append only new compact event envelopes; leave the full trace intact.
+
+        The cursor is an index into ``data["events"]``. Geometry, plans and spans
+        are excluded even if an event accidentally carries a large extra detail.
+        Serializing all lines before opening also rejects nonfinite values before
+        any append. This raw diagnostic journal does not replace the final JSON.
+        """
+        events = self.data["events"]
+        count = len(events)
+        if type(since) is not int or not 0 <= since <= count:
+            raise ValueError("Event cursor must be an integer within the recorded events")
+        if since == count:
+            return count
+        event_fields = ("name", "wall_sec", "simulation_sec", "joint_state_stamp_simulation_sec",
+                        "arm", "status", "error_code", "accepted")
+        budget_fields = ("limit_wall_sec", "elapsed_wall_sec", "exceeded", "enforcement")
+        budget = self.data.get("compute_budget")
+        if budget is not None:
+            budget = {name: budget[name] for name in budget_fields if name in budget}
+        lines = []
+        for index, event in enumerate(events[since:count], start=since):
+            record = dict(schema_version=1, request_id=self.data["request_id"], event_index=index,
+                          event={name: event[name] for name in event_fields if name in event},
+                          status=self.data["status"],
+                          scheduled_start_simulation_sec=self.data.get("scheduled_start_simulation_sec"),
+                          compute_budget=budget)
+            lines.append(json.dumps(record, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n")
+        with open(path, "a", encoding="utf-8") as stream:
+            stream.write("".join(lines))
+        return count
 
     def summary(self, path, session_id):
         return dict(schema_version=1, session_id=session_id, request_id=self.data["request_id"],
