@@ -32,6 +32,7 @@ jobs:
           python scripts/import_motion_request_report.py --check docs/reports/2026-10-21-request-timing
           python scripts/import_random_motion_report.py --check docs/reports/2026-10-21-random-motion
           python scripts/import_search_optimization_report.py --check docs/reports/2026-10-21-search-optimization
+          python scripts/import_fixed_motion_report.py --check docs/reports/2026-10-23-fixed-motion
           manipulation-report validate
           manipulation-report build --check
           manipulation-report --reports-dir docs/reporting validate
@@ -48,6 +49,7 @@ jobs:
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare --list
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --robots fr5
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --workcell fr5_ur5e
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-import-fixed-report --check "$GITHUB_WORKSPACE/docs/reports/2026-10-23-fixed-motion"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: python-distributions
