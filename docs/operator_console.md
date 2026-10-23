@@ -54,9 +54,11 @@ PR #20·#21 병합과 main CI 여섯 개 통과는 확인했고, 이번 문서·
 
 ## 실행
 
-저장소 루트에서 기존 ROS 환경을 적용합니다. 모델·런타임 빌드는 [설치 안내](setup.md)를 따릅니다.
+[설치·런타임 빌드](setup.md)를 마친 뒤, 실행 중인 시뮬레이션을 종료하고 저장소 루트에서 공동 장면을 준비합니다.
+기본 단일 모델 빌드만으로는 이 화면에 필요한 공동 장면이 생성되지 않습니다.
 
 ```bash
+python3 build_workspace.py --component models --workcell fr5_ur5e
 source ./manipulation_env.sh
 python3 operator_console.py --domain 89 --port 8765
 # 설치형 CLI: manipulation-operator --domain 89 --port 8765

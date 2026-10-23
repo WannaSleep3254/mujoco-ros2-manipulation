@@ -11,7 +11,19 @@
 ROS 2 Humble, MoveIt 2, ros2_control, ros2_controllers, Cyclone DDS, Xacro,
 colcon, C++ 빌드 도구와 `python3-venv`, `python3-pip`를 먼저 준비합니다.
 GUI 실행에는 사용할 수 있는 데스크톱 OpenGL 환경이 필요합니다.
-현재 검증 조합은 MoveIt 2.5.10, Python 3.10입니다.
+현재 검증 조합은 Ubuntu 22.04·amd64, MoveIt 2.5.10, Python 3.10입니다.
+ROS 2 Humble 설치와 ROS apt 저장소 설정은 먼저 완료되어 있어야 합니다.
+다음은 [CI의 ROS build dependencies 단계](../.github/workflows/ci.yml)에서 사용하는 명시적 빌드 의존성 목록입니다.
+전체 OS 환경의 완전한 잠금이나 모든 GUI·GPU 환경의 설치 절차를 뜻하지 않습니다.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends build-essential git python3-pip python3-venv \
+  python3-colcon-common-extensions libglfw3-dev libfmt-dev libeigen3-dev libtinyxml2-dev \
+  ros-humble-moveit ros-humble-ros2-control ros-humble-ros2-controllers \
+  ros-humble-control-toolbox ros-humble-backward-ros ros-humble-xacro \
+  ros-humble-rmw-cyclonedds-cpp ros-humble-ros2-control-cmake
+```
 
 ```bash
 git clone https://github.com/WannaSleep3254/mujoco-ros2-manipulation.git
@@ -83,7 +95,28 @@ FR5·FR10·UR5e 모델을 생성합니다.
 기존 소스의 커밋이 다르면 덮어쓰지 않고 중단합니다. 런타임 패치를 적용할 수 없는
 변경이 있어도 중단합니다. 종료 수정의 근거와 적용 범위는 [문제 해결](troubleshooting.md)에 있습니다.
 
-빌드가 끝나면 [실행·검증 상세 안내의 빠른 실행](usage-and-validation.md#빠른-실행)으로 모델을 실행합니다.
+빌드가 끝나면 [실행·검증 상세 안내의 빠른 실행](usage-and-validation.md#빠른-실행)으로 단일 모델을 실행할 수 있습니다.
+기본 전체 빌드는 단일 모델들을 생성하며, 웹 조작에 필요한 공동 장면은 다음 단계에서 준비합니다.
+
+### 웹 조작용 공동 장면 준비
+
+기본 빌드 후 실행 중인 시뮬레이션을 종료하고, 저장소 루트에서 FR5·UR5e 공동 장면을 생성합니다.
+
+```bash
+python3 build_workspace.py --component models --workcell fr5_ur5e
+source ./manipulation_env.sh
+python3 operator_console.py --domain 89 --port 8765
+```
+
+이 준비 단계는 두 모델의 ROS 패키지·기본 모델과 공동 장면을 생성합니다.
+화면 서버는 생성물 무결성을 먼저 검사하며, 없는 공동 장면을 자동 생성하지 않습니다.
+설정·소스 변경으로 생성물이 오래된 경우에도 실행을 종료한 뒤 같은 준비 명령으로 재생성합니다.
+이미 두 기본 모델이 유효하게 생성되어 있다면 `.venv/bin/python prepare_workcell.py --workcell fr5_ur5e`로 공동 장면만 다시 생성할 수 있습니다.
+
+새 PC에서 공동 장면에 필요한 모델과 런타임을 한 번에 준비하려면 기본 전체 빌드 대신
+`python3 build_workspace.py --download-debs --workcell fr5_ur5e`를 사용합니다.
+이 경로는 FR5·UR5e를 선택하므로 FR10도 실행하려면 `python3 build_workspace.py --component models --robots fr10`으로 별도 준비합니다.
+화면 조작·완료 확인·종료는 [실행·검증 상세 안내](usage-and-validation.md#전용-조작-화면)를 따릅니다.
 
 ## 모델 생성과 재빌드
 

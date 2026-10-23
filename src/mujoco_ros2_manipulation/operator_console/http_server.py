@@ -7,7 +7,38 @@ import mimetypes
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from ..reporting.data import ReportError, safe_asset
 from ..workcells.motion_request import decode_message, command, validate_command
+
+
+def _report_asset(root, relative):
+    """Map a reviewed publication URL to its source without broadening access."""
+    docs = Path(root) / "docs"
+    reports = docs / "reports"
+    if docs.is_symlink() or reports.is_symlink():
+        return None
+    try:
+        manifest = safe_asset(reports, "site-manifest.json")
+        # Preserve local preview behavior: the manifest selects paths. Build and
+        # deployment verification, rather than each GET, check asset digests.
+        allowlist = set(json.loads(manifest.read_text())["files"]) | {"index.html", "catalog.json", "site-manifest.json"}
+        if relative not in allowlist:
+            return None
+        # Keep measurement report IDs (including "operator") in their original
+        # directory. The publisher rejects overlapping measurement/demo URLs.
+        candidates = [(reports, relative)]
+        if relative.startswith("operator/"):
+            candidates.append((docs / "operator", relative.removeprefix("operator/")))
+        for directory, name in candidates:
+            if directory.is_symlink():
+                continue
+            try:
+                return safe_asset(directory, name)
+            except ReportError:
+                continue
+        return None
+    except ReportError:
+        return None
 
 
 class ConsoleHTTPServer(ThreadingHTTPServer):
@@ -75,10 +106,8 @@ class Handler(BaseHTTPRequestHandler):
                 relative = unquote(path.removeprefix("/reports/")) or "index.html"
                 if relative.endswith("/"):
                     relative += "index.html"
-                folder = (app.cell.root/"docs/reports").resolve()
-                allowlist = set(json.loads((folder/"site-manifest.json").read_text())["files"]) | {"index.html", "catalog.json", "site-manifest.json"}
-                source = (folder/relative).resolve()
-                if relative in allowlist and source.is_relative_to(folder) and source.is_file():
+                source = _report_asset(app.cell.root, relative)
+                if source is not None:
                     return self.respond(source.read_bytes(), mime=mimetypes.guess_type(source.name)[0] or "application/octet-stream")
             return self.respond(dict(error="자료를 찾을 수 없습니다."), 404)
         except (ValueError, OSError, KeyError) as error:
