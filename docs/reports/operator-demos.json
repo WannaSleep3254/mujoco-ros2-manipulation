@@ -20,8 +20,8 @@
       "title": "뷰어 개발 방향성",
       "published_date": "2026-10-22",
       "document_type": "design_review",
-      "overview": "2026-10-22 당시의 FR5·UR5e 통합 조작과 렌더링 대안·단계별 개선 계획입니다. JPEG 구성과 미측정 표기는 당시 기록으로 유지하며 2026-10-26 후속 개선·표시 성능 자료로 연결합니다.",
-      "manifest_sha256": "f508e53d6a280c16b2bb78fef3c2a3ea70ead7f5bfe57d9e48bbcca5ea7fcbb8"
+      "overview": "2026-10-22 당시의 FR5·UR5e 통합 조작과 렌더링 대안·단계별 계획입니다. 현재 구현과 Three.js 유지·확장 이유는 2026-10-26 후속 기록에서 확인합니다.",
+      "manifest_sha256": "ae5a164beb44415dcf99ee77c0777d2939ec296c31e3000ceccc89278b001f64"
     },
     {
       "id": "motion-planning-direction-2026-10-22",
@@ -37,15 +37,15 @@
       "published_date": "2026-10-23",
       "document_type": "project_overview",
       "overview": "로봇 시뮬레이션·동작 검증 개발 환경 구축을 목표로 하는 개인 개발 프로젝트입니다. 현재 MuJoCo·ROS 2 기반으로 모델·장면 설정, 양팔 계획·실행, 충돌 감시와 웹 조작 기능을 개발하고 있습니다.",
-      "manifest_sha256": "a2f559a8c50e7f4aab4d25e41e2815605d128fb392c74bbf88c743ac0040403e"
+      "manifest_sha256": "be983b3fbb4c65787579d19cd5bd9ccea482c5dff2f35e1d3589a247e6ad3740"
     },
     {
       "id": "viewer-improvements-2026-10-26",
       "title": "WebGL 뷰어 개선과 표시 성능",
       "published_date": "2026-10-26",
       "document_type": "design_review",
-      "overview": "JPEG에서 로컬 3D로 바뀐 표시 구조와 정지 장면의 예비 측정, 줌·감도 조작을 정리합니다. 화면 FPS와 자세 적용률·HTTP 본문·서버 자원을 구분합니다.",
-      "manifest_sha256": "b12aaf51a73d9b5cf959d4548f98b24569ed2ffd5ff14b053b72fdadd0cb35ff"
+      "overview": "Three.js를 유지·확장하는 이유와 현재 구현, JPEG·WebGL 정지 장면 비교를 정리합니다. 기존 개발 계획의 진행 상황과 여러 공급원·센서 연결의 다음 과제를 제시합니다.",
+      "manifest_sha256": "f6f445a97dc02baa20a7dd00bf464673d84604b6d2a6fd7dc181b933880ced51"
     }
   ]
 }
