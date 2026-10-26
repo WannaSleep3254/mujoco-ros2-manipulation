@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 13704,
-      "sha256": "f991b9d7a186cab4988152335b98dccc04ea1665056f87c295db1309fbb1d1d4"
+      "bytes": 13684,
+      "sha256": "ac2931e57aa7eacbba63d49ca7e4d429bdd2ec615312493b5f55b41b57548099"
     },
     "operator-demos.json": {
-      "bytes": 3022,
-      "sha256": "01a35f6af8ed87dc321fcc24e8feadc3951c9ec9826783fdb328207e3812f788"
+      "bytes": 3002,
+      "sha256": "ebaa7fa2fef24381f4734a6c8ae297bf87862f3149ef7d8d7184de4d4bfcd3c9"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -332,12 +332,12 @@
       "sha256": "2928dce0fb8e73a2ea29be5b540f3f8e54ff5b3295cec714d1883fa4cd0ffc73"
     },
     "operator/project-overview-2026-10-23/index.html": {
-      "bytes": 42437,
-      "sha256": "b0d7b3ee420818cab8236e6297bc5c5685a1fe53869920d22a5931ed97db19a1"
+      "bytes": 42458,
+      "sha256": "bd407ddb241d3d8912f465895cb9b6703926c13b5abe9adf9077e864e2e23c59"
     },
     "operator/project-overview-2026-10-23/manifest.json": {
       "bytes": 929,
-      "sha256": "a2f559a8c50e7f4aab4d25e41e2815605d128fb392c74bbf88c743ac0040403e"
+      "sha256": "be983b3fbb4c65787579d19cd5bd9ccea482c5dff2f35e1d3589a247e6ad3740"
     },
     "operator/project-overview-2026-10-23/operation-demo.mp4": {
       "bytes": 1226621,
@@ -360,12 +360,12 @@
       "sha256": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87"
     },
     "operator/viewer-direction-2026-10-22/index.html": {
-      "bytes": 64188,
-      "sha256": "0ccfc5f0b8df11a3c035eafa75f0d303f535886eb273e2c7ae6eb6f82164dc1c"
+      "bytes": 64656,
+      "sha256": "843bf72346baa2f5ecffde42f76ae0f3fe0b4c317bfb0e91f775d589d1c908e5"
     },
     "operator/viewer-direction-2026-10-22/manifest.json": {
       "bytes": 2764,
-      "sha256": "f508e53d6a280c16b2bb78fef3c2a3ea70ead7f5bfe57d9e48bbcca5ea7fcbb8"
+      "sha256": "ae5a164beb44415dcf99ee77c0777d2939ec296c31e3000ceccc89278b001f64"
     },
     "operator/viewer-direction-2026-10-22/review-data.json": {
       "bytes": 5906,
@@ -388,16 +388,16 @@
       "sha256": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766"
     },
     "operator/viewer-improvements-2026-10-26/index.html": {
-      "bytes": 17425,
-      "sha256": "ba9c813796b070b5b2f07d63d070a83834cc5bc1721baff31a965aee2755543e"
+      "bytes": 25642,
+      "sha256": "797ba0c15ab5a58c0e2ce1df12e934647aa1a7c8034d18e84c5e0b1acf4423c5"
     },
     "operator/viewer-improvements-2026-10-26/manifest.json": {
-      "bytes": 1076,
-      "sha256": "b12aaf51a73d9b5cf959d4548f98b24569ed2ffd5ff14b053b72fdadd0cb35ff"
+      "bytes": 1183,
+      "sha256": "f6f445a97dc02baa20a7dd00bf464673d84604b6d2a6fd7dc181b933880ced51"
     },
     "operator/viewer-improvements-2026-10-26/review-notes.json": {
-      "bytes": 1740,
-      "sha256": "f9e536e18478d612b3b3530e877aaee440819a50ec4a380b6b7105e79570a4c3"
+      "bytes": 3273,
+      "sha256": "440664c4a4aa9378c26ab28a8b796a7ed870f69c0fff3d247866e7b285768382"
     }
   }
 }
