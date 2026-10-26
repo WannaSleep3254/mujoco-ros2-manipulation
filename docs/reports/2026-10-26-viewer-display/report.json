@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-10-26-viewer-display",
+  "published_date": "2026-10-26",
+  "title": "JPEG·WebGL 뷰어 표시와 자원 사용 예비 비교",
+  "status": "preliminary",
+  "overview": "동일 FR5·UR5e 장면의 실시간 정지 자세에서 제품 기본 JPEG/WebGL 표시를 방식별 15초×3구간 비교했습니다. 화면 그리기, 새 데이터 전달, 반복 HTTP 본문과 서버 자원을 구분합니다.",
+  "findings": [
+    "WebGL의 화면 그리기는 평균 59.95 FPS, 새 자세 적용은 평균 4.00회/초입니다. 같은 자세를 반복해서 그린 프레임도 화면 FPS에 포함됩니다.",
+    "JPEG는 45초 동안 프레임 요청 180건 중 179건이 200, 1건이 204였습니다. 성공 이미지 응답은 3.98장/초이며 실제 paint FPS는 측정하지 않았습니다.",
+    "상태 API를 포함한 반복 HTTP 응답 본문량은 JPEG 122.99 → WebGL 67.50 kB/s로 45.1% 감소했습니다. 초기 메시와 HTTP 헤더·요청·전송계층·계측 probe는 제외합니다.",
+    "평가 서버와 자식 프로세스의 시간가중 CPU 합계는 JPEG 58.64% / WebGL 59.28%였습니다. 100%는 코어 하나이며 전체 서버 CPU 감소는 확인하지 못했습니다.",
+    "같은 프로세스의 RSS 합계는 평균 1142.18 → 1030.36 MiB였습니다. 공유 페이지 중복이 있고 브라우저 메모리는 포함하지 않습니다.",
+    "관측 시뮬레이션 실시간 배율은 두 방식 모두 약 1.00입니다. 로봇 명령은 전송하지 않았고 계획·제어 성능의 개선을 측정한 시험은 아닙니다."
+  ],
+  "limitations": [
+    "하나의 FR5·UR5e 장면에서 실시간 상태를 받는 정지 home 자세를 비교했습니다. 방식별 15초 창 3개(45초)이며 독립적인 새 실행 3회가 아닙니다. 순서는 WebGL1 → JPEG1 → JPEG2 → WebGL2 → WebGL3 → JPEG3입니다.",
+    "제품 기본 설정 비교입니다. JPEG는 960×640·품질 88, WebGL은 621×414·DPR 1, 브라우저는 1280×720입니다. 카메라·조명과 픽셀 수를 맞춘 렌더 엔진 효율 비교가 아닙니다.",
+    "WebGL의 초기 메시 3,417,204 bytes는 지속 전송량에서 제외했습니다. 장면 binding이 바뀌면 자산을 다시 받으므로 모든 세션의 총 전송량이 45.1% 줄어든다는 뜻은 아닙니다.",
+    "기존 사용자 세션은 유지했고 벤치마크 전용 유휴 장비가 아닙니다. 브라우저의 실제 GL 렌더러, CPU·GPU·VRAM, 카메라 입력→paint, 이동 궤적·원격 환경·최초 표시 시간은 미측정입니다.",
+    "브라우저 DOM 계측은 1초 간격의 최신 지표 스냅샷입니다. 구간별 15개, 방식별 45개이며 독립 프레임 45개나 독립 실험 45회가 아닙니다. CPU는 창별 30표본 중 경계 내부 29구간(약 14.5초)을 사용했습니다.",
+    "JPEG와 WebGL의 상태 age는 시작·종료 시점이 달라 직접 비교하지 않습니다. 서버 GET 처리 시간과 CPU 렌더 명령 제출 시간도 종단 지연이나 GPU 완료 시간이 아닙니다.",
+    "CPU·RSS는 평가 콘솔의 자손만 집계합니다. RSS는 공유 페이지를 중복 계산하고 브라우저 자원은 제외합니다. 계측용 HTTP 래퍼와 추가 2Hz probe가 있으며 probe 본문은 전송률에서 제외했습니다.",
+    "이 측정의 코드 기준은 1a44f19입니다. 이후 추가한 줌·감도 조작의 성능 측정으로 취급하지 않습니다. 기존 250ms 자세 조회 구조를 바꾸지 않은 표시 비교입니다."
+  ],
+  "provenance": {
+    "repository": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation",
+    "commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
+    "workcell": "fr5_ur5e",
+    "models": [
+      "FAIRINO FR5",
+      "Universal Robots UR5e"
+    ],
+    "scenario": "viewer-display-home-v1",
+    "input_kind": "other"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "cpu": "Intel Core i7-13700; 24 logical CPUs",
+    "python": "3.10.12",
+    "ros": "ROS 2 Humble; local joint/clock state",
+    "native_mujoco": "MuJoCo 3.12.0",
+    "display_mujoco": "MuJoCo 3.14.0",
+    "available_gpu": "RTX 3050 / driver580.178.04; actual browser GL renderer unconfirmed",
+    "browser": "Codex in-app browser; exact Chromium build not recorded; viewport1280×720/DPR1",
+    "instrumentation": "Reviewed local sampler and HTTP wrapper; source SHA and numeric extraction in evidence.json",
+    "background": "Existing user sessions preserved; no motion command; not a dedicated idle benchmark host"
+  },
+  "sample_groups": [
+    {
+      "id": "image",
+      "label": "서버 이미지",
+      "kind": "gui",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "고정 home 한 상태; 하나의 세션에서 표시 모드를 교대. 독립 재시작 반복이 아닙니다.",
+      "description": "15초×3구간. 방식별 DOM45스냅샷·CPU90표본. 성공/실패는 모션 결과로 집계하지 않습니다."
+    },
+    {
+      "id": "web3d",
+      "label": "WebGL 로컬 3D",
+      "kind": "gui",
+      "unique_cases": 1,
+      "observations": 3,
+      "successes": null,
+      "failures": null,
+      "seed_policy": "고정 home 한 상태; 하나의 세션에서 표시 모드를 교대. 독립 재시작 반복이 아닙니다.",
+      "description": "15초×3구간. 방식별 DOM45스냅샷·CPU90표본. 성공/실패는 모션 결과로 집계하지 않습니다."
+    }
+  ],
+  "stages": [
+    {
+      "id": "initial-load",
+      "label": "초기 장면·자산 준비",
+      "clock": "wall",
+      "coverage": "partial",
+      "note": "WebGL mesh3,417,204bytes는 확인했지만 cold first-visible time은 미측정입니다."
+    },
+    {
+      "id": "state-delivery",
+      "label": "상태·자세 HTTP와 브라우저 반영",
+      "clock": "wall",
+      "coverage": "partial",
+      "note": "정기250ms 조회와 응답·WebGL 자세 적용을 확인했습니다. 이미지 paint와 종단 지연은 미측정입니다."
+    },
+    {
+      "id": "display",
+      "label": "브라우저 화면 그리기",
+      "clock": "wall",
+      "coverage": "partial",
+      "note": "WebGL 렌더 FPS는 반복 redraw를 포함합니다. GPU 완료 시간과 JPEG paint FPS는 미측정입니다."
+    },
+    {
+      "id": "resources",
+      "label": "HTTP 본문·서버 CPU/RSS",
+      "clock": "wall",
+      "coverage": "measured",
+      "note": "계측된 구간의 본문과 소유 프로세스만 집계합니다. 브라우저·전체 GPU는 제외합니다."
+    },
+    {
+      "id": "motion",
+      "label": "계획·동작·카메라 입력 지연",
+      "clock": "wall",
+      "coverage": "unmeasured",
+      "note": "정지 상태의 표시 비교이며 로봇 명령·새 이동·입력→paint 계측은 수행하지 않았습니다."
+    }
+  ],
+  "metrics": [
+    {
+      "id": "server-cpu-window-median",
+      "label": "구간별 서버 CPU 합계 중앙값",
+      "unit": "percent",
+      "clock": "not_applicable",
+      "scope": "코어 하나=100%; 평가 콘솔과 자식 프로세스",
+      "values": [
+        {
+          "group_id": "image",
+          "value": 58.635234363499066,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "web3d",
+          "value": 59.30896939518653,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "각 창 내부 시간가중 평균 3개의 중앙값입니다. 위 요약의 전체 시간가중 평균과 구분합니다. 브라우저 제외."
+    },
+    {
+      "id": "http-bytes-window-median",
+      "label": "15초 구간의 HTTP 응답 본문 바이트 수 중앙값",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "고정 15초; 상태 API + frame 또는 pose의 본문 bytes를 셈",
+      "values": [
+        {
+          "group_id": "image",
+          "value": 1854364,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "web3d",
+          "value": 1012644,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "count의 대상은 바이트입니다. 초기 자산·headers·probe 제외. kB/s 전체 집계는 상세 리포트를 참고합니다."
+    },
+    {
+      "id": "display-responses-window-median",
+      "label": "15초 구간의 정상 표시 응답 수 중앙값",
+      "unit": "count",
+      "clock": "not_applicable",
+      "scope": "JPEG frame 또는 WebGL pose의 HTTP 200 응답",
+      "values": [
+        {
+          "group_id": "image",
+          "value": 60,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "web3d",
+          "value": 60,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "HTTP 응답 횟수이며 paint FPS·관절 이동 횟수가 아닙니다."
+    },
+    {
+      "id": "rtf-window-median",
+      "label": "관측 실시간 배율의 구간별 중앙값",
+      "unit": "ratio",
+      "clock": "not_applicable",
+      "scope": "상태 simulation_sec 증가 / sampler wall 시간",
+      "values": [
+        {
+          "group_id": "image",
+          "value": 1.0000053059180865,
+          "sample_count": 3,
+          "statistic": "median"
+        },
+        {
+          "group_id": "web3d",
+          "value": 0.9999834835068334,
+          "sample_count": 3,
+          "statistic": "median"
+        }
+      ],
+      "note": "각 약14.5초 관측 구간의 비율이며 simulator 내부 step 시간 분포가 아닙니다."
+    },
+    {
+      "id": "camera-input-to-paint",
+      "label": "카메라 입력부터 paint까지",
+      "unit": "ms",
+      "clock": "wall",
+      "scope": "동일 입력·동일 픽셀의 종단 비교",
+      "values": [
+        {
+          "group_id": "image",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        },
+        {
+          "group_id": "web3d",
+          "value": null,
+          "sample_count": 0,
+          "statistic": "not_measured"
+        }
+      ],
+      "note": "이번 정지 자세 시험에서는 입력 지연을 계측하지 않았습니다."
+    }
+  ],
+  "assets": [
+    {
+      "path": "evidence.json",
+      "role": "data",
+      "label": "구간별 공개 추출·원본 SHA",
+      "sha256": "e9f01aea7d1d19dd04cb6ed982bc1b1c69691c74989fc78f9654c3b765500859"
+    },
+    {
+      "path": "comparison.html",
+      "role": "legacy_report",
+      "label": "JPEG·WebGL 표시 성능 상세 비교",
+      "sha256": "42ecd9509abffb277ac52121974d2ed710cd98e546a24bf57d490f56e9b346a2"
+    },
+    {
+      "path": "webgl.png",
+      "role": "figure",
+      "label": "그림1. 측정 당시 WebGL 화면",
+      "sha256": "5376532150cb10e90cf6ee26a975eda28a52c9ff2ad4f93df349841f670e01e5"
+    },
+    {
+      "path": "jpeg.png",
+      "role": "figure",
+      "label": "그림2. 측정 당시 서버 이미지 화면",
+      "sha256": "1e095f5b3958de6244e17a3db6d907d59c6cc5e945a6746433d5ecf652b022fa"
+    },
+    {
+      "path": "tools/sample.py",
+      "role": "document",
+      "label": "측정에 사용한 읽기 전용 sampler",
+      "sha256": "1dfbef86634e598838123de6b70f0f62eb5c7ad7189aabda31ca5cc58d8bad45"
+    },
+    {
+      "path": "tools/launch_instrumented.py",
+      "role": "document",
+      "label": "측정에 사용한 HTTP 계측 래퍼",
+      "sha256": "30fefcd0f86be55ca1f936acd1e9e486a48fc29bb163789265381b9d9d60f1a9"
+    }
+  ],
+  "references": [
+    {
+      "label": "측정 기준 코드",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/1a44f19d4caf374b62f5c4d8df86e213a8177b60"
+    },
+    {
+      "label": "로컬 3D 전환 PR34",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/34"
+    }
+  ]
+}

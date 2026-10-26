@@ -2,6 +2,27 @@
   "schema_version": 1,
   "reports": [
     {
+      "report_id": "2026-10-26-viewer-display",
+      "title": "JPEG·WebGL 뷰어 표시와 자원 사용 예비 비교",
+      "published_date": "2026-10-26",
+      "status": "preliminary",
+      "commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
+      "workcell": "fr5_ur5e",
+      "models": [
+        "FAIRINO FR5",
+        "Universal Robots UR5e"
+      ],
+      "overview": "동일 FR5·UR5e 장면의 실시간 정지 자세에서 제품 기본 JPEG/WebGL 표시를 방식별 15초×3구간 비교했습니다. 화면 그리기, 새 데이터 전달, 반복 HTTP 본문과 서버 자원을 구분합니다.",
+      "url": "2026-10-26-viewer-display/index.html",
+      "resources": [
+        {
+          "url": "2026-10-26-viewer-display/comparison.html",
+          "label": "JPEG·WebGL 표시 성능 상세 비교",
+          "kind": "legacy_report"
+        }
+      ]
+    },
+    {
       "report_id": "2026-10-23-fixed-motion",
       "title": "고정 목표·동일 계산 예산의 공간 재계획 예비 평가",
       "published_date": "2026-10-23",

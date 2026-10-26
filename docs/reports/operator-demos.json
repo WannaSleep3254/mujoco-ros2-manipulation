@@ -20,8 +20,8 @@
       "title": "뷰어 개발 방향성",
       "published_date": "2026-10-22",
       "document_type": "design_review",
-      "overview": "이기종 복수 로봇의 통합 시뮬레이션 조작 방향과 현재 FR5·UR5e 구현 상태, 렌더링 대안·단계별 개선·검증 계획을 정리합니다. 성능 순위는 미측정입니다.",
-      "manifest_sha256": "befd86718f47c3b32965cf90c07f162bfdcc5b7f89fedcc3c572f0a61e79ec4e"
+      "overview": "2026-10-22 당시의 FR5·UR5e 통합 조작과 렌더링 대안·단계별 개선 계획입니다. JPEG 구성과 미측정 표기는 당시 기록으로 유지하며 2026-10-26 후속 개선·표시 성능 자료로 연결합니다.",
+      "manifest_sha256": "f508e53d6a280c16b2bb78fef3c2a3ea70ead7f5bfe57d9e48bbcca5ea7fcbb8"
     },
     {
       "id": "motion-planning-direction-2026-10-22",
@@ -38,6 +38,14 @@
       "document_type": "project_overview",
       "overview": "로봇 시뮬레이션·동작 검증 개발 환경 구축을 목표로 하는 개인 개발 프로젝트입니다. 현재 MuJoCo·ROS 2 기반으로 모델·장면 설정, 양팔 계획·실행, 충돌 감시와 웹 조작 기능을 개발하고 있습니다.",
       "manifest_sha256": "f031909801ef86b06de132b63a6e782ddeecbf9ac19364a5bfdfcb9e3ffd3a8a"
+    },
+    {
+      "id": "viewer-improvements-2026-10-26",
+      "title": "WebGL 뷰어 개선과 표시 성능",
+      "published_date": "2026-10-26",
+      "document_type": "design_review",
+      "overview": "JPEG에서 로컬 3D로 바뀐 표시 구조와 정지 장면의 예비 측정, 줌·감도 조작을 정리합니다. 화면 FPS와 자세 적용률·HTTP 본문·서버 자원을 구분합니다.",
+      "manifest_sha256": "861ad10b907f56b1baa16be703b93792a4df74a3701441aba850cded5a311cac"
     }
   ]
 }

@@ -17,6 +17,10 @@
 .scene-toolbar select{min-width:0;max-width:170px;padding:4px;border:1px solid var(--line);border-radius:4px;background:#fff}
 .scene-toolbar button,.plan-preview button{padding:4px 8px;border:1px solid var(--line);border-radius:4px;background:#fff}
 .scene-toolbar .check{margin-left:auto;font-size:10px;white-space:nowrap}
+.scene-camera-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:10px 13px;background:#fafbfc;border-top:1px solid var(--line);font-size:11px}
+.scene-camera-actions{display:flex;gap:6px;flex-wrap:wrap}.scene-camera-actions button{min-height:30px;padding:4px 10px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:4px}
+.scene-camera-controls>small{flex-basis:100%;color:var(--muted);font-size:10px}.scene-sensitivity{flex:1;min-width:150px}.scene-sensitivity summary{cursor:pointer;width:fit-content;color:#435c6c}
+.scene-sensitivity-fields{display:flex;flex-wrap:wrap;gap:7px 15px;padding-top:8px}.scene-sensitivity-fields label{display:flex;align-items:center;gap:7px;flex:1 1 180px;white-space:nowrap}.scene-sensitivity-fields input{min-width:75px;width:100%;max-width:160px;accent-color:var(--accent)}.scene-sensitivity-fields input:disabled{opacity:.45}.scene-sensitivity-fields output{font-variant-numeric:tabular-nums;min-width:3.5em;text-align:right;color:var(--muted)}
 .scene-slot,.local-scene{position:absolute;inset:0;min-width:0;min-height:0;width:100%;height:100%}
 .local-scene{background:#17242a;color:#d6e2e8}
 .local-scene-status{position:absolute;top:12px;left:12px;right:12px;pointer-events:none;width:fit-content;max-width:calc(100% - 24px);font-size:11px;padding:5px 10px;background:#17242ae8;border-radius:4px}

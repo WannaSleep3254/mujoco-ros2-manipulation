@@ -16,10 +16,12 @@ function deferred() {
 async function drain() {for (let index = 0; index < 12; index++) await Promise.resolve();}
 
 class Element {
-  constructor(tag = 'div') {this.tagName = tag.toUpperCase(); this._value = ''; this.hidden = false; this.disabled = false; this.children = []; this.listeners = {};}
+  constructor(tag = 'div') {this.tagName = tag.toUpperCase(); this._value = ''; this.hidden = false; this.disabled = false; this.children = []; this.listeners = {}; this.dataset = {}; this.attributes = {};}
   get value() {return this._value;}
   set value(value) {this._value = this.tagName === 'SELECT' && !this.children.some(child => child.value === String(value)) ? '' : String(value);}
   addEventListener(name, callback) {this.listeners[name] = callback;}
+  removeEventListener(name, callback) {if (this.listeners[name] === callback) delete this.listeners[name];}
+  setAttribute(name, value) {this.attributes[name] = String(value);}
   append(...children) {for (const child of children) {child.parentElement = this; this.children.push(child); if (this.tagName === 'SELECT' && !this._value && !child.disabled) this._value = child.value;}}
   replaceChildren() {this.children = []; if (this.tagName === 'SELECT') this._value = '';}
 }
@@ -45,11 +47,22 @@ function harness({manifest} = {}) {
     return elements.get(id);
   };
   element('demos').hidden = true;
-  const document = {getElementById: element, createElement: tag => new Element(tag), activeElement: null};
+  const cameraNodes=[];
+  for(const scope of ['operate','demo']) {
+    const add=(name,dataset)=>{const node=element(scope+'-'+name);Object.assign(node.dataset,dataset);cameraNodes.push(node);};
+    add('camera-controls',{sceneCameraControls:''});add('zoom-in',{sceneZoom:'in'});add('zoom-out',{sceneZoom:'out'});
+    add('camera-reset',{sceneReset:''});add('camera-help',{sceneCameraHelp:''});
+    for(const kind of ['rotate','zoom','pan']){add('speed-'+kind,{sceneSpeed:kind});add('speed-value-'+kind,{sceneSpeedValue:kind});}
+  }
+  const document = {getElementById: element, createElement: tag => new Element(tag), activeElement: null,
+    querySelectorAll(selector){
+      const fields=selector.split(',').map(part=>part.trim().slice(6,-1).replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase()));
+      return cameraNodes.filter(node=>fields.some(field=>Object.hasOwn(node.dataset,field)));
+    }};
   class FakeViewer {
-    constructor(container, options) {this.onMetrics = options.onMetrics; this.loads = []; this.poses = []; this.bindings = []; this.clears = 0; this.aborts = 0; this.destroyed = 0;}
-    setExpectedBinding(id, binding) {this.bindings.push({id, binding});}
-    clearBinding() {this.clears++; this.aborts += this.loads.filter(load => !load.finished).length;}
+    constructor(container, options) {this.onMetrics = options.onMetrics; this.sensitivity={...options.controlSensitivity};this.zoomCalls=[];this.resets=0;this.loads = []; this.poses = []; this.bindings = []; this.clears = 0; this.aborts = 0; this.destroyed = 0;}
+    setExpectedBinding(id, binding) {this.bindingID=id;this.hasPose=false;this.bindings.push({id, binding});}
+    clearBinding() {this.bindingID=null;this.hasPose=false;this.clears++; this.aborts += this.loads.filter(load => !load.finished).length;}
     loadManifest(url, options) {
       const item = {url, options, finished: false}; this.loads.push(item);
       const promise = manifest ? manifest(item) : Promise.resolve({});
@@ -58,8 +71,11 @@ function harness({manifest} = {}) {
     pollPose(url) {this.poses.push(url); return Promise.resolve(false);}
     markStale(reason) {this.staleReason = reason;}
     setCollisionVisible() {}
+    setControlSensitivity(value) {this.sensitivity={...value};return {...value};}
+    zoomCamera(direction) {this.zoomCalls.push(direction);return true;}
+    resetCamera() {this.resets++;return true;}
     resize() {}
-    destroy() {this.destroyed++;}
+    destroy() {this.destroyed++;this.disposed=true;}
   }
   const SceneControls = new Function('LocalSceneView', 'document', 'performance', 'setTimeout', 'clearTimeout',
     source + '\nreturn SceneControls;')(FakeViewer, document, {now: () => now},
@@ -71,6 +87,7 @@ function harness({manifest} = {}) {
     return request.promise.finally(() => active--);
   }, notify: message => notices.push(message), showOperate: () => {controls.shown = (controls.shown || 0)+1;}});
   return {controls, element, requests, notices, timers, advance: milliseconds => {now += milliseconds;},
+    createController:()=>new SceneControls({request:()=>{throw new Error('Camera must not request');},notify:message=>notices.push(message),showOperate(){}}),
     get maximumActive() {return maximumActive;},
     reply(index, value = {}) {requests[index].resolve(value);},
     fail(index, message = 'Synthetic request failure') {requests[index].reject(new Error(message));}};
@@ -364,4 +381,73 @@ test('frame age distinguishes live waiting, live telemetry, previews and no acti
   }
   h.controls.viewer.onMetrics({binding_id: 'b'.repeat(64), mode: 'live', source_age_ms: 100, view_state: 'fresh'});
   assert.equal(h.element('frame-age').textContent, '장면 준비 대기', 'Stale binding metrics cannot overwrite the current label');
+});
+
+function cameraReady(h){
+  h.controls.viewer.hasPose=true;h.controls.viewer.manifest={};h.controls.updateCameraControls();
+}
+
+test('explicit camera buttons act locally on either screen without changing request/playback state', async () => {
+  const h=harness();h.controls.update(state());await drain();
+  assert.equal(h.element('operate-zoom-in').disabled,true,'No camera action before a model pose');
+  cameraReady(h);const before=h.controls.data,epoch=h.controls.playEpoch;
+  h.element('operate-zoom-in').listeners.click();h.element('demo-zoom-out').listeners.click();
+  h.element('demo-camera-reset').listeners.click();
+  assert.deepEqual(h.controls.viewer.zoomCalls,['in','out']);assert.equal(h.controls.viewer.resets,1);
+  assert.equal(h.requests.length,0);assert.equal(h.controls.data,before);assert.equal(h.controls.playEpoch,epoch);
+});
+
+test('camera sliders synchronize both screens and survive model changes and controller recreation', async () => {
+  const h=harness();h.controls.update(state());await drain();
+  for(const [kind,value] of [['rotate',2],['zoom',.5],['pan',1.5]]){
+    const input=h.element('demo-speed-'+kind);input.value=String(value);input.listeners.input();
+    assert.equal(h.element('operate-speed-'+kind).value,String(value));
+    assert.equal(h.element('operate-speed-value-'+kind).textContent,value.toFixed(2)+'×');
+    assert.equal(input.attributes['aria-valuetext'],value.toFixed(2)+'배');
+  }
+  const expected={rotate:2,zoom:.5,pan:1.5};
+  h.controls.update(state('b',2));await drain();assert.deepEqual(h.controls.viewer.sensitivity,expected);
+  assert.equal(h.controls.data.binding_id,'b'.repeat(64));assert.equal(h.requests.length,0);
+  h.controls.destroy();
+  assert.equal(h.element('operate-zoom-in').listeners.click,undefined,'Old camera handler was removed');
+  assert.equal(h.element('operate-camera-controls').hidden,true,'Legacy fallback cannot leave dead camera controls visible');
+  assert.equal(h.element('demo-speed-pan').disabled,true);
+  const fresh=h.createController();assert.deepEqual(fresh.viewer.sensitivity,expected);
+  assert.equal(h.element('demo-speed-pan').value,'1.5');fresh.destroy();
+});
+
+test('image mode disables all unsupported camera buttons/sliders and programmatic events cannot act', async () => {
+  const h=harness();h.controls.update(state());await drain();cameraReady(h);
+  const expected={...h.controls.viewer.sensitivity};
+  h.controls.update(state('a',1,{display_mode:'image'}));
+  for(const scope of ['operate','demo']){
+    assert.equal(h.element(scope+'-zoom-in').disabled,true);
+    assert.equal(h.element(scope+'-zoom-out').disabled,true);
+    assert.equal(h.element(scope+'-camera-reset').disabled,true);
+    for(const kind of ['rotate','zoom','pan'])assert.equal(h.element(scope+'-speed-'+kind).disabled,true);
+    assert.match(h.element(scope+'-camera-help').textContent,/서버 이미지/);
+  }
+  h.element('operate-zoom-in').listeners.click();h.element('demo-camera-reset').listeners.click();
+  h.element('operate-speed-zoom').value='3';h.element('operate-speed-zoom').listeners.input();
+  assert.equal(h.controls.viewer.zoomCalls.length,0);assert.equal(h.controls.viewer.resets,0);
+  assert.deepEqual(h.controls.viewer.sensitivity,expected);assert.equal(h.requests.length,0);
+  h.controls.update(state());cameraReady(h);
+  assert.equal(h.element('operate-zoom-in').disabled,false);assert.equal(h.element('demo-speed-zoom').value,'1');
+});
+
+test('missing, failed or disabled scenes cannot zoom a previously visible pose', async () => {
+  const h=harness();h.controls.update(state());await drain();cameraReady(h);
+  for(const packet of [state('a',1,{enabled:false}),state('a',1,{status:'error'}),{view:null}]){
+    h.controls.update(packet);assert.equal(h.element('operate-zoom-in').disabled,true);
+    assert.equal(h.controls.zoom('in'),false);assert.equal(h.controls.resetCamera(),false);
+  }
+  assert.equal(h.controls.viewer.zoomCalls.length,0);assert.equal(h.requests.length,0);
+});
+
+test('camera UI uses native buttons and labelled bounded keyboard-accessible range inputs on both screens', async () => {
+  const html=await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/index.html',import.meta.url),'utf8');
+  assert.equal((html.match(/data-scene-camera-controls/g)||[]).length,2);
+  for(const direction of ['in','out'])assert.equal((html.match(new RegExp('<button[^>]*type="button"[^>]*data-scene-zoom="'+direction+'"[^>]*aria-label=', 'g'))||[]).length,2);
+  assert.equal((html.match(/<button[^>]*data-scene-reset[^>]*aria-label=/g)||[]).length,2);
+  for(const kind of ['rotate','zoom','pan'])assert.equal((html.match(new RegExp('<input type="range" data-scene-speed="'+kind+'" min="0.25" max="3" step="0.25" value="1" aria-label=', 'g'))||[]).length,2);
 });

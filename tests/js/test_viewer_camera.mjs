@@ -192,3 +192,68 @@ test('fresh pose updates preserve a user-selected preset and its target and scal
   assert.deepEqual(value.controls.target.toArray(), target);
   assert.equal(value.controls.updates, updates, 'An applied pose does not refit or reset the camera');
 });
+
+test('zoom buttons preserve direction and target and use relative sensitivity-scaled distance', () => {
+  const value=view(),target=value.controls.target.toArray(),before=direction(value).toArray();
+  const distance=value.camera.position.clone().sub(value.controls.target).length();
+  value.fetch=()=>{throw new Error('Camera zoom must not fetch');};
+  value.setControlSensitivity({rotate:.5,zoom:2,pan:1.5});
+  assert.equal(value.zoomCamera('in'),true);
+  close(value.camera.position.clone().sub(value.controls.target).length(),distance/(1.25**2));
+  direction(value).toArray().forEach((v,i)=>close(v,before[i]));
+  assert.deepEqual(value.controls.target.toArray(),target);
+  assert.equal(value.zoomCamera('out'),true);
+  close(value.camera.position.clone().sub(value.controls.target).length(),distance);
+  assert.deepEqual(value.camera.up.toArray(),[0,0,1]);
+  assert.equal(value.controls.enableDamping,true);
+});
+
+test('button zoom clamps at the same near/far orbit distances and cannot pass them', () => {
+  const value=view();value.controls.minDistance=2;value.controls.maxDistance=7;
+  for(let i=0;i<30;i++)value.zoomCamera('in');
+  close(value.camera.position.clone().sub(value.controls.target).length(),2);
+  assert.equal(value.zoomCamera('in'),false);
+  for(let i=0;i<30;i++)value.zoomCamera('out');
+  close(value.camera.position.clone().sub(value.controls.target).length(),7);
+  assert.equal(value.zoomCamera('out'),false);
+  const before=value.camera.position.toArray();value.loading=true;
+  assert.equal(value.zoomCamera('in'),false);assert.deepEqual(value.camera.position.toArray(),before);
+  assert.throws(()=>value.zoomCamera('sideways'),/Unknown zoom/);
+  value.disposed=true;assert.throws(()=>value.zoomCamera('in'),/destroyed/);
+});
+
+test('sensitivity updates are separate, bounded and atomic and never move the camera', () => {
+  const value=view(),before=value.camera.position.toArray();
+  assert.deepEqual(value.setControlSensitivity({rotate:.25,zoom:3,pan:1.5}),{rotate:.25,zoom:3,pan:1.5});
+  for(const invalid of [null,[],{rotate:1,zoom:1},{rotate:1,zoom:1,pan:1,extra:1},
+      {rotate:NaN,zoom:1,pan:1},{rotate:1,zoom:Infinity,pan:1},{rotate:1,zoom:1,pan:0},
+      {rotate:3.01,zoom:1,pan:1},{rotate:true,zoom:1,pan:1}]){
+    assert.throws(()=>value.setControlSensitivity(invalid),/sensitivity/);
+    assert.deepEqual(value.getControlSensitivity(),{rotate:.25,zoom:3,pan:1.5});
+  }
+  assert.deepEqual(value.camera.position.toArray(),before);
+  const copy=value.getControlSensitivity();copy.zoom=1;
+  assert.equal(value.getControlSensitivity().zoom,3);
+});
+
+test('default view re-fits the current model in overview without resetting sensitivity', () => {
+  const value=view();value.setControlSensitivity({rotate:2,zoom:.5,pan:1.25});
+  value.cameraPreset('top');value.zoomCamera('in');
+  assert.equal(value.resetCamera(),true);
+  assert.deepEqual(value.controls.target.toArray(),[2,4,4]);
+  const expected=new Vector3(1,-1,.7).normalize().toArray();
+  direction(value).toArray().forEach((v,i)=>close(v,expected[i]));
+  assert.deepEqual(value.getControlSensitivity(),{rotate:2,zoom:.5,pan:1.25});
+  value.manifest=null;const before=value.camera.position.toArray();
+  assert.equal(value.resetCamera(),false);assert.deepEqual(value.camera.position.toArray(),before);
+});
+
+test('a new binding blanks the old pose without changing user camera sensitivities', () => {
+  const value=view();value.setControlSensitivity({rotate:1.75,zoom:.75,pan:2.5});
+  Object.assign(value,{now:()=>100,_refreshStatus(){},loadGeneration:0});
+  const binding={operator_session_id:'a'.repeat(32),generation:2,mode:'model_preview',source_id:'profile:fr5',
+    job_id:null,run_id:null,motion_session_id:null,request_id:null};
+  value.setExpectedBinding('b'.repeat(64),binding);
+  assert.equal(value.hasPose,false);
+  assert.deepEqual(value.getControlSensitivity(),{rotate:1.75,zoom:.75,pan:2.5});
+});
