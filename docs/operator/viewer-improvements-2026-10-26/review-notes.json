@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "measurement_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
+  "measurement_scope": "2026-10-26 stationary home display A/B; 15s x3 per mode; defaults with unequal pixels",
+  "performance_after_camera_changes_remeasured": false,
+  "camera_validation": {
+    "read_only_model_preview": true,
+    "zoom_in_out_visible_change": true,
+    "reset_current_model": true,
+    "keyboard_sensitivity_ranges": true,
+    "operate_demo_sync": true,
+    "model_switch_preserves_sensitivity": true,
+    "image_mode_disabled": true,
+    "browser_console_errors": 0,
+    "pointer_orbit_or_wheel_newly_tested": false,
+    "physical_touch_device_tested": false,
+    "new_motion_command_sent": false
+  },
+  "checks": {
+    "python_unit_tests": 562,
+    "javascript_tests": 59,
+    "report_schema_hash_links": "passed; generator unchanged"
+  },
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/operator_console/static/viewer.js": "89c19ab75178acf8af8e5c745a18a0943bf5ec032c01ef6478ce5f3758b2120d",
+    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "231f3e1dc250243cc01ac82c83ae340a075f8ba604412e38deafc8519b939704",
+    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "ca90e9c851ee55e79d98ed60c054d65ac483a2d28d25ef93973692afb7dbec8a",
+    "src/mujoco_ros2_manipulation/operator_console/static/style.css": "e5d0e52bc94705c34204adf591beae1b6733f9ba99901193817b039cde7e3321"
+  },
+  "site_navigation_update": {
+    "date": "2026-10-26",
+    "scope": "Added current viewer improvement and site/project return links; original measurement, media and implementation baseline preserved.",
+    "new_measurement": false,
+    "print_styles": "unchanged; print preview not newly tested"
+  }
+}

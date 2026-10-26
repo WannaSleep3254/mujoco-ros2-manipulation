@@ -1,0 +1,543 @@
+{
+  "schema_version": 1,
+  "workcell": "fr5_ur5e",
+  "code_commit": "05b597f41c219b72374dec6583eb8fc7a939b6e7",
+  "model_manifest": {
+    "schema_version": 1,
+    "workcell_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+    "inputs": {
+      "config/workcells/fr5_ur5e.yaml": "21b9364152bf05560c7c08e2b862665f4d78ca4303d4ae7ef80652f6f414583f",
+      "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+      "src/mujoco_ros2_manipulation/workcells/config.py": "18ba02dbc47b5ca6620abc008326c891e23eb99438c97b5c65eaf347d4e1f87f",
+      "src/mujoco_ros2_manipulation/workcells/prepare.py": "2143c50a866bb743773411fd7c65d5eccb6ebbb20bb8a4cb80a4603dcc4259e5",
+      "src/mujoco_ros2_manipulation/workcells/integrity.py": "1b0bc61bfb52297630640d1226639c4a63c62109decd828fc35ae2996ca25890",
+      "packages/ur5e_moveit_config/config/moveit.rviz": "90e241fc136b307bf37e8d48d25a1da03973a354828cd0409c3ccd96617b8912",
+      "models/fr5/source.json": "f317436a43f845609e0bac94c22bfc3bc4c485b43877c4271abd0e115abc672e",
+      "models/fr5/fr5.xml": "62bf211b01ab1c61708a9e3eef6ced0be2b4cec3692d94b6ddc52abaa27d2060",
+      "models/fr5/fr5.ros2_control.urdf": "18ca958687fad03a6b4a696639c9e8bd8eca3d26df114ca72eb784a05704a69c",
+      "models/ur5e/source.json": "c69eada6a332273e529d6813a066a1a72c5c24e6ede2cc52560f22190ea7415d",
+      "models/ur5e/ur5e.xml": "30cbaefe8670fe103804172f29d1262ebb480bfaab155e1c1c09ed353b03da7c",
+      "models/ur5e/ur5e.ros2_control.urdf": "787f8101b1aa799a007fe8d1f2943f3f189ee04c87644cd498eaa845e0b78b22"
+    },
+    "outputs": {
+      "cell.xml": "acda9ec4cde30de1d2400abb112055ae7a935dfcb134e4020f418352077454d5",
+      "cell.urdf": "4f5712578bd2a4a648ba7819a45bdc132fa280e487ec46ca7085f7e24a244662",
+      "cell.srdf": "7a8d9181b2e535d9f96c422f0e49848b2196462ffe6e2ec697cbb5a9fcf6d6af",
+      "controllers.yaml": "7285476bd1a1e3853e90ac7511c667aca5eff3aed579ebdd5ee488cf147817f7",
+      "moveit.yaml": "5036e130bc50ea6b6426e997c988c11a80bdf5f907e9416d7da17fa219b71471",
+      "moveit.rviz": "2666e25f91f94db3dc512ff5313ca88305384d76a5981c74e25d380215b0be3d"
+    },
+    "joints": [
+      "left_j1",
+      "left_j2",
+      "left_j3",
+      "left_j4",
+      "left_j5",
+      "left_j6",
+      "right_shoulder_pan_joint",
+      "right_shoulder_lift_joint",
+      "right_elbow_joint",
+      "right_wrist_1_joint",
+      "right_wrist_2_joint",
+      "right_wrist_3_joint"
+    ],
+    "home_rad": [
+      0.0,
+      -1.2,
+      1.2,
+      -1.5,
+      -1.5,
+      0.0,
+      0.0,
+      -1.5708,
+      1.5708,
+      -1.5708,
+      -1.5708,
+      0.0
+    ],
+    "joint_limits": {
+      "left_j1": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j2": {
+        "lower": -4.6251,
+        "upper": 1.4835,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j3": {
+        "lower": -2.8274,
+        "upper": 2.8274,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j4": {
+        "lower": -4.6251,
+        "upper": 1.4835,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "left_j5": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "left_j6": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "right_shoulder_pan_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_shoulder_lift_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_elbow_joint": {
+        "lower": -3.141592653589793,
+        "upper": 3.141592653589793,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_1_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_2_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_3_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      }
+    }
+  },
+  "policy": {
+    "schema_version": 1,
+    "workcell": "fr5_ur5e",
+    "case": "dual_arm_crossing",
+    "min_inter_arm_distance_m": 0.02,
+    "tracking_reserve_m": 0.01,
+    "sample_dt_sec": 0.01,
+    "delay_step_sec": 0.1,
+    "max_delay_sec": 4.0
+  },
+  "evaluator": {
+    "engine": "MuJoCo 3.12.0",
+    "source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+    "library_sha256": "d6a1bd619ca9687a449d6a83d0d09c18e57668c2a3992dc2a36685ccd1f96461",
+    "distance_scope": "All collision-enabled geom pairs belonging to the two robot base subtrees",
+    "tip_frames": [
+      "left_wrist3_link",
+      "right_tool0"
+    ],
+    "tip_definition": "URDF tip frame origin; no physical tool/TCP offset assumed",
+    "geometry": "MuJoCo compiled collision shapes; meshes use convex collision approximation"
+  },
+  "workcell_contract": {
+    "schema_version": 1,
+    "kind": "workcell_description",
+    "workcell_id": "fr5_ur5e",
+    "label": "FR5 + UR5e 공동 작업장면",
+    "identity": {
+      "workcell_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "profile_sha256": {
+        "left": "532a7eb981880b06c0ef0c1b8e918bddaffe2fe28d3f8da96d20438172141acb",
+        "right": "005a2fdb9e1a04d2c7ec99341abbb004db3c05cdef03d53305dec9caa13590c1"
+      },
+      "inputs_sha256": {
+        "config/workcells/fr5_ur5e.yaml": "21b9364152bf05560c7c08e2b862665f4d78ca4303d4ae7ef80652f6f414583f",
+        "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+        "src/mujoco_ros2_manipulation/workcells/config.py": "18ba02dbc47b5ca6620abc008326c891e23eb99438c97b5c65eaf347d4e1f87f",
+        "src/mujoco_ros2_manipulation/workcells/prepare.py": "2143c50a866bb743773411fd7c65d5eccb6ebbb20bb8a4cb80a4603dcc4259e5",
+        "src/mujoco_ros2_manipulation/workcells/integrity.py": "1b0bc61bfb52297630640d1226639c4a63c62109decd828fc35ae2996ca25890",
+        "packages/ur5e_moveit_config/config/moveit.rviz": "90e241fc136b307bf37e8d48d25a1da03973a354828cd0409c3ccd96617b8912",
+        "models/fr5/source.json": "f317436a43f845609e0bac94c22bfc3bc4c485b43877c4271abd0e115abc672e",
+        "models/fr5/fr5.xml": "62bf211b01ab1c61708a9e3eef6ced0be2b4cec3692d94b6ddc52abaa27d2060",
+        "models/fr5/fr5.ros2_control.urdf": "18ca958687fad03a6b4a696639c9e8bd8eca3d26df114ca72eb784a05704a69c",
+        "models/ur5e/source.json": "c69eada6a332273e529d6813a066a1a72c5c24e6ede2cc52560f22190ea7415d",
+        "models/ur5e/ur5e.xml": "30cbaefe8670fe103804172f29d1262ebb480bfaab155e1c1c09ed353b03da7c",
+        "models/ur5e/ur5e.ros2_control.urdf": "787f8101b1aa799a007fe8d1f2943f3f189ee04c87644cd498eaa845e0b78b22"
+      },
+      "outputs_sha256": {
+        "cell.xml": "acda9ec4cde30de1d2400abb112055ae7a935dfcb134e4020f418352077454d5",
+        "cell.urdf": "4f5712578bd2a4a648ba7819a45bdc132fa280e487ec46ca7085f7e24a244662",
+        "cell.srdf": "7a8d9181b2e535d9f96c422f0e49848b2196462ffe6e2ec697cbb5a9fcf6d6af",
+        "controllers.yaml": "7285476bd1a1e3853e90ac7511c667aca5eff3aed579ebdd5ee488cf147817f7",
+        "moveit.yaml": "5036e130bc50ea6b6426e997c988c11a80bdf5f907e9416d7da17fa219b71471",
+        "moveit.rviz": "2666e25f91f94db3dc512ff5313ca88305384d76a5981c74e25d380215b0be3d"
+      }
+    },
+    "assets": {
+      "directory": "runtime/generated/workcells/fr5_ur5e",
+      "outputs": [
+        {
+          "path": "runtime/generated/workcells/fr5_ur5e/cell.xml",
+          "sha256": "acda9ec4cde30de1d2400abb112055ae7a935dfcb134e4020f418352077454d5",
+          "role": "mujoco_scene"
+        },
+        {
+          "path": "runtime/generated/workcells/fr5_ur5e/cell.urdf",
+          "sha256": "4f5712578bd2a4a648ba7819a45bdc132fa280e487ec46ca7085f7e24a244662",
+          "role": "ros_robot_and_collision_description"
+        },
+        {
+          "path": "runtime/generated/workcells/fr5_ur5e/cell.srdf",
+          "sha256": "7a8d9181b2e535d9f96c422f0e49848b2196462ffe6e2ec697cbb5a9fcf6d6af",
+          "role": "moveit_semantics"
+        },
+        {
+          "path": "runtime/generated/workcells/fr5_ur5e/controllers.yaml",
+          "sha256": "7285476bd1a1e3853e90ac7511c667aca5eff3aed579ebdd5ee488cf147817f7",
+          "role": "ros2_control_configuration"
+        },
+        {
+          "path": "runtime/generated/workcells/fr5_ur5e/moveit.yaml",
+          "sha256": "5036e130bc50ea6b6426e997c988c11a80bdf5f907e9416d7da17fa219b71471",
+          "role": "moveit_configuration"
+        },
+        {
+          "path": "runtime/generated/workcells/fr5_ur5e/moveit.rviz",
+          "sha256": "2666e25f91f94db3dc512ff5313ca88305384d76a5981c74e25d380215b0be3d",
+          "role": "rviz_configuration"
+        }
+      ]
+    },
+    "units": {
+      "length": "m",
+      "joint_position": "rad",
+      "joint_velocity": "rad/s",
+      "joint_acceleration": "rad/s^2",
+      "joint_effort": "N*m",
+      "time": "s",
+      "orientation": "URDF fixed-axis roll-pitch-yaw in rad",
+      "box_size": "full side lengths in m",
+      "cylinder_size": "radius and full height in m"
+    },
+    "world_frame": "world",
+    "joint_names": [
+      "left_j1",
+      "left_j2",
+      "left_j3",
+      "left_j4",
+      "left_j5",
+      "left_j6",
+      "right_shoulder_pan_joint",
+      "right_shoulder_lift_joint",
+      "right_elbow_joint",
+      "right_wrist_1_joint",
+      "right_wrist_2_joint",
+      "right_wrist_3_joint"
+    ],
+    "joint_limits": {
+      "left_j1": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j2": {
+        "lower": -4.6251,
+        "upper": 1.4835,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j3": {
+        "lower": -2.8274,
+        "upper": 2.8274,
+        "effort": 150.0,
+        "velocity": 3.15
+      },
+      "left_j4": {
+        "lower": -4.6251,
+        "upper": 1.4835,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "left_j5": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "left_j6": {
+        "lower": -3.0543,
+        "upper": 3.0543,
+        "effort": 28.0,
+        "velocity": 3.2
+      },
+      "right_shoulder_pan_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_shoulder_lift_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_elbow_joint": {
+        "lower": -3.141592653589793,
+        "upper": 3.141592653589793,
+        "effort": 150.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_1_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_2_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      },
+      "right_wrist_3_joint": {
+        "lower": -6.283185307179586,
+        "upper": 6.283185307179586,
+        "effort": 28.0,
+        "velocity": 3.141592653589793
+      }
+    },
+    "home_rad": {
+      "left_j1": 0.0,
+      "left_j2": -1.2,
+      "left_j3": 1.2,
+      "left_j4": -1.5,
+      "left_j5": -1.5,
+      "left_j6": 0.0,
+      "right_shoulder_pan_joint": 0.0,
+      "right_shoulder_lift_joint": -1.5708,
+      "right_elbow_joint": 1.5708,
+      "right_wrist_1_joint": -1.5708,
+      "right_wrist_2_joint": -1.5708,
+      "right_wrist_3_joint": 0.0
+    },
+    "robots": [
+      {
+        "instance": "left",
+        "model": "fr5",
+        "prefix": "left_",
+        "joint_names": [
+          "left_j1",
+          "left_j2",
+          "left_j3",
+          "left_j4",
+          "left_j5",
+          "left_j6"
+        ],
+        "joint_map": {
+          "j1": "left_j1",
+          "j2": "left_j2",
+          "j3": "left_j3",
+          "j4": "left_j4",
+          "j5": "left_j5",
+          "j6": "left_j6"
+        },
+        "base_frame": "left_base_link",
+        "tip_frame": "left_wrist3_link",
+        "installation_pose": {
+          "frame": "world",
+          "xyz_m": [
+            -0.65,
+            0,
+            0.4
+          ],
+          "rpy_rad": [
+            0,
+            0,
+            3.141592653589793
+          ]
+        },
+        "current_ros_adapter": {
+          "planning_group": "left_arm",
+          "trajectory_controller": "left_controller"
+        }
+      },
+      {
+        "instance": "right",
+        "model": "ur5e",
+        "prefix": "right_",
+        "joint_names": [
+          "right_shoulder_pan_joint",
+          "right_shoulder_lift_joint",
+          "right_elbow_joint",
+          "right_wrist_1_joint",
+          "right_wrist_2_joint",
+          "right_wrist_3_joint"
+        ],
+        "joint_map": {
+          "shoulder_pan_joint": "right_shoulder_pan_joint",
+          "shoulder_lift_joint": "right_shoulder_lift_joint",
+          "elbow_joint": "right_elbow_joint",
+          "wrist_1_joint": "right_wrist_1_joint",
+          "wrist_2_joint": "right_wrist_2_joint",
+          "wrist_3_joint": "right_wrist_3_joint"
+        },
+        "base_frame": "right_base_link",
+        "tip_frame": "right_tool0",
+        "installation_pose": {
+          "frame": "world",
+          "xyz_m": [
+            0.65,
+            0,
+            0.4
+          ],
+          "rpy_rad": [
+            0,
+            0,
+            3.141592653589793
+          ]
+        },
+        "current_ros_adapter": {
+          "planning_group": "right_arm",
+          "trajectory_controller": "right_controller"
+        }
+      }
+    ],
+    "environment": {
+      "frame": "world",
+      "objects": [
+        {
+          "name": "floor",
+          "shape": "box",
+          "size": [
+            4,
+            4,
+            0.2
+          ],
+          "xyz": [
+            0,
+            0,
+            -0.105
+          ],
+          "rpy": [
+            0,
+            0,
+            0
+          ],
+          "rgba": [
+            0.25,
+            0.28,
+            0.3,
+            1
+          ]
+        },
+        {
+          "name": "left_pedestal",
+          "shape": "box",
+          "size": [
+            0.3,
+            0.3,
+            0.4
+          ],
+          "xyz": [
+            -0.65,
+            0,
+            0.2
+          ],
+          "rpy": [
+            0,
+            0,
+            0
+          ],
+          "rgba": [
+            0.3,
+            0.35,
+            0.4,
+            1
+          ]
+        },
+        {
+          "name": "right_pedestal",
+          "shape": "box",
+          "size": [
+            0.3,
+            0.3,
+            0.4
+          ],
+          "xyz": [
+            0.65,
+            0,
+            0.2
+          ],
+          "rpy": [
+            0,
+            0,
+            0
+          ],
+          "rgba": [
+            0.3,
+            0.35,
+            0.4,
+            1
+          ]
+        }
+      ]
+    },
+    "current_adapters": {
+      "simulation": "MuJoCo via mujoco_ros2_control/MujocoSystemInterface",
+      "transport": "ROS 2",
+      "planning": "MoveIt 2 / OMPL",
+      "execution": "FollowJointTrajectory / ros2_control spline interpolation",
+      "visualization": "ROS joint-state rendering with MuJoCo; RViz"
+    },
+    "scope": {
+      "joints": "rotational",
+      "environment": "fixed box/cylinder primitives",
+      "robot_instances": 2,
+      "command": "complete named joint targets",
+      "runtime_plugins": false
+    }
+  },
+  "implementation_sha256": {
+    "motion_server.py": "5e0029883aa444cc135e7e59cb53340c3c9304af126eaee745902b623da4182b",
+    "motion_client.py": "720ae5c57615290f67251a3ebbf4f569a55456b5240c9b8d8472dcf4da148884",
+    "motion_request.py": "0d2b5741451be03495f7a8c657e7b7e33b707deddc51c3a1818ee68b5a2b67c7",
+    "request_trace.py": "bc583d527152d68776fe276653ae8cdfbbe2f1a5c0ef3c84c82513b84a5217e0",
+    "verify.py": "180e35699ed48953c38d69b925b52080c777a4167f7485137946eb91a62abfbc",
+    "timing.py": "27cbf2a212694479d8e462f29f10fb6e2d72b3c14c8dd02116b16534002ce861",
+    "path_quality.py": "761613fc2eeef2307aeb0443761f309d1667f71b0deb68a172b2ea80d72320a3",
+    "planning_budget.py": "3f4edc1a522bbf7a62cc6d23f1b063a10f5380ff1270a815f0ba268aff53ef7f",
+    "contracts.py": "78fa704bc6af2226baadbb37d90b4d82b0f48412d2abc3380bd2c13902ce1c61",
+    "motion_diagnostics.py": "3f79dc00cc7f946d866d075a797832c28be15bf7572ae3f5fe950d7611bccec4"
+  },
+  "evidence_export": {
+    "schema_version": 1,
+    "kind": "session",
+    "raw_source_sha256": "1aa2655f0a33444f25f228cd4671e21c151f353555c085347c48c39a62914a6f",
+    "retained_fields": [
+      "schema_version",
+      "workcell",
+      "code_commit",
+      "model_manifest",
+      "policy",
+      "evaluator",
+      "workcell_contract",
+      "implementation_sha256"
+    ],
+    "note": "privacy-filtered extract; complete original retained locally"
+  }
+}

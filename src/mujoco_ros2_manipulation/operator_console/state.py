@@ -19,9 +19,12 @@ class ConsoleState:
         self.positions = self.velocities = None
         self.joint_at = self.clock_at = self.clock_advanced_at = None
         self.simulation_sec = None
+        self.joint_state_stamp_simulation_sec = None
         self.clock_backwards = False
         self.graph = dict(clock=0, joints=0, status=0, commands=0, guards=0)
         self.identity = False
+        self.observed_model_path = None
+        self.identity_requested_at = self.identity_checked_at = None
         self.guard = None
         self.server = None
         self.server_at = None
@@ -30,7 +33,7 @@ class ConsoleState:
         self.ui_ids = set()
         self.admission_suspended = False
 
-    def joints(self, names, positions, velocities):
+    def joints(self, names, positions, velocities, *, source_stamp=None):
         with self.lock:
             if len(names) != len(set(names)) or set(names) != set(self.config["home_rad"]) or len(positions) != len(names):
                 return
@@ -39,6 +42,9 @@ class ConsoleState:
             self.positions = dict(zip(names, positions))
             self.velocities = dict(zip(names, velocities)) if len(velocities) == len(names) and all(math.isfinite(v) for v in velocities) else None
             self.joint_at = self.clock()
+            self.joint_state_stamp_simulation_sec = (source_stamp
+                if type(source_stamp) in (int, float) and math.isfinite(source_stamp) and source_stamp >= 0
+                else None)
 
     def tick(self, stamp):
         if not math.isfinite(stamp):
@@ -123,7 +129,8 @@ class ConsoleState:
             now = self.clock()
             reason = self.reason()
             return deepcopy(dict(positions_rad=self.positions, velocities_rad_sec=self.velocities,
-                simulation_sec=self.simulation_sec, state_age_sec=None if self.joint_at is None else now-self.joint_at,
+                simulation_sec=self.simulation_sec, joint_state_stamp_simulation_sec=self.joint_state_stamp_simulation_sec,
+                state_age_sec=None if self.joint_at is None else now-self.joint_at,
                 clock_age_sec=None if self.clock_advanced_at is None else now-self.clock_advanced_at,
                 graph=self.graph, simulation_verified=self.identity, guard=self.guard,
                 server=self.server, active_request_id=self.active, can_submit=reason is None,

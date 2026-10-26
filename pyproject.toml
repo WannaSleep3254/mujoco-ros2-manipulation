@@ -31,9 +31,20 @@ manipulation-verify-contact-stop = "mujoco_ros2_manipulation.workcells.verify_co
 manipulation-verify-workcell = "mujoco_ros2_manipulation.workcells.verify:main"
 manipulation-motion-server = "mujoco_ros2_manipulation.workcells.motion_server:main"
 manipulation-command = "mujoco_ros2_manipulation.workcells.motion_client:main"
+manipulation-verify-replanning = "mujoco_ros2_manipulation.workcells.verify_motion_replanning:main"
+manipulation-reproduce-motion = "mujoco_ros2_manipulation.workcells.reproduce_motion:main"
+manipulation-benchmark-fixed = "mujoco_ros2_manipulation.workcells.benchmark_fixed_motion:main"
+manipulation-export-fixed-motion = "mujoco_ros2_manipulation.workcells.export_fixed_motion:main"
+manipulation-import-fixed-report = "mujoco_ros2_manipulation.reporting.fixed_motion:main"
 manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
 manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main"
 manipulation-verify-operator = "mujoco_ros2_manipulation.operator_console.verify:main"
+manipulation-verify-views = "mujoco_ros2_manipulation.operator_console.verify_views:main"
+manipulation-verify-demos = "mujoco_ros2_manipulation.operator_console.verify_demos:main"
+manipulation-import-step = "mujoco_ros2_manipulation.workcells.import_step:main"
+manipulation-prepare-environment = "mujoco_ros2_manipulation.workcells.environment_cli:main"
+manipulation-verify-environment = "mujoco_ros2_manipulation.workcells.verify_environment_overlay:main"
+manipulation-verify-environment-views = "mujoco_ros2_manipulation.operator_console.verify_environment_views:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -44,4 +55,4 @@ where = ["src"]
 [tool.setuptools.package-data]
 "mujoco_ros2_manipulation.reporting" = ["report.schema.json", "operator-demos.schema.json", "templates/*.html", "templates/*.css"]
 
-"mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js"]
+"mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js", "static/*.mjs", "static/vendor/*.js", "static/vendor/*.json", "static/vendor/LICENSE"]

@@ -42,7 +42,9 @@ def main():
         case = yaml.safe_load(path.read_text())
         load_case(load_workcell(case['workcell']), path.stem)
     from mujoco_ros2_manipulation.workcells.timing import load_policy
-    load_policy(load_workcell())
+    for path in (ROOT / "config/planning").glob("*.yaml"):
+        policy = yaml.safe_load(path.read_text())
+        load_policy(load_workcell(policy["workcell"]), path.stem)
     profiles = list_profiles()
     for path in (ROOT / 'config/scenes').glob('*.yaml'):
         load_scene(path.stem, ROOT)

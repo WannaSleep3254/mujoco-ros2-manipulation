@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "id": "fr5_ur5e-home-return-clearance",
+  "workcell": "fr5_ur5e",
+  "initial_rad": {
+    "left_j1": -1.0447443956818114,
+    "left_j2": -0.7963021319753804,
+    "left_j3": 0.7137792909646499,
+    "left_j4": -1.4971116478434303,
+    "left_j5": 0.00016933655719556683,
+    "left_j6": -0.00015466075949284648,
+    "right_shoulder_pan_joint": 0.0012873119842261077,
+    "right_shoulder_lift_joint": -1.5700321859734698,
+    "right_elbow_joint": 1.5752527531135911,
+    "right_wrist_1_joint": -1.5713641912922784,
+    "right_wrist_2_joint": -1.5700017942794187,
+    "right_wrist_3_joint": -0.0023158592171967024
+  },
+  "target_rad": {
+    "left_j1": 0,
+    "left_j2": -1.2,
+    "left_j3": 1.2,
+    "left_j4": -1.5,
+    "left_j5": -1.5,
+    "left_j6": 0,
+    "right_shoulder_pan_joint": 0,
+    "right_shoulder_lift_joint": -1.5708,
+    "right_elbow_joint": 1.5708,
+    "right_wrist_1_joint": -1.5708,
+    "right_wrist_2_joint": -1.5708,
+    "right_wrist_3_joint": 0
+  },
+  "witness": {
+    "time_sec": 4.329451118100254,
+    "state_rad": {
+      "left_j1": -0.4343310111717421,
+      "left_j2": -1.0335270227422357,
+      "left_j3": 0.9976756369779431,
+      "left_j4": -1.499778477598167,
+      "left_j5": -0.8732549397890482,
+      "left_j6": -0.0015928481568048,
+      "right_shoulder_pan_joint": 0.0002037103449310026,
+      "right_shoulder_lift_joint": -1.5689818299550664,
+      "right_elbow_joint": 1.5710576040687925,
+      "right_wrist_1_joint": -1.5694856709325051,
+      "right_wrist_2_joint": -1.5708735716734792,
+      "right_wrist_3_joint": 0.0005871611431514647
+    },
+    "distance_m": 0.029852370939098594,
+    "bodies": [
+      "left_wrist3_link",
+      "right_wrist_3_link"
+    ]
+  },
+  "source": {
+    "code_commit": "9e6a0c67a9f8c9992cfc56b6e2288d5b71853bc1",
+    "request_ids": {
+      "coordinated": "c5ecfdd06cdf48d0959c983ebf5224d9",
+      "departure_timing": "25b471eee55042848109d714ae1d78a5"
+    },
+    "traces": {
+      "coordinated": {
+        "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/c5ecfdd06cdf48d0959c983ebf5224d9.json",
+        "sha256": "e60580fdb320584de5cb0055663b0427062bcf353f7fcb2ac360cc0ebf986cdf"
+      },
+      "departure_timing": {
+        "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/25b471eee55042848109d714ae1d78a5.json",
+        "sha256": "e7cfd09101ecf53ff99e41da94175af48edce6ca4eff7f225bf8decbb895cb43"
+      }
+    },
+    "session": {
+      "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/session.json",
+      "sha256": "e156a1ce32f072d42077c82a555b3ea16c99a5eb925008f2f53986e880515e50"
+    },
+    "geometry": {
+      "cell_xml_canonical_sha256": "40c53e9183747a4220319d1c2bbbcfb997598f095fd132068c1f5de2bb1886f8",
+      "repository_root_token": "{REPOSITORY_ROOT}",
+      "asset_sha256": {
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/base_link.STL": "ce96425ae7401b8a7262a1c1fd40c8b02bbf152a975d33debcb3ed4369e3938e",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/forearm_link.STL": "28387d67b50263ffe67cf8a6a1f2f7f11a12bd2bedc65340f920c5311eb1ef92",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/shoulder_link.STL": "c4cc46eea722cab4b57779f0c2cc99091cb0c698a31fc58736c120a0e6dd1324",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/upperarm_link.STL": "407e0b0f98eb569b9255b6d3258a7c3ba8b0d8b48c8f3c073bd0d9e59ad5faf0",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/wrist1_link.STL": "0f6f96c39bd237f2ff5beeab4179074900cba0d73664dc0bab682d151b777ac6",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/wrist2_link.STL": "63c43f1f17a86a1d74b07a172185d1cb3ff4133143511832a2bcd31b2b6a9bdf",
+        "external/frcobot_ros2/fairino_description/meshes/fairino5_v6/wrist3_link.STL": "4c4d1706c0a1895d59d70af0f444e72bb80abdb526f1a22f24cd4ad3adfa00fb",
+        "external/ur_description/meshes/ur5e/collision/base.stl": "9a145e0d46f2130afdf2a2e8825a00a929870c4c3d6d8e4d1adc5f04db3aac1b",
+        "external/ur_description/meshes/ur5e/collision/forearm.stl": "2e7423cab807c34160ec4f770daee5e747d70e777eb01b7beeace2b8c5751816",
+        "external/ur_description/meshes/ur5e/collision/shoulder.stl": "ceb92532177daa77682f5fbd628e01c2137d168f949a7a706ce1dabe9f002387",
+        "external/ur_description/meshes/ur5e/collision/upperarm.stl": "ee893044caf00075cb55b4cf666d1f1311c7979786212a501009f33bee945209",
+        "external/ur_description/meshes/ur5e/collision/wrist1.stl": "f8c9f9337b6fd98c75f052e96de10e14a107ddb6874ba6b904e546f8a4e4f43a",
+        "external/ur_description/meshes/ur5e/collision/wrist2.stl": "2964a63f60ce3e3cf3ad55bcf190d7876d50e373cb64b70a57cea5885eaf3c86",
+        "external/ur_description/meshes/ur5e/collision/wrist3.stl": "83b3666b4ae2badd54af0d2c25a921682ecbc29e849eec646c3ed55fb74c78a3",
+        "models/ur5e/visual_meshes/base_01bfc311_0.obj": "a22eb7ba8c0746e5fcfe52b9a6cfe41553ce663ca0f0658383271039c3c2bb3e",
+        "models/ur5e/visual_meshes/base_01bfc311_1.obj": "84238c0f79ffca4e57da371fa2e47d98abc8fdc04509ffcdddec4656b4f2d1ee",
+        "models/ur5e/visual_meshes/forearm_871d47b0_0.obj": "d42474d8fc3ac34603d76ab9c391bdbebb33dd25d78d8104c5e7ec060d8aeb1c",
+        "models/ur5e/visual_meshes/forearm_871d47b0_1.obj": "1e31fd1ed1e34cfbc87870a3e9564a5cd148454b978495f7a1d0344e175b8c23",
+        "models/ur5e/visual_meshes/forearm_871d47b0_2.obj": "0a3894e1d527bce075007150bee0ad311e411524f4d8159a0a65f46c4e41bb28",
+        "models/ur5e/visual_meshes/forearm_871d47b0_3.obj": "4440f49beb0903611e3342b5b34f4c94ad0e599c6257bfa66e8dbb787589adea",
+        "models/ur5e/visual_meshes/shoulder_e61b76ea_0.obj": "e5b5e3d74368e69b9b80df038b02a8415ea91e483c9717b663a6d7f5e03aa29a",
+        "models/ur5e/visual_meshes/shoulder_e61b76ea_1.obj": "5b71ad267838cc5a70437d63b340bef38e583ddf93813529a1e38176bdd1ecc9",
+        "models/ur5e/visual_meshes/shoulder_e61b76ea_2.obj": "371eede12f6f3aa24e9a2ae4e7339225031e065dc27ef75367462ac599d77eb7",
+        "models/ur5e/visual_meshes/upperarm_5ee4aaed_0.obj": "5dc846e89fe8e54706e63d8bd1c6d4e52da2e816f91524323469c0dcd8a786f7",
+        "models/ur5e/visual_meshes/upperarm_5ee4aaed_1.obj": "a63f6c347755651fcf1fddc38dd1f48cd2ad9aed30313911d386fbb13a7474fe",
+        "models/ur5e/visual_meshes/upperarm_5ee4aaed_2.obj": "0273c03ef7724c4a13a0004b83082e7788689adea9130eec67a51a771eec1a55",
+        "models/ur5e/visual_meshes/upperarm_5ee4aaed_3.obj": "d6223ad803aa158561691c14ba4476ec2fd56b04d9be3b5bbac5de53b67c8fd0",
+        "models/ur5e/visual_meshes/wrist1_43562b82_0.obj": "2bce1e3fb9902ce4658372c59a8135b6e3557d674e542f22cd7da6762f2f96c6",
+        "models/ur5e/visual_meshes/wrist1_43562b82_1.obj": "ce46c934d049772d30e865e1337211f2d682713858b69e2b802d90adadcf45a2",
+        "models/ur5e/visual_meshes/wrist1_43562b82_2.obj": "aa473e5ce2ba53243dd494c4f8215acf97b5e8481a0defa681f406c823b064bb",
+        "models/ur5e/visual_meshes/wrist2_32717ed3_0.obj": "7ca6be860db3a3f00a001809c565b1cc20201effcc0437ba0784cf2b806b13e1",
+        "models/ur5e/visual_meshes/wrist2_32717ed3_1.obj": "9ff9be7678aa365079f028ca13490272a3a89a6d649ce4ddf3d86fff805396a2",
+        "models/ur5e/visual_meshes/wrist2_32717ed3_2.obj": "f54cfbb13b70642c84aeeb5f1975ae62eddaccdb9b37e83721a14c2c835a5a8a",
+        "models/ur5e/visual_meshes/wrist3_3f8cfa63_0.obj": "c68316c53747036d545b6acf59783de52e289f750e2e58b46af7e61febcfb8be"
+      },
+      "config_sha256": {
+        "config/workcells/fr5_ur5e.yaml": "21b9364152bf05560c7c08e2b862665f4d78ca4303d4ae7ef80652f6f414583f",
+        "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30"
+      },
+      "workcell_sha256": "6393ef6a554d39a64604653ae68e3b1b6ee17d317cb5c28e58dd6dc860b318d2",
+      "baseline_raw_cell_xml_sha256": "acda9ec4cde30de1d2400abb112055ae7a935dfcb134e4020f418352077454d5",
+      "baseline_verified_against_session_output": true
+    }
+  },
+  "expected": {
+    "location": "intermediate",
+    "threshold_m": 0.03
+  },
+  "setup": {
+    "target_rad": {
+      "left_j1": -1.0471975511965976,
+      "left_j2": -0.7984881327874057,
+      "left_j3": 0.7112216701876892,
+      "left_j4": -1.5,
+      "left_j5": 0,
+      "left_j6": 0,
+      "right_shoulder_pan_joint": 0,
+      "right_shoulder_lift_joint": -1.5708,
+      "right_elbow_joint": 1.5708,
+      "right_wrist_1_joint": -1.5708,
+      "right_wrist_2_joint": -1.5708,
+      "right_wrist_3_joint": 0
+    },
+    "source_request_id": "6f93ff9f80b54a9eb6ae67784f020d9e",
+    "source_trace_sha256": "e390323ba40d2e18a4daef84455a99d6fe4dd0b3bd71107ecac8691cbcc6d9cb",
+    "note": "Historical nominal setup waypoints, preserved in order with original successful traces. A fresh setup must pass unchanged planning, clearance and execution checks at each step; the settled result is then aligned to initial_rad. This sequence does not guarantee a new planner will select the historical paths.",
+    "sequence": [
+      {
+        "target_rad": {
+          "left_j1": 0,
+          "left_j2": -0.7984881327874057,
+          "left_j3": 0.7112216701876892,
+          "left_j4": -1.5,
+          "left_j5": -1.5,
+          "left_j6": 0,
+          "right_shoulder_pan_joint": 0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0
+        },
+        "source_request_id": "bc850a2b98574a17b92e0cef511cf7f4",
+        "source": {
+          "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/bc850a2b98574a17b92e0cef511cf7f4.json.gz",
+          "sha256": "e9e0fb02723b039047dbcc9a1836eac595da09e09baaf6e0b4a59a90f5a2246e"
+        },
+        "source_trace_sha256": "b5e2e43d2959c59718194358f2996f4bc5b22ddeaaec3e07ca930a2936d0c85a"
+      },
+      {
+        "target_rad": {
+          "left_j1": 0,
+          "left_j2": -0.7984881327874057,
+          "left_j3": 0.7112216701876892,
+          "left_j4": -1.5,
+          "left_j5": -0.9763371835656278,
+          "left_j6": 0,
+          "right_shoulder_pan_joint": 0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0
+        },
+        "source_request_id": "806ff644305b4ec097c4d879c73d2d3e",
+        "source": {
+          "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/806ff644305b4ec097c4d879c73d2d3e.json.gz",
+          "sha256": "3cb0e90dfe45166c89bdc78d5a79d8822307aa3001cecc89eaef076b5854d966"
+        },
+        "source_trace_sha256": "5659f0ab3e61ea46a0242f51287919604ecc902d8973eb51a8a069b17dfa086f"
+      },
+      {
+        "target_rad": {
+          "left_j1": 0,
+          "left_j2": -0.7984881327874057,
+          "left_j3": 0.7112216701876892,
+          "left_j4": -1.5,
+          "left_j5": 0,
+          "left_j6": 0,
+          "right_shoulder_pan_joint": 0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0
+        },
+        "source_request_id": "73089b16e01c4eb380b4dab68f2f1f40",
+        "source": {
+          "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/73089b16e01c4eb380b4dab68f2f1f40.json.gz",
+          "sha256": "2ca1965de8347333796ce667203b59808793b665ead95e40b437c5e6c4020b6c"
+        },
+        "source_trace_sha256": "ad7ce24ed27847fe39b746027e275b0f94bd56e768bca6196d9060a589ac1d20"
+      },
+      {
+        "target_rad": {
+          "left_j1": -1.0471975511965976,
+          "left_j2": -0.7984881327874057,
+          "left_j3": 0.7112216701876892,
+          "left_j4": -1.5,
+          "left_j5": 0,
+          "left_j6": 0,
+          "right_shoulder_pan_joint": 0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0
+        },
+        "source_request_id": "6f93ff9f80b54a9eb6ae67784f020d9e",
+        "source": {
+          "path": "docs/reproductions/home-return-2026-10-23/evidence/historical/6f93ff9f80b54a9eb6ae67784f020d9e.json.gz",
+          "sha256": "d1c6ec121127c2639915555b1e45391a8e2457899278092291876485638d2e42"
+        },
+        "source_trace_sha256": "e390323ba40d2e18a4daef84455a99d6fe4dd0b3bd71107ecac8691cbcc6d9cb"
+      }
+    ]
+  },
+  "note": "Fixed historical home-return inputs linked to privacy-filtered evidence extracts. Each extract identifies its complete locally retained original by raw_source_sha256. The witness is the first sampled subthreshold point, not a full-path minimum; the original rejected trajectory was not saved. Fresh MoveIt output must be recorded separately. This fixture does not establish a success rate or latency improvement."
+}

@@ -1,0 +1,401 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-23",
+  "scope": "Local headless fixed-state reproduction, one request per strategy; not a performance benchmark",
+  "run_id": "20261023T070119.738864Z-6930d7a7",
+  "fixture_sha256": "d81251326239aa2edcb5e37fa4448f6ab13363f7e6229d1a213fd403fb6d6f84",
+  "source_sha256": {
+    "verify_motion_reproduction.py": "797190cde15243a30e859766007af6da957772436f53ca10da340d2b6804ea2b",
+    "reproduction.py": "140a7ec58e4627317870ebb2d7f7b64dd516d3bc9acddc66cdc40fe3d3e0e2f2",
+    "reproduce_motion.py": "2cba90db6f1ffb2ae4775580342f6df6ab960d4dafd498339c3e17ba8d3a6cd4"
+  },
+  "historical_witness_reproduced": true,
+  "endpoint_moveit_validity": {
+    "start": true,
+    "goal": true
+  },
+  "status": "completed",
+  "requests": [
+    {
+      "role": "home_return",
+      "request_id": "df73769d843e4bd4bc30f9f05786bfe2",
+      "strategy": "coordinated",
+      "status": "failed",
+      "trace_file": "df73769d843e4bd4bc30f9f05786bfe2.json",
+      "trace_sha256": "e15aa013f71f0ab94f275bcfc43f0af8949289d0be5ddf523beb5313e693c311",
+      "dispatched_goals": 0,
+      "error": {
+        "type": "RuntimeError",
+        "message": "Planned clearance below 30mm policy"
+      },
+      "failure_stage": "safety_checks",
+      "timing": {
+        "request_metrics": {
+          "received_to_first_motion_wall_sec": null,
+          "received_to_actions_done_wall_sec": null,
+          "received_to_settled_wall_sec": null,
+          "received_to_terminal_wall_sec": 0.210479767,
+          "received_to_state_snapshot_wall_sec": 0.000336267,
+          "received_to_computation_started_wall_sec": 0.100089294,
+          "received_to_computation_done_wall_sec": null
+        },
+        "wall_spans": [
+          {
+            "name": "state_snapshot",
+            "start_wall_sec": 0.000531632,
+            "status": "completed",
+            "end_wall_sec": 0.100083231,
+            "duration_wall_sec": 0.09955159899999999
+          },
+          {
+            "name": "endpoint_clearance",
+            "start_wall_sec": 0.10062138,
+            "status": "completed",
+            "end_wall_sec": 0.100784174,
+            "duration_wall_sec": 0.00016279400000000777
+          },
+          {
+            "name": "planning:both_arms",
+            "start_wall_sec": 0.101098187,
+            "status": "completed",
+            "end_wall_sec": 0.161229667,
+            "duration_wall_sec": 0.06013147999999999
+          },
+          {
+            "name": "departure_search",
+            "status": "not_applicable",
+            "duration_wall_sec": null,
+            "reason": "Coordinated joint-space plan; no departure-only search"
+          },
+          {
+            "name": "safety_checks",
+            "start_wall_sec": 0.181280737,
+            "status": "failed",
+            "error": "RuntimeError",
+            "end_wall_sec": 0.21047184,
+            "duration_wall_sec": 0.029191102999999996
+          }
+        ],
+        "planning_calls": [
+          {
+            "group": "both_arms",
+            "wall_sec": 0.06011781998677179,
+            "server_planning_sec": 0.044341041,
+            "requested_pipeline_id": "ompl",
+            "requested_planner_id": "RRTConnectkConfigDefault",
+            "selected_planner_id": null,
+            "attempts": 3,
+            "allowed_planning_sec": 5.0,
+            "goal_tolerance_rad": 0.003,
+            "error_code": 1
+          }
+        ],
+        "simulation_reservation": {
+          "scheduled_start_sec": null,
+          "state_stamp_sec": 52.568
+        },
+        "events": [
+          {
+            "name": "received",
+            "wall_sec": 4.5498e-05,
+            "simulation_sec": null
+          },
+          {
+            "name": "state_snapshot",
+            "wall_sec": 0.000336267,
+            "simulation_sec": 52.468
+          },
+          {
+            "name": "computation_started",
+            "wall_sec": 0.100089294,
+            "simulation_sec": 52.568
+          },
+          {
+            "name": "endpoint_clearance",
+            "wall_sec": 0.100408386,
+            "simulation_sec": 52.568
+          },
+          {
+            "name": "planning_both_arms",
+            "wall_sec": 0.100793854,
+            "simulation_sec": 52.568
+          },
+          {
+            "name": "safety_checks",
+            "wall_sec": 0.166687244,
+            "simulation_sec": 52.624
+          },
+          {
+            "name": "terminal",
+            "wall_sec": 0.210479767,
+            "simulation_sec": null
+          }
+        ],
+        "failure_stage": "safety_checks",
+        "note": "Wall spans may overlap; simulation reservation is not added to wall time. RPC minus planning_time is not pure transport latency.",
+        "wall_clock": {
+          "wall": "time.monotonic_ns in this recorder process",
+          "simulation": "ROS joint-state /clock seconds; never added to wall durations"
+        }
+      },
+      "clearance_diagnostic": {
+        "endpoint_violations": [],
+        "sampled_path_complete": false,
+        "violation_location": "intermediate",
+        "witness": {
+          "time_sec": 4.379914248593156,
+          "state_rad": {
+            "left_j1": -0.42610409670773197,
+            "left_j2": -1.035927968366054,
+            "left_j3": 1.001054001790855,
+            "left_j4": -1.4980156774247575,
+            "left_j5": -0.88940316618197,
+            "left_j6": -0.00020347119685258696,
+            "right_shoulder_pan_joint": 0.0005045486468122327,
+            "right_shoulder_lift_joint": -1.5708585516173958,
+            "right_elbow_joint": 1.571383122953145,
+            "right_wrist_1_joint": -1.5721523951583063,
+            "right_wrist_2_joint": -1.5698500552923618,
+            "right_wrist_3_joint": -0.0024303319053582896
+          },
+          "distance_m": 0.02986523393808741,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09524444374403382,
+              -0.14708042914230257,
+              0.8835340121733959
+            ],
+            [
+              0.1210427626446326,
+              -0.13987160054858166,
+              0.896740515510239
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04174801059194047,
+              -0.2018669037798107,
+              0.9275494731868636
+            ],
+            [
+              0.15811108344339114,
+              -0.133642447494473,
+              0.887777241576327
+            ]
+          ]
+        },
+        "witness_semantics": "Minimum of evaluated samples; sampling stops at first policy violation"
+      },
+      "repeat": 1,
+      "initial_drift_rad": 8.292078135241354e-11,
+      "historical_failure_reproduced": true
+    },
+    {
+      "role": "home_return",
+      "request_id": "1cf122732af04ead802e28427f85a8b6",
+      "strategy": "departure_timing",
+      "status": "failed",
+      "trace_file": "1cf122732af04ead802e28427f85a8b6.json",
+      "trace_sha256": "e04c182283f4f9e395b9a8b2ebc8fbac2ad4e9af3a1606618f57b8b44af5b4c1",
+      "dispatched_goals": 0,
+      "error": {
+        "type": "TimingRejected",
+        "message": "No departure-only solution within delay/clearance budget; no command is allowed"
+      },
+      "failure_stage": "departure_search",
+      "timing": {
+        "request_metrics": {
+          "received_to_first_motion_wall_sec": null,
+          "received_to_actions_done_wall_sec": null,
+          "received_to_settled_wall_sec": null,
+          "received_to_terminal_wall_sec": 3.270895799,
+          "received_to_state_snapshot_wall_sec": 0.000322618,
+          "received_to_computation_started_wall_sec": 0.10031064,
+          "received_to_computation_done_wall_sec": null
+        },
+        "wall_spans": [
+          {
+            "name": "state_snapshot",
+            "start_wall_sec": 0.000532183,
+            "status": "completed",
+            "end_wall_sec": 0.100304614,
+            "duration_wall_sec": 0.099772431
+          },
+          {
+            "name": "endpoint_clearance",
+            "start_wall_sec": 0.100880194,
+            "status": "completed",
+            "end_wall_sec": 0.101018254,
+            "duration_wall_sec": 0.0001380599999999954
+          },
+          {
+            "name": "planning:left_arm",
+            "start_wall_sec": 0.101315188,
+            "status": "completed",
+            "end_wall_sec": 0.144795804,
+            "duration_wall_sec": 0.043480616
+          },
+          {
+            "name": "planning:right_arm",
+            "start_wall_sec": 0.149418264,
+            "status": "completed",
+            "end_wall_sec": 0.169682653,
+            "duration_wall_sec": 0.020264388999999994
+          },
+          {
+            "name": "departure_search",
+            "start_wall_sec": 0.189832716,
+            "status": "failed",
+            "error": "TimingRejected",
+            "end_wall_sec": 3.270887883,
+            "duration_wall_sec": 3.0810551669999997
+          }
+        ],
+        "planning_calls": [
+          {
+            "group": "left_arm",
+            "wall_sec": 0.043467911978950724,
+            "server_planning_sec": 0.027696953,
+            "requested_pipeline_id": "ompl",
+            "requested_planner_id": "RRTConnectkConfigDefault",
+            "selected_planner_id": null,
+            "attempts": 3,
+            "allowed_planning_sec": 5.0,
+            "goal_tolerance_rad": 0.003,
+            "error_code": 1
+          },
+          {
+            "group": "right_arm",
+            "wall_sec": 0.020252004003850743,
+            "server_planning_sec": 0.018350996,
+            "requested_pipeline_id": "ompl",
+            "requested_planner_id": "RRTConnectkConfigDefault",
+            "selected_planner_id": null,
+            "attempts": 3,
+            "allowed_planning_sec": 5.0,
+            "goal_tolerance_rad": 0.003,
+            "error_code": 1
+          }
+        ],
+        "simulation_reservation": {
+          "scheduled_start_sec": null,
+          "state_stamp_sec": 52.958
+        },
+        "events": [
+          {
+            "name": "received",
+            "wall_sec": 4.3019e-05,
+            "simulation_sec": null
+          },
+          {
+            "name": "state_snapshot",
+            "wall_sec": 0.000322618,
+            "simulation_sec": 52.858
+          },
+          {
+            "name": "computation_started",
+            "wall_sec": 0.10031064,
+            "simulation_sec": 52.958
+          },
+          {
+            "name": "endpoint_clearance",
+            "wall_sec": 0.100673847,
+            "simulation_sec": 52.958
+          },
+          {
+            "name": "planning_left_arm",
+            "wall_sec": 0.101033144,
+            "simulation_sec": 52.958
+          },
+          {
+            "name": "planning_right_arm",
+            "wall_sec": 0.14897503,
+            "simulation_sec": 53.0
+          },
+          {
+            "name": "departure_search",
+            "wall_sec": 0.180807225,
+            "simulation_sec": 53.026
+          },
+          {
+            "name": "terminal",
+            "wall_sec": 3.270895799,
+            "simulation_sec": null
+          }
+        ],
+        "failure_stage": "departure_search",
+        "note": "Wall spans may overlap; simulation reservation is not added to wall time. RPC minus planning_time is not pure transport latency.",
+        "wall_clock": {
+          "wall": "time.monotonic_ns in this recorder process",
+          "simulation": "ROS joint-state /clock seconds; never added to wall durations"
+        }
+      },
+      "clearance_diagnostic": null,
+      "repeat": 1,
+      "initial_drift_rad": 2.049471703458039e-13,
+      "historical_failure_reproduced": true
+    }
+  ],
+  "evidence": [
+    {
+      "path": "session.json",
+      "sha256": "5d8e3145bc7718b0c10133c022f8e19a7ec2142a40c768520ed88fedff08fe95"
+    },
+    {
+      "path": "result.json",
+      "sha256": "39202926536643cd76cfa0950d14714be69a58617d39af2768228ffff1c291fc"
+    },
+    {
+      "path": "physics.json",
+      "sha256": "78915ac28ff7b13b742cca641856d4b7e9fb3b5e7172a10769130585093305eb"
+    },
+    {
+      "path": "df73769d843e4bd4bc30f9f05786bfe2.json",
+      "sha256": "e15aa013f71f0ab94f275bcfc43f0af8949289d0be5ddf523beb5313e693c311"
+    },
+    {
+      "path": "1cf122732af04ead802e28427f85a8b6.json",
+      "sha256": "e04c182283f4f9e395b9a8b2ebc8fbac2ad4e9af3a1606618f57b8b44af5b4c1"
+    }
+  ],
+  "maintenance": {
+    "requests": 6,
+    "statuses": [
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ],
+    "reproduction_source_sha256": "e25ab625c1440c8b13e74134da59e8992a37906eda7819da58d1bd4ced9e478e"
+  },
+  "evidence_export": {
+    "schema_version": 1,
+    "kind": "verification",
+    "raw_source_sha256": "ec4c615ac55ea1c0e0d8e708049764a4bbb12748b37774e3d27a2bef6e4c5901",
+    "retained_fields": [
+      "schema_version",
+      "date",
+      "scope",
+      "run_id",
+      "fixture_sha256",
+      "source_sha256",
+      "historical_witness_reproduced",
+      "endpoint_moveit_validity",
+      "status",
+      "requests",
+      "evidence",
+      "maintenance",
+      "measured_fixture_sha256",
+      "public_evidence_note"
+    ],
+    "note": "privacy-filtered extract; complete original retained locally"
+  },
+  "measured_fixture_sha256": "7a742712578cb5dd370ac55e1b6f00332772e9ca4afc99c056abe3b436575a89",
+  "public_evidence_note": "References and hashes identify privacy-filtered extracts. measured_fixture_sha256 and source_sha256 identify the inputs and code used for the original measurement; privacy projection and loader changes did not rerun that measurement."
+}

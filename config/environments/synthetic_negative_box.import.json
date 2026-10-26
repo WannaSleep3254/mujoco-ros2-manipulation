@@ -1,0 +1,12 @@
+{
+  "id": "synthetic_negative_box",
+  "declared_length_unit": "mm",
+  "source_frame": "cad_source",
+  "asset_frame": "fixture_asset",
+  "source_up_axis": "Z",
+  "source_to_asset_rotation": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+  "expected_bbox_size_m": [0.1, 0.2, 0.3],
+  "bbox_tolerance_m": 0.000001,
+  "deflection_m": 0.0001,
+  "padding_m": 0.005
+}

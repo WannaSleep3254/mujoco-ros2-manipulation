@@ -1,13 +1,17 @@
 """Loopback HTTP API with bounded JSON, exact origins and fixed file routes."""
 import hmac
+import base64
+import re
+import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
 import json
 import mimetypes
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from ..reporting.data import ReportError, safe_asset
+from .catalog import describe_scenarios
 from ..workcells.motion_request import decode_message, command, validate_command
 
 
@@ -41,6 +45,17 @@ def _report_asset(root, relative):
         return None
 
 
+LOCAL_IMPORT_MAP = '{"imports":{"three":"/vendor/three.module.js"}}'
+IMPORT_MAP_CSP_HASH = base64.b64encode(hashlib.sha256(LOCAL_IMPORT_MAP.encode()).digest()).decode('ascii')
+
+
+def _view_binding_query(path):
+    query = parse_qs(urlsplit(path).query, keep_blank_values=True)
+    if set(query) != {'binding_id'} or len(query['binding_id']) != 1 or not re.fullmatch('[0-9a-f]{64}',query['binding_id'][0]):
+        raise ValueError('현재 장면 식별자가 필요합니다.')
+    return query['binding_id'][0]
+
+
 class ConsoleHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
@@ -63,7 +78,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("X-Frame-Options", "DENY")
         if not self.path.startswith("/reports/"):
-            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-"+IMPORT_MAP_CSP_HASH+"'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
         self.end_headers()
         try:
             self.wfile.write(data)
@@ -82,14 +97,41 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/api/bootstrap":
                 catalog = json.loads((app.cell.root/"docs/reports/catalog.json").read_text())
-                return self.respond(dict(config=app.state.config, reports=catalog["reports"], token=self.server.token))
+                return self.respond(dict(config=app.state.config, reports=catalog["reports"], demos=describe_scenarios(), token=self.server.token))
             if path == "/api/state":
                 return self.respond(app.snapshot())
+            if path == "/api/view/manifest":
+                value = app.views.host.manifest_bytes(_view_binding_query(self.path)) if app.views.host else None
+                return self.respond(b"",204) if value is None else self.respond(value,mime="application/json; charset=utf-8")
+            if path == "/api/view/pose":
+                value = app.views.host.pose_envelope(_view_binding_query(self.path)) if app.views.host else None
+                return self.respond(b"",204) if value is None else self.respond(value)
+            if path.startswith("/api/view/assets/"):
+                digest = path.removeprefix("/api/view/assets/")
+                if not re.fullmatch('[0-9a-f]{64}',digest):
+                    raise ValueError('올바른 장면 자산 식별자가 필요합니다.')
+                value = app.views.host.asset_bytes(digest) if app.views.host else None
+                return self.respond(dict(error="현재 장면의 자산이 아닙니다."),404) if value is None else self.respond(value,mime="application/octet-stream")
             if path.startswith("/api/requests/"):
                 return self.respond(app.request_details(path.removeprefix("/api/requests/")))
             if path == "/api/frame":
+                # JPEG and metadata are separate atomic files. Require their digest
+                # to agree and never answer an old scene identity with a new image.
+                metadata = app.directory/"frame.json"
                 image = app.directory/"frame.jpg"
-                return self.respond(image.read_bytes(), mime="image/jpeg") if image.is_file() else self.respond(b"", 204)
+                if not metadata.is_file() or not image.is_file():
+                    return self.respond(b"", 204)
+                before = metadata.read_bytes()
+                frame = json.loads(before)
+                query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                for name in ("job_id", "run_id", "model_sha256", "sequence", "generation", "operator_session_id"):
+                    if name in query and query[name] != [str(frame.get(name, ""))]:
+                        return self.respond(b"", 204)
+                pixels = image.read_bytes()
+                if (metadata.read_bytes() != before or not frame.get("jpeg_sha256")
+                        or hashlib.sha256(pixels).hexdigest() != frame["jpeg_sha256"]):
+                    return self.respond(b"", 204)
+                return self.respond(pixels, mime="image/jpeg")
             if path == "/api/logs":
                 logs = []
                 for stream in app.files[-4:]:
@@ -98,10 +140,14 @@ class Handler(BaseHTTPRequestHandler):
                         reader.seek(max(0, source.stat().st_size-12000))
                         logs.append(dict(name=source.name, text=reader.read().decode(errors="replace")))
                 return self.respond(dict(logs=logs))
-            assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js"}
+            assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js",
+                "/viewer.js":"viewer.js", "/viewer_contract.mjs":"viewer_contract.mjs", "/scene_app.js":"scene_app.js",
+                "/vendor/three.module.js":"vendor/three.module.js", "/vendor/three.core.js":"vendor/three.core.js",
+                "/vendor/OrbitControls.js":"vendor/OrbitControls.js", "/vendor/LICENSE":"vendor/LICENSE",
+                "/vendor/vendor-manifest.json":"vendor/vendor-manifest.json"}
             if path in assets:
                 name = assets[path]
-                return self.respond(files(__package__).joinpath("static", name).read_bytes(), mime=mimetypes.guess_type(name)[0]+"; charset=utf-8")
+                return self.respond(files(__package__).joinpath("static", name).read_bytes(), mime=("text/javascript" if name.endswith((".js",".mjs")) else mimetypes.guess_type(name)[0] or "text/plain")+"; charset=utf-8")
             if path.startswith("/reports/"):
                 relative = unquote(path.removeprefix("/reports/")) or "index.html"
                 if relative.endswith("/"):
@@ -110,6 +156,8 @@ class Handler(BaseHTTPRequestHandler):
                 if source is not None:
                     return self.respond(source.read_bytes(), mime=mimetypes.guess_type(source.name)[0] or "application/octet-stream")
             return self.respond(dict(error="자료를 찾을 수 없습니다."), 404)
+        except RuntimeError as error:
+            return self.respond(dict(error=str(error)), 409)
         except (ValueError, OSError, KeyError) as error:
             return self.respond(dict(error=str(error)), 400)
 
@@ -127,7 +175,19 @@ class Handler(BaseHTTPRequestHandler):
             payload = decode_message(self.rfile.read(length).decode("utf-8"))
             path = urlsplit(self.path).path
             app = self.server.application
-            if path == "/api/start":
+            if path == "/api/view/select":
+                result = app.views.select(payload)
+            elif path == "/api/view/plan" and set(payload) == {"request_id"}:
+                result = app.views.select_plan(payload["request_id"])
+            elif path == "/api/view/seek" and set(payload) == {"time_sec","binding_id"}:
+                result = app.views.seek(payload["time_sec"],binding_id=payload["binding_id"])
+            elif path == "/api/view/display" and set(payload) == {"mode"}:
+                result = app.set_display(payload["mode"])
+            elif path == "/api/demos/start":
+                result = app.demos.start(payload)
+            elif path == "/api/demos/stop" and set(payload) == {"job_id"}:
+                result = app.demos.request_stop(payload["job_id"])
+            elif path == "/api/start":
                 result = app.start(payload)
             elif path == "/api/attach":
                 if payload:

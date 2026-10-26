@@ -26,7 +26,7 @@ from mujoco_ros2_manipulation.workcells.integrity import check_workcell
 from mujoco_ros2_manipulation.workcells.distance import DistanceEvaluator
 from mujoco_ros2_manipulation.workcells.interference import Spline, stretch
 from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path, evaluate_states, sample_schedule
-from mujoco_ros2_manipulation.workcells.timing import choose_delay, load_policy
+from mujoco_ros2_manipulation.workcells.timing import choose_delay, load_policy, TimingRejected
 from mujoco_ros2_manipulation.workcells.verify import WorkcellVerification, require, seconds
 from mujoco_ros2_manipulation.workcells.verify_interference import InterferenceVerification
 from mujoco_ros2_manipulation.workcells.verify_interference_comparison import to_ros
@@ -34,7 +34,12 @@ from mujoco_ros2_manipulation.workcells.motion_request import (
     COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, decode_message, request_id, validate_command, validate_cancel,
 )
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
-from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget
+from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
+from mujoco_ros2_manipulation.workcells.plan_selection import MAX_PLAN_CANDIDATES, PlanCandidateRejected, PlanCandidatesExhausted, select_clearance_plan
+from mujoco_ros2_manipulation.workcells.contracts import describe_workcell
+from mujoco_ros2_manipulation.workcells.spatial_candidates import compose_serial_paths
+from mujoco_ros2_manipulation.workcells.motion_diagnostics import (
+    measure_endpoints, path_clearance_diagnostic, update_candidate_path_diagnostic)
 
 
 def status_qos():
@@ -46,16 +51,39 @@ class CommandCancelled(RuntimeError):
     pass
 
 
+class MotionPlanningFailed(RuntimeError):
+    """A completed MoveIt response with no plan, rather than a transport failure."""
+    def __init__(self, error_code):
+        self.error_code = int(error_code)
+        super().__init__("MoveIt plan failed: " + str(self.error_code))
+
+
+class InvalidMotionEndpoint(RuntimeError):
+    def __init__(self, role, reason):
+        self.role = role
+        super().__init__(role + " endpoint is invalid: " + reason)
+
+
+class MotionStateChanged(RuntimeError):
+    pass
+
+
 class MotionCommandServer(WorkcellVerification):
     split = InterferenceVerification.split
 
-    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0):
+    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing"):
         PlanningBudget(compute_budget_sec)  # Validate before creating a ROS node/output directory.
+        if type(max_plan_candidates) is not int or not 1 <= max_plan_candidates <= MAX_PLAN_CANDIDATES:
+            raise ValueError(f"Expected 1..{MAX_PLAN_CANDIDATES} plan candidates")
+        self.max_plan_candidates = max_plan_candidates
+        self._last_compute_spin_ns = 0
+        self._defer_trace_persist = False
+        self._trace_journal_cursor = 0
         self.compute_budget_sec = float(compute_budget_sec)
         self.compute_budget = None
         self.goal_tolerance_rad = 0.003
         self.metadata = check_workcell(cell)
-        _, self.policy = load_policy(cell)
+        policy_path, self.policy = load_policy(cell, policy_name)
         self.directory = Path(output).resolve()
         require(self.directory.is_relative_to((cell.root / "runtime").resolve()), "Command traces must be under runtime/")
         self.directory.mkdir(parents=True, exist_ok=False)
@@ -77,14 +105,17 @@ class MotionCommandServer(WorkcellVerification):
         self.dispatch_observer = self.action_event
         self.dispatch_abort = self.check_abort
         atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
-            workcell=cell.id, model_manifest=self.metadata, policy=self.policy,
+            workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
+            policy_name=policy_name, policy_sha256=file_sha256(policy_path),
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
             runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
                          middleware=get_rmw_implementation_identifier()),
             code_commit=subprocess.check_output(["git", "-C", str(cell.root), "rev-parse", "HEAD"], text=True).strip(),
-            compute_budget_sec=self.compute_budget_sec,
+            code_worktree_dirty=bool(subprocess.check_output(["git", "-C", str(cell.root), "status", "--porcelain"], text=True).strip()),
+            compute_budget_sec=self.compute_budget_sec, max_plan_candidates=self.max_plan_candidates,
+            selection_policy="Bounded first valid RRT or two arm-order waypoint candidates; not shortest-path optimization",
             implementation_sha256={name: file_sha256(cell.root / "src/mujoco_ros2_manipulation/workcells" / name)
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py")},
+                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
             note="Warm persistent server; simulator startup excluded from request latency. Simulation only."))
 
     def destroy_node(self):
@@ -107,7 +138,14 @@ class MotionCommandServer(WorkcellVerification):
         return self.directory / (trace.data["request_id"] + ".json")
 
     def persist(self, trace):
-        trace.save(self.path(trace))
+        if trace is self.active and self._defer_trace_persist:
+            # Rewriting large candidate curves at every action event can consume
+            # the shared start reservation. Keep small append-only event records
+            # here; the complete in-memory trace is saved once at termination.
+            journal = self.path(trace).with_suffix(".events.jsonl")
+            self._trace_journal_cursor = trace.append_events(journal, self._trace_journal_cursor)
+        else:
+            trace.save(self.path(trace))
         reply = trace.summary(self.path(trace), self.session_id)
         self.replies[trace.data["request_id"]] = reply
         self.publish(reply)
@@ -240,6 +278,14 @@ class MotionCommandServer(WorkcellVerification):
         self.check_abort()
         if self.compute_budget:
             self.compute_budget.check()
+        # Native sampling otherwise starves this single-threaded node's cancel topic.
+        now = time.monotonic_ns()
+        if now - self._last_compute_spin_ns >= 20_000_000:
+            self._last_compute_spin_ns = now
+            rclpy.spin_once(self, timeout_sec=0.0)
+            self.check_abort()
+            if self.compute_budget:
+                self.compute_budget.check()
 
     def finish_computation(self, trace):
         self.compute_checkpoint()
@@ -254,8 +300,107 @@ class MotionCommandServer(WorkcellVerification):
                                   allowed_planning_sec=min(5.0, self.compute_budget.remaining()), goal_tolerance_rad=self.goal_tolerance_rad)
         self.active.data.setdefault("plans", []).append(deepcopy(self.planning_timings[-1]))
         self.compute_checkpoint()
-        require(answer.error_code.val == MoveItErrorCodes.SUCCESS, "MoveIt plan failed: " + str(answer.error_code.val))
-        return self.anchored(answer.trajectory.joint_trajectory)
+        if answer.error_code.val != MoveItErrorCodes.SUCCESS:
+            raise MotionPlanningFailed(answer.error_code.val)
+        return self.anchored(answer.trajectory.joint_trajectory, initial=start_state)
+
+    def serial_spatial_candidate(self, initial, target, order, record):
+        virtual = dict(initial)
+        segments = []
+        record.update(proposal_kind="arm_order_waypoint", arm_order=[i.id for i in order],
+                      segment_trajectories=[])
+        for instance in order:
+            self.compute_checkpoint()
+            trajectory = self.plan(instance.group, {n: target[n] for n in instance.joints}, dict(virtual))
+            segment = Spline.from_ros(trajectory)
+            require(set(segment.names) == set(instance.joints), "Arm waypoint plan has unexpected joints")
+            segments.append(segment)
+            record["segment_trajectories"].append(segment.record())
+            virtual.update(zip(segment.names, segment.points[-1]["p"]))
+            if len(segments) == 1:
+                record["waypoint_state_rad"] = dict(virtual)
+            self.compute_checkpoint()
+        try:
+            combined = compose_serial_paths(segments, initial, self.joint_names)
+        except ValueError as error:
+            raise PlanCandidateRejected(str(error)) from error
+        return to_ros(combined)
+
+    def assess_spatial_candidate(self, curve, initial, *, diagnostics=None):
+        result = {} if diagnostics is None else diagnostics
+        result.update(complete=False, samples=0, invalid_samples=0, witness=None)
+        for stamp, state in sample_schedule([curve], initial, self.policy["sample_dt_sec"]):
+            self.compute_checkpoint()
+            answer = self.validity_of(state)
+            self.compute_checkpoint()
+            result["samples"] += 1
+            if not answer.valid:
+                result["invalid_samples"] += 1
+                result["witness"] = dict(time_from_start_sec=stamp, state_rad=state,
+                    contacts=[dict(body1=c.contact_body_1, body2=c.contact_body_2) for c in answer.contacts])
+                return result
+        result["complete"] = True
+        return result
+
+    def coordinated_path(self, initial, target, trace):
+        selection = trace.data["plan_selection"] = dict(
+            group="both_arms", start_rad=dict(initial), target_rad=dict(target),
+            strategy="bounded_first_valid", goal_tolerance_rad=self.goal_tolerance_rad,
+            threshold_m=self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"])
+        self.event("spatial_candidate_search")
+
+        def propose():
+            try:
+                candidate = selection["candidates"][-1]
+                if candidate["attempt"] in (5, 6):
+                    order = list(self.cell.instances)
+                    if candidate["attempt"] == 6:
+                        order.reverse()
+                    trajectory = self.serial_spatial_candidate(initial, target, order, candidate)
+                else:
+                    candidate["proposal_kind"] = "coordinated_rrt"
+                    trajectory = self.plan("both_arms", target, initial)
+            except MotionPlanningFailed as error:
+                return error.error_code, None
+            curve = Spline.from_ros(trajectory)
+            require(set(curve.names) == set(initial), "Planner response must cover the whole workcell")
+            endpoint = dict(zip(curve.names, curve.points[-1]["p"]))
+            # Replay adapters declare their original tolerance in the per-plan record.
+            # A fresh MoveIt request always records the current requested tolerance.
+            plans = trace.data.get("plans", [])
+            effective_tolerance = plans[-1].get("goal_tolerance_rad", self.goal_tolerance_rad) if plans else self.goal_tolerance_rad
+            selection.setdefault("proposal_goal_tolerances_rad", []).append(effective_tolerance)
+            require(max(abs(endpoint[n] - target[n]) for n in target) <= effective_tolerance + 1e-9,
+                    "Planner endpoint differs from its declared goal tolerance")
+            return MoveItErrorCodes.SUCCESS, trajectory
+
+        def save(candidates):
+            selection["candidates"] = candidates
+            update_candidate_path_diagnostic(trace.data, candidates)
+            self.persist(trace)
+
+        def moveit_check(curve):
+            partial = selection["candidates"][-1]["moveit"] = {}
+            return self.assess_spatial_candidate(curve, initial, diagnostics=partial)
+
+        with trace.span("spatial_candidate_search"):
+            try:
+                trajectory = select_clearance_plan(propose, initial, self.cell, self.evaluator, self.policy,
+                    moveit_check, save, max_candidates=self.max_plan_candidates,
+                    checkpoint=self.compute_checkpoint, diagnostics=selection)
+            except (CommandCancelled, PlanningBudgetExceeded):
+                # A production checkpoint may also interrupt inside a ROS callback
+                # supplied to the engine-independent selector.
+                selection["status"] = "interrupted"
+                if selection.get("candidates"):
+                    selection["candidates"][-1]["status"] = "interrupted"
+                raise
+        return Spline.from_ros(trajectory)
+
+    def confirm_start_unchanged(self, initial):
+        self.fresh()
+        if max(abs(self.state()[n] - initial[n]) for n in self.joint_names) >= 0.002:
+            raise MotionStateChanged("Robot moved while planning; stale plan refused")
 
     def action_event(self, name, arm, **details):
         self.event(name, arm=arm, **details)
@@ -265,6 +410,8 @@ class MotionCommandServer(WorkcellVerification):
             return
         trace, self.pending = self.pending, None
         self.active = trace
+        self._defer_trace_persist = False
+        self._trace_journal_cursor = 0
         self.handles = []
         self.motion_start = None
         self.observations, self.first_by_arm = [], set()
@@ -283,6 +430,10 @@ class MotionCommandServer(WorkcellVerification):
             self.event("computation_started")
             target = trace.data["command"]["target_rad"]
             strategy = trace.data["command"]["strategy"]
+            threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
+            self.event("endpoint_clearance")
+            with trace.span("endpoint_clearance"):
+                trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold, checkpoint=self.compute_checkpoint)
             if max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001:
                 trace.data["no_motion_required"] = True
                 trace.skip("planning", "Target already within the 0.001rad movement threshold")
@@ -291,16 +442,31 @@ class MotionCommandServer(WorkcellVerification):
                     require(self.validity_of(initial).valid, "Current state is colliding")
                     require(self.evaluator.at(initial)["distance_m"] >= self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"], "Current clearance below planning policy")
                 self.finish_computation(trace)
+                with trace.span("final_state_recheck"):
+                    self.confirm_start_unchanged(initial)
                 self.event("settled")
                 trace.finish("succeeded")
                 return
+            self.event("endpoint_validity")
+            trace.data["endpoint_moveit_validity"] = {}
+            with trace.span("endpoint_validity"):
+                for role, state in (("start", initial), ("goal", target)):
+                    self.compute_checkpoint()
+                    if trace.data["clearance_endpoints"]["endpoints"][role]["below_policy"]:
+                        raise InvalidMotionEndpoint(role, "clearance below planning policy")
+                    valid = self.validity_of(state).valid
+                    trace.data["endpoint_moveit_validity"][role] = valid
+                    self.compute_checkpoint()
+                    if not valid:
+                        raise InvalidMotionEndpoint(role, "MoveIt state validity rejected")
             if strategy == "coordinated":
-                curves = [Spline.from_ros(self.plan("both_arms", target, initial))]
+                curves = [self.coordinated_path(initial, target, trace)]
                 trace.skip("departure_search", "Coordinated joint-space plan; no departure-only search")
             else:
                 independent = [(i, self.plan(i.group, {n: target[n] for n in i.joints}, initial)) for i in self.cell.instances]
                 duration = max(Spline.from_ros(t).duration for _, t in independent)
                 source = [Spline.from_ros(stretch(t, duration)) for _, t in independent]
+                trace.data["source_trajectories"] = [c.record() for c in source]
                 self.event("departure_search")
                 trace.data["departure_search"] = {}
                 with trace.span("departure_search"):
@@ -308,12 +474,14 @@ class MotionCommandServer(WorkcellVerification):
                         diagnostics=trace.data["departure_search"], checkpoint=self.compute_checkpoint)
                 trace.data["departure_search"] = {k: v for k, v in chosen.items() if k != "curves"}
                 curves = [Spline(**record) for record in chosen["curves"]]
+            trace.data["planned_trajectories"] = [c.record() for c in curves]
             self.check_abort()
             self.event("safety_checks")
             with trace.span("safety_checks"):
                 threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
                 planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"], reject_below=threshold, checkpoint=self.compute_checkpoint)
                 trace.data["planned_clearance"] = planned
+                trace.data["clearance_diagnostic"] = path_clearance_diagnostic(trace.data["clearance_endpoints"], planned, max(c.duration for c in curves))
                 require(planned["complete"], "Planned clearance below 30mm policy")
                 samples = 0
                 for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
@@ -321,12 +489,21 @@ class MotionCommandServer(WorkcellVerification):
                     require(self.validity_of(state).valid, "MoveIt rejected interpolated schedule")
                     samples += 1
                 trace.data["moveit_safety_samples"] = samples
-            self.quiet()
-            require(max(abs(self.state()[n] - initial[n]) for n in self.joint_names) < 0.002, "Robot moved while planning; stale plan refused")
+            trace.data["trajectories"] = [c.record() for c in curves]
+            # Persist the full validated path before refreshing state and choosing
+            # an execution start time. Later execution updates remain compact.
+            self.event("state_recheck")
+            with trace.span("state_recheck"):
+                self.quiet()
+                self.confirm_start_unchanged(initial)
+            self._defer_trace_persist = True
             self.finish_computation(trace)
+            # finish_computation may pump a newer state/cancel callback. Check that
+            # last received state again, with no intervening spin before dispatch.
+            with trace.span("final_state_recheck"):
+                self.confirm_start_unchanged(initial)
             self.motion_start = self.clock_last + 1.0
             trace.data["scheduled_start_simulation_sec"] = self.motion_start
-            trace.data["trajectories"] = [c.record() for c in curves]
             commands = self.split(to_ros(curves[0]), self.motion_start) if len(curves) == 1 else [(inst, to_ros(curve, self.motion_start)) for inst, curve in zip(self.cell.instances, curves)]
             self.event("dispatch")
             with trace.span("dispatch_to_action_results"):
@@ -344,6 +521,22 @@ class MotionCommandServer(WorkcellVerification):
                     require(observed["minimum"]["distance_m"] >= self.policy["min_inter_arm_distance_m"], "Observed clearance below 20mm policy")
             trace.finish("succeeded")
         except BaseException as error:
+            if isinstance(error, (CommandCancelled, KeyboardInterrupt)):
+                trace.data["failure_kind"] = "cancelled"
+            elif isinstance(error, PlanningBudgetExceeded):
+                trace.data["failure_kind"] = "budget_exhausted"
+            elif isinstance(error, PlanCandidatesExhausted):
+                trace.data["failure_kind"] = "candidate_exhausted"
+            elif isinstance(error, TimingRejected):
+                trace.data["failure_kind"] = "departure_exhausted"
+            elif isinstance(error, InvalidMotionEndpoint):
+                trace.data["failure_kind"] = "invalid_" + error.role
+            elif isinstance(error, MotionPlanningFailed):
+                trace.data["failure_kind"] = "planner_failed"
+            elif isinstance(error, MotionStateChanged):
+                trace.data["failure_kind"] = "state_changed"
+            else:
+                trace.data["failure_kind"] = "execution_failed" if self.dispatched > before_dispatch else "planning_error"
             if self.dispatched > before_dispatch:
                 try:
                     self.quiet(cancellable=False)
@@ -364,6 +557,7 @@ class MotionCommandServer(WorkcellVerification):
             trace.data["action_results"] = [dict(status=f.result().status, error_code=f.result().result.error_code) for _, f in self.handles if f.done() and f.result() is not None]
             trace.data["observations"] = self.observations
             trace.data["contact_guard"] = deepcopy(self.contact_guard)
+            self._defer_trace_persist = False
             self.persist(trace)
             self.active = None
             self.motion_start = None
@@ -386,8 +580,11 @@ class MotionCommandServer(WorkcellVerification):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
+    parser.add_argument("--policy", default="dual_arm_timing", help="Named policy under config/planning for the selected workcell")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--compute-budget", type=float, default=30.0, help="Cooperative planning/validation wall seconds, excludes execution")
+    parser.add_argument("--max-plan-candidates", type=int, default=MAX_PLAN_CANDIDATES,
+        help="Bounded first-valid spatial plans per coordinated request, 1..12; one shared computation budget")
     args = parser.parse_args()
     cell = load_workcell(args.workcell)
     output = args.output or ROOT / "runtime/commands" / uuid.uuid4().hex
@@ -396,7 +593,7 @@ def main():
     node = None
     previous_handlers = {}
     try:
-        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget)
+        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates, policy_name=args.policy)
         def stop(signum, frame):
             node.stop_requested = True
         for signum in (signal.SIGINT, signal.SIGTERM):

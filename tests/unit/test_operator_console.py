@@ -45,6 +45,28 @@ class ConsoleAdmissionTests(unittest.TestCase):
         state,_=fixture();state.graph['commands']=2 # Passive topic monitors do not own the controller.
         self.assertTrue(state.snapshot()['can_submit'])
 
+    def test_source_joint_stamp_is_separate_from_receiver_age_and_clock(self):
+        state,now=fixture()
+        self.assertIsNone(state.snapshot()['joint_state_stamp_simulation_sec'])
+        state.joints(['l','r'],[0.1,0.2],[0,0],source_stamp=900.25)
+        now[0]+=.2
+        state.tick(1.2)
+        snapshot=state.snapshot()
+        self.assertEqual(snapshot['joint_state_stamp_simulation_sec'],900.25)
+        self.assertEqual(snapshot['simulation_sec'],1.2)
+        self.assertAlmostEqual(snapshot['state_age_sec'],.2)
+        self.assertTrue(snapshot['can_submit'])
+        # A large source stamp cannot make an old receiver observation fresh.
+        now[0]+=.31
+        state.tick(1.51)
+        self.assertFalse(state.snapshot()['can_submit'])
+        for invalid in (float('nan'),float('inf'),-1,True,None):
+            state.joints(['l','r'],[0.2,0.3],[0,0],source_stamp=invalid)
+            snapshot=state.snapshot()
+            self.assertIsNone(snapshot['joint_state_stamp_simulation_sec'])
+            self.assertAlmostEqual(snapshot['state_age_sec'],0)
+            self.assertTrue(snapshot['can_submit'])
+
     def test_reservation_is_immediate_idempotent_and_does_not_replay_changed_targets(self):
         state,_=fixture();payload=command(dict(l=0.2,r=0.2))
         self.assertTrue(state.reserve(payload));self.assertFalse(state.reserve(payload))
@@ -82,6 +104,18 @@ class ConsoleAdmissionTests(unittest.TestCase):
 
 
 class ConsoleOwnershipTests(unittest.TestCase):
+    def test_new_owned_session_clears_previous_joint_source_stamp(self):
+        state,_=fixture()
+        state.joints(['l','r'],[0,0],[0,0],source_stamp=123.0)
+        state.graph.update(clock=0,joints=0,status=0)
+        with tempfile.TemporaryDirectory() as temp:
+            app=ConsoleApplication(NS(root=Path(temp)),state,NS(outbox=queue.Queue()),Path(temp)/'console',render=False)
+            with patch.object(app,'start_worker'):
+                app.start(dict(native_gui=False,planning_case='none'))
+            self.assertIsNone(state.snapshot()['positions_rad'])
+            self.assertIsNone(state.snapshot()['joint_state_stamp_simulation_sec'])
+            app.close()
+
     def test_close_never_cancels_foreign_request_or_stops_unowned_process(self):
         state,_=fixture();foreign='f'*32
         state.status(dict(session_id='session-a',request_id=foreign,status='running'))

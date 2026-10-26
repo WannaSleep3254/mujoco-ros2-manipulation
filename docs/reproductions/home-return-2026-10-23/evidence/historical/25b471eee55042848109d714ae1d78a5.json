@@ -1,0 +1,4738 @@
+{
+  "schema_version": 1,
+  "request_id": "25b471eee55042848109d714ae1d78a5",
+  "status": "failed",
+  "command": {
+    "schema_version": 1,
+    "request_id": "25b471eee55042848109d714ae1d78a5",
+    "strategy": "departure_timing",
+    "target_rad": {
+      "left_j1": 0,
+      "left_j2": -1.2,
+      "left_j3": 1.2,
+      "left_j4": -1.5,
+      "left_j5": -1.5,
+      "left_j6": 0,
+      "right_shoulder_pan_joint": 0,
+      "right_shoulder_lift_joint": -1.5708,
+      "right_elbow_joint": 1.5708,
+      "right_wrist_1_joint": -1.5708,
+      "right_wrist_2_joint": -1.5708,
+      "right_wrist_3_joint": 0
+    }
+  },
+  "initial_state_rad": {
+    "left_j1": -1.0447443956818114,
+    "left_j2": -0.7963021319753804,
+    "left_j3": 0.7137792909646499,
+    "left_j4": -1.4971116478434303,
+    "left_j5": 0.00016933655719556672,
+    "left_j6": -0.0001546607594928465,
+    "right_shoulder_pan_joint": 0.001287311984226108,
+    "right_shoulder_lift_joint": -1.5700321859734698,
+    "right_elbow_joint": 1.5752527531135911,
+    "right_wrist_1_joint": -1.5713641912922784,
+    "right_wrist_2_joint": -1.5700017942794187,
+    "right_wrist_3_joint": -0.0023158592171967024
+  },
+  "joint_state_stamp_simulation_sec": 54681.124010222,
+  "state_receive_age_wall_sec": 2.8326e-05,
+  "clock_receive_age_wall_sec": 0.000294287,
+  "plans": [
+    {
+      "group": "left_arm",
+      "wall_sec": 0.038696376999723725,
+      "server_planning_sec": 0.021776975,
+      "requested_pipeline_id": "ompl",
+      "requested_planner_id": "RRTConnectkConfigDefault",
+      "selected_planner_id": null,
+      "attempts": 3,
+      "allowed_planning_sec": 5.0,
+      "goal_tolerance_rad": 0.003,
+      "error_code": 1
+    },
+    {
+      "group": "right_arm",
+      "wall_sec": 0.02413025900023058,
+      "server_planning_sec": 0.015763448,
+      "requested_pipeline_id": "ompl",
+      "requested_planner_id": "RRTConnectkConfigDefault",
+      "selected_planner_id": null,
+      "attempts": 3,
+      "allowed_planning_sec": 5.0,
+      "goal_tolerance_rad": 0.003,
+      "error_code": 1
+    }
+  ],
+  "events": [
+    {
+      "name": "received",
+      "wall_sec": 7.5372e-05,
+      "simulation_sec": null
+    },
+    {
+      "name": "state_snapshot",
+      "wall_sec": 0.000505622,
+      "simulation_sec": 54681.030010222
+    },
+    {
+      "name": "computation_started",
+      "wall_sec": 0.092599062,
+      "simulation_sec": 54681.124010222
+    },
+    {
+      "name": "planning_left_arm",
+      "wall_sec": 0.093147498,
+      "simulation_sec": 54681.124010222
+    },
+    {
+      "name": "planning_right_arm",
+      "wall_sec": 0.136112362,
+      "simulation_sec": 54681.158010222
+    },
+    {
+      "name": "departure_search",
+      "wall_sec": 0.172044816,
+      "simulation_sec": 54681.190010222
+    },
+    {
+      "name": "terminal",
+      "wall_sec": 3.232942176,
+      "simulation_sec": null
+    }
+  ],
+  "spans": [
+    {
+      "name": "state_snapshot",
+      "start_wall_sec": 0.000833024,
+      "status": "completed",
+      "end_wall_sec": 0.092589948,
+      "duration_wall_sec": 0.091756924
+    },
+    {
+      "name": "planning:left_arm",
+      "start_wall_sec": 0.093494182,
+      "status": "completed",
+      "end_wall_sec": 0.132206598,
+      "duration_wall_sec": 0.03871241600000001
+    },
+    {
+      "name": "planning:right_arm",
+      "start_wall_sec": 0.136479322,
+      "status": "completed",
+      "end_wall_sec": 0.160620451,
+      "duration_wall_sec": 0.02414112900000001
+    },
+    {
+      "name": "departure_search",
+      "start_wall_sec": 0.172446302,
+      "status": "failed",
+      "error": "TimingRejected",
+      "end_wall_sec": 3.23293735,
+      "duration_wall_sec": 3.060491048
+    }
+  ],
+  "metrics": {
+    "received_to_first_motion_wall_sec": null,
+    "received_to_actions_done_wall_sec": null,
+    "received_to_settled_wall_sec": null,
+    "received_to_terminal_wall_sec": 3.232942176
+  },
+  "departure_search": {
+    "candidates": [
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 668,
+        "minimum": {
+          "time_sec": 4.376878727726583,
+          "state_rad": {
+            "left_j1": -0.4253984395621152,
+            "left_j2": -1.0367204643405579,
+            "left_j3": 1.000987764635468,
+            "left_j4": -1.4978756692826136,
+            "left_j5": -0.8884316323296999,
+            "left_j6": 0.0010856467973307425,
+            "right_shoulder_pan_joint": 0.00182230348202556,
+            "right_shoulder_lift_joint": -1.571636071345698,
+            "right_elbow_joint": 1.5727757589852673,
+            "right_wrist_1_joint": -1.5723020745572514,
+            "right_wrist_2_joint": -1.5705282427280782,
+            "right_wrist_3_joint": -0.000977435506784354
+          },
+          "distance_m": 0.029753834603125924,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09519239290093609,
+              -0.1463292034604446,
+              0.8840270896320866
+            ],
+            [
+              0.12159113811843528,
+              -0.14045248272788557,
+              0.8964311646868115
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04161788292281265,
+              -0.20125529754741364,
+              0.9281332952467931
+            ],
+            [
+              0.15866447101114073,
+              -0.13422228596400357,
+              0.8874893712014142
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030671563,
+        "native_distance_calls": 668,
+        "native_distance_wall_sec": 0.016673437999999995
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 679,
+        "minimum": {
+          "time_sec": 4.47684737248,
+          "state_rad": {
+            "left_j1": -0.4254054329356016,
+            "left_j2": -1.0367177496458473,
+            "left_j3": 1.000984521607714,
+            "left_j4": -1.4978756606556303,
+            "left_j5": -0.8884215986507934,
+            "left_j6": 0.001085632792340644,
+            "right_shoulder_pan_joint": 0.0018420450784794086,
+            "right_shoulder_lift_joint": -1.5716952559456534,
+            "right_elbow_joint": 1.5726843560027883,
+            "right_wrist_1_joint": -1.5723366831688164,
+            "right_wrist_2_joint": -1.5705476690794689,
+            "right_wrist_3_joint": -0.0009280466456829982
+          },
+          "distance_m": 0.02979796696881936,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09517782294018545,
+              -0.14637155764166804,
+              0.8840763014530576
+            ],
+            [
+              0.12160190997506984,
+              -0.14045930643502455,
+              0.8965154230264344
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04161737501791622,
+              -0.2012605418538534,
+              0.9281329694732335
+            ],
+            [
+              0.15867377080572503,
+              -0.13423003856827087,
+              0.887566881769766
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.031213581,
+        "native_distance_calls": 679,
+        "native_distance_wall_sec": 0.016958427999999994
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 689,
+        "minimum": {
+          "time_sec": 4.576816791437037,
+          "state_rad": {
+            "left_j1": -0.4254122536331993,
+            "left_j2": -1.0367151019806355,
+            "left_j3": 1.0009813586547198,
+            "left_j4": -1.4978756522416588,
+            "left_j5": -0.8884118127170452,
+            "left_j6": 0.001085619133152771,
+            "right_shoulder_pan_joint": 0.001861217668647426,
+            "right_shoulder_lift_joint": -1.571752734685119,
+            "right_elbow_joint": 1.5725955875018562,
+            "right_wrist_1_joint": -1.5723702942664481,
+            "right_wrist_2_joint": -1.57056653551079,
+            "right_wrist_3_joint": -0.0008800813053431181
+          },
+          "distance_m": 0.029840882348201498,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09516367661898036,
+              -0.14641270254658878,
+              0.8841240815539875
+            ],
+            [
+              0.12161238446619907,
+              -0.14046593306881364,
+              0.8965972545789188
+            ]
+          ],
+          "tips_m": [
+            [
+              0.0416168796142877,
+              -0.20126565667319496,
+              0.9281326517408656
+            ],
+            [
+              0.15868281445108479,
+              -0.1342375673981454,
+              0.8876421601610099
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.031445549,
+        "native_distance_calls": 689,
+        "native_distance_wall_sec": 0.01705713499999999
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 699,
+        "minimum": {
+          "time_sec": 4.673816421,
+          "state_rad": {
+            "left_j1": -0.4260814466184351,
+            "left_j2": -1.0364553339786795,
+            "left_j3": 1.0006710346847614,
+            "left_j4": -1.4978748267292252,
+            "left_j5": -0.8874516941771935,
+            "left_j6": 0.0010842790015052482,
+            "right_shoulder_pan_joint": 0.0018792766486779794,
+            "right_shoulder_lift_joint": -1.571806874861229,
+            "right_elbow_joint": 1.572511974981502,
+            "right_wrist_1_joint": -1.5724019531156501,
+            "right_wrist_2_joint": -1.5705843061147353,
+            "right_wrist_3_joint": -0.0008349019573381956
+          },
+          "distance_m": 0.029958489797722677,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0952414768657051,
+              -0.14674178531669335,
+              0.8839363110192586
+            ],
+            [
+              0.12162226237654927,
+              -0.14047217444766702,
+              0.8966743346627473
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04156808441462416,
+              -0.2017674916663599,
+              0.9281014658689759
+            ],
+            [
+              0.15869134353138942,
+              -0.13424465863562884,
+              0.8877130678230519
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.031720298,
+        "native_distance_calls": 699,
+        "native_distance_wall_sec": 0.01722024100000001
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 710,
+        "minimum": {
+          "time_sec": 4.776757840028916,
+          "state_rad": {
+            "left_j1": -0.42542540196591766,
+            "left_j2": -1.0367099980476975,
+            "left_j3": 1.0009752613959357,
+            "left_j4": -1.4978756360219547,
+            "left_j5": -0.8883929482664464,
+            "left_j6": 0.0010855928021881959,
+            "right_shoulder_pan_joint": 0.0018978557573862602,
+            "right_shoulder_lift_joint": -1.5718625743645087,
+            "right_elbow_joint": 1.5724259542814176,
+            "right_wrist_1_joint": -1.5724345237923945,
+            "right_wrist_2_joint": -1.5706025885416472,
+            "right_wrist_3_joint": -0.0007884213689255304
+          },
+          "distance_m": 0.02992304639872951,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09513665845934832,
+              -0.1464913757333033,
+              0.8842153386881914
+            ],
+            [
+              0.12163243674791696,
+              -0.14047859522633005,
+              0.8967536363891752
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041615924509009014,
+              -0.20127551657133347,
+              0.9281320392374903
+            ],
+            [
+              0.1587001291178696,
+              -0.1342519538163347,
+              0.8877860194625093
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.032416492,
+        "native_distance_calls": 710,
+        "native_distance_wall_sec": 0.01761979200000001
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 720,
+        "minimum": {
+          "time_sec": 4.876729417028572,
+          "state_rad": {
+            "left_j1": -0.42543174134062106,
+            "left_j2": -1.036707537222888,
+            "left_j3": 1.0009723216461648,
+            "left_j4": -1.4978756282017405,
+            "left_j5": -0.8883838529063365,
+            "left_j6": 0.0010855801069017048,
+            "right_shoulder_pan_joint": 0.0019153212217130438,
+            "right_shoulder_lift_joint": -1.571914935201771,
+            "right_elbow_joint": 1.5723450897204596,
+            "right_wrist_1_joint": -1.572465142160676,
+            "right_wrist_2_joint": -1.5706197751074855,
+            "right_wrist_3_joint": -0.0007447268585183932
+          },
+          "distance_m": 0.029962287555735368,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09512378829516446,
+              -0.14652890928896736,
+              0.8842588120092334
+            ],
+            [
+              0.12164201232266106,
+              -0.14048463080351736,
+              0.8968281862017062
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04161546395990695,
+              -0.20128027045334831,
+              0.9281317439199545
+            ],
+            [
+              0.15870839812929413,
+              -0.13425881144446825,
+              0.8878545999192964
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.032465743,
+        "native_distance_calls": 720,
+        "native_distance_wall_sec": 0.01764825299999998
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 731,
+        "minimum": {
+          "time_sec": 4.98,
+          "state_rad": {
+            "left_j1": -0.42470228101962393,
+            "left_j2": -1.0369906998594853,
+            "left_j3": 1.001310593307305,
+            "left_j4": -1.4978765280595965,
+            "left_j5": -0.8894304394571936,
+            "left_j6": 0.0010870409304359443,
+            "right_shoulder_pan_joint": 0.0019327653664811691,
+            "right_shoulder_lift_joint": -1.5719672321237588,
+            "right_elbow_joint": 1.5722643238684002,
+            "right_wrist_1_joint": -1.5724957231540502,
+            "right_wrist_2_joint": -1.5706369406942084,
+            "right_wrist_3_joint": -0.0007010856846650533
+          },
+          "distance_m": 0.02991950866027459,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0950102124755079,
+              -0.14624341597853296,
+              0.884560849566876
+            ],
+            [
+              0.12165158690989192,
+              -0.14049065868801394,
+              0.8969026464488368
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04166823685715967,
+              -0.20073326086472565,
+              0.9281657110172128
+            ],
+            [
+              0.15871666675836604,
+              -0.13426566043566512,
+              0.887923098196835
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.033475838,
+        "native_distance_calls": 731,
+        "native_distance_wall_sec": 0.018141906000000013
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 742,
+        "minimum": {
+          "time_sec": 5.08,
+          "state_rad": {
+            "left_j1": -0.42470228101962393,
+            "left_j2": -1.0369906998594853,
+            "left_j3": 1.001310593307305,
+            "left_j4": -1.4978765280595965,
+            "left_j5": -0.8894304394571936,
+            "left_j6": 0.0010870409304359443,
+            "right_shoulder_pan_joint": 0.0019490782317961454,
+            "right_shoulder_lift_joint": -1.5720161375104154,
+            "right_elbow_joint": 1.5721887958053047,
+            "right_wrist_1_joint": -1.5725243209232591,
+            "right_wrist_2_joint": -1.5706529930663928,
+            "right_wrist_3_joint": -0.0006602747076455421
+          },
+          "distance_m": 0.02995514041115304,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0949974136180613,
+              -0.14627587428766095,
+              0.884603607030241
+            ],
+            [
+              0.12166055024756485,
+              -0.14049629536038594,
+              0.8969722791316317
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04166823685715967,
+              -0.20073326086472565,
+              0.9281657110172128
+            ],
+            [
+              0.15872440793627865,
+              -0.1342720650182944,
+              0.8879871556430594
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.0336503,
+        "native_distance_calls": 742,
+        "native_distance_wall_sec": 0.018241052999999997
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 752,
+        "minimum": {
+          "time_sec": 5.18,
+          "state_rad": {
+            "left_j1": -0.42470228101962393,
+            "left_j2": -1.0369906998594853,
+            "left_j3": 1.001310593307305,
+            "left_j4": -1.4978765280595965,
+            "left_j5": -0.8894304394571936,
+            "left_j6": 0.0010870409304359443,
+            "right_shoulder_pan_joint": 0.0019648215874598558,
+            "right_shoulder_lift_joint": -1.5720633355275102,
+            "right_elbow_joint": 1.572115904554323,
+            "right_wrist_1_joint": -1.5725519202960945,
+            "right_wrist_2_joint": -1.5706684850231807,
+            "right_wrist_3_joint": -0.0006208885106901976
+          },
+          "distance_m": 0.02998955704670952,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09498506189095769,
+              -0.146307198660033,
+              0.8846448707540799
+            ],
+            [
+              0.12166920952897811,
+              -0.14050173497659066,
+              0.8970394820069756
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04166823685715967,
+              -0.20073326086472565,
+              0.9281657110172128
+            ],
+            [
+              0.15873188690536466,
+              -0.13427824578485714,
+              0.8880489780055421
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.033778161,
+        "native_distance_calls": 752,
+        "native_distance_wall_sec": 0.01834161399999999
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 0.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 763,
+        "minimum": {
+          "time_sec": 5.286615787422727,
+          "state_rad": {
+            "left_j1": -0.42322671704244025,
+            "left_j2": -1.037563485759171,
+            "left_j3": 1.001994854621201,
+            "left_j4": -1.4978783483064266,
+            "left_j5": -0.8915474914324656,
+            "left_j6": 0.0010899959075911093,
+            "right_shoulder_pan_joint": 0.001980979217754145,
+            "right_shoulder_lift_joint": -1.572111775525128,
+            "right_elbow_joint": 1.5720410952245836,
+            "right_wrist_1_joint": -1.5725802459257856,
+            "right_wrist_2_joint": -1.570684384639226,
+            "right_wrist_3_joint": -0.0005804658954170458
+          },
+          "distance_m": 0.02987270167631012,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09488965499677429,
+              -0.14593574816977245,
+              0.8850548511809098
+            ],
+            [
+              0.12167810573149312,
+              -0.14050731745559997,
+              0.8971084544868426
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04177361972191936,
+              -0.19962682997300651,
+              0.9282343304126401
+            ],
+            [
+              0.15873957089877777,
+              -0.13428458896727186,
+              0.8881124284730835
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.034064361,
+        "native_distance_calls": 763,
+        "native_distance_wall_sec": 0.018570704000000004
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 773,
+        "minimum": {
+          "time_sec": 5.386590557316853,
+          "state_rad": {
+            "left_j1": -0.42323234428421663,
+            "left_j2": -1.0375613013708331,
+            "left_j3": 1.001992245107882,
+            "left_j4": -1.4978783413646952,
+            "left_j5": -0.8915394177985861,
+            "left_j6": 0.0010899846384281636,
+            "right_shoulder_pan_joint": 0.0019955422732105266,
+            "right_shoulder_lift_joint": -1.5721554350444242,
+            "right_elbow_joint": 1.5719736687271455,
+            "right_wrist_1_joint": -1.5726057761371175,
+            "right_wrist_2_joint": -1.5706987151435132,
+            "right_wrist_3_joint": -0.0005440325337672927
+          },
+          "distance_m": 0.02990463635543924,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09486905606611234,
+              -0.1459463371966565,
+              0.8851039940107382
+            ],
+            [
+              0.12168613184250747,
+              -0.14051234876678775,
+              0.8971706212154791
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04177322130639896,
+              -0.19963104930315684,
+              0.9282340689525836
+            ],
+            [
+              0.1587465037048476,
+              -0.13429030595269678,
+              0.8881696182230217
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.034556021,
+        "native_distance_calls": 773,
+        "native_distance_wall_sec": 0.01876270700000002
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 784,
+        "minimum": {
+          "time_sec": 5.486565887880001,
+          "state_rad": {
+            "left_j1": -0.4232378464761751,
+            "left_j2": -1.0375591655244585,
+            "left_j3": 1.0019896935837482,
+            "left_j4": -1.4978783345772244,
+            "left_j5": -0.8915315235787933,
+            "left_j6": 0.0010899736196910625,
+            "right_shoulder_pan_joint": 0.002009536183250709,
+            "right_shoulder_lift_joint": -1.5721973882861222,
+            "right_elbow_joint": 1.5719088773554237,
+            "right_wrist_1_joint": -1.572630308590609,
+            "right_wrist_2_joint": -1.5707124855908223,
+            "right_wrist_3_joint": -0.0005090230409506809
+          },
+          "distance_m": 0.029935339831709616,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09484925432252043,
+              -0.14595651059956005,
+              0.8851512077936217
+            ],
+            [
+              0.12169385130497412,
+              -0.14051718323190504,
+              0.8972303593150266
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04177283171883542,
+              -0.19963517487174634,
+              0.92823381330106
+            ],
+            [
+              0.15875317194081373,
+              -0.13429579933390207,
+              0.8882245739173369
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.03570556,
+        "native_distance_calls": 784,
+        "native_distance_wall_sec": 0.019373046
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 794,
+        "minimum": {
+          "time_sec": 5.586541760628572,
+          "state_rad": {
+            "left_j1": -0.42324322774083817,
+            "left_j2": -1.0375570766197622,
+            "left_j3": 1.0019871981370676,
+            "left_j4": -1.4978783279389287,
+            "left_j5": -0.8915238028583362,
+            "left_j6": 0.0010899628431240065,
+            "right_shoulder_pan_joint": 0.0020229609358535638,
+            "right_shoulder_lift_joint": -1.572237635214184,
+            "right_elbow_joint": 1.5718467211650766,
+            "right_wrist_1_joint": -1.5726538432651866,
+            "right_wrist_2_joint": -1.5707256959693243,
+            "right_wrist_3_joint": -0.00047543744704126923
+          },
+          "distance_m": 0.02996481163708951,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09483024934603061,
+              -0.14596626818106417,
+              0.8851964924788771
+            ],
+            [
+              0.12170126327255848,
+              -0.14052182087225285,
+              0.8972876686213447
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041772450669035024,
+              -0.19963920976977256,
+              0.9282335632666344
+            ],
+            [
+              0.15875957483891054,
+              -0.13430106912698248,
+              0.8882772953882078
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.036301911,
+        "native_distance_calls": 794,
+        "native_distance_wall_sec": 0.019601889999999997
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 804,
+        "minimum": {
+          "time_sec": 5.686518157882609,
+          "state_rad": {
+            "left_j1": -0.423248492021487,
+            "left_j2": -1.0375550331260377,
+            "left_j3": 1.001984756939228,
+            "left_j4": -1.4978783214449438,
+            "left_j5": -0.891516249979628,
+            "left_j6": 0.0010899523008301472,
+            "right_shoulder_pan_joint": 0.002035816519533084,
+            "right_shoulder_lift_joint": -1.5722761757941741,
+            "right_elbow_joint": 1.5717872002092834,
+            "right_wrist_1_joint": -1.5726763801407149,
+            "right_wrist_2_joint": -1.5707383462677171,
+            "right_wrist_3_joint": -0.0004432757807743605
+          },
+          "distance_m": 0.02999305132159556,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09481204073458599,
+              -0.14597560975205984,
+              0.8852398480188489
+            ],
+            [
+              0.12170836693331005,
+              -0.14052626170833754,
+              0.8973425489773157
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04177207787938598,
+              -0.1996431569538429,
+              0.9282333186661931
+            ],
+            [
+              0.15876571166256043,
+              -0.13430611534744724,
+              0.8883277824749523
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.036292586,
+        "native_distance_calls": 804,
+        "native_distance_wall_sec": 0.019621699000000017
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 815,
+        "minimum": {
+          "time_sec": 5.7964890092903225,
+          "state_rad": {
+            "left_j1": -0.4210246253493905,
+            "left_j2": -1.0384182959138626,
+            "left_j3": 1.0030160276631732,
+            "left_j4": -1.497881064793469,
+            "left_j5": -0.8947069224300965,
+            "left_j6": 0.0010944058354201696,
+            "right_shoulder_pan_joint": 0.0020492998078159696,
+            "right_shoulder_lift_joint": -1.5723165982101106,
+            "right_elbow_joint": 1.5717247730005435,
+            "right_wrist_1_joint": -1.5727000174330634,
+            "right_wrist_2_joint": -1.5707516142471685,
+            "right_wrist_3_joint": -0.0004095437442721581
+          },
+          "distance_m": 0.029793668243006916,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0949935640799519,
+              -0.14604062456447706,
+              0.8854323758998529
+            ],
+            [
+              0.12171582368945373,
+              -0.14053091918695185,
+              0.897400109828614
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192748869208274,
+              -0.19797579960114878,
+              0.9283365125701204
+            ],
+            [
+              0.15877215379626283,
+              -0.13431140780450362,
+              0.8883807356039612
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.036932554,
+        "native_distance_calls": 815,
+        "native_distance_wall_sec": 0.019932794000000014
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 826,
+        "minimum": {
+          "time_sec": 5.896466469914893,
+          "state_rad": {
+            "left_j1": -0.421029652459291,
+            "left_j2": -1.0384163444853158,
+            "left_j3": 1.0030136964482081,
+            "left_j4": -1.4978810585920566,
+            "left_j5": -0.894699709829959,
+            "left_j6": 0.0010943957680864974,
+            "right_shoulder_pan_joint": 0.002060960124876887,
+            "right_shoulder_lift_joint": -1.5723515554235363,
+            "right_elbow_joint": 1.5716707860923154,
+            "right_wrist_1_joint": -1.5727204589097608,
+            "right_wrist_2_joint": -1.5707630883656412,
+            "right_wrist_3_joint": -0.0003803723557744887
+          },
+          "distance_m": 0.029819232813975513,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09497709895109359,
+              -0.14604916139471344,
+              0.8854717626395296
+            ],
+            [
+              0.12172227742859912,
+              -0.14053494680524825,
+              0.8974498890072791
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041927142065757185,
+              -0.19797956845636938,
+              0.9283362796055611
+            ],
+            [
+              0.15877772961571018,
+              -0.1343159845793959,
+              0.8884265300834813
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.036815193,
+        "native_distance_calls": 826,
+        "native_distance_wall_sec": 0.019980367999999974
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 836,
+        "minimum": {
+          "time_sec": 5.996444405052632,
+          "state_rad": {
+            "left_j1": -0.42103457373529846,
+            "left_j2": -1.0384144341394759,
+            "left_j3": 1.0030114143114528,
+            "left_j4": -1.4978810525212003,
+            "left_j5": -0.8946926490740355,
+            "left_j6": 0.0010943859126966934,
+            "right_shoulder_pan_joint": 0.0020720512402990104,
+            "right_shoulder_lift_joint": -1.572384806190811,
+            "right_elbow_joint": 1.5716194345701135,
+            "right_wrist_1_joint": -1.5727399025300561,
+            "right_wrist_2_joint": -1.570774002371811,
+            "right_wrist_3_joint": -0.00035262497676575704
+          },
+          "distance_m": 0.0298435686689526,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0949614250675317,
+              -0.1460572784990012,
+              0.8855092159442688
+            ],
+            [
+              0.12172842056223156,
+              -0.14053877767754724,
+              0.8974972387907942
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192680271627234,
+              -0.19798325796838603,
+              0.9283360515441673
+            ],
+            [
+              0.15878303727540527,
+              -0.13432033782575803,
+              0.888470089723951
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.037116569,
+        "native_distance_calls": 836,
+        "native_distance_wall_sec": 0.020132287000000013
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 846,
+        "minimum": {
+          "time_sec": 6.0964227998750005,
+          "state_rad": {
+            "left_j1": -0.4210393924847225,
+            "left_j2": -1.0384125635925074,
+            "left_j3": 1.0030091797192133,
+            "left_j4": -1.49788104657682,
+            "left_j5": -0.8946857354171935,
+            "left_j6": 0.0010943762626275096,
+            "right_shoulder_pan_joint": 0.002082573144449475,
+            "right_shoulder_lift_joint": -1.5724163504830557,
+            "right_elbow_joint": 1.5715707184785368,
+            "right_wrist_1_joint": -1.5727583482770613,
+            "right_wrist_2_joint": -1.5707843562561994,
+            "right_wrist_3_joint": -0.00032630163134514124
+          },
+          "distance_m": 0.029866675451442573,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09494654208281993,
+              -0.1460649757222759,
+              0.8855447357672119
+            ],
+            [
+              0.12173425241927974,
+              -0.14054241182090751,
+              0.8975421590491932
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192647041686216,
+              -0.1979868706166401,
+              0.9283358282327561
+            ],
+            [
+              0.15878807616656684,
+              -0.13432446755649904,
+              0.8885114143924537
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.038773536,
+        "native_distance_calls": 846,
+        "native_distance_wall_sec": 0.02087187
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 856,
+        "minimum": {
+          "time_sec": 6.1964016401649475,
+          "state_rad": {
+            "left_j1": -0.42104411187848884,
+            "left_j2": -1.0384107316135174,
+            "left_j3": 1.0030069912010409,
+            "left_j4": -1.4978810407550043,
+            "left_j5": -0.8946789643099764,
+            "left_j6": 0.0010943668115288238,
+            "right_shoulder_pan_joint": 0.0020925258280685703,
+            "right_shoulder_lift_joint": -1.5724461882725096,
+            "right_elbow_joint": 1.571524637860458,
+            "right_wrist_1_joint": -1.5727757961345439,
+            "right_wrist_2_joint": -1.5707941500096942,
+            "right_wrist_3_joint": -0.0003014023426782708
+          },
+          "distance_m": 0.02988855282596602,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09493244966579954,
+              -0.14607225291686599,
+              0.8855783220617874
+            ],
+            [
+              0.12173977236300904,
+              -0.1405458492515051,
+              0.8975846496587557
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192614495008656,
+              -0.19799040877832863,
+              0.9283356095244603
+            ],
+            [
+              0.15879284571156407,
+              -0.13432837378384918,
+              0.8885505039624971
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.038742568,
+        "native_distance_calls": 856,
+        "native_distance_wall_sec": 0.02089700700000002
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 1.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 867,
+        "minimum": {
+          "time_sec": 6.296380912285714,
+          "state_rad": {
+            "left_j1": -0.4210487349580962,
+            "left_j2": -1.038408937021854,
+            "left_j3": 1.0030048473465043,
+            "left_j4": -1.497881035052001,
+            "left_j5": -0.8946723313886216,
+            "left_j6": 0.001094357553309704,
+            "right_shoulder_pan_joint": 0.0021019092823074174,
+            "right_shoulder_lift_joint": -1.5724743195326447,
+            "right_elbow_joint": 1.5714811927568464,
+            "right_wrist_1_joint": -1.5727922460869905,
+            "right_wrist_2_joint": -1.5708033836235882,
+            "right_wrist_3_joint": -0.000277927132902975
+          },
+          "distance_m": 0.029909200478781314,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09491914749998612,
+              -0.14607910994240636,
+              0.885609974781445
+            ],
+            [
+              0.12174497979104698,
+              -0.14054908998464072,
+              0.8976247105021558
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192582610735552,
+              -0.19799387473362062,
+              0.9283353952784066
+            ],
+            [
+              0.15879734536393905,
+              -0.1343320565193697,
+              0.8885873583141533
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.040041417,
+        "native_distance_calls": 867,
+        "native_distance_wall_sec": 0.021586173000000004
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 877,
+        "minimum": {
+          "time_sec": 6.396360603151515,
+          "state_rad": {
+            "left_j1": -0.42105326464215603,
+            "left_j2": -1.0384071786845677,
+            "left_j3": 1.0030027468021605,
+            "left_j4": -1.4978810294642102,
+            "left_j5": -0.894665832465678,
+            "left_j6": 0.0010943484821253134,
+            "right_shoulder_pan_joint": 0.002110723498686372,
+            "right_shoulder_lift_joint": -1.5725007442380394,
+            "right_elbow_joint": 1.5714403832069639,
+            "right_wrist_1_joint": -1.5728076981195362,
+            "right_wrist_2_joint": -1.5708120570895365,
+            "right_wrist_3_joint": -0.00025587602323333945
+          },
+          "distance_m": 0.029928618118393684,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09490663528310936,
+              -0.14608554666570495,
+              0.8856396938791298
+            ],
+            [
+              0.12174987413536757,
+              -0.1405521340347194,
+              0.8976623414682636
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041925513688484885,
+              -0.19799727067055953,
+              0.928335185359411
+            ],
+            [
+              0.1588015746083942,
+              -0.1343355157739315,
+              0.8886219773338779
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.039523566,
+        "native_distance_calls": 877,
+        "native_distance_wall_sec": 0.021272989000000034
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 887,
+        "minimum": {
+          "time_sec": 6.4963407002,
+          "state_rad": {
+            "left_j1": -0.42105770373253454,
+            "left_j2": -1.0384054555140272,
+            "left_j3": 1.0030006882687033,
+            "left_j4": -1.497881023988175,
+            "left_j5": -0.8946594635211933,
+            "left_j6": 0.001094339592364611,
+            "right_shoulder_pan_joint": 0.0021189684690561014,
+            "right_shoulder_lift_joint": -1.5725254623642617,
+            "right_elbow_joint": 1.5714022092485402,
+            "right_wrist_1_joint": -1.572822152217894,
+            "right_wrist_2_joint": -1.5708201703995204,
+            "right_wrist_3_joint": -0.0002352490340570956
+          },
+          "distance_m": 0.029946805476034698,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0948949127266711,
+              -0.14609156296061265,
+              0.8856674793068068
+            ],
+            [
+              0.12175445486227247,
+              -0.14055498141523307,
+              0.8976975424519728
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192520750127516,
+              -0.19800059868966735,
+              0.9283349796376958
+            ],
+            [
+              0.158805532960776,
+              -0.13433875155769573,
+              0.8886543609143503
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.039893492,
+        "native_distance_calls": 887,
+        "native_distance_wall_sec": 0.021479647999999987
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 897,
+        "minimum": {
+          "time_sec": 6.596321191366337,
+          "state_rad": {
+            "left_j1": -0.4210620549201333,
+            "left_j2": -1.0384037664656756,
+            "left_j3": 1.0029986704982852,
+            "left_j4": -1.4978810186205762,
+            "left_j5": -0.894653220694421,
+            "left_j6": 0.0010943308786387738,
+            "right_shoulder_pan_joint": 0.0021266441855938307,
+            "right_shoulder_lift_joint": -1.5725484738878595,
+            "right_elbow_joint": 1.5713666709177954,
+            "right_wrist_1_joint": -1.5728356083683512,
+            "right_wrist_2_joint": -1.5708277235458419,
+            "right_wrist_3_joint": -0.00021604618494499095
+          },
+          "distance_m": 0.029963762306185828,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09488397955549197,
+              -0.14609715870792786,
+              0.8856933310151114
+            ],
+            [
+              0.121758721472398,
+              -0.1405576321387541,
+              0.8977303133541661
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192490736111998,
+              -0.19800386080827917,
+              0.9283347779886215
+            ],
+            [
+              0.1588092199680823,
+              -0.13434176388010832,
+              0.8886845089544462
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.040106508,
+        "native_distance_calls": 897,
+        "native_distance_wall_sec": 0.021543673000000006
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 908,
+        "minimum": {
+          "time_sec": 6.696302065058823,
+          "state_rad": {
+            "left_j1": -0.42106632079032846,
+            "left_j2": -1.038402110535919,
+            "left_j3": 1.0029966922919928,
+            "left_j4": -1.4978810133582245,
+            "left_j5": -0.8946471002760166,
+            "left_j6": 0.0010943223357703059,
+            "right_shoulder_pan_joint": 0.0021337506407738986,
+            "right_shoulder_lift_joint": -1.572569778786271,
+            "right_elbow_joint": 1.5713337682495718,
+            "right_wrist_1_joint": -1.572848066557713,
+            "right_wrist_2_joint": -1.5708347165210954,
+            "right_wrist_3_joint": -0.0001982674947244769
+          },
+          "distance_m": 0.0299794883870128,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0948738355073164,
+              -0.1461023337952882,
+              0.885717248952943
+            ],
+            [
+              0.12176267350070152,
+              -0.14056008621692184,
+              0.8977606540815857
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04192461309063186,
+              -0.19800705896461948,
+              0.9283345802924355
+            ],
+            [
+              0.15881263520844993,
+              -0.13434455274988427,
+              0.8887124213591119
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.041396135,
+        "native_distance_calls": 908,
+        "native_distance_wall_sec": 0.02229579899999998
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 918,
+        "minimum": {
+          "time_sec": 6.796283310135922,
+          "state_rad": {
+            "left_j1": -0.4210705038280924,
+            "left_j2": -1.0384004867601382,
+            "left_j3": 1.002994752497473,
+            "left_j4": -1.4978810081980543,
+            "left_j5": -0.8946410987006883,
+            "left_j6": 0.001094313958782779,
+            "right_shoulder_pan_joint": 0.002140287827358277,
+            "right_shoulder_lift_joint": -1.5725893770377972,
+            "right_elbow_joint": 1.571303501277383,
+            "right_wrist_1_joint": -1.5728595267732914,
+            "right_wrist_2_joint": -1.5708411493181587,
+            "right_wrist_3_joint": -0.00018191298150340525
+          },
+          "distance_m": 0.029993983520814352,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09486448033241635,
+              -0.1461070881170794,
+              0.8857392330671372
+            ],
+            [
+              0.12176631051646086,
+              -0.1405623436604347,
+              0.8977885645467764
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041924324519294516,
+              -0.19801019502164202,
+              0.9283343864340343
+            ],
+            [
+              0.15881577829115529,
+              -0.13434711817500078,
+              0.8887380980393181
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.040651373,
+        "native_distance_calls": 918,
+        "native_distance_wall_sec": 0.02194853700000005
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 929,
+        "minimum": {
+          "time_sec": 6.9,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021464676547708855,
+            "right_shoulder_lift_joint": -1.57260790393931,
+            "right_elbow_joint": 1.5712748888671335,
+            "right_wrist_1_joint": -1.5728703605094063,
+            "right_wrist_2_joint": -1.5708472304625651,
+            "right_wrist_3_joint": -0.000166452497422232
+          },
+          "distance_m": 0.029919892024222662,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0949326980651451,
+              -0.1461316568306404,
+              0.8858158206019816
+            ],
+            [
+              0.12176975009425264,
+              -0.14056447765656835,
+              0.8978149494525232
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.15881875080929858,
+              -0.1343495433244625,
+              0.8887623712844169
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.042004193,
+        "native_distance_calls": 929,
+        "native_distance_wall_sec": 0.022622999000000022
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 939,
+        "minimum": {
+          "time_sec": 7.0,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021518459348343964,
+            "right_shoulder_lift_joint": -1.572624027830544,
+            "right_elbow_joint": 1.5712499875963795,
+            "right_wrist_1_joint": -1.5728797890683397,
+            "right_wrist_2_joint": -1.5708525228591876,
+            "right_wrist_3_joint": -0.00015299729750251298
+          },
+          "distance_m": 0.02993144151207422,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09492533313995052,
+              -0.1461356630126937,
+              0.8858341516005623
+            ],
+            [
+              0.12177274463847494,
+              -0.1405663348312594,
+              0.8978379122790789
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.1588213387722642,
+              -0.13435165389488588,
+              0.8887834963512365
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.041950396,
+        "native_distance_calls": 939,
+        "native_distance_wall_sec": 0.022651995
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 950,
+        "minimum": {
+          "time_sec": 7.1,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021566547052507376,
+            "right_shoulder_lift_joint": -1.5726384443522288,
+            "right_elbow_joint": 1.5712277231377203,
+            "right_wrist_1_joint": -1.5728882192309073,
+            "right_wrist_2_joint": -1.5708572548404174,
+            "right_wrist_3_joint": -0.00014096687763671484
+          },
+          "distance_m": 0.029941768840104795,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09491874821452044,
+              -0.1461392451038595,
+              0.8858505413011948
+            ],
+            [
+              0.12177542294967197,
+              -0.1405679953217226,
+              0.8978584436704509
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.15882365347574054,
+              -0.1343535409536544,
+              0.8888023845926837
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.041962962,
+        "native_distance_calls": 950,
+        "native_distance_wall_sec": 0.022731183999999998
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 960,
+        "minimum": {
+          "time_sec": 7.2,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021608939660160338,
+            "right_shoulder_lift_joint": -1.5726511535043524,
+            "right_elbow_joint": 1.5712080954911742,
+            "right_wrist_1_joint": -1.5728956509971015,
+            "right_wrist_2_joint": -1.5708614264062506,
+            "right_wrist_3_joint": -0.0001303612378345283
+          },
+          "distance_m": 0.029950873732203023,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09491294324763005,
+              -0.14614240306172932,
+              0.8858649897764063
+            ],
+            [
+              0.12177778473895713,
+              -0.14056945913692537,
+              0.8978765435884338
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.15882569465754934,
+              -0.13435520450812088,
+              0.8888190359678025
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.042753526,
+        "native_distance_calls": 960,
+        "native_distance_wall_sec": 0.023082894999999982
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 2.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 970,
+        "minimum": {
+          "time_sec": 7.3,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021645637171329997,
+            "right_shoulder_lift_joint": -1.5726621552869238,
+            "right_elbow_joint": 1.571191104656728,
+            "right_wrist_1_joint": -1.5729020843669275,
+            "right_wrist_2_joint": -1.5708650375566902,
+            "right_wrist_3_joint": -0.00012118037808916405
+          },
+          "distance_m": 0.02995875594497501,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09490791820292219,
+              -0.14614513684892785,
+              0.8858774970901703
+            ],
+            [
+              0.1217798297516577,
+              -0.1405707262847806,
+              0.8978922119993902
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.15882746208656282,
+              -0.1343566445647748,
+              0.8888334504405282
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.043434253,
+        "native_distance_calls": 970,
+        "native_distance_wall_sec": 0.023394871000000022
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 980,
+        "minimum": {
+          "time_sec": 7.4,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.002167663958604481,
+            "right_shoulder_lift_joint": -1.5726714496999508,
+            "right_elbow_joint": 1.5711767506343692,
+            "right_wrist_1_joint": -1.5729075193403905,
+            "right_wrist_2_joint": -1.5708680882917392,
+            "right_wrist_3_joint": -0.00011342429839350103
+          },
+          "distance_m": 0.029965415267724616,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0949036730489201,
+              -0.14614744643310615,
+              0.8858880632978802
+            ],
+            [
+              0.12178155776731027,
+              -0.14057179677214346,
+              0.8979054488742158
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.15882895556269908,
+              -0.13435786112923845,
+              0.8888456279796508
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.04330774,
+        "native_distance_calls": 980,
+        "native_distance_wall_sec": 0.02340012400000001
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 991,
+        "minimum": {
+          "time_sec": 7.5,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021701946904296456,
+            "right_shoulder_lift_joint": -1.5726790367434311,
+            "right_elbow_joint": 1.5711650334241012,
+            "right_wrist_1_joint": -1.5729119559174891,
+            "right_wrist_2_joint": -1.570870578611396,
+            "right_wrist_3_joint": -0.00010709299874962232
+          },
+          "distance_m": 0.029970851522449365,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09490020775903239,
+              -0.14614933178693565,
+              0.8858966884463271
+            ],
+            [
+              0.1217829685996617,
+              -0.14057267060480627,
+              0.8979162541883149
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.15883017491692442,
+              -0.1343588542062627,
+              0.8888555685588005
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.044427314,
+        "native_distance_calls": 991,
+        "native_distance_wall_sec": 0.02378903599999999
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 1001,
+        "minimum": {
+          "time_sec": 7.6,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.002172155912608991,
+            "right_shoulder_lift_joint": -1.572684916417366,
+            "right_elbow_joint": 1.5711559530259218,
+            "right_wrist_1_joint": -1.5729153940982235,
+            "right_wrist_2_joint": -1.570872508515662,
+            "right_wrist_3_joint": -0.00010218647915628472
+          },
+          "distance_m": 0.029975064563848464,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489752231154966,
+              -0.14615079288811197,
+              0.8859033725737216
+            ],
+            [
+              0.12178406209667306,
+              -0.14057334778750064,
+              0.8979246279216264
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.1588311200112552,
+              -0.13435962379972818,
+              0.8888632721564605
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.044466963,
+        "native_distance_calls": 1001,
+        "native_distance_wall_sec": 0.023983880999999995
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 1011,
+        "minimum": {
+          "time_sec": 7.7,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.002173547625137837,
+            "right_shoulder_lift_joint": -1.5726890887217422,
+            "right_elbow_joint": 1.5711495094398527,
+            "right_wrist_1_joint": -1.572917833882586,
+            "right_wrist_2_joint": -1.570873878004532,
+            "right_wrist_3_joint": -9.870473962519534e-05
+          },
+          "distance_m": 0.02997805427930818,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489561668965285,
+              -0.14615182971934754,
+              0.8859081157096594
+            ],
+            [
+              0.12178483814051486,
+              -0.14057382832389292,
+              0.8979305700585832
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.1588317907387553,
+              -0.13436016991264177,
+              0.8888687387559404
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.044612227,
+        "native_distance_calls": 1011,
+        "native_distance_wall_sec": 0.024064089000000025
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 1022,
+        "minimum": {
+          "time_sec": 7.8,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021743698280130563,
+            "right_shoulder_lift_joint": -1.5726915536565496,
+            "right_elbow_joint": 1.5711457026659086,
+            "right_wrist_1_joint": -1.5729192752705712,
+            "right_wrist_2_joint": -1.5708746870780033,
+            "right_wrist_3_joint": -9.664778016417675e-05
+          },
+          "distance_m": 0.029979820588917037,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489449088140609,
+              -0.14615244226837454,
+              0.8859109178751403
+            ],
+            [
+              0.12178529664757358,
+              -0.14057411221658447,
+              0.8979340805881374
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.1588321870235415,
+              -0.1343604925471374,
+              0.8888719683453978
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.045252454,
+        "native_distance_calls": 1022,
+        "native_distance_wall_sec": 0.024475445000000016
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 1033,
+        "minimum": {
+          "time_sec": 7.9,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021746234237216416,
+            "right_shoulder_lift_joint": -1.572692313927412,
+            "right_elbow_joint": 1.571144528525602,
+            "right_wrist_1_joint": -1.5729197198443114,
+            "right_wrist_2_joint": -1.5708749366241508,
+            "right_wrist_3_joint": -9.601334296166887e-05
+          },
+          "distance_m": 0.0299803653842703,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489414364402046,
+              -0.1461526312003131,
+              0.8859117821583615
+            ],
+            [
+              0.12178543807175227,
+              -0.14057419977872723,
+              0.8979351633570949
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.158832309255783,
+              -0.13436059205861478,
+              0.8888729644627911
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.045655029,
+        "native_distance_calls": 1033,
+        "native_distance_wall_sec": 0.02469701100000001
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 1043,
+        "minimum": {
+          "time_sec": 8.0,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021746234237216416,
+            "right_shoulder_lift_joint": -1.572692313927412,
+            "right_elbow_joint": 1.571144528525602,
+            "right_wrist_1_joint": -1.5729197198443114,
+            "right_wrist_2_joint": -1.5708749366241508,
+            "right_wrist_3_joint": -9.601334296166887e-05
+          },
+          "distance_m": 0.0299803653842703,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489414364402046,
+              -0.1461526312003131,
+              0.8859117821583615
+            ],
+            [
+              0.12178543807175227,
+              -0.14057419977872723,
+              0.8979351633570949
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.158832309255783,
+              -0.13436059205861478,
+              0.8888729644627911
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.04606332,
+        "native_distance_calls": 1043,
+        "native_distance_wall_sec": 0.024830959999999992
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 1053,
+        "minimum": {
+          "time_sec": 8.1,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021746234237216416,
+            "right_shoulder_lift_joint": -1.572692313927412,
+            "right_elbow_joint": 1.571144528525602,
+            "right_wrist_1_joint": -1.5729197198443114,
+            "right_wrist_2_joint": -1.5708749366241508,
+            "right_wrist_3_joint": -9.601334296166887e-05
+          },
+          "distance_m": 0.0299803653842703,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489414364402046,
+              -0.1461526312003131,
+              0.8859117821583615
+            ],
+            [
+              0.12178543807175227,
+              -0.14057419977872723,
+              0.8979351633570949
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.158832309255783,
+              -0.13436059205861478,
+              0.8888729644627911
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.047262318,
+        "native_distance_calls": 1053,
+        "native_distance_wall_sec": 0.025430101000000035
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 1063,
+        "minimum": {
+          "time_sec": 8.2,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021746234237216416,
+            "right_shoulder_lift_joint": -1.572692313927412,
+            "right_elbow_joint": 1.571144528525602,
+            "right_wrist_1_joint": -1.5729197198443114,
+            "right_wrist_2_joint": -1.5708749366241508,
+            "right_wrist_3_joint": -9.601334296166887e-05
+          },
+          "distance_m": 0.0299803653842703,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489414364402046,
+              -0.1461526312003131,
+              0.8859117821583615
+            ],
+            [
+              0.12178543807175227,
+              -0.14057419977872723,
+              0.8979351633570949
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.158832309255783,
+              -0.13436059205861478,
+              0.8888729644627911
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.046604639,
+        "native_distance_calls": 1063,
+        "native_distance_wall_sec": 0.02525198900000002
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 3.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 1073,
+        "minimum": {
+          "time_sec": 8.3,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021746234237216416,
+            "right_shoulder_lift_joint": -1.572692313927412,
+            "right_elbow_joint": 1.571144528525602,
+            "right_wrist_1_joint": -1.5729197198443114,
+            "right_wrist_2_joint": -1.5708749366241508,
+            "right_wrist_3_joint": -9.601334296166887e-05
+          },
+          "distance_m": 0.0299803653842703,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489414364402046,
+              -0.1461526312003131,
+              0.8859117821583615
+            ],
+            [
+              0.12178543807175227,
+              -0.14057419977872723,
+              0.8979351633570949
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.158832309255783,
+              -0.13436059205861478,
+              0.8888729644627911
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.047133007,
+        "native_distance_calls": 1073,
+        "native_distance_wall_sec": 0.02563669199999998
+      },
+      {
+        "delayed_arm": "left",
+        "delay_sec": 4.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 1083,
+        "minimum": {
+          "time_sec": 8.4,
+          "state_rad": {
+            "left_j1": -0.42024154525863194,
+            "left_j2": -1.0387222727262857,
+            "left_j3": 1.0033791643485854,
+            "left_j4": -1.49788203079635,
+            "left_j5": -0.8958304394571933,
+            "left_j6": 0.001095974038368084,
+            "right_shoulder_pan_joint": 0.0021746234237216416,
+            "right_shoulder_lift_joint": -1.572692313927412,
+            "right_elbow_joint": 1.571144528525602,
+            "right_wrist_1_joint": -1.5729197198443114,
+            "right_wrist_2_joint": -1.5708749366241508,
+            "right_wrist_3_joint": -9.601334296166887e-05
+          },
+          "distance_m": 0.0299803653842703,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09489414364402046,
+              -0.1461526312003131,
+              0.8859117821583615
+            ],
+            [
+              0.12178543807175227,
+              -0.14057419977872723,
+              0.8979351633570949
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04198122406552137,
+              -0.1973887338009163,
+              0.9283727847466487
+            ],
+            [
+              0.158832309255783,
+              -0.13436059205861478,
+              0.8888729644627911
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.04788309,
+        "native_distance_calls": 1083,
+        "native_distance_wall_sec": 0.025926713999999983
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 666,
+        "minimum": {
+          "time_sec": 4.366924780745,
+          "state_rad": {
+            "left_j1": -0.4276185359253036,
+            "left_j2": -1.0358586651150141,
+            "left_j3": 0.9999582423118408,
+            "left_j4": -1.4978729305851186,
+            "left_j5": -0.8852463692955936,
+            "left_j6": 0.0010812008131938784,
+            "right_shoulder_pan_joint": 0.0017999328117571146,
+            "right_shoulder_lift_joint": -1.571569004876496,
+            "right_elbow_joint": 1.5728793344983916,
+            "right_wrist_1_joint": -1.5722628569671449,
+            "right_wrist_2_joint": -1.5705062292854222,
+            "right_wrist_3_joint": -0.001033401696206542
+          },
+          "distance_m": 0.029973761944757614,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0955168622579855,
+              -0.14725498237929707,
+              0.8831897828732722
+            ],
+            [
+              0.1215789482784948,
+              -0.14044474977958907,
+              0.8963356875328401
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041454579940974214,
+              -0.20292023999835504,
+              0.9280297405628638
+            ],
+            [
+              0.15865394774307212,
+              -0.13421350050452013,
+              0.8874015406010352
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029929272,
+        "native_distance_calls": 666,
+        "native_distance_wall_sec": 0.01634321199999999
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 666,
+        "minimum": {
+          "time_sec": 4.366962746414815,
+          "state_rad": {
+            "left_j1": -0.4276100681842518,
+            "left_j2": -1.0358619521312002,
+            "left_j3": 0.9999621690460979,
+            "left_j4": -1.497872941030873,
+            "left_j5": -0.8852585183099344,
+            "left_j6": 0.0010812177707651871,
+            "right_shoulder_pan_joint": 0.0017790010818295096,
+            "right_shoulder_lift_joint": -1.571506252298961,
+            "right_elbow_joint": 1.5729762477621343,
+            "right_wrist_1_joint": -1.5722261619555669,
+            "right_wrist_2_joint": -1.5704856318052876,
+            "right_wrist_3_joint": -0.0010857679931482467
+          },
+          "distance_m": 0.02992522635685087,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09553228459117702,
+              -0.1472096350494027,
+              0.8831382624372772
+            ],
+            [
+              0.12156755844490116,
+              -0.14043751375618502,
+              0.8962463538719713
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041455210671957086,
+              -0.20291388931358093,
+              0.9280301360506589
+            ],
+            [
+              0.15864411581002216,
+              -0.13420527975786678,
+              0.8873193617936375
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029793839,
+        "native_distance_calls": 666,
+        "native_distance_wall_sec": 0.016239263
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 667,
+        "minimum": {
+          "time_sec": 4.366999786092683,
+          "state_rad": {
+            "left_j1": -0.4276018069734697,
+            "left_j2": -1.0358651589762597,
+            "left_j3": 0.9999660000063487,
+            "left_j4": -1.497872951221853,
+            "left_j5": -0.8852703710068521,
+            "left_j6": 0.0010812343147371954,
+            "right_shoulder_pan_joint": 0.0017574660953482968,
+            "right_shoulder_lift_joint": -1.5714416911798579,
+            "right_elbow_joint": 1.5730759540851074,
+            "right_wrist_1_joint": -1.5721884093865723,
+            "right_wrist_2_joint": -1.5704644407017434,
+            "right_wrist_3_joint": -0.0011396434970177855
+          },
+          "distance_m": 0.029875411176001287,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09554821362992309,
+              -0.14716317556275105,
+              0.8830850950130202
+            ],
+            [
+              0.1215558564198912,
+              -0.14043006870722977,
+              0.89615444777116
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04145582596115817,
+              -0.20290769352626933,
+              0.9280305218885988
+            ],
+            [
+              0.15863401509831876,
+              -0.13419682169409156,
+              0.8872348168978512
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030149421,
+        "native_distance_calls": 667,
+        "native_distance_wall_sec": 0.016388575999999988
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 666,
+        "minimum": {
+          "time_sec": 4.367035933248193,
+          "state_rad": {
+            "left_j1": -0.4275937448280077,
+            "left_j2": -1.0358682885479444,
+            "left_j3": 0.9999697386543043,
+            "left_j4": -1.497872961167267,
+            "left_j5": -0.8852819380966152,
+            "left_j6": 0.0010812504600592758,
+            "right_shoulder_pan_joint": 0.0017353659056404919,
+            "right_shoulder_lift_joint": -1.5713754356017011,
+            "right_elbow_joint": 1.5731782772815812,
+            "right_wrist_1_joint": -1.5721496659707146,
+            "right_wrist_2_joint": -1.5704426934204603,
+            "right_wrist_3_joint": -0.001194933007283284
+          },
+          "distance_m": 0.02982440571413856,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09556461819703213,
+              -0.1471156762973996,
+              0.8830303821290106
+            ],
+            [
+              0.1215438642060819,
+              -0.14042242774979516,
+              0.8960601318151253
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04145642636878932,
+              -0.2029016470376201,
+              0.9280308984256102
+            ],
+            [
+              0.15862366465838965,
+              -0.13418814122750466,
+              0.887148055502584
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030571049,
+        "native_distance_calls": 666,
+        "native_distance_wall_sec": 0.016482870000000018
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 664,
+        "minimum": {
+          "time_sec": 4.36,
+          "state_rad": {
+            "left_j1": -0.42916301678061564,
+            "left_j2": -1.035259126992685,
+            "left_j3": 0.9992420222660248,
+            "left_j4": -1.4978710253228429,
+            "left_j5": -0.8830304394571942,
+            "left_j6": 0.0010781078225038049,
+            "right_shoulder_pan_joint": 0.001711585282169731,
+            "right_shoulder_lift_joint": -1.5713041421432365,
+            "right_elbow_joint": 1.5732883808345297,
+            "right_wrist_1_joint": -1.5721079766188735,
+            "right_wrist_2_joint": -1.5704192925395384,
+            "right_wrist_3_joint": -0.0012544265701390925
+          },
+          "distance_m": 0.029983310103410994,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09566641051022436,
+              -0.14751518130486282,
+              0.8825571879059603
+            ],
+            [
+              0.12153097930507956,
+              -0.14041420522382936,
+              0.8959586469500384
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041338528814774844,
+              -0.2040786250211407,
+              0.927957539092628
+            ],
+            [
+              0.1586125445938189,
+              -0.13417880025633616,
+              0.8870546997998223
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030034602,
+        "native_distance_calls": 664,
+        "native_distance_wall_sec": 0.016302033
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 665,
+        "minimum": {
+          "time_sec": 4.36,
+          "state_rad": {
+            "left_j1": -0.42916301678061564,
+            "left_j2": -1.035259126992685,
+            "left_j3": 0.9992420222660248,
+            "left_j4": -1.4978710253228429,
+            "left_j5": -0.8830304394571942,
+            "left_j6": 0.0010781078225038049,
+            "right_shoulder_pan_joint": 0.0016898869645706582,
+            "right_shoulder_lift_joint": -1.5712390913632852,
+            "right_elbow_joint": 1.5733888433755392,
+            "right_wrist_1_joint": -1.57206993771725,
+            "right_wrist_2_joint": -1.570397940713041,
+            "right_wrist_3_joint": -0.0013087106902982188
+          },
+          "distance_m": 0.0299335731843245,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09569757585296099,
+              -0.14749589901016336,
+              0.8824868223389299
+            ],
+            [
+              0.12151923997982189,
+              -0.14040670217136697,
+              0.8958660507726515
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041338528814774844,
+              -0.2040786250211407,
+              0.927957539092628
+            ],
+            [
+              0.15860241396670308,
+              -0.13417027678826762,
+              0.8869695211276014
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029968533,
+        "native_distance_calls": 665,
+        "native_distance_wall_sec": 0.01625982999999998
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 664,
+        "minimum": {
+          "time_sec": 4.35714587707907,
+          "state_rad": {
+            "left_j1": -0.4297995911895988,
+            "left_j2": -1.0350120209022649,
+            "left_j3": 0.9989468244649,
+            "left_j4": -1.497870240048488,
+            "left_j5": -0.8821171201224963,
+            "left_j6": 0.0010768330130985914,
+            "right_shoulder_pan_joint": 0.001668163473695313,
+            "right_shoulder_lift_joint": -1.5711739651147525,
+            "right_elbow_joint": 1.5734894224680411,
+            "right_wrist_1_joint": -1.5720318546848413,
+            "right_wrist_2_joint": -1.5703765641152485,
+            "right_wrist_3_joint": -0.001363057788112076
+          },
+          "distance_m": 0.029971255194443325,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09565427357697304,
+              -0.1474691529633282,
+              0.8823605846928486
+            ],
+            [
+              0.1215075036030383,
+              -0.14039918992152,
+              0.895773349424151
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041290113282547836,
+              -0.20455609227438312,
+              0.927927742201901
+            ],
+            [
+              0.15859228662148334,
+              -0.13416174302972303,
+              0.8868842460400975
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030720097,
+        "native_distance_calls": 664,
+        "native_distance_wall_sec": 0.016551831999999978
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 663,
+        "minimum": {
+          "time_sec": 4.357178683089655,
+          "state_rad": {
+            "left_j1": -0.42979227424236904,
+            "left_j2": -1.0350148612021548,
+            "left_j3": 0.998950217543074,
+            "left_j4": -1.49787024907463,
+            "left_j5": -0.8821276180458837,
+            "left_j6": 0.0010768476660802605,
+            "right_shoulder_pan_joint": 0.001647627075867814,
+            "right_shoulder_lift_joint": -1.5711123977287111,
+            "right_elbow_joint": 1.5735845053563577,
+            "right_wrist_1_joint": -1.571995852722335,
+            "right_wrist_2_joint": -1.5703563556543259,
+            "right_wrist_3_joint": -0.001414435056520721
+          },
+          "distance_m": 0.02992315429368726,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0956846746885468,
+              -0.14745102736379334,
+              0.8822946688104457
+            ],
+            [
+              0.12149642381021045,
+              -0.1403920877306476,
+              0.8956857158725584
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041290671719221454,
+              -0.20455060405911907,
+              0.9279280848218137
+            ],
+            [
+              0.15858272652338437,
+              -0.13415367523450614,
+              0.8868036330751311
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030380091,
+        "native_distance_calls": 663,
+        "native_distance_wall_sec": 0.01640438100000001
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 0.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 662,
+        "minimum": {
+          "time_sec": 4.357210743509091,
+          "state_rad": {
+            "left_j1": -0.4297851235893946,
+            "left_j2": -1.0350176369497746,
+            "left_j3": 0.9989535335058348,
+            "left_j4": -1.4978702578956324,
+            "left_j5": -0.8821378773801031,
+            "left_j6": 0.0010768619860396192,
+            "right_shoulder_pan_joint": 0.0016276596672705798,
+            "right_shoulder_lift_joint": -1.5710525361520278,
+            "right_elbow_joint": 1.5736769538420936,
+            "right_wrist_1_joint": -1.5719608482438612,
+            "right_wrist_2_joint": -1.570336707096689,
+            "right_wrist_3_joint": -0.001464388846836932
+          },
+          "distance_m": 0.02987639546406994,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09571423960077177,
+              -0.14743340635801985,
+              0.8822305773265581
+            ],
+            [
+              0.12148566520221672,
+              -0.14038518189507862,
+              0.8956005122671135
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04129121742064405,
+              -0.2045452405779402,
+              0.9279284196520589
+            ],
+            [
+              0.15857344419060057,
+              -0.1341458306256409,
+              0.8867252556696463
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030579124,
+        "native_distance_calls": 662,
+        "native_distance_wall_sec": 0.016439950000000005
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 662,
+        "minimum": {
+          "time_sec": 4.357242083469663,
+          "state_rad": {
+            "left_j1": -0.4297781336252512,
+            "left_j2": -1.0350203503210433,
+            "left_j3": 0.9989567749525784,
+            "left_j4": -1.4978702665184103,
+            "left_j5": -0.8821479061674861,
+            "left_j6": 0.0010768759842021377,
+            "right_shoulder_pan_joint": 0.001608261265465524,
+            "right_shoulder_lift_joint": -1.570994380437353,
+            "right_elbow_joint": 1.573766767843938,
+            "right_wrist_1_joint": -1.5719268412802085,
+            "right_wrist_2_joint": -1.5703176184596193,
+            "right_wrist_3_joint": -0.0015129191151249052
+          },
+          "distance_m": 0.029830976778251927,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09574296877656077,
+              -0.14741628985745764,
+              0.8821683112092544
+            ],
+            [
+              0.12147522659073764,
+              -0.14037847245713983,
+              0.8955177385216572
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04129175081754397,
+              -0.20453999762626307,
+              0.9279287469553046
+            ],
+            [
+              0.15856443854430216,
+              -0.13413820923966502,
+              0.886649113720386
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030297504,
+        "native_distance_calls": 662,
+        "native_distance_wall_sec": 0.016406840999999995
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 662,
+        "minimum": {
+          "time_sec": 4.3572727269866665,
+          "state_rad": {
+            "left_j1": -0.429771298993644,
+            "left_j2": -1.0350230033951726,
+            "left_j3": 0.9989599443671723,
+            "left_j4": -1.4978702749495705,
+            "left_j5": -0.8821577120929273,
+            "left_j6": 0.0010768896712943785,
+            "right_shoulder_pan_joint": 0.001589431887211033,
+            "right_shoulder_lift_joint": -1.5709379306349265,
+            "right_elbow_joint": 1.5738539472842996,
+            "right_wrist_1_joint": -1.5718938318607556,
+            "right_wrist_2_joint": -1.5702990897596083,
+            "right_wrist_3_joint": -0.001560025819459075
+          },
+          "distance_m": 0.02978689637652026,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09577086265473538,
+              -0.14739967777361745,
+              0.8821078713886099
+            ],
+            [
+              0.12146510682118437,
+              -0.14037195945773506,
+              0.8954373945508641
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04129227232144231,
+              -0.20453487118637742,
+              0.9279290669825401
+            ],
+            [
+              0.1585557085362957,
+              -0.13413081111185418,
+              0.8865752071255592
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029835177,
+        "native_distance_calls": 662,
+        "native_distance_wall_sec": 0.016222565999999997
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 662,
+        "minimum": {
+          "time_sec": 4.35730269701978,
+          "state_rad": {
+            "left_j1": -0.42976461457372056,
+            "left_j2": -1.0350255981599807,
+            "left_j3": 0.9989630441243026,
+            "left_j4": -1.4978702831954307,
+            "left_j5": -0.8821673025035237,
+            "left_j6": 0.0010769030575714053,
+            "right_shoulder_pan_joint": 0.001571171548513145,
+            "right_shoulder_lift_joint": -1.5708831867927346,
+            "right_elbow_joint": 1.573938492089071,
+            "right_wrist_1_joint": -1.571861820013562,
+            "right_wrist_2_joint": -1.5702811210124055,
+            "right_wrist_3_joint": -0.001605708919796073
+          },
+          "distance_m": 0.029744152464848832,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09579792165170162,
+              -0.14738357001843827,
+              0.8820492587582917
+            ],
+            [
+              0.12145530477272977,
+              -0.14036564293637194,
+              0.8953594802704887
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04129278232571125,
+              -0.20452985741717808,
+              0.9279293799737192
+            ],
+            [
+              0.15854725314905127,
+              -0.13412363627625087,
+              0.8865035357850694
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029846708,
+        "native_distance_calls": 662,
+        "native_distance_wall_sec": 0.016227735999999993
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 661,
+        "minimum": {
+          "time_sec": 4.357332015530435,
+          "state_rad": {
+            "left_j1": -0.42975807546727374,
+            "left_j2": -1.0350281365168579,
+            "left_j3": 0.9989660764954083,
+            "left_j4": -1.497870291262033,
+            "left_j5": -0.8821766844269333,
+            "left_j6": 0.0010769161528424098,
+            "right_shoulder_pan_joint": 0.0015534802646993303,
+            "right_shoulder_lift_joint": -1.5708301489567285,
+            "right_elbow_joint": 1.5740204021872866,
+            "right_wrist_1_joint": -1.5718308057654977,
+            "right_wrist_2_joint": -1.5702637122330942,
+            "right_wrist_3_joint": -0.0016499683777901513
+          },
+          "distance_m": 0.029702743313136735,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09582414616297913,
+              -0.14736796650465517,
+              0.8819924741771522
+            ],
+            [
+              0.12144581935834574,
+              -0.14035952293119952,
+              0.8952839955977274
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04129328120656517,
+              -0.20452495264456766,
+              0.9279296861583586
+            ],
+            [
+              0.15853907139573128,
+              -0.13411668476570132,
+              0.8864340996008282
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029922976,
+        "native_distance_calls": 661,
+        "native_distance_wall_sec": 0.016301269999999993
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 660,
+        "minimum": {
+          "time_sec": 4.347366756967742,
+          "state_rad": {
+            "left_j1": -0.4319806947291809,
+            "left_j2": -1.0341653579499672,
+            "left_j3": 0.9979353842313253,
+            "left_j4": -1.4978675494523053,
+            "left_j5": -0.8789878016868712,
+            "left_j6": 0.0010724651163267985,
+            "right_shoulder_pan_joint": 0.0015346776686517855,
+            "right_shoulder_lift_joint": -1.5707737794464005,
+            "right_elbow_joint": 1.5741074576268566,
+            "right_wrist_1_joint": -1.5717978432974145,
+            "right_wrist_2_joint": -1.5702452098876167,
+            "right_wrist_3_joint": -0.001697008079301021
+          },
+          "distance_m": 0.029967262372892357,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09588476382007008,
+              -0.14789595544377543,
+              0.8814819630913243
+            ],
+            [
+              0.12143575014801153,
+              -0.1403530181325065,
+              0.8952037708626563
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04112164160343685,
+              -0.20619215730350812,
+              0.9278254793339891
+            ],
+            [
+              0.1585303866234141,
+              -0.13410929629459567,
+              0.886360303409555
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029632025,
+        "native_distance_calls": 660,
+        "native_distance_wall_sec": 0.016114748999999998
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 660,
+        "minimum": {
+          "time_sec": 4.347394770191489,
+          "state_rad": {
+            "left_j1": -0.43197444674973345,
+            "left_j2": -1.034167783296875,
+            "left_j3": 0.9979382815984962,
+            "left_j4": -1.4978675571597753,
+            "left_j5": -0.8789967659184701,
+            "left_j6": 0.0010724776285843615,
+            "right_shoulder_pan_joint": 0.0015181814280858285,
+            "right_shoulder_lift_joint": -1.5707243243073017,
+            "right_elbow_joint": 1.574183834711706,
+            "right_wrist_1_joint": -1.5717689240565942,
+            "right_wrist_2_joint": -1.5702289770684217,
+            "right_wrist_3_joint": -0.0017382778183472657
+          },
+          "distance_m": 0.029928035102930524,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09590033362818015,
+              -0.14786357206032905,
+              0.8814371778932284
+            ],
+            [
+              0.12142692626683534,
+              -0.14034731092298053,
+              0.8951333880222232
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04112212992299392,
+              -0.20618747039640078,
+              0.9278257726501675
+            ],
+            [
+              0.1585227764167229,
+              -0.1341028138608886,
+              0.8862955606690699
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029702564,
+        "native_distance_calls": 660,
+        "native_distance_wall_sec": 0.016135601000000003
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 660,
+        "minimum": {
+          "time_sec": 4.347422193663157,
+          "state_rad": {
+            "left_j1": -0.4319683303066953,
+            "left_j2": -1.0341701575838476,
+            "left_j3": 0.9979411179684634,
+            "left_j4": -1.4978675647049824,
+            "left_j5": -0.8790055414294042,
+            "left_j6": 0.001072489877425976,
+            "right_shoulder_pan_joint": 0.0015022542858487767,
+            "right_shoulder_lift_joint": -1.5706765753046343,
+            "right_elbow_joint": 1.5742575768888518,
+            "right_wrist_1_joint": -1.5717410024910659,
+            "right_wrist_2_joint": -1.570213304259869,
+            "right_wrist_3_joint": -0.0017781238063617735
+          },
+          "distance_m": 0.02989017162799198,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09591535373173617,
+              -0.1478322622702477,
+              0.881393961987168
+            ],
+            [
+              0.12141841586487898,
+              -0.14034180033943677,
+              0.895065434543076
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041122607930321235,
+              -0.20618288216234545,
+              0.9278260597891846
+            ],
+            [
+              0.15851543697994314,
+              -0.13409655484664162,
+              0.8862330527947172
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029752124,
+        "native_distance_calls": 660,
+        "native_distance_wall_sec": 0.016110553999999996
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 660,
+        "minimum": {
+          "time_sec": 4.3474490458125,
+          "state_rad": {
+            "left_j1": -0.4319623412895537,
+            "left_j2": -1.0341724824065084,
+            "left_j3": 0.9979438952473897,
+            "left_j4": -1.497867572092998,
+            "left_j5": -0.8790141341171938,
+            "left_j6": 0.0010725018710833903,
+            "right_shoulder_pan_joint": 0.0014868962547901555,
+            "right_shoulder_lift_joint": -1.5706305324769214,
+            "right_elbow_joint": 1.5743286840988007,
+            "right_wrist_1_joint": -1.5717140786233554,
+            "right_wrist_2_joint": -1.570198191474603,
+            "right_wrist_3_joint": -0.0018165460111980328
+          },
+          "distance_m": 0.02985366914795074,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09592982349344042,
+              -0.14780202408835139,
+              0.8813523169743628
+            ],
+            [
+              0.12141021799383639,
+              -0.14033648641464241,
+              0.8949999103498238
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04112307594865958,
+              -0.20617838951776804,
+              0.9278263409441418
+            ],
+            [
+              0.15850836745220406,
+              -0.1340905192800015,
+              0.8861727796980698
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029985087,
+        "native_distance_calls": 660,
+        "native_distance_wall_sec": 0.016213447999999995
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 659,
+        "minimum": {
+          "time_sec": 4.347475344309278,
+          "state_rad": {
+            "left_j1": -0.4319564757573017,
+            "left_j2": -1.0341747592946815,
+            "left_j3": 0.9979466152628329,
+            "left_j4": -1.497867579328683,
+            "left_j5": -0.8790225496361629,
+            "left_j6": 0.001072513617448899,
+            "right_shoulder_pan_joint": 0.0014721073472126784,
+            "right_shoulder_lift_joint": -1.5705861958610454,
+            "right_elbow_joint": 1.5743971562845913,
+            "right_wrist_1_joint": -1.571688152475031,
+            "right_wrist_2_joint": -1.57018363872473,
+            "right_wrist_3_joint": -0.001853544402077531
+          },
+          "distance_m": 0.02981852496003085,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09594374230210517,
+              -0.14777285561162484,
+              0.8813122443905683
+            ],
+            [
+              0.12140233173926257,
+              -0.1403313691800932,
+              0.8949368153691926
+            ]
+          ],
+          "tips_m": [
+            [
+              0.041123534287880285,
+              -0.20617398950625465,
+              0.927826616300174
+            ],
+            [
+              0.15850156700337983,
+              -0.13408470718801063,
+              0.8861147412933369
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029539421,
+        "native_distance_calls": 659,
+        "native_distance_wall_sec": 0.01607998099999997
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 1.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 659,
+        "minimum": {
+          "time_sec": 4.34750110610204,
+          "state_rad": {
+            "left_j1": -0.4319507299297896,
+            "left_j2": -1.0341769897157487,
+            "left_j3": 0.9979492797677568,
+            "left_j4": -1.4978675864167013,
+            "left_j5": -0.8790307934098467,
+            "left_j6": 0.0010725251240926625,
+            "right_shoulder_pan_joint": 0.0014578875749622906,
+            "right_shoulder_lift_joint": -1.5705435654925208,
+            "right_elbow_joint": 1.5744629933913774,
+            "right_wrist_1_joint": -1.5716632240668598,
+            "right_wrist_2_joint": -1.5701696460219075,
+            "right_wrist_3_joint": -0.0018891189493644802
+          },
+          "distance_m": 0.029784736457653706,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09595710957134956,
+              -0.1477447550149746,
+              0.8812737457093336
+            ],
+            [
+              0.12139475622062157,
+              -0.14032644866605215,
+              0.8948761495304308
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04112398324516995,
+              -0.20616967929206276,
+              0.927826886034857
+            ],
+            [
+              0.15849503483413044,
+              -0.13407911859664925,
+              0.8860589374977367
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.02984313,
+        "native_distance_calls": 659,
+        "native_distance_wall_sec": 0.016198034000000035
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 659,
+        "minimum": {
+          "time_sec": 4.347526347454545,
+          "state_rad": {
+            "left_j1": -0.43194510017960086,
+            "left_j2": -1.0341791750778047,
+            "left_j3": 0.9979518904442986,
+            "left_j4": -1.4978675933615273,
+            "left_j5": -0.8790388706426483,
+            "left_j6": 0.0010725363982789764,
+            "right_shoulder_pan_joint": 0.0014442369494203973,
+            "right_shoulder_lift_joint": -1.5705026414054681,
+            "right_elbow_joint": 1.5745261953664638,
+            "right_wrist_1_joint": -1.5716392934187937,
+            "right_wrist_2_joint": -1.570156213377334,
+            "right_wrist_3_joint": -0.0019232696245852655
+          },
+          "distance_m": 0.02975230112916737,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09596992473846422,
+              -0.14771772054708096,
+              0.8812368223447994
+            ],
+            [
+              0.12138749059128004,
+              -0.14032172490155406,
+              0.8948179127652984
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04112442310567084,
+              -0.20616545615402587,
+              0.9278271503185903
+            ],
+            [
+              0.15848877017589577,
+              -0.13407375353083906,
+              0.8860053682314857
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029709699,
+        "native_distance_calls": 659,
+        "native_distance_wall_sec": 0.01613426
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 657,
+        "minimum": {
+          "time_sec": 4.34,
+          "state_rad": {
+            "left_j1": -0.4336237525416076,
+            "left_j2": -1.0335275541258846,
+            "left_j3": 0.9971734512247444,
+            "left_j4": -1.4978655225860893,
+            "left_j5": -0.8766304394571944,
+            "left_j6": 0.0010691747145716653,
+            "right_shoulder_pan_joint": 0.0014301905648195904,
+            "right_shoulder_lift_joint": -1.570460530846914,
+            "right_elbow_joint": 1.574591229693782,
+            "right_wrist_1_joint": -1.5716146689731632,
+            "right_wrist_2_joint": -1.5701423912934078,
+            "right_wrist_3_joint": -0.0019584103964902758
+          },
+          "distance_m": 0.02997770185366067,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09618162770969946,
+              -0.14844912219847287,
+              0.8807020306239168
+            ],
+            [
+              0.12138002114641772,
+              -0.14031686398738646,
+              0.8947579885430179
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04099208586969636,
+              -0.2074247399490771,
+              0.9277482700784324
+            ],
+            [
+              0.1584823300901407,
+              -0.13406823275973714,
+              0.8859502468886031
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029638913,
+        "native_distance_calls": 657,
+        "native_distance_wall_sec": 0.016048406000000032
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 657,
+        "minimum": {
+          "time_sec": 4.34,
+          "state_rad": {
+            "left_j1": -0.4336237525416076,
+            "left_j2": -1.0335275541258846,
+            "left_j3": 0.9971734512247444,
+            "left_j4": -1.4978655225860893,
+            "left_j5": -0.8766304394571944,
+            "left_j6": 0.0010691747145716653,
+            "right_shoulder_pan_joint": 0.0014177183035285939,
+            "right_shoulder_lift_joint": -1.5704231394537322,
+            "right_elbow_joint": 1.5746489758787432,
+            "right_wrist_1_joint": -1.5715928040927127,
+            "right_wrist_2_joint": -1.5701301181962932,
+            "right_wrist_3_joint": -0.001989613079716068
+          },
+          "distance_m": 0.02994835450980285,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09619966967504262,
+              -0.14843684460296358,
+              0.8806625830728378
+            ],
+            [
+              0.1213733945791141,
+              -0.14031254764852136,
+              0.8947047805965518
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04099208586969636,
+              -0.2074247399490771,
+              0.9277482700784324
+            ],
+            [
+              0.1584766169882661,
+              -0.13406333054294825,
+              0.8859013036328771
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029524678,
+        "native_distance_calls": 657,
+        "native_distance_wall_sec": 0.01604436699999999
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 657,
+        "minimum": {
+          "time_sec": 4.34,
+          "state_rad": {
+            "left_j1": -0.4336237525416076,
+            "left_j2": -1.0335275541258846,
+            "left_j3": 0.9971734512247444,
+            "left_j4": -1.4978655225860893,
+            "left_j5": -0.8766304394571944,
+            "left_j6": 0.0010691747145716653,
+            "right_shoulder_pan_joint": 0.0014058155518854405,
+            "right_shoulder_lift_joint": -1.5703874554301012,
+            "right_elbow_joint": 1.5747040852516065,
+            "right_wrist_1_joint": -1.57157193760863,
+            "right_wrist_2_joint": -1.5701184055145718,
+            "right_wrist_3_joint": -0.0020193909828862553
+          },
+          "distance_m": 0.029920351878795652,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.0962168889894068,
+              -0.1484251287426469,
+              0.8806249353036594
+            ],
+            [
+              0.12136707568775366,
+              -0.14030842825530723,
+              0.8946540029415341
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04099208586969636,
+              -0.2074247399490771,
+              0.9277482700784324
+            ],
+            [
+              0.15847116938015288,
+              -0.13405865205177875,
+              0.8858545959787324
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029989516,
+        "native_distance_calls": 657,
+        "native_distance_wall_sec": 0.016193082999999994
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 655,
+        "minimum": {
+          "time_sec": 4.337627877351456,
+          "state_rad": {
+            "left_j1": -0.4341528231579986,
+            "left_j2": -1.0333221789651377,
+            "left_j3": 0.9969281060138873,
+            "left_j4": -1.4978648699277652,
+            "left_j5": -0.8758713602096604,
+            "left_j6": 0.0010681151931892792,
+            "right_shoulder_pan_joint": 0.0013942203864456915,
+            "right_shoulder_lift_joint": -1.5703526935389052,
+            "right_elbow_joint": 1.5747577705098383,
+            "right_wrist_1_joint": -1.5715516103479812,
+            "right_wrist_2_joint": -1.5701069955073421,
+            "right_wrist_3_joint": -0.0020483993772524244
+          },
+          "distance_m": 0.02997787187498227,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09616286887923813,
+              -0.14841326588294437,
+              0.8805340968854918
+            ],
+            [
+              0.12136092486938845,
+              -0.14030441517552536,
+              0.8946045381250156
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04094988483011457,
+              -0.20782165545489983,
+              0.9277233767645482
+            ],
+            [
+              0.15846586688695635,
+              -0.13405409434788906,
+              0.8858090960298123
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.0302704,
+        "native_distance_calls": 655,
+        "native_distance_wall_sec": 0.016209255
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 655,
+        "minimum": {
+          "time_sec": 4.337650686223077,
+          "state_rad": {
+            "left_j1": -0.4341477359405333,
+            "left_j2": -1.0333241537262987,
+            "left_j3": 0.9969304651024531,
+            "left_j4": -1.497864876203326,
+            "left_j5": -0.8758786590485789,
+            "left_j6": 0.0010681253808948793,
+            "right_shoulder_pan_joint": 0.0013834725506285787,
+            "right_shoulder_lift_joint": -1.5703204719116062,
+            "right_elbow_joint": 1.5748075326580608,
+            "right_wrist_1_joint": -1.5715327685245337,
+            "right_wrist_2_joint": -1.570096419299093,
+            "right_wrist_3_joint": -0.0020752879509071697
+          },
+          "distance_m": 0.0299517564559826,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09617911847894645,
+              -0.14840270721125717,
+              0.8805006432418122
+            ],
+            [
+              0.12135522774413082,
+              -0.1403006952342662,
+              0.8945586885892526
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095029173125481,
+              -0.20781783891560884,
+              0.9277236161967404
+            ],
+            [
+              0.15846095570436391,
+              -0.134049869604314,
+              0.8857669216615729
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029647807,
+        "native_distance_calls": 655,
+        "native_distance_wall_sec": 0.016041447999999993
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 655,
+        "minimum": {
+          "time_sec": 4.33767306064,
+          "state_rad": {
+            "left_j1": -0.4341427456224482,
+            "left_j2": -1.0333260908729616,
+            "left_j3": 0.9969327792559989,
+            "left_j4": -1.4978648823593523,
+            "left_j5": -0.8758858188619945,
+            "left_j6": 0.0010681353745489442,
+            "right_shoulder_pan_joint": 0.0013732939217040016,
+            "right_shoulder_lift_joint": -1.570289956746209,
+            "right_elbow_joint": 1.5748546593959327,
+            "right_wrist_1_joint": -1.5715149245666988,
+            "right_wrist_2_joint": -1.570086403208316,
+            "right_wrist_3_joint": -0.002100752501929343
+          },
+          "distance_m": 0.029927000367439695,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09619453104558283,
+              -0.14839270846993163,
+              0.8804689774372418
+            ],
+            [
+              0.12134983607822047,
+              -0.1402971721937466,
+              0.8945152677698763
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095069086073,
+              -0.20781409507313095,
+              0.9277238510669343
+            ],
+            [
+              0.15845630801138236,
+              -0.13404586851607433,
+              0.885726981405145
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029476937,
+        "native_distance_calls": 655,
+        "native_distance_wall_sec": 0.015952465000000006
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 655,
+        "minimum": {
+          "time_sec": 4.337695012898113,
+          "state_rad": {
+            "left_j1": -0.4341378494613083,
+            "left_j2": -1.0333279914696871,
+            "left_j3": 0.99693504974627,
+            "left_j4": -1.4978648883992272,
+            "left_j5": -0.8758928435845906,
+            "left_j6": 0.001068145179643498,
+            "right_shoulder_pan_joint": 0.0013636845082315675,
+            "right_shoulder_lift_joint": -1.5702611480683746,
+            "right_elbow_joint": 1.5748991506838237,
+            "right_wrist_1_joint": -1.5714980784894828,
+            "right_wrist_2_joint": -1.5700769472434346,
+            "right_wrist_3_joint": -0.0021247930089048064
+          },
+          "distance_m": 0.029903602586344818,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09620910682980006,
+              -0.1483832695649523,
+              0.8804391000035146
+            ],
+            [
+              0.1213447492659359,
+              -0.1402938460746345,
+              0.8944742756190555
+            ]
+          ],
+          "tips_m": [
+            [
+              0.040951082439086614,
+              -0.20781042186998638,
+              0.9277240815042822
+            ],
+            [
+              0.15845192325815108,
+              -0.1340420911009354,
+              0.885689275204381
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029858122,
+        "native_distance_calls": 655,
+        "native_distance_wall_sec": 0.01616439599999999
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 654,
+        "minimum": {
+          "time_sec": 4.337716554833645,
+          "state_rad": {
+            "left_j1": -0.4341330448171988,
+            "left_j2": -1.0333298565412403,
+            "left_j3": 0.9969372777974708,
+            "left_j4": -1.497864894326207,
+            "left_j5": -0.875899737003961,
+            "left_j6": 0.0010681548014652566,
+            "right_shoulder_pan_joint": 0.0013546443184536427,
+            "right_shoulder_lift_joint": -1.5702340459028141,
+            "right_elbow_joint": 1.5749410064835718,
+            "right_wrist_1_joint": -1.5714822303073346,
+            "right_wrist_2_joint": -1.5700680514125591,
+            "right_wrist_3_joint": -0.0021474094512130867
+          },
+          "distance_m": 0.02988156213820569,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09622284607557344,
+              -0.14837439040821443,
+              0.880411011449144
+            ],
+            [
+              0.12133996673552311,
+              -0.1402907168964706,
+              0.8944357120922419
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095146667860409,
+              -0.2078068173256106,
+              0.9277243076331063
+            ],
+            [
+              0.15844780092564198,
+              -0.13403853737570764,
+              0.8856538030068359
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.0300164,
+        "native_distance_calls": 654,
+        "native_distance_wall_sec": 0.016302440999999984
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 2.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 654,
+        "minimum": {
+          "time_sec": 4.337737697844444,
+          "state_rad": {
+            "left_j1": -0.4341283291479805,
+            "left_j2": -1.0333316870744316,
+            "left_j3": 0.996939464588464,
+            "left_j4": -1.497864900143428,
+            "left_j5": -0.8759065027674166,
+            "left_j6": 0.0010681642451051308,
+            "right_shoulder_pan_joint": 0.0013461733603212546,
+            "right_shoulder_lift_joint": -1.5702086502733634,
+            "right_elbow_joint": 1.5749802267583641,
+            "right_wrist_1_joint": -1.5714673800341934,
+            "right_wrist_2_joint": -1.5700597157235139,
+            "right_wrist_3_joint": -0.002168601808962572
+          },
+          "distance_m": 0.029860878096273916,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09623574902085583,
+              -0.14836607091760895,
+              0.8803847122600825
+            ],
+            [
+              0.12133548794920919,
+              -0.1402877846776812,
+              0.8943995771482942
+            ]
+          ],
+          "tips_m": [
+            [
+              0.040951843783679276,
+              -0.2078032795327951,
+              0.9277245295731237
+            ],
+            [
+              0.1584439405256708,
+              -0.13403520735626018,
+              0.8856205647638804
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029728775,
+        "native_distance_calls": 654,
+        "native_distance_wall_sec": 0.01611233800000001
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 654,
+        "minimum": {
+          "time_sec": 4.337758452910092,
+          "state_rad": {
+            "left_j1": -0.4341237000048027,
+            "left_j2": -1.0333334840198576,
+            "left_j3": 0.9969416112548519,
+            "left_j4": -1.4978649058539113,
+            "left_j5": -0.8759131443884237,
+            "left_j6": 0.0010681735154672092,
+            "right_shoulder_pan_joint": 0.0013382716414881864,
+            "right_shoulder_lift_joint": -1.5701849612029688,
+            "right_elbow_joint": 1.5750168114727636,
+            "right_wrist_1_joint": -1.5714535276834762,
+            "right_wrist_2_joint": -1.5700519401838304,
+            "right_wrist_3_joint": -0.002188370063005284
+          },
+          "distance_m": 0.029841549580746158,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09624781589823903,
+              -0.1483583110170799,
+              0.8803602029002503
+            ],
+            [
+              0.1213313124031968,
+              -0.14028504943558143,
+              0.8943658707494677
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095221395118776,
+              -0.20779980665432074,
+              0.9277247474396557
+            ],
+            [
+              0.15844034160089215,
+              -0.13403210105752345,
+              0.8855895604306907
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.030143069,
+        "native_distance_calls": 654,
+        "native_distance_wall_sec": 0.016264849000000012
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.1,
+        "status": "completed",
+        "complete": false,
+        "samples": 654,
+        "minimum": {
+          "time_sec": 4.337778830610909,
+          "state_rad": {
+            "left_j1": -0.4341191550278646,
+            "left_j2": -1.033335248293549,
+            "left_j3": 0.9969437188909417,
+            "left_j4": -1.4978649114605673,
+            "left_j5": -0.8759196652526853,
+            "left_j6": 0.0010681826172772497,
+            "right_shoulder_pan_joint": 0.0013309391693201325,
+            "right_shoulder_lift_joint": -1.5701629787137128,
+            "right_elbow_joint": 1.5750507605926678,
+            "right_wrist_1_joint": -1.5714406732680968,
+            "right_wrist_2_joint": -1.570044724800757,
+            "right_wrist_3_joint": -0.0022067141949139767
+          },
+          "distance_m": 0.029823575758037926,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09625904693556084,
+              -0.14835111063668668,
+              0.88033748381208
+            ],
+            [
+              0.12132743962766719,
+              -0.14028251118638208,
+              0.894334592861463
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095257737082822,
+              -0.20779639691977725,
+              0.9277249613438301
+            ],
+            [
+              0.15843700372480207,
+              -0.1340292184934961,
+              0.8855607899662944
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029942025,
+        "native_distance_calls": 654,
+        "native_distance_wall_sec": 0.016241526000000013
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.2,
+        "status": "completed",
+        "complete": false,
+        "samples": 653,
+        "minimum": {
+          "time_sec": 4.337798841145946,
+          "state_rad": {
+            "left_j1": -0.43411469194240276,
+            "left_j2": -1.0333369807785249,
+            "left_j3": 0.9969457885516068,
+            "left_j4": -1.4978649169662028,
+            "left_j5": -0.8759260686238972,
+            "left_j6": 0.001068191555090713,
+            "right_shoulder_pan_joint": 0.0013241759509207754,
+            "right_shoulder_lift_joint": -1.570142702826891,
+            "right_elbow_joint": 1.5750820740851863,
+            "right_wrist_1_joint": -1.5714288168005075,
+            "right_wrist_2_joint": -1.570038069581284,
+            "right_wrist_3_joint": -0.0022236341869168955
+          },
+          "distance_m": 0.029806955840144363,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09626944235645218,
+              -0.14834446971268359,
+              0.8803165554170909
+            ],
+            [
+              0.12132386918679607,
+              -0.14028016994520276,
+              0.8943057434535522
+            ]
+          ],
+          "tips_m": [
+            [
+              0.0409529342254458,
+              -0.20779304862255343,
+              0.9277251713927681
+            ],
+            [
+              0.15843392650175084,
+              -0.13402655967725868,
+              0.8855342533336824
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.02969281,
+        "native_distance_calls": 653,
+        "native_distance_wall_sec": 0.016081158999999998
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.3,
+        "status": "completed",
+        "complete": false,
+        "samples": 653,
+        "minimum": {
+          "time_sec": 4.33781849435,
+          "state_rad": {
+            "left_j1": -0.4341103085548955,
+            "left_j2": -1.0333386823262691,
+            "left_j3": 0.9969478212540455,
+            "left_j4": -1.4978649223735232,
+            "left_j5": -0.8759323576491945,
+            "left_j6": 0.0010682003333003644,
+            "right_shoulder_pan_joint": 0.0013179819931400125,
+            "right_shoulder_lift_joint": -1.57012413356304,
+            "right_elbow_joint": 1.5751107519186043,
+            "right_wrist_1_joint": -1.5714179582927172,
+            "right_wrist_2_joint": -1.570031974532151,
+            "right_wrist_3_joint": -0.0022391300218771995
+          },
+          "distance_m": 0.029791689083991026,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09627900238087918,
+              -0.14833838818757933,
+              0.8802974181163725
+            ],
+            [
+              0.12132060067875355,
+              -0.14027802572607867,
+              0.8942793224986201
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095328469133841,
+              -0.20778976011698974,
+              0.9277253776897646
+            ],
+            [
+              0.15843110956694334,
+              -0.13402412462098118,
+              0.8855099504998519
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029449328,
+        "native_distance_calls": 653,
+        "native_distance_wall_sec": 0.015922103000000003
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.4,
+        "status": "completed",
+        "complete": false,
+        "samples": 653,
+        "minimum": {
+          "time_sec": 4.337837799709734,
+          "state_rad": {
+            "left_j1": -0.4341060027494684,
+            "left_j2": -1.033340353758124,
+            "left_j3": 0.9969498179794499,
+            "left_j4": -1.4978649276851388,
+            "left_j5": -0.8759385353643095,
+            "left_j6": 0.001068208956143473,
+            "right_shoulder_pan_joint": 0.0013123573025883009,
+            "right_shoulder_lift_joint": -1.5701072709419772,
+            "right_elbow_joint": 1.575136794062316,
+            "right_wrist_1_joint": -1.5714080977563147,
+            "right_wrist_2_joint": -1.5700264396598635,
+            "right_wrist_3_joint": -0.002253201683257069
+          },
+          "distance_m": 0.02977777479083858,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09628772722564577,
+              -0.14833286601019613,
+              0.8802800722910706
+            ],
+            [
+              0.1213176337357129,
+              -0.14027607854196836,
+              0.8942553299732392
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095362893854721,
+              -0.20778652981568022,
+              0.927725580334456
+            ],
+            [
+              0.1584285525864461,
+              -0.1340219133359306,
+              0.8854878814358702
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029356551,
+        "native_distance_calls": 653,
+        "native_distance_wall_sec": 0.015902537999999987
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.5,
+        "status": "completed",
+        "complete": false,
+        "samples": 653,
+        "minimum": {
+          "time_sec": 4.337856766378947,
+          "state_rad": {
+            "left_j1": -0.4341017724844871,
+            "left_j2": -1.0333419958666132,
+            "left_j3": 0.996951779674584,
+            "left_j4": -1.4978649329035683,
+            "left_j5": -0.8759446046984577,
+            "left_j6": 0.0010682174277086328,
+            "right_shoulder_pan_joint": 0.0013073018856614598,
+            "right_shoulder_lift_joint": -1.570092114982877,
+            "right_elbow_joint": 1.5751602004867087,
+            "right_wrist_1_joint": -1.5713992352025121,
+            "right_wrist_2_joint": -1.5700214649707154,
+            "right_wrist_3_joint": -0.0022658491550556588
+          },
+          "distance_m": 0.02976521230573895,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09629561710485979,
+              -0.1483279031357402,
+              0.8802645183028805
+            ],
+            [
+              0.12131496802386266,
+              -0.14027432840476575,
+              0.8942337658577819
+            ]
+          ],
+          "tips_m": [
+            [
+              0.040953967131132946,
+              -0.20778335618691762,
+              0.9277257794229836
+            ],
+            [
+              0.15842625525719745,
+              -0.134019925832484,
+              0.8854680461169796
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029852137,
+        "native_distance_calls": 653,
+        "native_distance_wall_sec": 0.016193651
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.6,
+        "status": "completed",
+        "complete": false,
+        "samples": 652,
+        "minimum": {
+          "time_sec": 4.337875403193044,
+          "state_rad": {
+            "left_j1": -0.4340976157893316,
+            "left_j2": -1.033343609416694,
+            "left_j3": 0.996953707253281,
+            "left_j4": -1.4978649380312423,
+            "left_j5": -0.8759505684789685,
+            "left_j6": 0.001068225751942224,
+            "right_shoulder_pan_joint": 0.0013028157485209606,
+            "right_shoulder_lift_joint": -1.570078665704212,
+            "right_elbow_joint": 1.575180971163255,
+            "right_wrist_1_joint": -1.5713913706421114,
+            "right_wrist_2_joint": -1.5700170504707696,
+            "right_wrist_3_joint": -0.002277072421858408
+          },
+          "distance_m": 0.029754001016927496,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09630267223042707,
+              -0.1483234995258242,
+              0.880250756494377
+            ],
+            [
+              0.12131260324339543,
+              -0.14027277532529647,
+              0.8942146301363476
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095429942743511,
+              -0.20778023775227247,
+              0.9277259750481418
+            ],
+            [
+              0.15842421730699782,
+              -0.13401816212012374,
+              0.8854504445225301
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029642096,
+        "native_distance_calls": 652,
+        "native_distance_wall_sec": 0.01610260399999999
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.7,
+        "status": "completed",
+        "complete": false,
+        "samples": 652,
+        "minimum": {
+          "time_sec": 4.337893718682758,
+          "state_rad": {
+            "left_j1": -0.43409353076133417,
+            "left_j2": -1.0333451951469452,
+            "left_j3": 0.9969556015978625,
+            "left_j4": -1.4978649430705082,
+            "left_j5": -0.875956429435677,
+            "left_j6": 0.0010682339326545465,
+            "right_shoulder_pan_joint": 0.0012988988971014668,
+            "right_shoulder_lift_joint": -1.5700669231237732,
+            "right_elbow_joint": 1.5751991060644779,
+            "right_wrist_1_joint": -1.5713845040855159,
+            "right_wrist_2_joint": -1.5700131961658657,
+            "right_wrist_3_joint": -0.0022868714688181746
+          },
+          "distance_m": 0.029744140355296753,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09630889281249368,
+              -0.14831965514851372,
+              0.8802387871894052
+            ],
+            [
+              0.12131053912851053,
+              -0.14027141931332202,
+              0.8941979227967961
+            ]
+          ],
+          "tips_m": [
+            [
+              0.04095462598032068,
+              -0.20777717308429638,
+              0.9277261672995252
+            ],
+            [
+              0.15842243849451207,
+              -0.134016622207442,
+              0.8854350766360107
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029612451,
+        "native_distance_calls": 652,
+        "native_distance_wall_sec": 0.016026615999999997
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.8,
+        "status": "completed",
+        "complete": false,
+        "samples": 652,
+        "minimum": {
+          "time_sec": 4.337911721087179,
+          "state_rad": {
+            "left_j1": -0.43408951556287484,
+            "left_j2": -1.0333467537706968,
+            "left_j3": 0.9969574635604855,
+            "left_j4": -1.4978649480236328,
+            "left_j5": -0.8759621902050918,
+            "left_j6": 0.0010682419735256333,
+            "right_shoulder_pan_joint": 0.0012955513371426788,
+            "right_shoulder_lift_joint": -1.5700568872587686,
+            "right_elbow_joint": 1.5752146051638025,
+            "right_wrist_1_joint": -1.5713786355427881,
+            "right_wrist_2_joint": -1.570009902061652,
+            "right_wrist_3_joint": -0.002295246281575569
+          },
+          "distance_m": 0.029735629793966992,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09631427905982047,
+              -0.14831636997839692,
+              0.8802286106935415
+            ],
+            [
+              0.1213087754474328,
+              -0.1402702603775538,
+              0.8941836438308978
+            ]
+          ],
+          "tips_m": [
+            [
+              0.040954946937416345,
+              -0.2077741608043423,
+              0.9277263562636648
+            ],
+            [
+              0.15842091860928512,
+              -0.13401530610215573,
+              0.8854219424451852
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029329815,
+        "native_distance_calls": 652,
+        "native_distance_wall_sec": 0.015942953999999985
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 3.9,
+        "status": "completed",
+        "complete": false,
+        "samples": 652,
+        "minimum": {
+          "time_sec": 4.337929418366102,
+          "state_rad": {
+            "left_j1": -0.43408556841862683,
+            "left_j2": -1.0333482859770968,
+            "left_j3": 0.9969592939644198,
+            "left_j4": -1.4978649528928063,
+            "left_j5": -0.8759678533343469,
+            "left_j6": 0.0010682498781107695,
+            "right_shoulder_pan_joint": 0.0012927730741881785,
+            "right_shoulder_lift_joint": -1.5700485581258175,
+            "right_elbow_joint": 1.5752274684355618,
+            "right_wrist_1_joint": -1.5713737650236461,
+            "right_wrist_2_joint": -1.5700071681635839,
+            "right_wrist_3_joint": -0.0023021968462618473
+          },
+          "distance_m": 0.029728468847795512,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09631883118019069,
+              -0.14831364399661853,
+              0.8802202272944192
+            ],
+            [
+              0.1213073120024103,
+              -0.14026929852565462,
+              0.8941717932343306
+            ]
+          ],
+          "tips_m": [
+            [
+              0.040955262441333434,
+              -0.2077711995804984,
+              0.927726542024157
+            ],
+            [
+              0.15841965747174008,
+              -0.13401421381110795,
+              0.88541104194209
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029457244,
+        "native_distance_calls": 652,
+        "native_distance_wall_sec": 0.01591173499999999
+      },
+      {
+        "delayed_arm": "right",
+        "delay_sec": 4.0,
+        "status": "completed",
+        "complete": false,
+        "samples": 651,
+        "minimum": {
+          "time_sec": 4.337946818211765,
+          "state_rad": {
+            "left_j1": -0.4340816876129376,
+            "left_j2": -1.0333497924321287,
+            "left_j3": 0.996961093605263,
+            "left_j4": -1.4978649576801446,
+            "left_j5": -0.8759734212849591,
+            "left_j6": 0.0010682576498457347,
+            "right_shoulder_pan_joint": 0.0012905565787179269,
+            "right_shoulder_lift_joint": -1.570041913151688,
+            "right_elbow_joint": 1.575237730741202,
+            "right_wrist_1_joint": -1.5713698793282342,
+            "right_wrist_2_joint": -1.5700049870623765,
+            "right_wrist_3_joint": -0.0023077419999766417
+          },
+          "distance_m": 0.029722639360457614,
+          "bodies": [
+            "left_wrist3_link",
+            "right_wrist_3_link"
+          ],
+          "nearest_points_m": [
+            [
+              0.09632256030110442,
+              -0.1483114697892809,
+              0.8802136134348203
+            ],
+            [
+              0.12130614466168786,
+              -0.140268531155595,
+              0.8941623388670665
+            ]
+          ],
+          "tips_m": [
+            [
+              0.0409555726298774,
+              -0.20776828812562265,
+              0.9277267246617872
+            ],
+            [
+              0.15841865151373752,
+              -0.13401334237786808,
+              0.8854023455601572
+            ]
+          ]
+        },
+        "elapsed_wall_sec": 0.029327353,
+        "native_distance_calls": 651,
+        "native_distance_wall_sec": 0.01589962199999998
+      }
+    ],
+    "profiling": {
+      "clock": "time.monotonic_ns",
+      "elapsed_wall_sec": 3.060478634,
+      "candidate_wall_sec": 2.8066731760000003,
+      "native_distance_wall_sec": 1.5188575800000004,
+      "native_distance_calls": 62267,
+      "candidate_count": 81,
+      "other_wall_sec": 0.25380545799999954,
+      "optimized": true,
+      "reused_zero_delay_evaluations": 1,
+      "grid_values_pruned_by_bound": 0
+    },
+    "search_decisions": [
+      {
+        "kind": "shared_zero_delay",
+        "delayed_arm": "right",
+        "source_candidate_index": 0,
+        "reason": "Both zero-delay schedules are identical, with the same initial state and full-distance evaluation"
+      }
+    ]
+  },
+  "compute_budget": {
+    "limit_wall_sec": 30.0,
+    "elapsed_wall_sec": 3.140379724,
+    "exceeded": false,
+    "enforcement": "Cooperative checks between bounded native samples and ROS calls; calls are not preempted"
+  },
+  "dispatched_goals": 0,
+  "action_results": [],
+  "error": {
+    "type": "TimingRejected",
+    "message": "No departure-only solution within delay/clearance budget; no command is allowed"
+  },
+  "evidence_export": {
+    "schema_version": 1,
+    "kind": "trace",
+    "raw_source_sha256": "e41d68c80b945d9b3f13270868ec7fe141af02669ead05e650036a4905108ff1",
+    "retained_fields": [
+      "schema_version",
+      "request_id",
+      "status",
+      "command",
+      "initial_state_rad",
+      "joint_state_stamp_simulation_sec",
+      "state_receive_age_wall_sec",
+      "clock_receive_age_wall_sec",
+      "plans",
+      "events",
+      "spans",
+      "metrics",
+      "departure_search",
+      "compute_budget",
+      "dispatched_goals",
+      "action_results",
+      "error"
+    ],
+    "note": "privacy-filtered extract; complete original retained locally"
+  }
+}

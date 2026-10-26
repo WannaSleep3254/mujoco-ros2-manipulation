@@ -60,3 +60,127 @@ python3 verify_interference.py --domain 127
 합성 궤적의 교차 간섭을 전송 전에 차단한 뒤, 같은 조건의 `both_arms` 계획만 실행합니다.
 두 Action 성공·실제 목표 수렴·네이티브 전체 스텝 접촉 0까지 검사합니다.
 [엄격한 후처리 설정과 재현 자료](../../docs/interference_avoidance.md)를 참고합니다.
+
+## 고정 홈 복귀 입력과 실패 경로 재현
+
+```bash
+source ./manipulation_env.sh
+python3 reproduce_motion.py --mode witness
+python3 reproduce_motion.py --mode live --domain 154
+```
+
+과거 기하 표본은 고정 자산·정책으로 재평가하며 새 ROS 요청의 경로는 별도로 저장합니다.
+기존 사용자 시뮬레이션과 다른 빈 도메인을 사용합니다. 새 경로가 통과하는 경우도 결과에 보존하며, 과거와 같은 실패를 강제하지 않습니다.
+[입력·완료 기준·한계](../../docs/reproductions/home-return-2026-10-23/README.md)를 함께 확인합니다.
+
+
+웹 뷰어의 실제 비교 시연과 중단·단독 소유권은 다음 명령으로 검사합니다.
+
+```bash
+python3 verify_operator_demos.py --domain 156 --port 8879 --no-render
+```
+
+고정 장애물/무장애물의 동일 명령, 새 공동 계획에서 만든 출발 조정 비교, 접촉 시연 중단과
+중첩 launch의 종료를 실제 HTTP·ROS 경로로 확인합니다. CI는 같은 검사를 도메인 155에서 실행합니다.
+로컬에서 `--no-render`를 빼면 각 새 실행의 job·run·모델 해시에 맞는 최신 뷰어 프레임도 요구합니다.
+원본 결과·계획·물리 기록은 `runtime/validation`과 해당 콘솔 세션에 보존하며 소개 사이트에 자동 게시하지 않습니다.
+
+
+## 일반 요청의 공간 후보 재선택
+
+```bash
+source ./manipulation_env.sh
+python3 verify_motion_replanning.py --domain 159
+```
+
+실제 명령 토픽과 MuJoCo 양팔 실행을 사용해 정상 계획, 시험용 실패 응답 뒤의 같은 요청 경로 재선택,
+후보 1개 상한, 후보 계산 중 취소 토픽 수신, 0.01 wall초 계산 예산, 이후 정상 복구를 확인합니다.
+시험용 계획 응답과 실제 MoveIt 호출을 구분해 기록하며 성공률·속도 평가로 사용하지 않습니다.
+실패·취소에는 전송 수 0과 최초 이동 null을, 성공에는 양팔 Action 완료와 최종 검사·전체 물리 스텝 접촉 0을 요구합니다.
+현재 사용 중인 도메인이면 실행을 거부합니다. 자세한 동작과 기록 항목은 [명령 안내](../../docs/motion_requests.md#일반-요청의-제한된-공간-재계획)에 있습니다.
+
+최종 Action 전송 직전 시험용 취소 플래그를 설정하는 회귀 사례도 포함합니다.
+이미 검사를 통과한 경로라도 첫 비동기 전송이 차단되고, 두 팔이 정지하며, 다음 정상 요청이 실행되는지 확인합니다.
+이 플래그 주입은 OS 신호나 취소 토픽의 전달 지연을 측정하지 않습니다.
+
+
+## 고정 입력의 후보 수 비교
+
+```bash
+source ./manipulation_env.sh
+# 기존 단일 모델 생성 후, 별도 기둥 장면만 추가 생성합니다.
+PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
+python3 benchmark_fixed_motion.py --list
+python3 benchmark_fixed_motion.py --repeats 3 --domain 171
+```
+
+[고정 사례](../../config/evaluations/fixed_motion_v1.json)는 근거리, 기존 랜덤 목표 5개,
+양팔 교차, 홈 복귀, 환경 기둥, 잘못된 목표의 10개입니다. 후보 1개와 최대 12개를
+같은 5초 계산 예산으로 비교하며, 순서를 번갈아 3회 반복합니다. 각 행은 새 시뮬레이션과
+별도 빈 ROS 도메인을 사용합니다. 기본 실행은 도메인 171~230을 사용하며, 사용 중이면 중단합니다.
+
+준비·워밍업·실제 시작 자세 보정·끝점 사전 검사는 채점 시간에서 제외합니다.
+보정은 정상 명령 경로로 0.03 rad 이하, 최대 3회만 수행하며 실제 시작 오차는 0.0015 rad 이내여야 합니다.
+기둥은 URDF와 MJCF에 함께 포함합니다. 실제 MoveIt 장면에서 시작·목표의 유효성과
+직선 관절 보간의 기둥 충돌을 먼저 확인합니다. 이는 회피 경로의 존재나 최단 경로를 보장하지 않습니다.
+
+정상적인 후보 소진·예산 소진은 실패 결과로 보존하고 다음 행을 평가합니다. 준비·전송·실행·물리·정리 오류는
+평가를 중단하며, 남은 행은 미실행으로 남깁니다. 잘못된 목표는 동작 성공률과 별도로 집계합니다.
+부분 경로에서 발견한 최소 거리를 전체 경로의 최솟값으로 취급하지 않습니다.
+`--cases local_small environment_post invalid_goal --repeats 1`은 CI 확인용 부분 실행이며,
+전체 사례와 미실행 행도 결과에 보존합니다. 원본은 `runtime/validation/fixed-suites`에 저장합니다.
+
+
+측정이 종료된 뒤 `scripts/export_fixed_motion.py --source <fixed-benchmark.json> --output <새-evidence.json.gz>`로
+원본 bytes와 전체 요약을 다시 대조한 공개 근거를 만들 수 있습니다. 출력 파일이 이미 있으면 덮어쓰지 않습니다.
+세션의 구현 SHA·모델·환경이 행 사이에 달라졌거나 원본이 누락되면 추출을 거부합니다.
+`scripts/import_fixed_motion_report.py --evidence <공개-evidence.json.gz> --output <새-리포트-디렉터리>`는
+공개 근거만 읽어 예비 리포트를 만듭니다. 원본 경로·프로세스 환경·식별값·원문 오류는 공개하지 않습니다.
+
+2026-10-23의 [60행 예비 평가](../../docs/reports/2026-10-23-fixed-motion/index.html)는 성공 47회,
+계획 실패 7회, 의도한 무효 목표 거부 6회를 포함합니다. 성공은 모두 첫 후보였으며 홈 복귀는 6회 모두
+Action 전송 없이 거부됐습니다. 후보 상한 증가에 의한 회복 성공이나 홈 복귀 해결을 주장하지 않습니다.
+보존된 공개 근거와 보고서의 일치는 다음 명령으로 확인합니다.
+
+```bash
+PYTHONPATH=src runtime/report-tools/bin/python scripts/import_fixed_motion_report.py --check docs/reports/2026-10-23-fixed-motion
+```
+
+
+## 로컬 3D 표시와 읽기 전용 미리보기
+
+```bash
+source ./manipulation_env.sh
+python3 verify_operator_views.py --domain 231 --port 8890 --with-demos
+```
+
+별도 빈 도메인과 포트에서 콘솔을 시작해 준비된 FR5·FR10·UR5e 모델, 실제 ROS 관절
+상태, 이 콘솔에서 완료한 요청의 저장 계획을 확인합니다. 모델이나 계획을 미리보는 동안
+명령·시뮬레이션 시작·시연 시작을 거부하고, 계획 재생이 실제 관절을 움직이지 않는지도
+확인합니다. CPU 장면 worker는 물리를 진행하거나 ROS 명령을 보내지 않습니다.
+정리 검사는 이 실행에서 소유한 콘솔과 worker만 대상으로 합니다.
+
+이 검사는 WebGL 브라우저 검사가 아닙니다. 브라우저에서는 드래그 회전, 확대·이동,
+모델 전환, 저장 경로의 재생·스크럽, 오래된 상태 표시와 반응형 배치를 따로 확인합니다.
+`tests/js/*.mjs`는 GPU를 만들지 않고 식별자·형상·카메라·비동기 UI 경계를 검사합니다.
+
+기본 표시는 로컬 3D입니다. 기존 `verify_operator_console.py`와 `verify_operator_demos.py`는
+`--no-render`가 없으면 서버 이미지 방식을 명시적으로 선택해 JPEG 호환 동작을 검사합니다.
+`--no-render`는 두 표시 worker를 모두 끄며 기존 ROS 실행·취소 검사를 유지합니다.
+
+`--with-demos`를 추가하면 접촉 비교 2회와 경로·출발 시점 비교 3회의 새 실행에서도 모델·실행 식별자, 진행하는 실제 자세, 종료 후 마지막 자세와 증가하는 수신 나이를 확인합니다. CI도 이 옵션을 사용합니다.
+
+
+## 로컬 설계환경의 기하와 읽기 전용 미리보기
+
+```bash
+.venv/bin/python verify_environment_overlay.py --native --catalog-output runtime/validation/environment-preview-catalog.json
+source ./manipulation_env.sh
+python3 verify_environment_views.py --catalog runtime/validation/environment-preview-catalog.json --domain 148 --port 8895
+```
+
+첫 명령은 합성 메시 fixture로 새 장면을 만들고 단위·축·설치, 두 형식의 변조 거부와 native 3.12 기하를 검사합니다.
+로컬에 FreeCADCmd가 설치돼 있으면 `--with-freecad`로 직접 만든 STEP의 실제 변환과 단위 오류 거부도 추가합니다.
+둘째 명령은 빈 도메인의 소유 콘솔에서 미리보기·명령 차단·기본 장면 불변과 프로세스 정리를 확인합니다.
+설비가 포함된 ROS 실행·환경 여유 거리 검증을 수행하는 명령은 아닙니다. 결과·메시는 `runtime/`에만 보존합니다.
+같은 catalog 출력은 덮어쓰지 않으므로 재실행에는 새 경로를 지정합니다. [자세한 절차](../../docs/environment_design_import.md)를 참고합니다.

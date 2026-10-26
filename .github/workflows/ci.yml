@@ -26,12 +26,18 @@ jobs:
       - run: python -m pip install --force-reinstall --no-deps dist/*.whl
       - run: python scripts/check_repository.py
       - run: python -m unittest discover -s tests/unit -t . -v
+      - name: Read-only scene and browser control contracts
+        run: |
+          for task_js_test in tests/js/*.mjs; do
+            node "$task_js_test"
+          done
       - name: Publication report schema, evidence and generated files
         run: |
           python scripts/import_phase1_report.py --check
           python scripts/import_motion_request_report.py --check docs/reports/2026-10-21-request-timing
           python scripts/import_random_motion_report.py --check docs/reports/2026-10-21-random-motion
           python scripts/import_search_optimization_report.py --check docs/reports/2026-10-21-search-optimization
+          python scripts/import_fixed_motion_report.py --check docs/reports/2026-10-23-fixed-motion
           manipulation-report validate
           manipulation-report build --check
           manipulation-report --reports-dir docs/reporting validate
@@ -48,6 +54,12 @@ jobs:
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare --list
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --robots fr5
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-build --dry-run --workcell fr5_ur5e
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-import-fixed-report --check "$GITHUB_WORKSPACE/docs/reports/2026-10-23-fixed-motion"
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-views --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-import-step --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare-environment --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment-views --help
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: python-distributions
@@ -94,12 +106,23 @@ jobs:
           set -o pipefail
           if [[ '${{ matrix.robot }}' == 'workcell' ]]; then
             python3 build_workspace.py --download-debs --workcell '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
+            PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
+            python3 build_workspace.py --component models --robots fr10
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi
       - name: Model regression checks
         if: matrix.scene == 'default' || matrix.robot == 'workcell'
         run: PYTHONPATH=src .venv/bin/python -m unittest discover -s tests/model -t . -v
+      - name: Local environment units, installation and native geometry
+        if: matrix.robot == 'workcell'
+        run: |
+          .venv/bin/python verify_environment_overlay.py --native --catalog-output runtime/validation/environment-preview-catalog.json
+      - name: Read-only allowlisted environment previews and blocked mutations
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_environment_views.py --catalog runtime/validation/environment-preview-catalog.json --domain 148 --port 8895
       - name: Actual ROS / MoveIt headless verification
         run: |
           source ./manipulation_env.sh
@@ -119,11 +142,37 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_motion_commands.py --domain 138
+      - name: Bounded spatial replanning, no-dispatch limits and cancellation
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_motion_replanning.py --domain 159
+      - name: Fixed motion suite and obstacle scene smoke test
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 benchmark_fixed_motion.py --cases local_small environment_post invalid_goal --repeats 1 --domain 171
+      - name: Fixed home clearance witness and fresh request traces
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 reproduce_motion.py --mode witness
+          python3 reproduce_motion.py --mode live --domain 154
       - name: Operator console HTTP to actual ROS motion and cancellation
         if: matrix.robot == 'workcell'
         run: |
           source ./manipulation_env.sh
           python3 verify_operator_console.py --domain 143 --no-render --startup-cycles 2 --startup-hold-seconds 2
+      - name: Local CPU 3D sources, actual ROS state and read-only saved plans
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_operator_views.py --domain 156 --port 8890 --with-demos
+      - name: Operator live comparison HTTP jobs and owned cancellation
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_operator_demos.py --domain 155 --port 8879 --no-render
       - name: Paired seeded motion benchmark smoke test
         if: matrix.robot == 'workcell'
         run: |

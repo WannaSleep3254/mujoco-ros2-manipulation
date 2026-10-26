@@ -147,17 +147,77 @@
       "bytes": 236594,
       "sha256": "c7c01fb21f64009ead43e2ddcd8bbfebb567f20ec4d0feeb45d186be7dea4192"
     },
+    "2026-10-23-fixed-motion/evidence.json.gz": {
+      "bytes": 36901,
+      "sha256": "fc07f4718261a22ae77a8173cd1f89feadeddb33a4f6d6622c41c11d2287d520"
+    },
+    "2026-10-23-fixed-motion/index.html": {
+      "bytes": 110629,
+      "sha256": "46571add3cc11811b6e3e7fa63ea32ec1eb33599c6813a44ad177399541647a7"
+    },
+    "2026-10-23-fixed-motion/metrics.csv": {
+      "bytes": 66639,
+      "sha256": "6d05e3b21f081f078476e7a4404e06ca6767df83493a68bcc73ac2f147d766a5"
+    },
+    "2026-10-23-fixed-motion/report-manifest.json": {
+      "bytes": 2132,
+      "sha256": "f2f28f4ac06e45375c952e0e5c4831b89e83eb912ca06049ba239f13ee6f47f2"
+    },
+    "2026-10-23-fixed-motion/report.json": {
+      "bytes": 48604,
+      "sha256": "1994a86fadd7d69649c767e7141a2e157c8567148dd648ddd976f2e9da8cad41"
+    },
+    "2026-10-26-viewer-display/comparison.html": {
+      "bytes": 15245,
+      "sha256": "42ecd9509abffb277ac52121974d2ed710cd98e546a24bf57d490f56e9b346a2"
+    },
+    "2026-10-26-viewer-display/evidence.json": {
+      "bytes": 24868,
+      "sha256": "e9f01aea7d1d19dd04cb6ed982bc1b1c69691c74989fc78f9654c3b765500859"
+    },
+    "2026-10-26-viewer-display/index.html": {
+      "bytes": 18652,
+      "sha256": "e7f95d6fee06270b5b3ed21d427e08da0396e363170b84152adf3d12158b9725"
+    },
+    "2026-10-26-viewer-display/jpeg.png": {
+      "bytes": 57197,
+      "sha256": "1e095f5b3958de6244e17a3db6d907d59c6cc5e945a6746433d5ecf652b022fa"
+    },
+    "2026-10-26-viewer-display/metrics.csv": {
+      "bytes": 3113,
+      "sha256": "3dc90b689d1048db48a1749372a2ae5eec3bffcb6ea0d0cd069856192fc4b88b"
+    },
+    "2026-10-26-viewer-display/report-manifest.json": {
+      "bytes": 2813,
+      "sha256": "02241187e2d4f53988e9e51760def929dee891b5898ee322758f51e3eeac0390"
+    },
+    "2026-10-26-viewer-display/report.json": {
+      "bytes": 11986,
+      "sha256": "f84760e5b7f224531407d8bb129d74d3ebd39a05370c512ee92ae09d2b94fb15"
+    },
+    "2026-10-26-viewer-display/tools/launch_instrumented.py": {
+      "bytes": 3968,
+      "sha256": "30fefcd0f86be55ca1f936acd1e9e486a48fc29bb163789265381b9d9d60f1a9"
+    },
+    "2026-10-26-viewer-display/tools/sample.py": {
+      "bytes": 21489,
+      "sha256": "1dfbef86634e598838123de6b70f0f62eb5c7ad7189aabda31ca5cc58d8bad45"
+    },
+    "2026-10-26-viewer-display/webgl.png": {
+      "bytes": 56884,
+      "sha256": "5376532150cb10e90cf6ee26a975eda28a52c9ff2ad4f93df349841f670e01e5"
+    },
     "catalog.json": {
-      "bytes": 2709,
-      "sha256": "a40d051b259eaaf77c198b3d17230a35a977cd95312e8534118a8252efe322e9"
+      "bytes": 4324,
+      "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 11757,
-      "sha256": "39147f93d02ae253f6be91b4b00db010bb4a5fef0a5351296f1aa401f9d1a41b"
+      "bytes": 13704,
+      "sha256": "f991b9d7a186cab4988152335b98dccc04ea1665056f87c295db1309fbb1d1d4"
     },
     "operator-demos.json": {
-      "bytes": 2490,
-      "sha256": "00b57398d7186db9798ea5323274bf3259f144c28d557ffb7bad030c9546132c"
+      "bytes": 3022,
+      "sha256": "01a35f6af8ed87dc321fcc24e8feadc3951c9ec9826783fdb328207e3812f788"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -272,12 +332,12 @@
       "sha256": "2928dce0fb8e73a2ea29be5b540f3f8e54ff5b3295cec714d1883fa4cd0ffc73"
     },
     "operator/project-overview-2026-10-23/index.html": {
-      "bytes": 42284,
-      "sha256": "5da1b4f1f6a3ff2401c95eed30feabcd49e054c24aaf97ea7d7a41e6a47b04e1"
+      "bytes": 42437,
+      "sha256": "b0d7b3ee420818cab8236e6297bc5c5685a1fe53869920d22a5931ed97db19a1"
     },
     "operator/project-overview-2026-10-23/manifest.json": {
       "bytes": 929,
-      "sha256": "f031909801ef86b06de132b63a6e782ddeecbf9ac19364a5bfdfcb9e3ffd3a8a"
+      "sha256": "a2f559a8c50e7f4aab4d25e41e2815605d128fb392c74bbf88c743ac0040403e"
     },
     "operator/project-overview-2026-10-23/operation-demo.mp4": {
       "bytes": 1226621,
@@ -288,8 +348,8 @@
       "sha256": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9"
     },
     "operator/project-overview-2026-10-23/review-notes.json": {
-      "bytes": 4690,
-      "sha256": "f5cec8f8e53368a93b57caeca366fbd6b8af1451c190a792a3115348d053ffe4"
+      "bytes": 4992,
+      "sha256": "dfb7db9403b08e28ed3fa24769065645f99651a5ad9f172558a1a48b4b9ef040"
     },
     "operator/project-overview-2026-10-23/ur5e-home.png": {
       "bytes": 42589,
@@ -300,12 +360,12 @@
       "sha256": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87"
     },
     "operator/viewer-direction-2026-10-22/index.html": {
-      "bytes": 63867,
-      "sha256": "ae2037e3285e93134c9200c0d3ffd261b8062428459f4c0ff1c80ca8742ee49f"
+      "bytes": 64188,
+      "sha256": "0ccfc5f0b8df11a3c035eafa75f0d303f535886eb273e2c7ae6eb6f82164dc1c"
     },
     "operator/viewer-direction-2026-10-22/manifest.json": {
       "bytes": 2764,
-      "sha256": "befd86718f47c3b32965cf90c07f162bfdcc5b7f89fedcc3c572f0a61e79ec4e"
+      "sha256": "f508e53d6a280c16b2bb78fef3c2a3ea70ead7f5bfe57d9e48bbcca5ea7fcbb8"
     },
     "operator/viewer-direction-2026-10-22/review-data.json": {
       "bytes": 5906,
@@ -322,6 +382,22 @@
     "operator/viewer-direction-2026-10-22/viewer-demo.mp4": {
       "bytes": 1807105,
       "sha256": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba"
+    },
+    "operator/viewer-improvements-2026-10-26/camera-controls.png": {
+      "bytes": 57968,
+      "sha256": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766"
+    },
+    "operator/viewer-improvements-2026-10-26/index.html": {
+      "bytes": 17425,
+      "sha256": "ba9c813796b070b5b2f07d63d070a83834cc5bc1721baff31a965aee2755543e"
+    },
+    "operator/viewer-improvements-2026-10-26/manifest.json": {
+      "bytes": 1076,
+      "sha256": "b12aaf51a73d9b5cf959d4548f98b24569ed2ffd5ff14b053b72fdadd0cb35ff"
+    },
+    "operator/viewer-improvements-2026-10-26/review-notes.json": {
+      "bytes": 1740,
+      "sha256": "f9e536e18478d612b3b3530e877aaee440819a50ec4a380b6b7105e79570a4c3"
     }
   }
 }
