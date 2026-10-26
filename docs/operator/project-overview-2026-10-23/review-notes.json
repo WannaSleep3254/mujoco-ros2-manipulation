@@ -89,5 +89,11 @@
       "change": "Added a compact four-stage execution flow and seven direct baseline-pinned original-record links in the three verification summaries.",
       "validation": "Passed: four stages, seven direct record links, baseline source hashes, anchors and duplicate IDs; print arrow direction explicit. Related publication tests: 48 passed."
     }
-  ]
+  ],
+  "site_navigation_update": {
+    "date": "2026-10-26",
+    "scope": "Added current viewer improvement and site/project return links; original measurement, media and implementation baseline preserved.",
+    "new_measurement": false,
+    "print_styles": "unchanged; print preview not newly tested"
+  }
 }

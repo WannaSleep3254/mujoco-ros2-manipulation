@@ -37,7 +37,7 @@
       "published_date": "2026-10-23",
       "document_type": "project_overview",
       "overview": "로봇 시뮬레이션·동작 검증 개발 환경 구축을 목표로 하는 개인 개발 프로젝트입니다. 현재 MuJoCo·ROS 2 기반으로 모델·장면 설정, 양팔 계획·실행, 충돌 감시와 웹 조작 기능을 개발하고 있습니다.",
-      "manifest_sha256": "f031909801ef86b06de132b63a6e782ddeecbf9ac19364a5bfdfcb9e3ffd3a8a"
+      "manifest_sha256": "a2f559a8c50e7f4aab4d25e41e2815605d128fb392c74bbf88c743ac0040403e"
     },
     {
       "id": "viewer-improvements-2026-10-26",
@@ -45,7 +45,7 @@
       "published_date": "2026-10-26",
       "document_type": "design_review",
       "overview": "JPEG에서 로컬 3D로 바뀐 표시 구조와 정지 장면의 예비 측정, 줌·감도 조작을 정리합니다. 화면 FPS와 자세 적용률·HTTP 본문·서버 자원을 구분합니다.",
-      "manifest_sha256": "861ad10b907f56b1baa16be703b93792a4df74a3701441aba850cded5a311cac"
+      "manifest_sha256": "b12aaf51a73d9b5cf959d4548f98b24569ed2ffd5ff14b053b72fdadd0cb35ff"
     }
   ]
 }
