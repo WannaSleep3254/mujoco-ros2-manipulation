@@ -5,6 +5,7 @@ let config,token,state,targets={},arm=0,unit='deg',polling=false,latestRequest=n
 const requestCache=new Map(),requestLoads=new Map();
 const READ_TIMEOUT_MS=3000;
 let stateReadSerial=0,lastObservedRead=0;
+let replanReadPending=false;
 let historySignature=null;
 const labels={interrupted:'중단',starting:'준비 중',cancel_requested:'중단 요청 중',passed:'검증 통과',ready:'실행 가능',queued:'접수',submitting:'전송 확인 대기',running:'진행 중',succeeded:'성공',failed:'실패',cancelled:'취소 완료',rejected:'거부',blocked:'재시작 필요',unknown:'결과 미확인'};
 const terminal=new Set(['succeeded','failed','cancelled','rejected','unknown']);
@@ -116,7 +117,9 @@ async function replan(){
   sceneControls.pause();
   await request('/api/view/select',{mode:'live',source_id:state.view.config_source_id});
   const expectedRead=stateReadSerial+1;
-  const current=await readState();
+  let current;
+  replanReadPending=true;
+  try{current=await readState();}finally{replanReadPending=false;}
   if(!current.can_plan)throw Error(current.reason||'현재 상태에서 새 계획을 생성할 수 없습니다.');
   if(payload.strategy!==$('strategy').value||Object.keys(payload.target_rad).some(name=>payload.target_rad[name]!==targets[name]))throw Error('목표를 바꿨습니다. 새 목표로 계획 생성을 다시 눌러주세요.');
   if(!readConnected||expectedRead!==stateReadSerial||expectedRead!==lastObservedRead||current!==state||!state.can_plan||state.active_request_id||demoActive(state.demo?.current))throw Error('상태 확인이 바뀌었습니다. 최신 연결과 실행 상태를 확인한 뒤 다시 계획하세요.');
@@ -211,7 +214,9 @@ async function readState(){
  catch(error){if(serial===stateReadSerial&&serial>=lastObservedRead){lastObservedRead=serial;disconnected();}throw error;}
 }
 async function poll(){
- if(polling)return;polling=true;
+ // A periodic tick must not supersede the explicit observation that owns a
+ // replan. Other explicit observations still retain their serial safety gates.
+ if(polling||replanReadPending)return;polling=true;
  try{await readState();window.operatorReady=true;}
  catch(error){}
  finally{polling=false;}

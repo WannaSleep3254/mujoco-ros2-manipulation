@@ -125,15 +125,29 @@ test('a state read is superseded as soon as a newer read starts, even before tha
  assert.equal(h.element('sim-time').textContent,'2.000 s');assert.equal(h.api.get().readConnected,true);
 });
 
-test('explicit replan cannot use an old successful read after a newer poll disconnects',async()=>{
+test('explicit replan cannot use an old successful read after a newer explicit read disconnects',async()=>{
  let releaseOld,reads=0;const h=harness(path=>{
   if(path==='/api/state')return ++reads===1?new Promise(resolve=>{releaseOld=resolve;}):Promise.reject(new Error('newer state read failed'));
   return reply({});
  });h.set(state());
- const pending=h.api.replan();await drain();await h.api.poll();assert.equal(h.api.get().readConnected,false);
+ const pending=h.api.replan();await drain();await assert.rejects(h.api.readState(),/newer state read failed/);assert.equal(h.api.get().readConnected,false);
  releaseOld({ok:true,json:()=>Promise.resolve(state())});await pending;
  assert.ok(!h.calls.some(call=>['/api/plan','/api/plan/execute'].includes(call.path)));
  assert.equal(h.api.get().readConnected,false);assert.equal(h.api.get().replanning,false);assert.equal(h.element('execute').disabled,true);
+});
+
+test('periodic ticks cannot starve the explicit replan read while a valid response is delayed',async()=>{
+ let releaseFresh,reads=0;
+ const h=harness(path=>path==='/api/state'&&++reads===1?new Promise(resolve=>{releaseFresh=resolve;}):reply(path==='/api/state'?state():{}));h.set(state());
+ const pending=h.api.replan();await drain();
+ for(let tick=0;tick<4;tick++)await h.api.poll();
+ assert.equal(h.calls.filter(call=>call.path==='/api/state').length,1,'Periodic ticks share the replan observation instead of issuing newer reads');
+ assert.equal(h.calls.filter(call=>call.path==='/api/plan').length,0,'A plan cannot be created before its explicit fresh read completes');
+ releaseFresh({ok:true,json:()=>Promise.resolve(state())});await pending;
+ assert.equal(h.calls.filter(call=>call.path==='/api/plan').length,1);
+ assert.ok(!h.calls.some(call=>call.path==='/api/plan/execute'));
+ assert.equal(h.api.get().readConnected,true);assert.equal(h.api.get().replanning,false);
+ assert.equal(h.calls.filter(call=>call.path==='/api/state').length,2,'A normal post-submit observation resumes after the owned read');
 });
 
 test('replan rechecks the current connection and latest issued read immediately before posting',async()=>{
