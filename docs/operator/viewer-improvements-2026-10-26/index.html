@@ -2,7 +2,7 @@
 <html lang="ko"><head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content="JPEG 서버 이미지와 로컬 WebGL 표시의 구현 차이, 정지 장면의 표시·전송·서버 자원 측정과 남은 검증"/>
+<meta name="description" content="Three.js 유지·확장 이유, JPEG·WebGL 정지 장면 비교, 기존 뷰어 개발 계획의 진행 상황과 다음 확장"/>
 <meta name="report-id" content="viewer-improvements-2026-10-26"/>
 <title>WebGL 뷰어 개선과 표시 성능</title>
 <style>
@@ -15,21 +15,22 @@
 h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 .visual-title{color:var(--ink);font-size:14px;font-weight:650;line-height:1.7}
 .compare{min-width:650px;table-layout:fixed}.compare th:first-child{width:22%}.compare th:last-child{width:36%}
+.progress-table{min-width:670px;table-layout:fixed}.progress-table th:first-child{width:18%}.progress-table td p{margin:0 0 8px}.progress-table td p:last-child{margin:0}
 .compare tbody th{background:var(--paper)}.compare td p{margin:0 0 8px}.compare td p:last-child{margin:0}
 .flow-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}.flow-pair .node{min-inline-size:0}
 .flow-pair .node span{margin-top:10px;line-height:1.8}.legend{margin-bottom:0}
 .status-line{margin-top:0}.method{font-size:14px;color:var(--muted)}
 @media(max-width:760px){.flow-pair{grid-template-columns:1fr}.compare{min-width:620px}}
-@media print{.compare{min-width:0;table-layout:auto}.flow-pair{grid-template-columns:1fr 1fr}.method{font-size:8.5pt}}
+@media print{.compare,.progress-table{min-width:0;table-layout:auto}.flow-pair{grid-template-columns:1fr 1fr}.method{font-size:8.5pt}}
 </style></head>
 <body data-report-id="viewer-improvements-2026-10-26">
 <header>
 <p class="eyebrow">뷰어 개선 기록 · 2026-10-26</p>
 <h1>WebGL 뷰어 개선과 표시 성능</h1>
-<p class="lead">관절 상태 수신과 카메라 표시를 분리한 로컬 3D 뷰어<br/>JPEG 방식과의 정지 장면 비교, 측정으로 확인한 범위</p>
-<div class="meta"><span>대상: FR5·UR5e 공동 장면</span><span>측정 코드: 1a44f19</span><span>문서 v1.0 · 양식 v1.9</span></div>
+<p class="lead">관절 상태 수신과 카메라 표시를 분리한 로컬 3D 뷰어<br/>JPEG 방식과의 정지 장면 비교, Three.js 유지·확장 이유와 다음 계획</p>
+<div class="meta"><span>대상: FR5·UR5e 공동 장면</span><span>측정 코드: 1a44f19</span><span>문서 v1.1 · 양식 v1.9</span><span>개정: 2026-10-26 · 채택 판단·진행 상태 추가</span></div>
 </header>
-<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
+<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#rationale">채택 이유</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#progress">기존 계획과 진행</a><a href="#roadmap">다음 확장</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
 <main>
 <section id="overview">
 <span class="section-no">Overview</span><h2>상태 갱신과 화면 렌더링의 분리</h2>
@@ -37,8 +38,20 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <div class="note"><p><strong>이번 비교의 결론:</strong> 정지 장면에서 WebGL은 약 60 fps로 렌더링했지만 수신 자세 적용은 약 4회/s였습니다. HTTP 응답 본문량과 서버 합산 RSS는 낮았고, 평가 서버 프로세스 CPU 합계는 비슷한 수준이었습니다.</p></div>
 <p class="small">이 페이지는 <a href="../viewer-direction-2026-10-22/index.html">2026-10-22 뷰어 개발 방향성</a>의 후속 기록입니다. 당시 JPEG 구성과 미측정 항목은 과거 기록으로 보존합니다.</p>
 </section>
+<section id="rationale">
+<span class="section-no">01 / Current design decision</span><h2>Three.js를 유지하고 확장하는 이유</h2>
+<p><span class="tag proposed">2026-10-26 설계 판단</span> 현재 Three.js 표시부와 조작 화면을 유지하면서, 여러 시뮬레이터·로봇·센서의 데이터를 연결하는 부분을 단계적으로 분리하는 방향을 채택합니다.</p>
+<ul>
+<li><strong>프로젝트의 조작 흐름을 이어갑니다.</strong> 작업환경 확인, 목표 입력, 계획·실행·취소와 결과 조회를 기존 화면에서 제공합니다. 표시부를 확장하면서 이 흐름과 기존 검사를 함께 유지합니다.</li>
+<li><strong>표시와 계산을 나누어 발전시킵니다.</strong> 브라우저는 형상과 자세를 표시하고, 물리 계산과 로봇 명령은 백엔드가 담당합니다. 카메라는 새 상태가 도착하는 주기와 별개로 움직입니다.</li>
+<li><strong>구성 요소를 교체하려는 목표에 맞춥니다.</strong> 모델 식별자, 좌표계, 단위, 시간과 상태 순번을 공통으로 정리하고 공급원별 연결부를 두는 것이 다음 과제입니다. Three.js가 이미 여러 엔진을 지원한다는 뜻은 아닙니다.</li>
+<li><strong>현재 확인한 표시 개선을 활용합니다.</strong> 정지 장면에서 약 60 fps 렌더링과 약 4회/s 새 자세 적용을 관측했습니다. 이 둘을 구분하면서 이동 중 부하와 입력 지연을 추가로 측정하고, 실제 요구에 따라 표시 기술을 다시 평가합니다.</li>
+</ul>
+<div class="note"><p><strong>판단의 범위:</strong> 기존 기능과 프로젝트 목표를 바탕으로 한 개발 선택입니다. Qt·Foxglove·Rerun과 같은 조건으로 성능이나 개발 비용을 비교한 결과는 아닙니다. 현재 형상·자세 생성은 MJCF와 MuJoCo 기구학 계산에 의존하며, 다른 시뮬레이터·실물 로봇·센서의 공통 연결은 후속 개발 범위입니다.</p></div>
+<p class="small">기존 조작·실행 경로와 현재 표시 구조: <a href="#src-current">고정된 구현 근거</a> · 최초 대안 검토: <a href="../viewer-direction-2026-10-22/index.html#alternatives">10/22 뷰어 개발 방향성</a></p>
+</section>
 <section id="implementation">
-<span class="section-no">01 / Implementation</span><h2>이미지 수신에서 로컬 장면 표시로</h2>
+<span class="section-no">02 / Implementation</span><h2>이미지 수신에서 로컬 장면 표시로</h2>
 <div class="flow" role="figure" aria-labelledby="diagram-title-1">
 <p class="visual-title" id="diagram-title-1">도식 1. 두 표시 경로</p>
 <div class="flow-pair">
@@ -48,7 +61,7 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p>WebGL은 같은 자세를 여러 화면 프레임에 재사용합니다. 자세 적용률은 새 sequence의 수신 데이터를 적용한 횟수이며, 이 정지 실험에서 로봇 자세가 바뀌었다는 뜻은 아닙니다. 화면 렌더링 속도의 증가가 물리·제어 주기나 모션 계획 속도의 증가를 뜻하지는 않습니다. JPEG는 대체 표시 방식으로 유지합니다.</p>
 </section>
 <section id="measurement">
-<span class="section-no">02 / Measured display behavior</span><h2>정지 장면의 표시·전송·서버 부하</h2>
+<span class="section-no">03 / Measured display behavior</span><h2>정지 장면의 표시·전송·서버 부하</h2>
 <p class="method" id="measurement-conditions">같은 홈 자세에서 방식별 15초 구간 3개, 총 45초를 관측했습니다. 전환·초기화 구간을 제외하고 준비된 상태에서 측정했습니다. 브라우저는 1280 × 720, DPR 1이며 JPEG 원본은 960 × 640, WebGL 캔버스는 621 × 414입니다. 동일 해상도 비교는 아닙니다.</p>
 <div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-1">
 <table class="compare" aria-describedby="measurement-conditions measurement-notes">
@@ -68,11 +81,36 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p>CPU·RSS는 콘솔과 자손 프로세스의 합계로 브라우저 CPU·GPU를 제외합니다. CPU는 경계를 넘는 구간을 제외한 약 14.5초/창을 사용했습니다. 자세한 표본·분류·수치는 <a href="../../2026-10-26-viewer-display/index.html">표시 성능 측정 리포트</a>에서 확인합니다.</p>
 </div>
 </section>
-<section id="next"><span class="section-no">03 / Camera controls</span><h2>확대·축소·감도 조절</h2>
+<section id="next"><span class="section-no">04 / Camera controls</span><h2>확대·축소·감도 조절</h2>
 <p>조작 화면과 시연 화면에 <strong>확대·축소·기본 시점</strong> 버튼을 추가했습니다. 기존 휠·핀치 줌과 함께 사용할 수 있습니다. <strong>조작 감도</strong>를 펼치면 회전·줌·이동을 각각 0.25~3배로 조절합니다.</p>
 <ul><li>버튼 줌은 현재 바라보는 방향과 중심을 유지하며, 기존 카메라 거리 제한을 따릅니다. 기본 시점은 현재 모델을 다시 맞춥니다.</li><li>감도는 조작·시연 화면에 함께 적용하고 같은 페이지의 모델·장면 전환에서 유지합니다. 새로고침하면 기본 1배로 돌아갑니다.</li><li>서버 이미지 방식에서는 확대·감도를 비활성화합니다. 이 버튼은 브라우저 카메라를 조절하며 로봇 명령을 보내지 않습니다.</li></ul>
 <figure><img src="camera-controls.png" alt="FR10 읽기 전용 미리보기의 확대·축소·기본 시점 버튼과 회전·줌·이동 감도 슬라이더" width="1280" height="720" loading="lazy"><figcaption>그림 1. 카메라 조작 보완. 위 성능 측정 이후 추가한 기능이며 해당 성능 수치로 재평가한 것은 아닙니다.</figcaption></figure>
 <p class="small">읽기 전용 모델에서 확대·축소·복귀, 키보드 감도 조절, 시연 화면 동기화, FR10 모델 전환 후 설정 유지와 이미지 모드 비활성화를 브라우저에서 확인했습니다. 거리 제한과 오류·미준비 차단은 단위 검사로 확인했습니다. 실제 터치 장치와 조작 입력 지연은 별도로 측정하지 않았습니다.</p></section>
+<section id="progress">
+<span class="section-no">05 / Progress against the original plan</span><h2>기존 계획과 현재 진행 상황</h2>
+<p><a href="../viewer-direction-2026-10-22/index.html#roadmap">10/22 단계별 계획</a>에 10/26까지의 구현과 측정 결과를 대응시켰습니다. 각 단계의 일부 작업이 진행된 상태이며, 아래 표가 원래 완료 조건의 전부를 충족했다는 뜻은 아닙니다.</p>
+<div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-2">
+<table class="progress-table" aria-describedby="progress-note"><caption class="visual-title" id="table-title-2">표 2. 최초 계획 대비 진행 상태</caption>
+<thead><tr><th scope="col">기존 단계</th><th scope="col">구현·확인한 부분</th><th scope="col">남은 작업·검증</th></tr></thead><tbody>
+<tr><th scope="row">P0 · 안정화</th><td>실패 재현과 리포트 경로 정합화, 정지 장면의 예비 측정 자료를 확보했습니다.</td><td>JPEG 페인트 FPS, 입력부터 표시까지의 지연과 GPU 부하는 미측정입니다.</td></tr>
+<tr><th scope="row">P1 · 데이터 계약</th><td>MuJoCo 기반 형상·자세 전달에 모델 해시, 세션·순번과 오래된 상태 표시를 연결했습니다.</td><td>다른 공급원도 교체해 연결할 수 있는 공통 규약과 좌표·시간 검증이 필요합니다.</td></tr>
+<tr><th scope="row">P2 · 시제품 평가</th><td>Three.js 표시와 자유 카메라를 구현하고 JPEG·WebGL의 기본 설정을 정지 장면에서 비교했습니다.</td><td>같은 해상도·카메라 조건의 A/B 평가와 Qt 비교는 실시하지 않았습니다.</td></tr>
+<tr><th scope="row">P3 · 선정·통합</th><td>조작·시연 화면에 WebGL을 연결하고 JPEG를 대체 표시 방식으로 유지했습니다.</td><td>장시간 안정성, 원격 운영과 실물 연동은 별도로 검증해야 합니다.</td></tr>
+<tr><th scope="row">P4 · 후속 확장</th><td>준비된 모델·작업장면의 읽기 전용 미리보기와 성공 요청의 저장 궤적 재생을 구현했습니다.</td><td>실행 전 새 계획의 검토·승인, Pose/IK·그리퍼·AMR 조작은 후속 범위입니다.</td></tr>
+</tbody></table></div>
+<p class="small" id="progress-note">준비된 모델의 미리보기는 임의 로봇·설계파일을 바로 연결하는 기능과 구분합니다. 저장 궤적의 재생은 새 계획을 실행 전에 승인하는 기능과 구분합니다. 기존 문서의 본문은 10/22 당시의 판단과 계획으로 보존합니다.</p>
+</section>
+<section id="roadmap">
+<span class="section-no">06 / Proposed next steps</span><h2>다음 확장과 재검토 조건</h2>
+<p><span class="tag proposed">후속 개발안</span> 공통 연결부를 작은 사례로 검증한 뒤 데이터 종류와 공급원을 늘립니다.</p>
+<ol>
+<li><strong>표시 데이터 규칙 정리:</strong> 형상·링크 자세와 모델·소스 식별자, 좌표계·단위, 시각·순번·최신성 규칙을 정리합니다. 엔진별 모델 생성 정보와 실행·취소 권한은 별도로 다룹니다.</li>
+<li><strong>두 번째 공급원 연결:</strong> MuJoCo·ROS 없이 기록 데이터를 읽는 연결부부터 같은 표시 경로에 적용합니다. 모델 전환, 시간 정지·역행과 연결 단절을 시험해 교체 가능한지 확인합니다.</li>
+<li><strong>센서·점군 확장:</strong> 자세와 별도의 전송 경로에서 데이터 크기와 대기열을 제한하고, 데이터 취득 시각의 좌표 변환과 오래된 데이터 처리 규칙을 검증합니다. 임의 설계파일의 변환·가져오기도 별도 과제로 진행합니다.</li>
+<li><strong>관측·분석 도구 평가:</strong> ROS 센서·TF 관측이 주가 되면 Foxglove를, 시간축 기록 분석이 주가 되면 Rerun을 비교합니다. 원격 배포·라이선스와 실제 자료의 처리 성능을 확인하고, 실행·취소 경로와 구분해 연결합니다.</li>
+</ol>
+<p><strong>재검토 조건:</strong> 실제 이동·센서 자료에서 표시 지연이나 자원 사용이 요구 수준을 넘거나, 전용 표시 기능의 유지 비용이 커지면 다른 뷰어와 같은 조건으로 비교합니다. UI 프레임워크와 전송 방식의 변경도 각각 필요한 기능과 측정 결과를 근거로 결정합니다.</p>
+</section>
 <section id="scope">
 <span class="section-no">Scope &amp; limitations</span><h2>이번 결과로 판단하지 않은 범위</h2>
 <ul><li>브라우저·GPU 부하, GPU 렌더 시간·메모리와 카메라 입력부터 표시까지의 지연은 측정하지 않았습니다.</li><li>로봇 이동·계획 실행 중 부하, 원격 네트워크, 긴 시간의 안정성은 비교하지 않았습니다.</li><li>정지 자세·서로 다른 해상도의 짧은 비교입니다. 모든 장면에서 전송량 감소나 자원 절감을 보장하지 않습니다.</li></ul>
@@ -83,9 +121,11 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <ol class="sources">
 <li><a href="../../2026-10-26-viewer-display/index.html">2026-10-26 표시 성능 측정 리포트</a><span>3개 연속 측정 구간과 조건, 렌더·자세·HTTP·서버 자원 지표와 해석 한계</span></li>
 <li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/34">PR #34</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/35">PR #35</a><span>측정 이전 로컬 3D·읽기 전용 모델/장면 미리보기의 구현 기록</span></li>
-<li><a href="../viewer-direction-2026-10-22/index.html">2026-10-22 뷰어 개발 방향성</a><span>기존 JPEG 구성, 당시 대안 검토와 후속 평가 계획</span></li>
+<li><a href="../viewer-direction-2026-10-22/index.html">2026-10-22 뷰어 개발 방향성</a><span>기존 JPEG 구성, 당시 대안 검토와 P0~P4 개발 계획</span></li>
+<li id="src-current"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/e8ac5029915472a39a7d65a0e9ef5a25baf8fb37/docs/operator_console.md">10/26 공개 구현의 구조·지원 범위</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/e8ac5029915472a39a7d65a0e9ef5a25baf8fb37/src/mujoco_ros2_manipulation/operator_console/scene_host.py">MuJoCo 장면 공급원</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/37">PR #37 카메라 조작 보완</a><span>채택 판단과 진행 상태를 확인한 고정 코드입니다. 성능 측정 코드 1a44f19와 구분합니다. 다른 시뮬레이터·센서 연결은 후속 제안입니다.</span></li>
+<li><a href="https://docs.foxglove.dev/docs/getting-started/frameworks/ros2">Foxglove ROS 2 연동</a> · <a href="https://rerun.io/docs/howto/integrations/embed-web">Rerun 웹 임베드</a><span>확인일: 2026-10-26. 관측·분석 도구의 후속 평가 자료이며, 이 프로젝트의 연동 구현이나 도구 간 성능 비교 결과는 아닙니다.</span></li>
 </ol>
 </section>
-<div class="footer"><span>문서 상태: 구현·측정 검토 완료</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
+<div class="footer"><span>문서 v1.1 · 2026-10-26 채택 판단·진행 상태 추가</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
 </main><script>document.getElementById("print").addEventListener("click",()=>window.print());</script>
 </body></html>
