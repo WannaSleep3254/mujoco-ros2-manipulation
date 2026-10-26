@@ -1,0 +1,11 @@
+report_id,metric_id,label,group_id,value,unit,clock,sample_count,statistic,scope,note
+2026-10-26-viewer-display,server-cpu-window-median,구간별 서버 CPU 합계 중앙값,image,58.635234363499066,percent,not_applicable,3,median,코어 하나=100%; 평가 콘솔과 자식 프로세스,각 창 내부 시간가중 평균 3개의 중앙값입니다. 위 요약의 전체 시간가중 평균과 구분합니다. 브라우저 제외.
+2026-10-26-viewer-display,server-cpu-window-median,구간별 서버 CPU 합계 중앙값,web3d,59.30896939518653,percent,not_applicable,3,median,코어 하나=100%; 평가 콘솔과 자식 프로세스,각 창 내부 시간가중 평균 3개의 중앙값입니다. 위 요약의 전체 시간가중 평균과 구분합니다. 브라우저 제외.
+2026-10-26-viewer-display,http-bytes-window-median,15초 구간의 HTTP 응답 본문 바이트 수 중앙값,image,1854364,count,not_applicable,3,median,고정 15초; 상태 API + frame 또는 pose의 본문 bytes를 셈,count의 대상은 바이트입니다. 초기 자산·headers·probe 제외. kB/s 전체 집계는 상세 리포트를 참고합니다.
+2026-10-26-viewer-display,http-bytes-window-median,15초 구간의 HTTP 응답 본문 바이트 수 중앙값,web3d,1012644,count,not_applicable,3,median,고정 15초; 상태 API + frame 또는 pose의 본문 bytes를 셈,count의 대상은 바이트입니다. 초기 자산·headers·probe 제외. kB/s 전체 집계는 상세 리포트를 참고합니다.
+2026-10-26-viewer-display,display-responses-window-median,15초 구간의 정상 표시 응답 수 중앙값,image,60,count,not_applicable,3,median,JPEG frame 또는 WebGL pose의 HTTP 200 응답,HTTP 응답 횟수이며 paint FPS·관절 이동 횟수가 아닙니다.
+2026-10-26-viewer-display,display-responses-window-median,15초 구간의 정상 표시 응답 수 중앙값,web3d,60,count,not_applicable,3,median,JPEG frame 또는 WebGL pose의 HTTP 200 응답,HTTP 응답 횟수이며 paint FPS·관절 이동 횟수가 아닙니다.
+2026-10-26-viewer-display,rtf-window-median,관측 실시간 배율의 구간별 중앙값,image,1.0000053059180865,ratio,not_applicable,3,median,상태 simulation_sec 증가 / sampler wall 시간,각 약14.5초 관측 구간의 비율이며 simulator 내부 step 시간 분포가 아닙니다.
+2026-10-26-viewer-display,rtf-window-median,관측 실시간 배율의 구간별 중앙값,web3d,0.9999834835068334,ratio,not_applicable,3,median,상태 simulation_sec 증가 / sampler wall 시간,각 약14.5초 관측 구간의 비율이며 simulator 내부 step 시간 분포가 아닙니다.
+2026-10-26-viewer-display,camera-input-to-paint,카메라 입력부터 paint까지,image,,ms,wall,0,not_measured,동일 입력·동일 픽셀의 종단 비교,이번 정지 자세 시험에서는 입력 지연을 계측하지 않았습니다.
+2026-10-26-viewer-display,camera-input-to-paint,카메라 입력부터 paint까지,web3d,,ms,wall,0,not_measured,동일 입력·동일 픽셀의 종단 비교,이번 정지 자세 시험에서는 입력 지연을 계측하지 않았습니다.

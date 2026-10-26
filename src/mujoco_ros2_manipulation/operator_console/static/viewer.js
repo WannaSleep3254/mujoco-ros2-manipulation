@@ -102,6 +102,7 @@ export class LocalSceneView {
     this.controls.screenSpacePanning = true;
     this.controls.minDistance = .05;
     this.controls.maxDistance = 100;
+    this.setControlSensitivity(options.controlSensitivity ?? {rotate: 1, zoom: 1, pan: 1});
     this.controls.update();
     this._onContextLost = event => { event.preventDefault(); this.sceneError = '3D 그래픽 컨텍스트를 잃었습니다'; this._refreshStatus(); };
     this.canvas.addEventListener('webglcontextlost', this._onContextLost);
@@ -425,6 +426,39 @@ export class LocalSceneView {
     return true;
   }
 
+  /** Relative local dolly; the same OrbitControls limits apply to wheel/buttons. */
+  zoomCamera(direction) {
+    requireValue(!this.disposed, 'Scene view is destroyed');
+    requireValue(['in', 'out'].includes(direction), 'Unknown zoom direction');
+    if (!this.hasPose || !this.manifest || this.loading) return false;
+    const target = this.controls.target.clone();
+    const offset = this.camera.position.clone().sub(target), distance = offset.length();
+    const minimum = this.controls.minDistance ?? .05, maximum = this.controls.maxDistance ?? 100;
+    requireValue(finite(distance) && distance > 0 && finite(minimum) && minimum > 0 &&
+      finite(maximum) && maximum >= minimum, 'Invalid camera distance limits');
+    const scale = Math.pow(1.25, (this.controls.zoomSpeed ?? 1) * (direction === 'in' ? -1 : 1));
+    const next = Math.max(minimum, Math.min(maximum, distance * scale));
+    if (Math.abs(next - distance) < 1e-12) return false;
+    this._placeCamera(target, offset, next);
+    return true;
+  }
+
+  getControlSensitivity() {
+    return {rotate: this.controls.rotateSpeed ?? 1, zoom: this.controls.zoomSpeed ?? 1, pan: this.controls.panSpeed ?? 1};
+  }
+
+  setControlSensitivity(value) {
+    requireValue(!this.disposed, 'Scene view is destroyed');
+    const keys = ['rotate', 'zoom', 'pan'];
+    requireValue(value && typeof value === 'object' && !Array.isArray(value) &&
+      Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key) &&
+        finite(value[key]) && value[key] >= .25 && value[key] <= 3), 'Camera sensitivity must be 0.25..3');
+    this.controls.rotateSpeed = value.rotate;
+    this.controls.zoomSpeed = value.zoom;
+    this.controls.panSpeed = value.pan;
+    return this.getControlSensitivity();
+  }
+
   /** Explicit fit preserves the viewing direction; state updates never call it. */
   fitCamera() {
     requireValue(!this.disposed, 'Scene view is destroyed');
@@ -477,7 +511,13 @@ export class LocalSceneView {
     return true;
   }
 
-  resetCamera() {this.controls.reset();}
+  resetCamera() {
+    requireValue(!this.disposed, 'Scene view is destroyed');
+    if (!this.hasPose || !this.manifest || this.loading) return false;
+    const fitted = this._fitCamera(new THREE.Vector3(1, -1, .7));
+    if (fitted) this.needsFit = false;
+    return fitted;
+  }
 
   resize() {
     if (this.disposed) return;

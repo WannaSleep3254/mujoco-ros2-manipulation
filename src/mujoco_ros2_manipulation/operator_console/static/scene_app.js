@@ -1,13 +1,19 @@
 /** Local scene controls: read-only view/selection and saved-plan playback. */
 import {LocalSceneView} from './viewer.js';
 const $=id=>document.getElementById(id);
+const cameraElements=selector=>document.querySelectorAll?.(selector)??[];
+// Keep preferences across model/binding switches and a controller recreation in
+// this page. A page reload starts at 1x; no robot/server setting is persisted.
+let retainedCameraSensitivity={rotate:1,zoom:1,pan:1};
 export class SceneControls {
   constructor({request,notify,showOperate}) {
     this.request=request;this.notify=notify;this.showOperate=showOperate;
+    this.cameraListeners=[];
     this.seekInFlight=false;this.pendingSeek=null;this.seekSerial=0;this.seekEpoch=0;this.selecting=false;this.viewer=null;this.expected=null;this.loading=null;this.loadedBinding=null;this.data=null;this.playing=false;this.playEpoch=0;this.playStart=null;this.playTimer=null;this.manifestFailures=0;this.manifestRetryAt=0;this.notifiedManifest=null;
     this.element=document.createElement('div');this.element.className='local-scene';
+    this.cameraSensitivity={...retainedCameraSensitivity};
     this.metrics=$('scene-metrics');
-    try {this.viewer=new LocalSceneView(this.element,{onMetrics:metrics=>{this.metrics.textContent=JSON.stringify(metrics,null,2);if(!this.isImage()&&metrics.binding_id===this.expected){const age=metrics.mode==='live'?(Number.isFinite(metrics.source_age_ms)?Math.round(metrics.source_age_ms)+' ms 전 상태':'상태 수신 대기'):metrics.mode?'읽기 전용 보기':'장면 준비 대기';$('frame-age').textContent=$('demo-frame-age').textContent=age;const status={fresh:'현재 관절 자세',stale:'마지막 수신 자세',preview:'읽기 전용 미리보기',loading:'장면 준비 중',waiting:'관절 상태 대기',error:'장면 표시 오류'}[metrics.view_state]||'장면 준비 중';$('frame-label').textContent=$('demo-frame-label').textContent=status;}}});}
+    try {this.viewer=new LocalSceneView(this.element,{controlSensitivity:this.cameraSensitivity,onMetrics:metrics=>{this.metrics.textContent=JSON.stringify(metrics,null,2);if(!this.isImage()&&metrics.binding_id===this.expected){const age=metrics.mode==='live'?(Number.isFinite(metrics.source_age_ms)?Math.round(metrics.source_age_ms)+' ms 전 상태':'상태 수신 대기'):metrics.mode?'읽기 전용 보기':'장면 준비 대기';$('frame-age').textContent=$('demo-frame-age').textContent=age;const status={fresh:'현재 관절 자세',stale:'마지막 수신 자세',preview:'읽기 전용 미리보기',loading:'장면 준비 중',waiting:'관절 상태 대기',error:'장면 표시 오류'}[metrics.view_state]||'장면 준비 중';$('frame-label').textContent=$('demo-frame-label').textContent=status;}}});}
     catch(error){this.element.textContent='로컬 3D를 시작하지 못했습니다. 서버 이미지 표시를 선택할 수 있습니다.';this.notify(error.message);}
     $('scene-model').addEventListener('click',()=>this.select('model_preview',$('scene-source').value));
     $('scene-live').addEventListener('click',()=>this.select('live',this.data?.config_source_id));
@@ -15,6 +21,10 @@ export class SceneControls {
     $('scene-collision').addEventListener('change',()=>this.viewer?.setCollisionVisible($('scene-collision').checked));
     $('plan-seek').addEventListener('input',()=>{this.pause();this.seek(Number($('plan-seek').value));});
     $('plan-play').addEventListener('click',()=>this.playing?this.pause():this.play());
+    for(const button of cameraElements('[data-scene-zoom]'))this.listenCamera(button,'click',()=>this.zoom(button.dataset.sceneZoom));
+    for(const button of cameraElements('[data-scene-reset]'))this.listenCamera(button,'click',()=>this.resetCamera());
+    for(const input of cameraElements('[data-scene-speed]'))this.listenCamera(input,'input',()=>this.setSensitivity(input.dataset.sceneSpeed,Number(input.value)));
+    this.updateCameraControls();
   }
   isImage(){return this.data?.display_mode==='image';}
   async action(path,payload){try{return await this.request(path,payload);}catch(error){this.notify(error.message);return null;}}
@@ -42,6 +52,32 @@ export class SceneControls {
     const frame=async()=>{if(!this.playing||this.playEpoch!==epoch||this.data?.binding_id!==binding)return;const time=Math.min(duration,start.time+(performance.now()-start.wall)/1000);const ok=await this.seek(time,binding);if(this.playEpoch!==epoch||this.data?.binding_id!==binding)return;if(!ok||time>=duration)this.pause();else if(this.playing)this.playTimer=setTimeout(frame,100);};frame();
   }
   camera(view){this.viewer?.cameraPreset(view);}
+  listenCamera(element,event,callback){element.addEventListener(event,callback);this.cameraListeners.push({element,event,callback});}
+  cameraReady(){return Boolean(this.viewer&&!this.viewer.disposed&&this.data?.enabled&&!this.isImage()&&!this.data.error&&this.data.status!=='error'&&
+    this.data.binding_id&&this.viewer.bindingID===this.data.binding_id&&this.viewer.hasPose&&this.viewer.manifest&&!this.viewer.loading);}
+  zoom(direction){return this.cameraReady()?this.viewer.zoomCamera(direction):false;}
+  resetCamera(){
+    if(!this.cameraReady())return false;
+    const changed=this.viewer.resetCamera();
+    if(changed)for(const button of cameraElements('[data-camera]'))button.classList?.toggle('selected',button.dataset.camera==='overview');
+    return changed;
+  }
+  setSensitivity(kind,value){
+    if(!this.viewer||this.viewer.disposed||!this.data?.enabled||this.isImage()||this.data.error||this.data.status==='error'||!['rotate','zoom','pan'].includes(kind))return false;
+    try {const applied=this.viewer.setControlSensitivity({...this.cameraSensitivity,[kind]:value});
+      this.cameraSensitivity={...applied};retainedCameraSensitivity={...applied};this.updateCameraControls();return true;}
+    catch(error){this.notify(error.message);this.updateCameraControls();return false;}
+  }
+  updateCameraControls(){
+    const local=Boolean(this.viewer&&this.data?.enabled&&!this.isImage()&&!this.data.error&&this.data.status!=='error');
+    for(const panel of cameraElements('[data-scene-camera-controls]'))panel.hidden=!this.viewer||!this.data?.enabled;
+    for(const button of cameraElements('[data-scene-zoom], [data-scene-reset]'))button.disabled=!this.cameraReady();
+    for(const input of cameraElements('[data-scene-speed]')){const value=this.cameraSensitivity[input.dataset.sceneSpeed];
+      input.disabled=!local;input.value=String(value);input.setAttribute('aria-valuetext',value.toFixed(2)+'배');}
+    for(const output of cameraElements('[data-scene-speed-value]'))output.textContent=this.cameraSensitivity[output.dataset.sceneSpeedValue].toFixed(2)+'×';
+    for(const help of cameraElements('[data-scene-camera-help]'))help.textContent=this.isImage()?
+      '서버 이미지는 확대·축소와 감도 조절을 지원하지 않습니다.':'드래그 회전 · 휠/핀치 확대·축소 · 오른쪽 드래그 이동';
+  }
   mount(){
     const slot=$('demos').hidden?$('scene-slot'):$('demo-scene-slot');
     if(this.element.parentElement!==slot){slot.append(this.element);this.viewer?.resize();}
@@ -49,7 +85,7 @@ export class SceneControls {
   update(state){
     const data=state.view;if(data?.binding&&this.data?.binding&&data.binding.operator_session_id===this.data.binding.operator_session_id&&data.binding.generation<this.data.binding.generation)return;
     const previousError=Boolean(this.data?.status==='error'||this.data?.error),failed=Boolean(data?.status==='error'||data?.error);
-    if(this.data?.binding_id!==data?.binding_id||failed||!data){this.pause();this._clearPendingSeek();}this.data=data;
+    if(this.data?.binding_id!==data?.binding_id||failed||!data){this.pause();this._clearPendingSeek();}this.data=data;this.updateCameraControls();
     if(!data){$('plan-play').disabled=$('plan-seek').disabled=true;if(this.viewer&&(this.expected!==null||previousError))this.viewer.clearBinding('장면 준비 대기');this.expected=null;this.loadedBinding=null;this.loading=null;return;}
     this.mount();const image=this.isImage();this.element.hidden=image;
     $('scene-slot').hidden=image;$('demo-scene-slot').hidden=image;
@@ -87,5 +123,8 @@ export class SceneControls {
       this.loading=pending;
     }else if(this.loadedBinding===id&&!this.loading)this.viewer.pollPose('/api/view/pose?binding_id='+id).catch(()=>{});
   }
-  destroy(){this.pause();this._clearPendingSeek();this.viewer?.destroy();}
+  destroy(){this.pause();this._clearPendingSeek();for(const {element,event,callback} of this.cameraListeners)element.removeEventListener(event,callback);this.cameraListeners=[];
+    for(const panel of cameraElements('[data-scene-camera-controls]'))panel.hidden=true;
+    for(const input of cameraElements('[data-scene-zoom], [data-scene-reset], [data-scene-speed]'))input.disabled=true;
+    this.viewer?.destroy();}
 }
