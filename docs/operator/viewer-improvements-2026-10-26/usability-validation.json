@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "implementation_commit": "0beb71f4a24628ae71ab773144dfa069fdbd31a0",
+  "implementation_commit": "357360dc89e7693d18b6a06fe471127e3013617a",
   "date": "2026-10-26",
   "scope": "Viewer improvements 1-4: read-only recovery, display identity, review facts and playback, explicit replan and linked request history.",
   "checks": {
     "python_unit_tests": 619,
-    "javascript_contract_tests": 99,
+    "javascript_contract_tests": 105,
     "package_sdist_and_wheel": "passed",
     "repository_checks": "passed",
     "owned_ros_review_checks": 10,
@@ -21,7 +21,8 @@
     "approved_small_motion_succeeded": true,
     "plan_request_id": "7f79b86f7ece482f973f2131cd40a730",
     "execution_request_id": "967c46b953594fe28d084db10d13901d",
-    "linked_history_and_readable_detail": true
+    "linked_history_and_readable_detail": true,
+    "recorded_before_final_review_fixes_commit": "0beb71f4a24628ae71ab773144dfa069fdbd31a0"
   },
   "isolated_graphics_fixture": {
     "real_webgl_context_loss": true,
@@ -38,10 +39,10 @@
     "Actual PDF pagination not checked"
   ],
   "source_sha256": {
-    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "4c525494d9a5172de1abe971916e6b967977b19cc16cbf5f091d076c3512e3f0",
+    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "960ab8dbf4b04c531646d3bf335e6121a399b855f52eda62ea21ba54b96bdd66",
     "src/mujoco_ros2_manipulation/operator_console/static/viewer.js": "df7dcd3bdad686b15145df7252fdbe8e0bbcfbaba714904fdf4eb2fca1ffba8d",
-    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "8c4bb8c2b6dfa40ac5256394972a5ef1d029a74ed813b58d1e9a2f34fa24a8e6",
-    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "69b053f0109bb3b63c9d52964c74374546c608777be537fd65e239909f617f9c",
+    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "8c3fe321d0f8441e2efbfa21142eea897d36052142eac41c3a2791688abe2102",
+    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "8cf431322e8a684485eec58f1bd962e16fd59c7c0cfb7dfafa8f075da4fa45dd",
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "5498df104475c3e9fc7f7964a519efdc5e0dd2fa0897ab3225dc80e45fda9c98",
     "src/mujoco_ros2_manipulation/operator_console/application.py": "7921382818da631c7e26449c2375363006c7179f09c4af293f4774cf0cb17aed",
     "src/mujoco_ros2_manipulation/operator_console/review_summary.py": "2e32b54fc0629090ce70e913294a441fa773fae2c7290403b434a6fb59c6ca3b",
@@ -57,5 +58,10 @@
     "images_loaded": true,
     "local_anchors_present": true,
     "print_pagination_tested": false
+  },
+  "final_review_fixes": {
+    "stale_read_cannot_create_new_plan": true,
+    "collision_setting_restored_on_3d_restart": true,
+    "validation": "Targeted regression tests and full JavaScript contract suite; no new performance measurement"
   }
 }

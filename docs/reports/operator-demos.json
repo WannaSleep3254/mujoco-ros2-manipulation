@@ -45,7 +45,7 @@
       "published_date": "2026-10-26",
       "document_type": "design_review",
       "overview": "Three.js를 유지·확장하는 이유와 현재 구현, JPEG·WebGL 정지 장면 비교를 정리합니다. 기존 개발 계획의 진행 상황과 여러 공급원·센서 연결의 다음 과제를 제시합니다.",
-      "manifest_sha256": "81fafec85e8c74600577ea97cf7f4a281ce49c1e7a7f8bf308cb6c7ea038a4fb"
+      "manifest_sha256": "cda6ef909065d76ac23e1dcf926495a80181d7068f6ebfe3d59dad34836b5b24"
     }
   ]
 }

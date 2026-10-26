@@ -3,11 +3,11 @@
   "document_type": "design_review",
   "baseline_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "assets": {
-    "index.html": "261c9294ae59d8a5e41b9885fb1832b4cba9597dd260a8ead0b8b367e1051b50",
+    "index.html": "2465a811c9e723a2947bf8ca2c87b1f52cb107af870b9696c078b6f13077e09a",
     "camera-controls.png": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766",
-    "review-notes.json": "c9ca6d3cb17b6e786629793c39d734911a599731d118ffcffc95299899f4defd",
+    "review-notes.json": "bd83bfe1838ebff0b0ef841d53dd7be787556815bbe71283d71151054c8d6a93",
     "plan-review.png": "1209f19346f4f98f2415968523a9750c23b550af36d749ff51d55b64276f2281",
-    "usability-validation.json": "91b4c800433b76b194ad00570c658c3e3589085aab2d9d846ece8bfae2570dc5"
+    "usability-validation.json": "fad1f54d7781c2b1bdb066fcfefb55f321640b1cdb968a3d76ff1d2b89738aa6"
   },
   "measurement_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "feature_source_sha256": {
@@ -17,12 +17,12 @@
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "e5d0e52bc94705c34204adf591beae1b6733f9ba99901193817b039cde7e3321"
   },
   "document_version": "1.2",
-  "implementation_review_commit": "0beb71f4a24628ae71ab773144dfa069fdbd31a0",
+  "implementation_review_commit": "357360dc89e7693d18b6a06fe471127e3013617a",
   "usability_source_sha256": {
-    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "4c525494d9a5172de1abe971916e6b967977b19cc16cbf5f091d076c3512e3f0",
+    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "960ab8dbf4b04c531646d3bf335e6121a399b855f52eda62ea21ba54b96bdd66",
     "src/mujoco_ros2_manipulation/operator_console/static/viewer.js": "df7dcd3bdad686b15145df7252fdbe8e0bbcfbaba714904fdf4eb2fca1ffba8d",
-    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "8c4bb8c2b6dfa40ac5256394972a5ef1d029a74ed813b58d1e9a2f34fa24a8e6",
-    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "69b053f0109bb3b63c9d52964c74374546c608777be537fd65e239909f617f9c",
+    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "8c3fe321d0f8441e2efbfa21142eea897d36052142eac41c3a2791688abe2102",
+    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "8cf431322e8a684485eec58f1bd962e16fd59c7c0cfb7dfafa8f075da4fa45dd",
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "5498df104475c3e9fc7f7964a519efdc5e0dd2fa0897ab3225dc80e45fda9c98",
     "src/mujoco_ros2_manipulation/operator_console/application.py": "7921382818da631c7e26449c2375363006c7179f09c4af293f4774cf0cb17aed",
     "src/mujoco_ros2_manipulation/operator_console/review_summary.py": "2e32b54fc0629090ce70e913294a441fa773fae2c7290403b434a6fb59c6ca3b",
