@@ -11,7 +11,7 @@ from sensor_msgs.msg import JointState
 from rosgraph_msgs.msg import Clock
 from std_msgs.msg import String
 
-from ..workcells.motion_request import COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, decode_message
+from ..workcells.motion_request import COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, PLAN_TOPIC, APPROVE_TOPIC, decode_message
 
 
 class ConsoleBridge(Node):
@@ -23,6 +23,8 @@ class ConsoleBridge(Node):
         self.identity_requested_at = None
         self.last_identity = 0
         self.commands = self.create_publisher(String, COMMAND_TOPIC, 10)
+        self.plans = self.create_publisher(String, PLAN_TOPIC, 10)
+        self.approvals = self.create_publisher(String, APPROVE_TOPIC, 10)
         self.cancels = self.create_publisher(String, CANCEL_TOPIC, 10)
         reliable = QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         sensor = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
@@ -58,7 +60,8 @@ class ConsoleBridge(Node):
             now = time.monotonic()
             self.state.graph = dict(clock=self.count_publishers("/clock"), joints=self.count_publishers("/joint_states"),
                 status=self.count_publishers(STATUS_TOPIC), commands=self.commands.get_subscription_count(),
-                guards=self.count_publishers("/workcell/contact_stop"))
+                guards=self.count_publishers("/workcell/contact_stop"), plans=self.plans.get_subscription_count(),
+                approvals=self.approvals.get_subscription_count())
             unique = self.state.graph["clock"] == 1 and self.state.graph["joints"] == 1 and self.parameters.service_is_ready()
             def clear_identity():
                 self.state.identity = False
@@ -110,7 +113,7 @@ class ConsoleBridge(Node):
             kind, payload = self.outbox.get_nowait()
         except queue.Empty:
             return
-        if kind == "command":
+        if kind in ("command", "plan", "approve"):
             with self.state.lock:
                 identifier = payload["request_id"]
                 record = self.state.history.get(identifier)
@@ -120,13 +123,23 @@ class ConsoleBridge(Node):
                 if (self.state.active != identifier or identifier not in self.state.ui_ids
                         or not isinstance(record, dict) or record.get("status") != "submitting"
                         or record.get("stage") != "submitted" or record.get("command") != payload
+                        or record.get("reservation_kind", "command") != kind
                         or record.get("session_id") is not None):
                     return  # Preserve unknown/cancelled/completed outcomes as received.
                 reason = self.state.reason(ignore_request=identifier)
+                if not reason and kind == "plan" and self.state.graph.get("plans", 0) < 1:
+                    reason = "계획 검토 명령 노드의 연결이 끊겼습니다."
+                if not reason and kind == "approve":
+                    # The backend owns the final one-use token and model/state
+                    # validation. Recheck the server identity before publication.
+                    if (self.state.graph.get("approvals", 0) < 1
+                            or (self.state.server or {}).get("session_id") != payload["session_id"]):
+                        reason = "계획을 생성한 명령 노드의 연결이 바뀌었습니다."
                 if reason:
                     self.state.status(dict(session_id=(self.state.server or {}).get("session_id", "console"),
                         request_id=identifier, status="rejected", stage="pre_dispatch", error=dict(message=reason), metrics={}))
                     return
-                self.commands.publish(String(data=json.dumps(payload, allow_nan=False)))
-        else:
+                publisher = self.commands if kind == "command" else self.plans if kind == "plan" else self.approvals
+                publisher.publish(String(data=json.dumps(payload, allow_nan=False)))
+        elif kind == "cancel":
             self.cancels.publish(String(data=json.dumps(payload)))

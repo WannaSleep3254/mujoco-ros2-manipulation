@@ -7,6 +7,8 @@ import uuid
 COMMAND_TOPIC = "/workcell/motion/command"
 CANCEL_TOPIC = "/workcell/motion/cancel"
 STATUS_TOPIC = "/workcell/motion/status"
+PLAN_TOPIC = "/workcell/motion/plan"
+APPROVE_TOPIC = "/workcell/motion/approve"
 STRATEGIES = ("coordinated", "departure_timing")
 MAX_MESSAGE_BYTES = 65536
 
@@ -74,3 +76,22 @@ def validate_cancel(data):
     if set(data) != {"request_id"}:
         raise ValueError("Cancellation accepts only request_id")
     return request_id(data["request_id"])
+
+
+def validate_approval(data):
+    """Approve one server-issued plan, using a new execution request identity.
+
+    This additive topic leaves the four-field command v1 contract unchanged.
+    The digest identifies the immutable plan; it is not an authentication token.
+    """
+    fields = {"schema_version", "request_id", "plan_request_id", "plan_sha256", "session_id"}
+    if (set(data) != fields or type(data["schema_version"]) is not int
+            or data["schema_version"] != 1):
+        raise ValueError("Expected approval schema v1 and its five declared fields")
+    for key in ("request_id", "plan_request_id", "session_id"):
+        request_id(data[key])
+    if data["request_id"] == data["plan_request_id"]:
+        raise ValueError("Approval requires a new execution request_id")
+    if not isinstance(data["plan_sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", data["plan_sha256"]):
+        raise ValueError("plan_sha256 must be a lowercase SHA-256 digest")
+    return data

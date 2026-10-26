@@ -1,4 +1,4 @@
-/** Read-only projection of a compiled MuJoCo scene; no robot commands or physics.
+/** Read-only projection of common display data; no robot commands or physics.
  *
  * Imports resolve to reviewed local files through the page's import map. This
  * module never fetches a CDN or interprets a mesh filename as a file-system path.
@@ -58,6 +58,7 @@ export class LocalSceneView {
     this.loadController = null;
     this.poseController = null;
     this.sequence = -1;
+    this.sourceSample = null;
     this.receivedAt = null;
     this.sourceAgeSec = null;
     this.sceneError = null;
@@ -67,6 +68,7 @@ export class LocalSceneView {
     this.sized = false;
     this.collisionVisible = false;
     this.stats = emptyStats();
+    this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
     this.renderCount = 0;
     this.poseCount = 0;
@@ -128,8 +130,10 @@ export class LocalSceneView {
     this.binding = next;
     this.loading = false;
     this.sequence = -1;
+    this.sourceSample = null;
     this.receivedAt = this.sourceAgeSec = null;
     this.stats = emptyStats();
+    this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
     this.renderCount = this.poseCount = 0;
     this.hasPose = false;
@@ -149,8 +153,10 @@ export class LocalSceneView {
     this.bindingID = this.binding = null;
     this.loading = false;
     this.sequence = -1;
+    this.sourceSample = null;
     this.receivedAt = this.sourceAgeSec = null;
     this.stats = emptyStats();
+    this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
     this.renderCount = this.poseCount = 0;
     this.hasPose = false;
@@ -222,6 +228,7 @@ export class LocalSceneView {
     this.loading = true;
     this.world.visible = false;
     this.stats = emptyStats();
+    this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
     this.renderCount = this.poseCount = 0;
     this.sceneError = null;
@@ -334,6 +341,13 @@ export class LocalSceneView {
     requireValue(this.manifest && !this.loading, 'Compiled scene is not ready');
     validatePose(envelope, this.manifest, this.bindingID, this.binding);
     if (envelope.sequence <= this.sequence) return false;
+    requireValue(!this.sourceSample || envelope.schema_version === 2, 'Source schema changed without a new binding');
+    if (envelope.schema_version === 2 && this.sourceSample) {
+      const previous = this.sourceSample, current = envelope.source;
+      requireValue(current.session_id === previous.session_id && current.clock_domain === previous.clock_domain &&
+        current.sequence > previous.sequence && current.stamp_sec >= previous.stamp_sec,
+        'Source restarted, rewound or replayed without a new binding');
+    }
     requireValue(finite(elapsedRequestMs, true), 'Invalid client request elapsed duration');
     const started = this.now();
     for (const geom of envelope.pose.geoms) {
@@ -343,6 +357,7 @@ export class LocalSceneView {
       this.objects.get(geom.id).matrixWorldNeedsUpdate = true;
     }
     this.sequence = envelope.sequence;
+    this.sourceSample = envelope.schema_version === 2 ? {...envelope.source} : null;
     this.receivedAt = this.now();
     // Conservatively include the whole locally observed request duration if supplied.
     this.sourceAgeSec = envelope.source_state_age_sec === null ? null : envelope.source_state_age_sec + elapsedRequestMs / 1000;
@@ -538,6 +553,13 @@ export class LocalSceneView {
     this.renderer.render(this.scene, this.camera);
     const displayingPose = this.hasPose && this.world.visible;
     this.stats.render_submit_ms = displayingPose ? this.now() - started : null; // CPU submission, not GPU timing.
+    // Optional read-only benchmark hook. A render submission is not GPU
+    // completion or a physical display paint; consumers must retain that label.
+    if (displayingPose && this.firstVisibleSubmittedAt === null) this.firstVisibleSubmittedAt = this.now();
+    this.options.onRenderFrame?.({submitted_at_ms: this.now(), sequence: this.sequence,
+      displaying_pose: displayingPose, render_submit_ms: this.stats.render_submit_ms,
+      first_visible_submitted_at_ms: this.firstVisibleSubmittedAt,
+      camera_position: this.camera.position.toArray(), camera_quaternion: this.camera.quaternion.toArray()});
     if (displayingPose) this.renderCount++;
     const now = this.now();
     const windowMs = now - this.statsAt;

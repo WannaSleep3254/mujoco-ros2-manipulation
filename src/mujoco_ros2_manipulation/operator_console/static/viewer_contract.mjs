@@ -78,11 +78,30 @@ function checkRotation(rotation) {
 
 /** Validation completes before any existing scene is changed. */
 export function validateManifest(manifest, expected = {}) {
-  requireValue(manifest && manifest.schema_version === 1 && manifest.export_version === 'compiled-scene-v1', 'Invalid manifest schema');
-  for (const key of ['scene_sha256', 'model_sha256', 'compiled_model_sha256']) {
+  const common = manifest?.schema_version === 2 && manifest.export_version === 'display-scene-v1';
+  requireValue(common || (manifest && manifest.schema_version === 1 && manifest.export_version === 'compiled-scene-v1'), 'Invalid manifest schema');
+  if (common) {
+    requireValue(manifest.world_frame?.name === 'world' && manifest.world_frame?.handedness === 'right' &&
+      manifest.world_frame?.primitive_size === 'half-extents-radius-half-length', 'Unsupported display frame');
+    const p = manifest.provenance;
+    requireValue(p && typeof p.adapter === 'string' && /^[a-z][a-z0-9_-]{0,63}$/.test(p.adapter) &&
+      typeof p.source_sha256 === 'string' && SHA256.test(p.source_sha256), 'Invalid display provenance');
+    requireValue(p.engine === null || (p.engine && typeof p.engine.name === 'string' && p.engine.name.length > 0 &&
+      typeof p.engine.version === 'string' && p.engine.version.length > 0 &&
+      typeof p.engine.compiled_sha256 === 'string' && SHA256.test(p.engine.compiled_sha256)), 'Invalid engine provenance');
+    requireValue(!('compiled_model_sha256' in manifest) && !('mujoco_version' in manifest), 'Engine metadata belongs in provenance');
+  }
+  for (const key of common ? ['scene_sha256', 'model_sha256'] : ['scene_sha256', 'model_sha256', 'compiled_model_sha256']) {
     requireValue(typeof manifest[key] === 'string' && SHA256.test(manifest[key]), `Invalid ${key}`);
     if (expected[key] !== undefined && expected[key] !== null) requireValue(expected[key] === manifest[key], `Manifest ${key} mismatch`);
   }
+  requireValue(Array.isArray(manifest.joint_names) && manifest.joint_names.length <= 512 &&
+    manifest.joint_names.every(name => typeof name === 'string' && name.length > 0 && name.length <= 256) &&
+    new Set(manifest.joint_names).size === manifest.joint_names.length, 'Invalid named joint catalog');
+  requireValue(manifest.home_rad && typeof manifest.home_rad === 'object' && !Array.isArray(manifest.home_rad) &&
+    Object.keys(manifest.home_rad).length === manifest.joint_names.length && manifest.joint_names.every(name =>
+      Object.hasOwn(manifest.home_rad, name) && finite(manifest.home_rad[name]) && Math.abs(manifest.home_rad[name]) <= 1e6),
+    'Incomplete named home correspondence');
   requireValue(manifest.units?.length === 'm' && manifest.units?.angle === 'rad' &&
     manifest.units?.up_axis === 'Z' && manifest.units?.rotation === 'row-major', 'Unsupported scene units or rotation convention');
   requireValue(Array.isArray(manifest.default_visible_groups) && JSON.stringify(manifest.default_visible_groups) === JSON.stringify(DEFAULT_GROUPS),
@@ -155,13 +174,24 @@ export function decodeMesh(bytes, descriptor) {
 }
 
 export function validatePose(envelope, manifest, bindingID, binding) {
-  requireValue(envelope && envelope.schema_version === 1 && envelope.binding_id === bindingID &&
+  requireValue(envelope && [1, 2].includes(envelope.schema_version) && envelope.binding_id === bindingID &&
     sameIdentity(validateBinding(envelope.binding_id, envelope.binding), binding), 'Pose binding mismatch');
   integer(envelope.sequence, 'pose sequence');
   requireValue(envelope.sequence >= 1, 'Pose sequence must start at one');
   requireValue(binding.mode === 'live' ? finite(envelope.source_state_age_sec, true) : envelope.source_state_age_sec === null,
     'Invalid source state age for this view mode');
   requireValue(envelope.simulation_sec === null || finite(envelope.simulation_sec, true), 'Invalid source simulation stamp');
+  if (envelope.schema_version === 2) {
+    const source = envelope.source;
+    requireValue(source && typeof source.session_id === 'string' && ID32.test(source.session_id) &&
+      typeof source.clock_domain === 'string' && source.clock_domain.length > 0 && source.clock_domain.length <= 128 &&
+      finite(source.stamp_sec, true), 'Invalid source clock identity');
+    integer(source.sequence, 'source sequence');
+    requireValue(source.sequence >= 1 && source.joint_positions_rad && !Array.isArray(source.joint_positions_rad) &&
+      Object.keys(source.joint_positions_rad).length === manifest.joint_names.length &&
+      manifest.joint_names.every(name => Object.hasOwn(source.joint_positions_rad, name) && finite(source.joint_positions_rad[name])),
+      'Incomplete source joint correspondence');
+  }
   if (binding.mode === 'plan_preview') requireValue(finite(envelope.preview_time_sec, true), 'Missing plan preview time');
   const pose = envelope.pose;
   requireValue(pose && pose.schema_version === 1 && pose.model_sha256 === manifest.model_sha256 && pose.scene_sha256 === manifest.scene_sha256,

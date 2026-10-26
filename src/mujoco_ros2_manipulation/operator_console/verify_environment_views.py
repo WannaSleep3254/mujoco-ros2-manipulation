@@ -199,7 +199,9 @@ def main(argv=None):
         require(status == 200 and mime == 'application/json' and _sha(raw) == descriptor['sha256']
             and len(raw) == descriptor['byte_length'], 'Current manifest bytes differ from their descriptor')
         manifest, catalog = _manifest(raw, source, file_sha256(source.xml_path))
-        require(all(descriptor[key] == manifest[key] for key in ('model_sha256', 'scene_sha256', 'compiled_model_sha256')),
+        compiled_digest = manifest.get('compiled_model_sha256') or manifest['provenance']['engine']['compiled_sha256']
+        require(all(descriptor[key] == manifest[key] for key in ('model_sha256', 'scene_sha256'))
+            and descriptor['compiled_model_sha256'] == compiled_digest,
             'Compiled manifest identity differs from the current scene descriptor')
         public_view(manifest, private_paths)
         total, assets = 0, []
@@ -217,7 +219,7 @@ def main(argv=None):
         (folder / 'manifest.json').write_bytes(raw)
         record = dict(source_id=source_id, mode=mode, binding_id=identifier,
             model_sha256=manifest['model_sha256'], scene_sha256=manifest['scene_sha256'],
-            compiled_model_sha256=manifest['compiled_model_sha256'], manifest_sha256=_sha(raw),
+            compiled_model_sha256=(manifest.get('compiled_model_sha256') or manifest['provenance']['engine']['compiled_sha256']), manifest_sha256=_sha(raw),
             geoms=len(manifest['geoms']), asset_bytes=total, assets=assets)
         checks.append(record)
         report.update(view_checks=checks)
@@ -241,6 +243,9 @@ def main(argv=None):
         directory = Path(owned[0]['directory'])
         value = json.loads(bounded_file(directory / 'input.json', 256 * 1024))
         raw_pose = json.loads(bounded_file(directory / 'pose.json', MAX_JSON))
+        if manifest.get('schema_version') == 2:
+            from .display_contract import from_compiled_pose
+            raw_pose['pose'] = from_compiled_pose(raw_pose['pose'], manifest)
         require(value == dict(sequence=pose['sequence'], positions=manifest['home_rad'])
             and set(value['positions']) == set(manifest['joint_names'])
             and raw_pose['sequence'] == pose['sequence'] and raw_pose['pose'] == pose['pose'],

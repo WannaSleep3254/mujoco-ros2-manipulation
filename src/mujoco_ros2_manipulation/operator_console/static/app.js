@@ -40,20 +40,35 @@ function refreshControls(){
  $('start').disabled=Boolean(state.view?.preview_active)||demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
  $('stop').disabled=demoBusy||transition||!(owned.simulation||owned.commands);
  $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=Boolean(state.view?.preview_active)||demoBusy||transition;
- $('execute').disabled=demoBusy||!state.can_submit||!validTargets();document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=demoBusy||!state.active_request_id);
+ $('execute').disabled=demoBusy||!state.can_plan||!validTargets()||!sceneControls;document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=demoBusy||!state.active_request_id);
  $('use-current').disabled=!state.positions_rad||state.state_age_sec>0.5;
  $('planning-case').disabled=demoBusy||transition||owned.simulation||state.graph.clock>0;$('native-gui').disabled=$('planning-case').disabled;
- $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':!validTargets()?'모든 목표를 관절 한계 안의 숫자로 입력하세요.':state.can_submit?'준비 완료 · 양팔 목표를 전송할 수 있습니다.':state.reason||'연결 확인 중';
+ $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':!validTargets()?'모든 목표를 관절 한계 안의 숫자로 입력하세요.':!sceneControls?'계획 검토에는 로컬 3D 표시가 필요합니다.':state.can_plan?'계획을 생성합니다. 경로를 확인하고 승인해야 로봇이 움직입니다.':state.reason||'계획 검토 명령 노드의 연결을 확인하세요.';
+ renderReview();
+}
+function reviewMatchesTargets(review){const record=state?.history.find(item=>item.request_id===review?.plan_request_id),original=record?.command;return original&&original.strategy===$('strategy').value&&Object.keys(targets).every(name=>original.target_rad?.[name]===targets[name]);}
+function renderReview(){
+ const review=state?.pending_plan;$('review-card').hidden=!review;if(!review)return;
+ const waiting=review.state==='awaiting_approval'&&review.remaining_sec>0,busy=Boolean(state.active_request_id)||demoActive(state.demo?.current),matches=reviewMatchesTargets(review);
+ const preview=state.view?.review_plan===true&&state.view?.binding?.request_id===review.plan_request_id&&state.view?.mode==='plan_preview';
+ const visible=preview&&sceneControls?.cameraReady();
+ badge($('review-badge'),waiting?'ready':'blocked',({awaiting_approval:'승인 대기',expired:'만료',invalidated:'무효화',consumed:'사용 완료',approval_queued:'승인 전송 중'})[review.state]||'다시 계획 필요');
+ $('review-id').textContent=review.plan_request_id;
+ $('review-summary').textContent=waiting?`계획과 검사가 끝났습니다. 실행 승인까지 ${Math.ceil(review.remaining_sec)}초 남았습니다.`:'이 계획은 실행할 수 없습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.';
+ $('review-preview').disabled=!waiting||busy||!sceneControls||state.view?.display_mode==='image';
+ $('review-discard').disabled=!waiting||busy;
+ $('review-approve').disabled=!waiting||!state.can_approve||!visible||!matches||busy;
+ $('review-admission').textContent=!waiting?'승인은 한 번만 사용할 수 있습니다.':!matches?'목표나 계획 방식을 바꿨습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.':!preview?'경로 미리보기를 열고 확인하세요.':!visible?'검토할 경로를 로컬 3D 화면에 표시하고 있습니다.':!state.can_approve?'현재 상태에서 실행을 승인할 수 없습니다. 연결과 감시 상태를 확인하세요.':'미리보기 재생은 로봇을 움직이지 않습니다. 실행하려면 승인·실행 버튼을 누르세요.';
 }
 function requestProgress(record){
  if(!record)return;
- badge($('request-badge'),record.status);$('request-id').textContent=record.request_id.slice(0,12)+'…';
+ badge($('request-badge'),record.status,record.stage==='plan_not_required'?'이동 불필요':record.mode==='plan_only'&&record.status==='succeeded'?'계획 생성 완료':undefined);$('request-id').textContent=record.request_id.slice(0,12)+'…';
  const stages={submitted:'명령 노드 수신 확인 대기',received:'목표 수신',state_snapshot:'시작 자세 확인',computation_started:'경로 계산 시작',planning_both_arms:'양팔 공동 경로 계획',planning_left_arm:'FR5 경로 계획',planning_right_arm:'UR5e 경로 계획',departure_search:'출발 타이밍 탐색',safety_checks:'거리·충돌 검사',computation_done:'계획·검사 완료',dispatch:'동작 예약·명령 전송',first_motion:'관절 이동 확인',first_motion_left:'FR5 이동 확인',first_motion_right:'UR5e 이동 확인',actions_done:'양팔 Action 완료',settled:'관절 수렴 확인',terminal:labels[record.status],cancel_received:'양팔 취소 요청 수신'};
- $('request-stage').textContent=stages[record.stage]||record.stage||labels[record.status];
+ $('request-stage').textContent=({plan_ready:'계획·검사 완료 · 실행 승인 대기',plan_not_required:'이미 목표 자세에 있습니다. 실행할 이동이 없습니다.',plan_revoked:'미승인 계획 폐기',approval_validating:'승인 계획 재검사'})[record.stage]||stages[record.stage]||record.stage||labels[record.status];
  const stage=record.stage||'';let progress=0;
  if(/planning|computation|search|safety/.test(stage))progress=1;
  if(/dispatch|action|motion|settled|cancel/.test(stage))progress=2;
- if(record.status==='succeeded')progress=3;
+ if(record.status==='succeeded')progress=record.mode==='plan_only'?1:3;
  document.querySelectorAll('[data-step]').forEach(el=>el.classList.toggle('reached',Number(el.dataset.step)<=progress));
  $('request-error').hidden=!record.error;$('request-error').textContent=record.error?.message||'';
  $('first-motion').textContent=value(record.metrics?.received_to_first_motion_wall_sec);
@@ -69,9 +84,9 @@ function history(records){
  for(const record of records){
   const row=document.createElement('tr');row.dataset.requestId=record.request_id;
   const id=document.createElement('td');id.append(textNode('code',record.request_id.slice(0,12)+'…'));row.append(id);
-  const result=document.createElement('td'),tag=document.createElement('span');badge(tag,record.status);result.append(tag);row.append(result);
+  const result=document.createElement('td'),tag=document.createElement('span');badge(tag,record.status,record.mode==='plan_only'&&record.status==='succeeded'?'계획 생성':undefined);result.append(tag);row.append(result);
   row.append(textNode('td',record.stage||'—'),textNode('td',value(record.metrics?.received_to_first_motion_wall_sec)),textNode('td',value(record.metrics?.received_to_terminal_wall_sec)));
-  const action=document.createElement('td'),button=textNode('button','상세');button.addEventListener('click',()=>detail(record.request_id));action.append(button);if(sceneControls&&record.status==='succeeded'&&record.trace_path){const preview=textNode('button','계획 보기');preview.disabled=Boolean(state?.active_request_id)||demoActive(state?.demo?.current);preview.addEventListener('click',()=>sceneControls.previewRequest(record.request_id));action.append(preview);}row.append(action);body.append(row);
+  const action=document.createElement('td'),button=textNode('button','상세');button.addEventListener('click',()=>detail(record.request_id));action.append(button);if(sceneControls&&record.status==='succeeded'&&record.trace_path&&record.mode!=='plan_only'){const preview=textNode('button','저장 궤적 보기');preview.disabled=Boolean(state?.active_request_id)||demoActive(state?.demo?.current);preview.addEventListener('click',()=>sceneControls.previewRequest(record.request_id));action.append(preview);}row.append(action);body.append(row);
  }
 }
 async function detail(id){try{const data=await request('/api/requests/'+id);$('history-detail').hidden=false;$('detail-error').textContent=data.error?.message||'';$('detail-content').textContent=JSON.stringify(data,null,2);}catch(error){notice(error.message);}}
@@ -91,7 +106,7 @@ function render(data){
 async function poll(){
  if(polling)return;polling=true;
  try{render(await request('/api/state'));window.operatorReady=true;}
- catch(error){badge($('connection'),'blocked','연결 끊김');$('execute').disabled=true;document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=true);$('admission').textContent='화면 서버와 연결되지 않았습니다. 자동으로 명령을 재전송하지 않습니다.';$('demo-run').disabled=true;$('demo-stop').disabled=true;$('demo-admission').textContent='화면 서버와 연결되지 않았습니다. 실행 상태를 다시 확인하고 있습니다.';}
+ catch(error){badge($('connection'),'blocked','연결 끊김');$('execute').disabled=$('review-preview').disabled=$('review-approve').disabled=$('review-discard').disabled=true;document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=true);$('admission').textContent='화면 서버와 연결되지 않았습니다. 자동으로 명령을 재전송하지 않습니다.';$('demo-run').disabled=true;$('demo-stop').disabled=true;$('demo-admission').textContent='화면 서버와 연결되지 않았습니다. 실행 상태를 다시 확인하고 있습니다.';}
  finally{polling=false;}
 }
 async function action(path,body){try{const result=await request(path,body);await poll();return result;}catch(error){notice(error.message);return null;}}
@@ -188,7 +203,7 @@ async function boot(){
  $('use-home').addEventListener('click',()=>{targets={...config.home_rad};fields();refreshControls();});
  $('use-sample').addEventListener('click',()=>{targets={...config.targets.sample};fields();refreshControls();});
  $('use-current').addEventListener('click',()=>{if(state?.positions_rad){targets={...state.positions_rad};fields();refreshControls();}});
- $('strategy').addEventListener('change',()=>{$('strategy-help').textContent=$('strategy').value==='coordinated'?'양팔을 함께 고려해 관절 공간 경로를 계획합니다.':'팔별 경로는 유지하고, 양팔의 출발 간격을 탐색합니다.';});
+ $('strategy').addEventListener('change',()=>{$('strategy-help').textContent=$('strategy').value==='coordinated'?'양팔을 함께 고려해 관절 공간 경로를 계획합니다.':'팔별 경로는 유지하고, 양팔의 출발 간격을 탐색합니다.';refreshControls();});
  $('demo-run').addEventListener('click',async()=>{if(!selectedDemo||!state?.demo?.can_start)return;$('demo-run').disabled=true;await action('/api/demos/start',{scenario:selectedDemo,native_gui:false});});
  $('demo-stop').addEventListener('click',async()=>{const job=state?.demo?.current;if(!job||!demoActive(job))return;$('demo-stop').disabled=true;await action('/api/demos/stop',{job_id:job.job_id});});
  $('start').addEventListener('click',()=>action('/api/start',{native_gui:$('native-gui').checked,planning_case:$('planning-case').value}));
@@ -197,8 +212,11 @@ async function boot(){
   if(!validTargets())return;
   $('execute').disabled=true;
   const payload={schema_version:1,request_id:crypto.randomUUID().replaceAll('-',''),strategy:$('strategy').value,target_rad:{...targets}};
-  const result=await action('/api/command',payload);if(result)latestRequest=null;
+  const result=await action('/api/plan',payload);if(result)latestRequest=null;
  });
+ $('review-preview').addEventListener('click',async()=>{const review=state?.pending_plan;if(!review||review.state!=='awaiting_approval')return;await sceneControls?.previewReview(review.plan_request_id);await poll();});
+ $('review-approve').addEventListener('click',async()=>{const review=state?.pending_plan;if($('review-approve').disabled||!review)return;$('review-approve').disabled=true;sceneControls?.pause();const result=await action('/api/plan/execute',{schema_version:1,request_id:crypto.randomUUID().replaceAll('-',''),plan_request_id:review.plan_request_id,plan_sha256:review.plan_sha256,session_id:review.session_id});if(result)latestRequest=null;});
+ $('review-discard').addEventListener('click',async()=>{const review=state?.pending_plan;if(!review)return;$('review-discard').disabled=true;const result=await action('/api/plan/discard',{request_id:review.plan_request_id});if(result)await sceneControls?.select('live',state.view?.config_source_id);await poll();});
  document.querySelectorAll('[data-cancel]').forEach(el=>el.addEventListener('click',()=>{if(state?.active_request_id)action('/api/cancel',{request_id:state.active_request_id}).then(r=>{if(r)notice('양팔 취소를 요청했습니다. 취소 완료 상태를 확인하세요.');});}));
  document.querySelectorAll('[data-camera]').forEach(el=>el.addEventListener('click',async()=>{if(sceneControls&&!sceneControls.isImage()){sceneControls.camera(el.dataset.camera);document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b.dataset.camera===el.dataset.camera));}else if(await action('/api/camera',{view:el.dataset.camera}))document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b.dataset.camera===el.dataset.camera));}));
  $('import-target').addEventListener('click',()=>$('target-file').click());

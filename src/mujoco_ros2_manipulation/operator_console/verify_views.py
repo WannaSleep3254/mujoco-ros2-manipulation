@@ -293,7 +293,7 @@ def main():
                 and len(raw)==descriptor['byte_length'],'Manifest bytes differ from the current descriptor')
         manifest,catalog=_manifest(raw,source,file_sha256(source.xml_path))
         require(descriptor['model_sha256']==manifest['model_sha256'] and descriptor['scene_sha256']==manifest['scene_sha256']
-                and descriptor['compiled_model_sha256']==manifest['compiled_model_sha256'],'Manifest compiled identity mismatch')
+                and descriptor['compiled_model_sha256']==(manifest.get('compiled_model_sha256') or manifest['provenance']['engine']['compiled_sha256']),'Manifest compiled identity mismatch')
         assets=[];total=0
         for sha,entry in catalog.items():
             status,mime,blob=http('/api/view/assets/'+sha,maximum=MAX_ASSET)
@@ -307,7 +307,7 @@ def main():
         (folder/'manifest.json').write_bytes(raw)
         result=dict(source_id=source_id,mode=mode,binding_id=identifier,binding=deepcopy(binding),
             manifest_sha256=digest(raw),model_sha256=manifest['model_sha256'],scene_sha256=manifest['scene_sha256'],
-            compiled_model_sha256=manifest['compiled_model_sha256'],geoms=len(manifest['geoms']),assets=assets,
+            compiled_model_sha256=(manifest.get('compiled_model_sha256') or manifest['provenance']['engine']['compiled_sha256']),geoms=len(manifest['geoms']),assets=assets,
             asset_bytes=total,worker_identity={k:v for k,v in owned[0].items() if k!='directory'})
         checks.append(result);report.update(view_checks=checks)
         verified_views[identifier]=(state,manifest,folder)
@@ -426,7 +426,7 @@ def main():
                     require(manifest['model_sha256']==record['model_sha256'],'CPU scene compiled another owned demo model')
                     proof.update(manifest=manifest,folder=folder)
                     record.update(binding_id=identifier,manifest_sha256=view['manifest_descriptor']['sha256'],
-                        scene_sha256=manifest['scene_sha256'],compiled_model_sha256=manifest['compiled_model_sha256'])
+                        scene_sha256=manifest['scene_sha256'],compiled_model_sha256=(manifest.get('compiled_model_sha256') or manifest['provenance']['engine']['compiled_sha256']))
                     flush()
                 require(view['manifest_descriptor']['sha256']==record['manifest_sha256']
                         and view['manifest_descriptor']['scene_sha256']==record['scene_sha256']

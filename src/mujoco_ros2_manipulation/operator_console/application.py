@@ -151,20 +151,58 @@ class ConsoleApplication:
             self.stop(error=str(error))
 
     def submit(self, payload):
+        return self._submit(payload, "command")
+
+    def create_plan(self, payload):
+        """Plan and check only. No approval is implied by a successful plan."""
+        return self._submit(payload, "plan")
+
+    def execute_plan(self, payload):
+        with self.lock, self.state.lock:
+            from ..workcells.motion_request import validate_approval
+            validate_approval(payload)
+            reason = self.state.approval_reason(payload)
+            if reason:
+                raise RuntimeError(reason)
+            self.views.approve_review(payload["plan_request_id"])
+            return self._submit(payload, "approve")
+
+    def discard_plan(self, identifier):
+        request_id(identifier)
+        with self.lock, self.state.lock:
+            review = self.state.review_snapshot()
+            if self.state.active or self.demos.busy or not review or review.get("plan_request_id") != identifier:
+                raise RuntimeError("현재 승인 대기 계획만 폐기할 수 있습니다.")
+            if review.get("state") != "awaiting_approval":
+                raise RuntimeError("이미 사용했거나 만료된 계획입니다.")
+            try:
+                self.bridge.outbox.put_nowait(("cancel", dict(request_id=identifier)))
+            except queue.Full:
+                raise RuntimeError("전송 대기 공간이 가득 찼습니다. 다시 폐기하세요.") from None
+            self.state.pending_plan["state"] = "invalidated"
+            self.audit("plan_discard_requested", request_id=identifier)
+            return dict(request_id=identifier, status="discard_requested")
+
+    def _submit(self, payload, kind):
         with self.lock, self.state.lock:
             if self.views.preview:
                 raise RuntimeError("미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "stopping") or self.closing.is_set():
                 raise RuntimeError("실행 준비 또는 종료 중입니다.")
-            if self.state.reserve(payload):
+            reserve = {"command":self.state.reserve, "plan":self.state.reserve_plan,
+                       "approve":self.state.reserve_approval}[kind]
+            if reserve(payload):
                 try:
-                    self.bridge.outbox.put_nowait(("command", payload))
+                    self.bridge.outbox.put_nowait((kind, payload))
                 except queue.Full:
                     with self.state.lock:
                         self.state.history[payload["request_id"]].update(status="rejected", stage="local_queue_full")
                         self.state.active = None
+                        if kind == "approve" and self.state.pending_plan:
+                            self.state.pending_plan["state"] = "awaiting_approval"
                     raise RuntimeError("명령 전송 대기 공간이 가득 찼습니다.")
-                self.audit("submitted", request_id=payload["request_id"], strategy=payload["strategy"])
+                self.audit("submitted", request_id=payload["request_id"], mode=kind,
+                    strategy=payload.get("strategy"), plan_request_id=payload.get("plan_request_id"))
             return dict(request_id=payload["request_id"])
 
     def cancel(self, identifier):
@@ -192,7 +230,7 @@ class ConsoleApplication:
             if path.is_relative_to((self.cell.root/"runtime").resolve()) and path.name == identifier+".json" and path.is_file() and path.stat().st_size <= 32*1024*1024:
                 data = json.loads(path.read_text())
                 if data["request_id"] == identifier:
-                    record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results", "plan_selection", "failure_kind", "clearance_diagnostic", "endpoint_moveit_validity")})
+                    record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results", "plan_selection", "failure_kind", "clearance_diagnostic", "endpoint_moveit_validity", "mode", "review", "initial_state_rad")})
                     record["departure_search"] = (data.get("departure_search") or {}).get("profiling")
         return record
 
@@ -290,6 +328,7 @@ class ConsoleApplication:
             self.state.identity = False
             self.state.observed_model_path = None
             self.state.identity_requested_at = self.state.identity_checked_at = None
+            self.state.pending_plan = self.state.review_at = None
 
     def clear_frames(self):
         for name in ("frame.json", "frame.jpg"):
@@ -298,12 +337,14 @@ class ConsoleApplication:
     def suspend_dispatch(self):
         with self.state.lock:
             self.state.admission_suspended = True
+            if self.state.pending_plan:
+                self.state.pending_plan["state"] = "invalidated"
             while True:
                 try:
                     kind, payload = self.bridge.outbox.get_nowait()
                 except queue.Empty:
                     break
-                if kind == "command":
+                if kind in ("command", "plan", "approve"):
                     identifier = payload["request_id"]
                     if identifier in self.state.history:
                         self.state.history[identifier].update(status="cancelled", stage="console_stopped_before_publish")
@@ -380,11 +421,18 @@ class ConsoleApplication:
                 config_source_id=base.id if base is not None else self.state.config.get("workcell"))
             if self.demos.busy or self.phase in ("starting", "stopping"):
                 data["can_submit"] = False
+                data["can_plan"] = False
                 if self.demos.busy:
                     data["reason"] = "시연 진행 중입니다. 종료 후 일반 관절 조작을 시작하세요."
             if self.views.preview:
                 data["can_submit"] = False
+                data["can_plan"] = False
                 data["reason"] = "미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요."
+            review = data.get("pending_plan")
+            data["can_approve"] = bool(review and review.get("state") == "awaiting_approval"
+                and self.state.reason() is None and not self.demos.busy
+                and self.phase not in ("starting", "stopping") and not self.closing.is_set()
+                and self.state.graph.get("approvals", 0) >= 1)
             return data
 
     def close(self):

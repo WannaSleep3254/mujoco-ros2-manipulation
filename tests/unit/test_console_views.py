@@ -15,6 +15,8 @@ from unittest.mock import patch
 
 from mujoco_ros2_manipulation.operator_console.scene_host import SceneSource
 from mujoco_ros2_manipulation.operator_console.view_binding import make_binding, binding_id
+from mujoco_ros2_manipulation.operator_console.view_plan import ReviewPlan, SavedPlan
+from tests.unit.test_view_plan import production_review_fixture
 
 
 def console_class(**injected):
@@ -29,7 +31,7 @@ def console_class(**injected):
         check_workcell=lambda cell:dict(workcell_sha256='f'*64),
         check_generated_model=lambda profile:None,
         load_profile=lambda *args,**kwargs:(_ for _ in ()).throw(ValueError('unavailable')),
-        matching_process=lambda launch:True,SceneHost=None,SavedPlan=None,
+        matching_process=lambda launch:True,SceneHost=None,SavedPlan=None,ReviewPlan=ReviewPlan,
         request_id=lambda value:None if isinstance(value,str) and re.fullmatch('[0-9a-f]{32}',value)
             else (_ for _ in ()).throw(ValueError('bad request')))
     namespace.update(injected)
@@ -372,6 +374,82 @@ class ConsoleViewsTests(unittest.TestCase):
         self.owner.tick()
         self.assertNotEqual(self.owner.host.snapshot()['binding_id'],old)
         self.assertTrue(self.app.state.admission_suspended)
+
+    def pending_review(self):
+        trace,session,options,review=production_review_fixture()
+        identifier=options['request_id']
+        directory=self.cell.root/'runtime'/'review';directory.mkdir(parents=True)
+        path=directory/(identifier+'.json');path.write_text(json.dumps(trace))
+        (directory/'session.json').write_text(json.dumps(session))
+        self.cell.joints=list(options['joint_names']);self.cell.home=[0.]
+        state=self.app.state
+        state.positions=deepcopy(trace['initial_state_rad'])
+        state.config['joint_limits']=deepcopy(options['joint_limits'])
+        state.server={'session_id':review['session_id']}
+        self.pending=deepcopy(review)
+        state.review_snapshot=lambda:deepcopy(self.pending)
+        state.history[identifier]=dict(request_id=identifier,status='succeeded',mode='plan_only',
+            trace_path=str(path),session_id=review['session_id'])
+        self.owner=console_class(check_workcell=lambda cell:deepcopy(options['model_manifest']),
+                                 SavedPlan=SavedPlan)(self.app,host_factory=FakeHost)
+        self.owner.tick()
+        return identifier,path,trace
+
+    def test_pending_review_selection_and_approval_use_separate_display_epochs(self):
+        identifier,_,_=self.pending_review()
+        live=self.owner.host.snapshot()['binding_id'];history=deepcopy(self.app.state.history)
+        preview=self.owner.select_review_plan(identifier)
+        self.assertTrue(preview['review_plan']);self.assertTrue(preview['preview_active'])
+        self.assertEqual(preview['mode'],'plan_preview')
+        self.assertNotEqual(preview['binding_id'],live)
+        self.assertEqual(preview['binding']['request_id'],identifier)
+        self.assertEqual(self.owner.host.submissions[-1],({'joint':0.},{'preview_time_sec':0.}))
+        self.owner.seek(.5,binding_id=preview['binding_id'])
+        self.assertEqual(self.owner.host.submissions[-1],({'joint':.5},{'preview_time_sec':.5}))
+        self.owner.approve_review(identifier)
+        result=self.owner.snapshot()
+        self.assertEqual(result['mode'],'live');self.assertFalse(result['review_plan'])
+        self.assertFalse(result['preview_active']);self.assertIsNone(result['binding']['request_id'])
+        self.assertNotEqual(result['binding_id'],preview['binding_id'])
+        self.assertEqual(self.app.state.history,history,'A display switch cannot reserve or execute a command')
+        self.assertTrue(self.app.state.admission_suspended)
+
+    def test_changed_or_expired_pending_review_cannot_select_or_approve_old_path(self):
+        identifier,_,_=self.pending_review()
+        live=self.owner.host.snapshot()
+        self.pending['remaining_sec']=0
+        with self.assertRaisesRegex(ValueError,'승인 대기'):self.owner.select_review_plan(identifier)
+        self.assertEqual(self.owner.host.snapshot(),live)
+        self.pending['remaining_sec']=60
+        self.owner.select_review_plan(identifier)
+        preview=self.owner.host.snapshot()
+        for change in ({'state':'expired'},{'session_id':'e'*32},{'plan_request_id':'e'*32}):
+            saved=deepcopy(self.pending);self.pending.update(change)
+            with self.subTest(change=change),self.assertRaisesRegex(RuntimeError,'다시 검토'):
+                self.owner.approve_review(identifier)
+            self.assertEqual(self.owner.host.snapshot(),preview)
+            self.assertEqual(self.owner.mode,'plan_preview')
+            self.pending=saved
+
+    def test_modified_pending_trace_is_rejected_without_replacing_live_binding(self):
+        identifier,path,trace=self.pending_review()
+        live=self.owner.host.snapshot()
+        trace['trajectories'][0]['points'][1]['p']=[1.5]
+        trace['planned_trajectories']=deepcopy(trace['trajectories'])
+        path.write_text(json.dumps(trace))
+        with self.assertRaisesRegex(ValueError,'exact pending plan digest'):
+            self.owner.select_review_plan(identifier)
+        self.assertEqual(self.owner.host.snapshot(),live)
+        self.assertFalse(self.owner.review_plan)
+
+    def test_only_review_selection_can_approve_and_old_seek_binding_cannot_replay_after_switch(self):
+        identifier,_,_=self.pending_review()
+        with self.assertRaisesRegex(RuntimeError,'다시 검토'):self.owner.approve_review(identifier)
+        with self.assertRaisesRegex(ValueError,'pending-plan preview'):self.owner.select_plan(identifier)
+        preview=self.owner.select_review_plan(identifier)
+        self.owner.select({'mode':'live','source_id':self.owner.base.id})
+        with self.assertRaises(RuntimeError):self.owner.seek(.5,binding_id=preview['binding_id'])
+        with self.assertRaisesRegex(RuntimeError,'다시 검토'):self.owner.approve_review(identifier)
 
 
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,5 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>기록 데이터 3D 뷰어</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/recording.css"></head>
+<body class="recording-page"><main><h1>기록 데이터 3D 뷰어</h1><p>ROS와 시뮬레이터 없이 같은 Three.js 화면으로 기록을 표시합니다. 로봇 실행 연결은 없습니다.</p>
+<p id="source-label"></p><div class="recording-viewport"><div id="recording-scene" class="local-scene"></div></div><p id="recording-error" role="status"></p>
+<div class="scene-toolbar"><button id="recording-play">재생</button><button id="recording-pause">일시 정지</button><button id="recording-restart">처음으로</button><label>기록 시각 <input id="recording-seek" type="range" min="0" max="8" step="0.05" value="0"></label><output id="recording-time"></output></div>
+<p>드래그 회전 · 휠 확대·축소 · 오른쪽 드래그 이동. 일시 정지하면 마지막 수신 자세의 나이가 증가합니다.</p><details><summary>표시 계측</summary><pre id="recording-metrics"></pre></details></main><script type="module" src="/recording.js"></script></body></html>

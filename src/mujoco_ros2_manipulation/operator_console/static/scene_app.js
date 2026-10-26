@@ -30,6 +30,7 @@ export class SceneControls {
   async action(path,payload){try{return await this.request(path,payload);}catch(error){this.notify(error.message);return null;}}
   async select(mode,source_id){if(this.selecting||!source_id)return;this.selecting=true;this.pause();try{await this.action('/api/view/select',{mode,source_id});}finally{this.selecting=false;}}
   async previewRequest(request_id){if(this.selecting)return;this.selecting=true;this.pause();try{const result=await this.action('/api/view/plan',{request_id});if(result)this.showOperate();}finally{this.selecting=false;}}
+  async previewReview(request_id){if(this.selecting)return;this.selecting=true;this.pause();try{const result=await this.action('/api/view/review',{request_id});if(result)this.showOperate();}finally{this.selecting=false;}}
   canSeek(expected=this.data?.binding_id){return Boolean(expected&&this.data?.mode==='plan_preview'&&this.data.binding_id===expected&&this.data.status==='ready'&&!this.data.error&&Number.isFinite(this.data.duration_sec)&&this.data.duration_sec>0);}
   seek(time,expected=this.data?.binding_id){
     if(!this.canSeek(expected))return Promise.resolve(false);
@@ -101,8 +102,9 @@ export class SceneControls {
     const busy=Boolean(state.active_request_id)||['starting','stopping','demo'].includes(state.lifecycle.phase)||['starting','running','cancel_requested'].includes(state.demo?.current?.status);
     $('scene-model').disabled=$('scene-live').disabled=busy||this.selecting||image||!data.enabled;
     $('scene-source').disabled=busy||this.selecting||image||!data.enabled;
-    $('scene-mode').textContent=data.mode==='plan_preview'?'저장된 계획 · 읽기 전용':data.mode==='model_preview'?'모델 미리보기 · 실행 연결 없음':'실시간 관절 상태';
+    $('scene-mode').textContent=data.mode==='plan_preview'?(data.review_plan?'실행 전 계획 검토 · 아직 실행하지 않음':'저장된 계획 · 읽기 전용'):data.mode==='model_preview'?'모델 미리보기 · 실행 연결 없음':'실시간 관절 상태';
     $('plan-preview').hidden=data.mode!=='plan_preview';
+    $('plan-preview-title').textContent=data.review_plan?'실행 전 계획 · 읽기 전용 미리보기':'저장된 계획 · 읽기 전용';
     const planReady=this.canSeek();$('plan-play').disabled=$('plan-seek').disabled=!planReady;
     if(planReady){$('plan-seek').max=String(data.duration_sec);if(!this.playing&&document.activeElement!==$('plan-seek'))$('plan-seek').value=String(data.preview_time_sec||0);$('plan-time').textContent=(data.preview_time_sec||0).toFixed(2)+' / '+data.duration_sec.toFixed(2)+' s';}
     else {this.pause();$('plan-time').textContent=data.mode==='plan_preview'?'계획 표시 대기':'';}

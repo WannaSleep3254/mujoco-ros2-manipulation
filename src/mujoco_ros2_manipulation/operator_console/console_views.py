@@ -10,8 +10,9 @@ from ..profiles import load_profile, check_generated_model
 from ..workcells.integrity import check_workcell
 from ..workcells.motion_request import request_id
 from .scene_host import SceneHost, SceneSource
+from .display_contract import DisplayHostAdapter
 from .view_binding import make_binding
-from .view_plan import SavedPlan
+from .view_plan import SavedPlan, ReviewPlan
 from .demo_jobs import matching_process
 
 
@@ -63,6 +64,7 @@ class ConsoleViews:
         self.epoch = time.monotonic()
         self.source = None
         self.plan = None
+        self.review_plan = False
         self.plan_time = 0.
         self.preview_source = None
         self.plan_request_id = self.plan_motion_session_id = None
@@ -110,6 +112,8 @@ class ConsoleViews:
             self.registry[source.id]=source
             self.catalog.append(dict(id=source.id,label=source.label,available=True))
         self.host = host_factory(app.directory/'scene-view',app.cell.root/'.venv/bin/python',cwd=app.cell.root)
+        if host_factory is SceneHost:
+            self.host = DisplayHostAdapter(self.host)
 
     @property
     def preview(self):
@@ -204,6 +208,7 @@ class ConsoleViews:
             else:
                 make_binding(app.session_id,self.revision+1,source.id,'model_preview')
             self.mode, self.plan, self.plan_time = mode, None, 0.
+            self.review_plan = False
             self.preview_source = source if mode == 'model_preview' else None
             self.plan_request_id = self.plan_motion_session_id = None
             if self.mode == 'model_preview':
@@ -215,6 +220,12 @@ class ConsoleViews:
             return self.snapshot()
 
     def select_plan(self, identifier):
+        return self._select_plan(identifier, review=False)
+
+    def select_review_plan(self, identifier):
+        return self._select_plan(identifier, review=True)
+
+    def _select_plan(self, identifier, *, review):
         app = self.app
         with app.lock, app.state.lock:
             self._idle()
@@ -225,6 +236,11 @@ class ConsoleViews:
             if record is None or record.get('status') != 'succeeded' or not record.get('trace_path'):
                 raise ValueError('이 화면에서 완료한 요청의 계획만 다시 볼 수 있습니다.')
             context = self._context()
+            pending = app.state.review_snapshot() if review else None
+            if review and (pending is None or pending.get('plan_request_id') != identifier
+                           or pending.get('state') != 'awaiting_approval' or pending.get('remaining_sec', 0) <= 0
+                           or pending.get('session_id') != (app.state.server or {}).get('session_id')):
+                raise ValueError('현재 서버에서 승인 대기 중인 계획만 검토할 수 있습니다.')
             root = app.cell.root/'runtime'
             base = self.base
             model_manifest = deepcopy(self.metadata)
@@ -238,9 +254,11 @@ class ConsoleViews:
         if not session_path.is_relative_to(root) or not session_path.is_file() or session_path.stat().st_size > 4*1024*1024:
             raise ValueError('요청의 모델 출처를 확인할 수 없습니다.')
         base.validate()
-        plan = SavedPlan(self._read_record(path,32*1024*1024),self._read_record(session_path,4*1024*1024),
+        plan_options = dict(review=pending) if review else {}
+        plan_type = ReviewPlan if review else SavedPlan
+        plan = plan_type(self._read_record(path,32*1024*1024),self._read_record(session_path,4*1024*1024),
             request_id=identifier,motion_session_id=record['session_id'],model_manifest=model_manifest,
-            joint_names=joint_names,joint_limits=joint_limits)
+            joint_names=joint_names,joint_limits=joint_limits, **plan_options)
         initial_positions = plan.positions(0.)
         with app.lock, app.state.lock:
             self._unchanged(context)
@@ -248,7 +266,12 @@ class ConsoleViews:
                     or tuple(app.cell.joints) != joint_names or app.state.config['joint_limits'] != joint_limits
                     or app.state.history.get(identifier) != record):
                 raise RuntimeError('검증 중 요청이나 모델 출처가 바뀌었습니다. 다시 선택하세요.')
+            if review:
+                current = app.state.review_snapshot()
+                if current is None or current.get('plan_sha256') != pending['plan_sha256'] or current.get('state') != 'awaiting_approval':
+                    raise RuntimeError('검토 중 계획이 바뀌었거나 만료되었습니다. 다시 계획하세요.')
             self.mode, self.plan, self.plan_time = 'plan_preview', plan, 0.
+            self.review_plan = review
             self.preview_source = self.base
             self.plan_request_id,self.plan_motion_session_id = identifier,record['session_id']
             self._activate(('plan_preview',identifier,self.revision+1),self.base,
@@ -256,6 +279,23 @@ class ConsoleViews:
             self.host.submit(initial_positions,preview_time_sec=0.)
             app.audit('plan_preview_selected',request_id=identifier)
             return self.snapshot()
+
+    def approve_review(self, identifier):
+        """Leave the reviewed display before dispatch; backend still revalidates."""
+        app = self.app
+        with app.lock, app.state.lock:
+            self._idle()
+            current = app.state.review_snapshot()
+            if (not self.review_plan or self.mode != 'plan_preview' or self.plan_request_id != identifier
+                    or current is None or current.get('plan_request_id') != identifier
+                    or current.get('state') != 'awaiting_approval' or current.get('remaining_sec', 0) <= 0
+                    or current.get('session_id') != self.plan_motion_session_id):
+                raise RuntimeError('현재 계획을 다시 검토한 뒤 실행하세요.')
+            self.mode, self.plan, self.review_plan, self.plan_time = 'live', None, False, 0.
+            self.preview_source = None
+            self.plan_request_id = self.plan_motion_session_id = None
+            self.key = None
+            self.tick()
 
     def seek(self, stamp, *, binding_id):
         with self.app.lock, self.app.state.lock:
@@ -399,6 +439,7 @@ class ConsoleViews:
         with self.app.lock:
             result = self.host.snapshot() if self.host else dict(status='disabled',binding_id=None,binding=None,manifest_descriptor=None)
             result.update(enabled=self.enabled,mode=self.mode,catalog=deepcopy(self.catalog),
+                review_plan=self.review_plan,
                 preview_active=self.preview,duration_sec=None if self.plan is None else self.plan.duration,
                 preview_time_sec=self.plan_time if self.plan else None)
             if self.error:
