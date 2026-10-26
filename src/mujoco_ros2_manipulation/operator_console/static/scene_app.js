@@ -18,7 +18,7 @@ export class SceneControls {
     this.listenCamera($('scene-model'),'click',()=>this.select('model_preview',$('scene-source').value));
     this.listenCamera($('scene-live'),'click',()=>this.select('live',this.data?.config_source_id));
     this.listenCamera($('display-mode'),'change',()=>this.action('/api/view/display',{mode:$('display-mode').value}));
-    this.listenCamera($('scene-collision'),'change',()=>this.viewer?.setCollisionVisible($('scene-collision').checked));
+    this.listenCamera($('scene-collision'),'change',()=>this.viewer?.setCollisionVisible(Boolean($('scene-collision').checked)));
     this.listenCamera($('plan-seek'),'input',()=>{this.pause();this.seek(Number($('plan-seek').value));});
     this.listenCamera($('plan-play'),'click',()=>this.playing?this.pause():this.play());
     if($('plan-speed'))this.listenCamera($('plan-speed'),'change',()=>this.setPlaybackSpeed(Number($('plan-speed').value)));
@@ -34,7 +34,8 @@ export class SceneControls {
     try{this.element.textContent='';this.viewer=new LocalSceneView(this.element,{controlSensitivity:this.cameraSensitivity,
       onContextLost:()=>{this.pause();this.updateRecoveryControls();this.onAvailabilityChange();},
       onFirstVisibleFrame:()=>{this.recoveryFailed=false;this.updateCameraControls();this.onAvailabilityChange();},
-      onMetrics:metrics=>{this.metrics.textContent=JSON.stringify(metrics,null,2);if(!this.isImage()&&metrics.binding_id===this.expected){const age=metrics.mode==='live'?(Number.isFinite(metrics.source_age_ms)?Math.round(metrics.source_age_ms)+' ms 전 상태':'상태 수신 대기'):metrics.mode?'읽기 전용 보기':'장면 준비 대기';$('frame-age').textContent=$('demo-frame-age').textContent=age;const status={fresh:'현재 관절 자세',stale:'마지막 수신 자세',preview:'읽기 전용 미리보기',loading:'장면 준비 중',waiting:'관절 상태 대기',error:'장면 표시 오류'}[metrics.view_state]||'장면 준비 중';$('frame-label').textContent=$('demo-frame-label').textContent=status;}}});return true;}
+      onMetrics:metrics=>{this.metrics.textContent=JSON.stringify(metrics,null,2);if(!this.isImage()&&metrics.binding_id===this.expected){const age=metrics.mode==='live'?(Number.isFinite(metrics.source_age_ms)?Math.round(metrics.source_age_ms)+' ms 전 상태':'상태 수신 대기'):metrics.mode?'읽기 전용 보기':'장면 준비 대기';$('frame-age').textContent=$('demo-frame-age').textContent=age;const status={fresh:'현재 관절 자세',stale:'마지막 수신 자세',preview:'읽기 전용 미리보기',loading:'장면 준비 중',waiting:'관절 상태 대기',error:'장면 표시 오류'}[metrics.view_state]||'장면 준비 중';$('frame-label').textContent=$('demo-frame-label').textContent=status;}}});
+      this.viewer.setCollisionVisible(Boolean($('scene-collision')?.checked));return true;}
     catch(error){this.viewer=null;this.element.textContent='로컬 3D를 시작하지 못했습니다. 3D 재시작 또는 서버 이미지를 선택하세요.';this.notify(error.message);return false;}
   }
   updateRecoveryControls(){

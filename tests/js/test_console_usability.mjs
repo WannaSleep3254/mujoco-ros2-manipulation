@@ -107,6 +107,55 @@ test('an older failed state read cannot replace a newer successful state observa
  rejectOld(new Error('old response failed'));await old;assert.equal(h.api.get().readConnected,true);assert.equal(h.element('execute').disabled,false);
 });
 
+test('an older successful state read is rejected after the latest read fails and cannot restore controls',async()=>{
+ let releaseOld;const h=harness(()=>h.calls.length===1?new Promise(resolve=>{releaseOld=resolve;}):Promise.reject(new Error('latest state read failed')));h.set(state());
+ const old=h.api.readState(),rejected=assert.rejects(old,error=>error.code==='state_read_superseded');await drain();
+ await h.api.poll();assert.equal(h.api.get().readConnected,false);
+ releaseOld({ok:true,json:()=>Promise.resolve(state())});await rejected;
+ assert.equal(h.api.get().readConnected,false);assert.equal(h.element('execute').disabled,true);assert.equal(h.element('review-approve').disabled,true);
+});
+
+test('a state read is superseded as soon as a newer read starts, even before that newer read completes',async()=>{
+ const releases=[];const h=harness(()=>new Promise(resolve=>releases.push(resolve)));h.set(state());
+ const old=h.api.readState(),rejected=assert.rejects(old,error=>error.code==='state_read_superseded');await drain();
+ const latest=h.api.readState();await drain();
+ releases[0]({ok:true,json:()=>Promise.resolve(state({simulation_sec:1}))});await rejected;
+ assert.equal(h.element('sim-time').textContent,'','The superseded state must not be rendered');
+ releases[1]({ok:true,json:()=>Promise.resolve(state({simulation_sec:2}))});await latest;
+ assert.equal(h.element('sim-time').textContent,'2.000 s');assert.equal(h.api.get().readConnected,true);
+});
+
+test('explicit replan cannot use an old successful read after a newer poll disconnects',async()=>{
+ let releaseOld,reads=0;const h=harness(path=>{
+  if(path==='/api/state')return ++reads===1?new Promise(resolve=>{releaseOld=resolve;}):Promise.reject(new Error('newer state read failed'));
+  return reply({});
+ });h.set(state());
+ const pending=h.api.replan();await drain();await h.api.poll();assert.equal(h.api.get().readConnected,false);
+ releaseOld({ok:true,json:()=>Promise.resolve(state())});await pending;
+ assert.ok(!h.calls.some(call=>['/api/plan','/api/plan/execute'].includes(call.path)));
+ assert.equal(h.api.get().readConnected,false);assert.equal(h.api.get().replanning,false);assert.equal(h.element('execute').disabled,true);
+});
+
+test('replan rechecks the current connection and latest issued read immediately before posting',async()=>{
+ for(const change of ['disconnect','new-read']){
+  let reads=0,injected=false,pendingRead,releaseNew;const fresh=state();
+  const h=harness(path=>path==='/api/state'&&++reads===2&&change==='new-read'?new Promise(resolve=>{releaseNew=resolve;}):reply(path==='/api/state'?fresh:{}));h.set(state());
+  h.scene.update=()=>{if(injected)return;injected=true;if(change==='disconnect')h.set(fresh,undefined,false);else pendingRead=h.api.readState();};
+  await h.api.replan();
+  assert.ok(!h.calls.some(call=>['/api/plan','/api/plan/execute'].includes(call.path)),change);
+  if(pendingRead){const rejected=assert.rejects(pendingRead,error=>error.code==='state_read_superseded');releaseNew({ok:true,json:()=>Promise.resolve(state())});await rejected;}
+  assert.equal(h.api.get().replanning,false);
+ }
+});
+
+test('replan rejects a fresh response with active execution or demo even if can_plan is true',async()=>{
+ for(const flags of [{active_request_id:EXECUTION},{demo:{current:{status:'running',scenario:'contact_comparison',job_id:PLAN},history:[],can_start:false}}]){
+  const h=harness(path=>reply(path==='/api/state'?state(flags):{}));h.set(state());await h.api.replan();
+  assert.ok(!h.calls.some(call=>['/api/plan','/api/plan/execute'].includes(call.path)));
+  assert.equal(h.api.get().replanning,false);
+ }
+});
+
 test('changing the selected demo after disconnection cannot re-enable execution controls',()=>{
  const h=harness(()=>reply({})),demo={current:null,can_start:true,history:[]};
  h.set(state());h.api.demos(demo);assert.equal(h.element('demo-run').disabled,false);
@@ -121,6 +170,7 @@ test('task detail presents summary and linked identities with raw data kept sepa
  h.api.cache(EXECUTION,{...execution,events:[{name:'dispatch',wall_sec:1},{name:'terminal',wall_sec:8.5}]});
  const group=h.api.groupRequests([execution,plan])[0];h.api.renderDetail(group,EXECUTION);
  assert.equal(h.element('detail-title').textContent,'계획과 승인 실행');assert.equal(h.element('detail-summary').children.length,6);
+ assert.equal(h.element('detail-summary').children[3].children[0].textContent,'계획 양팔 간격');
  assert.match(h.element('detail-links').children[0].textContent,new RegExp(PLAN));assert.match(h.element('detail-links').children[1].textContent,new RegExp(EXECUTION));
  assert.equal(h.element('detail-timeline').children.length,2);assert.match(h.element('detail-timeline').children[0].textContent,/실행 요청 전송/);
  assert.match(h.element('detail-content').textContent,/selected_request/);

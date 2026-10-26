@@ -115,9 +115,11 @@ async function replan(){
  try{
   sceneControls.pause();
   await request('/api/view/select',{mode:'live',source_id:state.view.config_source_id});
+  const expectedRead=stateReadSerial+1;
   const current=await readState();
   if(!current.can_plan)throw Error(current.reason||'현재 상태에서 새 계획을 생성할 수 없습니다.');
   if(payload.strategy!==$('strategy').value||Object.keys(payload.target_rad).some(name=>payload.target_rad[name]!==targets[name]))throw Error('목표를 바꿨습니다. 새 목표로 계획 생성을 다시 눌러주세요.');
+  if(!readConnected||expectedRead!==stateReadSerial||expectedRead!==lastObservedRead||current!==state||!state.can_plan||state.active_request_id||demoActive(state.demo?.current))throw Error('상태 확인이 바뀌었습니다. 최신 연결과 실행 상태를 확인한 뒤 다시 계획하세요.');
   // The explicit click creates a new plan only. Approval is a separate action.
   await request('/api/plan',payload);latestRequest=null;await poll();
  }catch(error){notice(error.message);await poll();}
@@ -171,7 +173,7 @@ function renderDetail(group,id){
  if(terminal.has(data.status)&&!terminal.has(base.status)){record.status=data.status;record.error=data.error;record.metrics=data.metrics;}
  $('history-detail').hidden=false;$('detail-title').textContent=group.executions.length?'계획과 승인 실행':group.plan?'실행 전 계획 기록':'실행 기록';
  $('detail-error').textContent=record.error?.message||'';
- const fields=$('detail-summary');fields.replaceChildren();fields.append(detailField('결과',labels[record.status]||record.status),detailField('계획 방식',strategyLabel(summary.strategy)),detailField('계획 궤적 시간',value(summary.duration,2,' s')),detailField('계획 최소 간격',value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm')),detailField('시작→목표 최대 변화',value(Number.isFinite(summary.maximum)?summary.maximum*180/Math.PI:undefined,1,'°')),detailField('요청 처리 시간',value(record.metrics?.received_to_terminal_wall_sec)));
+ const fields=$('detail-summary');fields.replaceChildren();fields.append(detailField('결과',labels[record.status]||record.status),detailField('계획 방식',strategyLabel(summary.strategy)),detailField('계획 궤적 시간',value(summary.duration,2,' s')),detailField('계획 양팔 간격',value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm')),detailField('시작→목표 최대 변화',value(Number.isFinite(summary.maximum)?summary.maximum*180/Math.PI:undefined,1,'°')),detailField('요청 처리 시간',value(record.metrics?.received_to_terminal_wall_sec)));
  const links=$('detail-links');links.replaceChildren();if(plan||group.executions.length)links.append(textNode('p','계획 ID · '+group.id));for(const execution of group.executions)links.append(textNode('p','승인 실행 ID · '+execution.request_id+' · '+(labels[execution.status]||execution.status)));if(!plan&&group.executions.length)links.append(textNode('small','이 화면에 원래 계획의 이력이 남아 있지 않습니다.'));
  const timeline=$('detail-timeline');timeline.replaceChildren();const names={received:'목표 수신',plan_ready:'계획 검토 준비',approved_plan_recheck:'승인 계획 재검사',dispatch:'실행 요청 전송',first_motion:'관절 이동 확인',actions_done:'양팔 실행 응답 완료',settled:'목표 자세 확인',cancel_received:'취소 요청 수신',terminal:'요청 종료'};
  for(const event of (data.events||[]).filter(item=>names[item.name]).slice(-12))timeline.append(textNode('li',`${value(event.wall_sec,3,' s')} · ${names[event.name]}`));
@@ -202,8 +204,11 @@ function disconnected(){
 }
 async function readState(){
  const serial=++stateReadSerial;
- try{const data=await request('/api/state');if(serial>=lastObservedRead){lastObservedRead=serial;readConnected=true;render(data);}return data;}
- catch(error){if(serial>=lastObservedRead){lastObservedRead=serial;disconnected();}throw error;}
+ try{const data=await request('/api/state');
+  if(serial!==stateReadSerial||serial<lastObservedRead){const stale=Error('더 최신 상태 조회가 진행 중입니다. 상태를 확인한 뒤 다시 계획하세요.');stale.code='state_read_superseded';throw stale;}
+  lastObservedRead=serial;readConnected=true;render(data);return data;
+ }
+ catch(error){if(serial===stateReadSerial&&serial>=lastObservedRead){lastObservedRead=serial;disconnected();}throw error;}
 }
 async function poll(){
  if(polling)return;polling=true;

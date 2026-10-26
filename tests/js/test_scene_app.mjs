@@ -39,7 +39,7 @@ function state(character = 'a', generation = 1, overrides = {}) {
       ...overrides}};
 }
 
-function harness({manifest, poseResult = false, submitFrame = true} = {}) {
+function harness({manifest, poseResult = false, submitFrame = true, collision = false} = {}) {
   let now = 0, nextTimer = 0, active = 0, maximumActive = 0;
   const elements = new Map(), timers = new Map(), requests = [], notices = [];
   const element = id => {
@@ -47,6 +47,7 @@ function harness({manifest, poseResult = false, submitFrame = true} = {}) {
     return elements.get(id);
   };
   element('demos').hidden = true;
+  element('scene-collision').checked = collision;
   const cameraNodes=[];
   for(const scope of ['operate','demo']) {
     const add=(name,dataset)=>{const node=element(scope+'-'+name);Object.assign(node.dataset,dataset);cameraNodes.push(node);};
@@ -60,7 +61,7 @@ function harness({manifest, poseResult = false, submitFrame = true} = {}) {
       return cameraNodes.filter(node=>fields.some(field=>Object.hasOwn(node.dataset,field)));
     }};
   class FakeViewer {
-    constructor(container, options) {this.options=options;this.sized=true;this.document={hidden:false};this.firstVisibleSubmittedAt=null;this.onMetrics = options.onMetrics; this.sensitivity={...options.controlSensitivity};this.zoomCalls=[];this.resets=0;this.loads = []; this.poses = []; this.bindings = []; this.clears = 0; this.aborts = 0; this.destroyed = 0;}
+    constructor(container, options) {this.options=options;this.sized=true;this.document={hidden:false};this.firstVisibleSubmittedAt=null;this.onMetrics = options.onMetrics; this.sensitivity={...options.controlSensitivity};this.zoomCalls=[];this.resets=0;this.collisionUpdates=[];this.loads = []; this.poses = []; this.bindings = []; this.clears = 0; this.aborts = 0; this.destroyed = 0;}
     setExpectedBinding(id, binding) {this.bindingID=id;this.hasPose=false;this.bindings.push({id, binding});}
     clearBinding() {this.bindingID=null;this.hasPose=false;this.clears++; this.aborts += this.loads.filter(load => !load.finished).length;}
     loadManifest(url, options) {
@@ -70,7 +71,7 @@ function harness({manifest, poseResult = false, submitFrame = true} = {}) {
     }
     pollPose(url) {this.poses.push(url);if(poseResult){this.hasPose=true;this.manifest={scene_sha256:'3'.repeat(64)};if(submitFrame)this.firstVisibleSubmittedAt=1;}return Promise.resolve(poseResult);}
     markStale(reason) {this.staleReason = reason;}
-    setCollisionVisible() {}
+    setCollisionVisible(value) {assert.equal(typeof value,'boolean');this.collisionVisible=value;this.collisionUpdates.push(value);}
     setControlSensitivity(value) {this.sensitivity={...value};return {...value};}
     zoomCamera(direction) {this.zoomCalls.push(direction);return true;}
     resetCamera() {this.resets++;return true;}
@@ -115,6 +116,21 @@ test('explicit 3D restart disposes the old view and requires current pose before
   assert.deepEqual(h.controls.viewer.restored,{position:[1,2,3]});
   assert.equal(h.requests.length,0,'Restart only fetches scene resources; it never submits robot actions');
   assert.ok(h.availabilityChanges>=3);
+});
+
+test('initial creation and explicit renderer restart preserve the collision checkbox in both states', async () => {
+  for(const checked of [true,false]){
+    const h=harness({collision:checked,poseResult:true});
+    assert.deepEqual(h.controls.viewer.collisionUpdates,[checked]);
+    h.controls.update(state());await drain();
+    const old=h.controls.viewer;old.sceneError='context lost';old.options.onContextLost();
+    assert.equal(await h.controls.restartScene(),true);
+    assert.notEqual(h.controls.viewer,old);assert.equal(old.destroyed,1);
+    assert.deepEqual(h.controls.viewer.collisionUpdates,[checked]);
+    assert.equal(h.element('scene-collision').checked,checked);
+    assert.equal(h.requests.length,0,'Restoring a display preference cannot publish commands');
+    h.controls.destroy();
+  }
 });
 
 test('changing the binding during 3D restart cannot restore the old scene', async () => {
