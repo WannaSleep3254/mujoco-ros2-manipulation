@@ -170,6 +170,16 @@ class MotionCommandServer(WorkcellVerification):
         reply = trace.summary(self.path(trace), self.session_id)
         if "mode" in trace.data:
             reply["mode"] = trace.data["mode"]
+        if trace.data.get("mode") == "approved_plan":
+            approval = trace.data.get("approval")
+            try:
+                validate_approval(approval)
+            except (ValueError, TypeError):
+                pass
+            else:
+                if approval["request_id"] == trace.data["request_id"] and approval["session_id"] == self.session_id:
+                    reply.update(approval=deepcopy(approval), plan_request_id=approval["plan_request_id"],
+                                 execution_request_id=trace.data["request_id"])
         if trace.data.get("mode") == "plan_only" and trace.data["status"] == "succeeded":
             reply["stage"] = "plan_not_required" if trace.data.get("no_motion_required") else "plan_ready"
         if "review" in trace.data:

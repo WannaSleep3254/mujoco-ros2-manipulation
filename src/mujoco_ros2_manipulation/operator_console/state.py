@@ -181,6 +181,9 @@ class ConsoleState:
             self.ui_ids.add(identifier)
             self.history[identifier] = dict(request_id=identifier, status="submitting", stage="submitted",
                 command=deepcopy(payload), reservation_kind=kind, mode={"command":"automatic", "plan":"plan_only", "approve":"approved_plan"}[kind], metrics={}, error=None)
+            if kind == "approve":
+                self.history[identifier].update(approval=deepcopy(payload),
+                    plan_request_id=payload["plan_request_id"], execution_request_id=identifier)
             if self.pending_plan is not None:
                 self.pending_plan["state"] = "approval_queued" if kind == "approve" else "invalidated"
             return True
