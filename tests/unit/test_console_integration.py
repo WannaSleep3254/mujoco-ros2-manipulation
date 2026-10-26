@@ -298,6 +298,8 @@ class IdentityRpcTests(unittest.TestCase):
         self.bridge.last_identity = 0.
         self.bridge.count_publishers = lambda topic: self.graph['clock'] if topic=='/clock' else self.graph['joints'] if topic=='/joint_states' else 1
         self.bridge.commands = NS(get_subscription_count=lambda:1)
+        self.bridge.plans = NS(get_subscription_count=lambda:1)
+        self.bridge.approvals = NS(get_subscription_count=lambda:1)
         self.bridge.parameters = NS(service_is_ready=lambda:True,call_async=Mock(return_value=self.future))
 
     def response(self, model='/trusted/base/cell.xml', plugin='mujoco_ros2_control/MujocoSystemInterface', sim=True):

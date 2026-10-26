@@ -292,3 +292,32 @@ test('destroy removes only owned resources and cancels outstanding work exactly 
   view.destroy(); view.destroy();
   assert.equal(view.disposed, true); assert.equal(aborts, 2); assert.equal(disposals, 6); assert.equal(removals, 4);
 });
+
+test('common display format accepts a producer with no engine metadata', () => {
+  const value=manifest();delete value.compiled_model_sha256;
+  Object.assign(value,{schema_version:2,export_version:'display-scene-v1',
+    world_frame:{name:'world',handedness:'right',primitive_size:'half-extents-radius-half-length'},
+    provenance:{adapter:'recorded-analytic',source_sha256:'4'.repeat(64),engine:null}});
+  assert.equal(contract.validateManifest(value),value);
+  const reflected=structuredClone(value);reflected.world_frame.handedness='left';
+  assert.throws(()=>contract.validateManifest(reflected),/frame/);
+  const duplicate=structuredClone(value);duplicate.joint_names=['same','same'];duplicate.home_rad={same:0,other:1};
+  assert.throws(()=>contract.validateManifest(duplicate),/joint/);
+  const partial=structuredClone(value);partial.joint_names=['joint'];partial.home_rad={other:0};
+  assert.throws(()=>contract.validateManifest(partial),/home/);
+});
+
+test('common source restart, rewind and replay require a new binding before applying transforms', () => {
+  const view=fakeView();
+  const sample=()=>({...pose(),schema_version:2,source:{session_id:'5'.repeat(32),clock_domain:'recording:test',
+    sequence:1,stamp_sec:1,joint_positions_rad:{}}});
+  assert.equal(view.updatePose(sample()),true);
+  for(const changes of [{stamp_sec:.5,sequence:2},{sequence:1},{session_id:'6'.repeat(32),sequence:2},
+    {clock_domain:'other',sequence:2}]){
+    const next=sample();next.sequence=2;Object.assign(next.source,changes);
+    assert.throws(()=>view.updatePose(next),/new binding/);
+    assert.equal(view.sequence,1);
+  }
+  const next=sample();next.sequence=2;next.source.sequence=2;next.source.stamp_sec=2;
+  assert.equal(view.updatePose(next),true);
+});

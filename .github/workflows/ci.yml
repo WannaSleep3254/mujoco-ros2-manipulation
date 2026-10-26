@@ -147,6 +147,11 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_motion_replanning.py --domain 159
+      - name: Plan review, exact-path approval and invalidation before dispatch
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 -m mujoco_ros2_manipulation.workcells.verify_motion_review --domain 163
       - name: Fixed motion suite and obstacle scene smoke test
         if: matrix.robot == 'workcell'
         run: |
