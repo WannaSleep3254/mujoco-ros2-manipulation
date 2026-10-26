@@ -12,7 +12,7 @@ function harness(){
  const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,disabled:true,textContent:'',className:'',value:''});return elements.get(id);};
  element('strategy').value='coordinated';
  const context=vm.createContext({document:{getElementById:element}});
- vm.runInContext(source+`\nglobalThis.reviewTest={renderReview,set(value,positions,visible){state=value;targets=positions;sceneControls={cameraReady:()=>visible};}};`,context);
+ vm.runInContext(source+`\nglobalThis.reviewTest={renderReview,set(value,positions,visible){state=value;targets=positions;readConnected=true;sceneControls={cameraReady:()=>visible};}};`,context);
  const plan='b'.repeat(32),pending={plan_request_id:plan,plan_sha256:'c'.repeat(64),session_id:'a'.repeat(32),state:'awaiting_approval',remaining_sec:55};
  const state={pending_plan:pending,active_request_id:null,can_approve:true,demo:{current:null},
   history:[{request_id:plan,command:{strategy:'coordinated',target_rad:{left:.1,right:.2}}}],

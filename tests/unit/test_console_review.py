@@ -78,6 +78,12 @@ class ReviewStateTests(unittest.TestCase):
         self.assertFalse(state.reserve_approval(approval))
         self.assertEqual(state.active,approval['request_id'])
         self.assertEqual(state.pending_plan['state'],'approval_queued')
+        reserved=state.snapshot()['history'][0]
+        self.assertEqual(reserved['approval'],approval)
+        self.assertEqual(reserved['plan_request_id'],PLAN)
+        self.assertEqual(reserved['execution_request_id'],approval['request_id'])
+        state.status(dict(session_id=SESSION,request_id=approval['request_id'],status='running',stage='safety_checks'))
+        self.assertEqual(state.snapshot()['history'][0]['approval'],approval)
         changed=dict(approval,request_id='e'*32)
         with self.assertRaises(RuntimeError):state.reserve_approval(changed)
 
@@ -92,6 +98,35 @@ class ReviewStateTests(unittest.TestCase):
 
 
 class ReviewApplicationTests(unittest.TestCase):
+    def test_request_details_projects_read_only_review_and_exact_execution_link(self):
+        state,_=fixture();approval=planned(state)
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);runtime=root/'runtime';runtime.mkdir()
+            app=ConsoleApplication(NS(root=root),state,NS(outbox=queue.Queue()),root/'console',render=False)
+            record=dict(request_id=PLAN,mode='plan_only',command=command(dict(l=.1,r=.2),identifier=PLAN),
+                        initial_state_rad=dict(l=0.,r=0.),
+                        planned_clearance=dict(complete=True,duration_sec=2.,
+                            minimum=dict(distance_m=.04,time_sec=.75,bodies=['left','right'])))
+            path=runtime/(PLAN+'.json');path.write_text(json.dumps(record))
+            state.history[PLAN]['trace_path']=str(path)
+            before=deepcopy(state.pending_plan)
+            details=app.request_details(PLAN)
+            self.assertEqual(details['review_summary']['target_delta_rad'],dict(l=.1,r=.2))
+            self.assertEqual(details['review_summary']['minimum'],dict(distance_m=.04,time_sec=.75,pair=['left','right']))
+            self.assertEqual(state.pending_plan,before)
+            self.assertNotIn('review_payload',details)
+            details['review_summary']['target_delta_rad']['l']=99.
+            self.assertEqual(app.request_details(PLAN)['review_summary']['target_delta_rad']['l'],.1)
+            state.reserve_approval(approval)
+            execution=runtime/(approval['request_id']+'.json')
+            execution.write_text(json.dumps(dict(record,request_id=approval['request_id'],mode='approved_plan',approval=approval)))
+            state.status(dict(session_id=SESSION,request_id=approval['request_id'],status='failed',trace_path=str(execution)))
+            details=app.request_details(approval['request_id'])
+            self.assertEqual(details['approval'],approval)
+            self.assertEqual(details['plan_request_id'],PLAN)
+            self.assertEqual(details['execution_request_id'],approval['request_id'])
+            app.close()
+
     def test_plan_only_approval_and_discard_use_separate_bridge_messages(self):
         state,_=fixture()
         with tempfile.TemporaryDirectory() as temp:

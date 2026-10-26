@@ -13,9 +13,10 @@ import uuid
 
 from ..verification.reports import atomic_json
 from ..verification.runner import stop_process
-from ..workcells.motion_request import request_id
+from ..workcells.motion_request import request_id, validate_approval
 from .demo_jobs import DemoJobs
 from .console_views import ConsoleViews
+from .review_summary import summarize_review
 
 
 class ConsoleApplication:
@@ -231,6 +232,17 @@ class ConsoleApplication:
                 data = json.loads(path.read_text())
                 if data["request_id"] == identifier:
                     record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results", "plan_selection", "failure_kind", "clearance_diagnostic", "endpoint_moveit_validity", "mode", "review", "initial_state_rad")})
+                    record["review_summary"] = summarize_review(dict(data, command=data.get("command", record.get("command"))))
+                    approval = data.get("approval")
+                    if isinstance(approval, dict):
+                        try:
+                            validate_approval(approval)
+                        except ValueError:
+                            pass
+                        else:
+                            if approval["request_id"] == identifier and approval["session_id"] == record.get("session_id"):
+                                record.update(approval=deepcopy(approval), plan_request_id=approval["plan_request_id"],
+                                              execution_request_id=identifier)
                     record["departure_search"] = (data.get("departure_search") or {}).get("profiling")
         return record
 

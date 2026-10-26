@@ -151,6 +151,8 @@ class SavedPlan:
         _require(_finite(quality.get('duration_sec')) and abs(quality['duration_sec']-self.duration) <= 1e-8
                  and type(quality.get('samples')) is int and quality['samples'] >= 2,
                  'Saved full-path check has a different duration or no samples')
+        stamp = quality['minimum'].get('time_sec')
+        self.clearance_minimum_time_sec = stamp if _finite(stamp) and 0 <= stamp <= self.duration else None
         self.positions(0)
         self.positions(self.duration)
 

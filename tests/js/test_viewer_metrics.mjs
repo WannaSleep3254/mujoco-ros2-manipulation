@@ -33,6 +33,12 @@ test('frame observation follows CPU submission and retains first visible submiss
   assert.ok(!Object.hasOwn(calls[0], 'gpu_ms'));
 });
 
+test('first-visible notification occurs after submission and only once per loaded epoch', () => {
+  const view=fixture(undefined);let calls=0;
+  view.options.onFirstVisibleFrame=()=>{calls++;assert.equal(view.firstVisibleSubmittedAt,1002);assert.equal(view.stats.render_submit_ms,2);};
+  view._frame();view._frame();assert.equal(calls,1);
+});
+
 test('hidden documents and lost contexts do not report a submitted frame', () => {
   const calls = [], view = fixture(sample => calls.push(sample));
   view.document.hidden = true; view._frame();

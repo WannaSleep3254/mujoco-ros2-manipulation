@@ -12,6 +12,7 @@ class Vector3 {
   add(other) {this.x += other.x; this.y += other.y; this.z += other.z; return this;}
   sub(other) {this.x -= other.x; this.y -= other.y; this.z -= other.z; return this;}
   length() {return Math.hypot(this.x, this.y, this.z);}
+  distanceTo(other) {return this.clone().sub(other).length();}
   normalize() {return this.multiplyScalar(1 / this.length());}
   multiplyScalar(value) {this.x *= value; this.y *= value; this.z *= value; return this;}
   toArray() {return [this.x, this.y, this.z];}
@@ -54,6 +55,26 @@ function view() {
 
 function close(actual, expected, tolerance = 1e-10) {assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);}
 function direction(value) {return value.camera.position.clone().sub(value.controls.target).normalize();}
+
+test('renderer restart camera snapshot restores only local camera after a fresh pose', () => {
+  const prior=view(), snapshot=prior.cameraSnapshot(), restarted=view();
+  restarted.camera.position.set(20,20,20);restarted.controls.target.set(0,0,0);
+  restarted.fetch=()=>{throw new Error('Camera restore must not request');};
+  assert.equal(restarted.restoreCamera(snapshot),true);
+  for(const [index,value]of restarted.camera.position.toArray().entries())close(value,snapshot.position[index]);
+  assert.deepEqual(restarted.controls.target.toArray(),snapshot.target);
+  assert.equal(restarted.camera.near,snapshot.near);assert.equal(restarted.camera.far,snapshot.far);
+  assert.equal(restarted.needsFit,false);
+  restarted.hasPose=false;assert.equal(restarted.restoreCamera(snapshot),false);
+  assert.equal(restarted.cameraSnapshot(),null);
+});
+
+test('invalid restart camera snapshots cannot change current placement', () => {
+  const value=view(), before=value.camera.position.toArray();
+  const bad=value.cameraSnapshot();bad.far=-1;
+  assert.throws(()=>value.restoreCamera(bad),/projection/);
+  assert.deepEqual(value.camera.position.toArray(),before);
+});
 
 test('presets preserve current target, distance, clipping and Z-up without network calls', () => {
   const value = view(), center = value.controls.target.toArray();

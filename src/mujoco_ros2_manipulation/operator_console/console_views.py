@@ -441,6 +441,7 @@ class ConsoleViews:
             result.update(enabled=self.enabled,mode=self.mode,catalog=deepcopy(self.catalog),
                 review_plan=self.review_plan,
                 preview_active=self.preview,duration_sec=None if self.plan is None else self.plan.duration,
+                clearance_minimum_time_sec=None if self.plan is None else self.plan.clearance_minimum_time_sec,
                 preview_time_sec=self.plan_time if self.plan else None)
             if self.error:
                 result['error'] = self.error

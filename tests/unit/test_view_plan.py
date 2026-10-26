@@ -59,6 +59,20 @@ def build_review(trace,session,options,review):
 
 
 class ViewPlanTests(unittest.TestCase):
+    def test_minimum_time_is_optional_finite_and_bounded_by_the_accepted_path(self):
+        for stamp in (0.,.5,1.,None,True,-.01,1.001,float('nan'),float('inf')):
+            with self.subTest(stamp=stamp):
+                trace,session,options=fixture()
+                if isinstance(stamp,float) and (stamp != stamp or stamp == float('inf')):
+                    # The strict source parser rejects nonfinite records entirely.
+                    trace['planned_clearance']['minimum']['time_sec']=stamp
+                    with self.assertRaises(ValueError):build(trace,session,options)
+                    continue
+                trace['planned_clearance']['minimum']['time_sec']=stamp
+                plan=build(trace,session,options)
+                expected=stamp if type(stamp) is float and 0 <= stamp <= 1 else None
+                self.assertEqual(plan.clearance_minimum_time_sec,expected)
+
     def test_detached_interpolation_and_end_hold(self):
         trace,session,options=fixture();plan=build(trace,session,options)
         self.assertEqual(plan.duration,1.)

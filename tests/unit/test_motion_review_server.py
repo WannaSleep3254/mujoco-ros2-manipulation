@@ -135,6 +135,9 @@ class ReviewServerTests(unittest.TestCase):
         result = self.node.replies[approval["request_id"]]
         self.assertEqual(result["status"],"succeeded",result.get("error"))
         self.assertEqual(result["mode"],"approved_plan")
+        self.assertEqual(result["approval"],approval)
+        self.assertEqual(result["plan_request_id"],approval["plan_request_id"])
+        self.assertEqual(result["execution_request_id"],approval["request_id"])
         self.node.coordinated_path.assert_not_called()
         self.assertGreater(self.node.validity_of.call_count,2)
         self.node.dispatch.assert_called_once()
@@ -152,6 +155,18 @@ class ReviewServerTests(unittest.TestCase):
         self.assertEqual(self.node.replies[approval["request_id"]]["status"],"failed")
         self.node.dispatch.assert_not_called()
         self.assertEqual(self.node.review_store.summary()["state"],"consumed")
+
+    def test_rejected_malformed_or_foreign_approval_does_not_expose_execution_link(self):
+        _,_,approval=self.make_review()
+        for mutation in (dict(extra=True),dict(plan_sha256='wrong'),dict(session_id='f'*32)):
+            payload=dict(approval,request_id=uuid.uuid4().hex,**mutation)
+            self.send(payload,'approve')
+            result=self.node.replies[payload['request_id']]
+            self.assertEqual(result['status'],'rejected')
+            self.assertNotIn('approval',result)
+            self.assertNotIn('plan_request_id',result)
+            self.assertNotIn('execution_request_id',result)
+        self.node.dispatch.assert_not_called()
 
     def test_approved_path_still_fails_current_moveit_safety_check(self):
         _,_,approval = self.make_review()

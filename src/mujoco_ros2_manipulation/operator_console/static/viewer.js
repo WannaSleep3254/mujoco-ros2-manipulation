@@ -22,6 +22,28 @@ function cancelled() {
   return new DOMException('Scene load superseded', 'AbortError');
 }
 
+/** One GET deadline includes headers, streamed body and byte verification. */
+async function deadlineRequest(parentSignal, timeoutMs, task) {
+  if (parentSignal?.aborted) throw parentSignal.reason ?? cancelled();
+  const controller = new AbortController();
+  let rejectAbort;
+  const aborted = new Promise((_, reject) => {rejectAbort = reject;});
+  const abort = reason => {
+    if (controller.signal.aborted) return;
+    controller.abort(reason);
+    rejectAbort(reason);
+  };
+  const parentAbort = () => abort(parentSignal.reason ?? cancelled());
+  parentSignal?.addEventListener('abort', parentAbort, {once: true});
+  const timer = setTimeout(() => abort(new DOMException('Scene resource request timed out', 'TimeoutError')), timeoutMs);
+  try {
+    return await Promise.race([task(controller.signal), aborted]);
+  } finally {
+    clearTimeout(timer);
+    parentSignal?.removeEventListener('abort', parentAbort);
+  }
+}
+
 function emptyStats() {
   return {manifest_fetch_ms: null, manifest_parse_ms: null, manifest_verify_ms: null,
     assets_fetch_ms: null, assets_parse_ms: null, assets_verify_ms: null, asset_bytes: 0,
@@ -40,6 +62,9 @@ export class LocalSceneView {
     this.baseURL = options.baseURL ?? globalThis.location.href;
     this.crypto = options.crypto ?? globalThis.crypto;
     this.assetURL = options.assetURL ?? (hash => '/api/view/assets/' + hash);
+    this.requestTimeoutMs = options.requestTimeoutMs ?? 3000;
+    requireValue(finite(this.requestTimeoutMs) && this.requestTimeoutMs >= 10 && this.requestTimeoutMs <= 60000,
+      'Invalid scene GET deadline');
     requireValue(this.crypto?.subtle, 'SHA256 verification requires a secure local browser context');
     this.staleAfterMs = options.staleAfterMs ?? 500;
     requireValue(finite(this.staleAfterMs) && this.staleAfterMs >= 100 && this.staleAfterMs <= 500, 'Invalid freshness limit');
@@ -62,6 +87,7 @@ export class LocalSceneView {
     this.receivedAt = null;
     this.sourceAgeSec = null;
     this.sceneError = null;
+    this.contextLost = false;
     this.manualStaleReason = null;
     this.needsFit = true;
     this.hasPose = false;
@@ -106,7 +132,14 @@ export class LocalSceneView {
     this.controls.maxDistance = 100;
     this.setControlSensitivity(options.controlSensitivity ?? {rotate: 1, zoom: 1, pan: 1});
     this.controls.update();
-    this._onContextLost = event => { event.preventDefault(); this.sceneError = '3D 그래픽 컨텍스트를 잃었습니다'; this._refreshStatus(); };
+    this._onContextLost = event => {
+      event.preventDefault();
+      this.contextLost = true;
+      this.loadController?.abort(); this.poseController?.abort();
+      this.sceneError = '3D 표시 연결을 잃었습니다. 3D 재시작 또는 서버 이미지를 선택하세요.';
+      this._refreshStatus();
+      this.options.onContextLost?.();
+    };
     this.canvas.addEventListener('webglcontextlost', this._onContextLost);
     this._onVisibility = () => {this.statsAt = this.now(); this.renderCount = this.poseCount = 0; this._refreshStatus();};
     this.document.addEventListener('visibilitychange', this._onVisibility);
@@ -138,7 +171,8 @@ export class LocalSceneView {
     this.renderCount = this.poseCount = 0;
     this.hasPose = false;
     this.world.visible = false; // A previous job/model must never look current.
-    this.sceneError = this.manualStaleReason = null;
+    if (!this.contextLost) this.sceneError = null;
+    this.manualStaleReason = null;
     this._refreshStatus();
     return true;
   }
@@ -161,13 +195,18 @@ export class LocalSceneView {
     this.renderCount = this.poseCount = 0;
     this.hasPose = false;
     this.world.visible = false;
-    this.sceneError = null;
+    if (!this.contextLost) this.sceneError = null;
     this.manualStaleReason = String(reason);
     this._refreshStatus();
-    if (this.label.textContent !== this.manualStaleReason) this.label.textContent = this.manualStaleReason;
+    if (!this.contextLost && this.label.textContent !== this.manualStaleReason) this.label.textContent = this.manualStaleReason;
   }
 
   async _bytes(url, {signal, sha256 = null, maximum, expectedBytes = null}) {
+    return deadlineRequest(signal, this.requestTimeoutMs ?? 3000, requestSignal =>
+      this._requestBytes(url, {signal: requestSignal, sha256, maximum, expectedBytes}));
+  }
+
+  async _requestBytes(url, {signal, sha256 = null, maximum, expectedBytes = null}) {
     const started = this.now();
     const response = await this.fetch(localURL(url, this.baseURL), {signal, cache: 'no-store', credentials: 'same-origin', redirect: 'error'});
     requireValue(response.ok, `Scene resource request failed (${response.status})`);
@@ -219,6 +258,7 @@ export class LocalSceneView {
 
   async loadManifest(url, {binding_id = this.bindingID, binding = this.binding, sha256 = null,
     model_sha256 = null, scene_sha256 = null} = {}) {
+    requireValue(!this.contextLost, '3D graphics context requires an explicit restart');
     this.setExpectedBinding(binding_id, binding);
     const expectedBinding = {...this.binding};
     const expectedID = this.bindingID;
@@ -534,6 +574,29 @@ export class LocalSceneView {
     return fitted;
   }
 
+  /** Local camera snapshot for an explicit renderer restart, never robot state. */
+  cameraSnapshot() {
+    if (this.disposed || !this.hasPose) return null;
+    return {position: this.camera.position.toArray(), target: this.controls.target.toArray(),
+      up: this.camera.up.toArray(), near: this.camera.near, far: this.camera.far, fov: this.camera.fov};
+  }
+
+  restoreCamera(snapshot) {
+    requireValue(!this.disposed, 'Scene view is destroyed');
+    if (!this.hasPose || !snapshot) return false;
+    for (const name of ['position', 'target', 'up']) requireValue(Array.isArray(snapshot[name]) &&
+      snapshot[name].length === 3 && snapshot[name].every(v => finite(v)), 'Invalid camera snapshot');
+    requireValue(finite(snapshot.near) && finite(snapshot.far) && snapshot.near > 0 && snapshot.far > snapshot.near &&
+      finite(snapshot.fov) && snapshot.fov > 0 && snapshot.fov < 180, 'Invalid camera projection');
+    const position = new THREE.Vector3(...snapshot.position), target = new THREE.Vector3(...snapshot.target);
+    this._placeCamera(target, position.clone().sub(target), position.distanceTo(target));
+    this.camera.up.set(...snapshot.up);
+    this.camera.near = snapshot.near; this.camera.far = snapshot.far; this.camera.fov = snapshot.fov;
+    this.camera.updateProjectionMatrix(); this.controls.update(); this.controls.saveState();
+    this.needsFit = false;
+    return true;
+  }
+
   resize() {
     if (this.disposed) return;
     const {width, height} = this.container.getBoundingClientRect();
@@ -547,7 +610,7 @@ export class LocalSceneView {
   _frame() {
     if (this.disposed) return;
     this._refreshStatus();
-    if (this.document.hidden || !this.sized || this.sceneError) return;
+    if (this.document.hidden || !this.sized || this.sceneError || this.contextLost) return;
     this.controls.update(); // Remains independent of ROS state/polling cadence.
     const started = this.now();
     this.renderer.render(this.scene, this.camera);
@@ -555,7 +618,10 @@ export class LocalSceneView {
     this.stats.render_submit_ms = displayingPose ? this.now() - started : null; // CPU submission, not GPU timing.
     // Optional read-only benchmark hook. A render submission is not GPU
     // completion or a physical display paint; consumers must retain that label.
-    if (displayingPose && this.firstVisibleSubmittedAt === null) this.firstVisibleSubmittedAt = this.now();
+    if (displayingPose && this.firstVisibleSubmittedAt === null) {
+      this.firstVisibleSubmittedAt = this.now();
+      this.options.onFirstVisibleFrame?.();
+    }
     this.options.onRenderFrame?.({submitted_at_ms: this.now(), sequence: this.sequence,
       displaying_pose: displayingPose, render_submit_ms: this.stats.render_submit_ms,
       first_visible_submitted_at_ms: this.firstVisibleSubmittedAt,
