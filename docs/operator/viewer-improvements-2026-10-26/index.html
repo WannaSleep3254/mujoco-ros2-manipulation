@@ -98,7 +98,7 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 </ul>
 <figure><img src="plan-review.png" alt="실행 전 계획과 실제 관절 상태를 구분하고, 계획 요약과 느린 재생·재계획·승인을 제공하는 화면" loading="lazy"><figcaption id="figure-title-2">그림 2. 실행 전 계획 검토. 새 ROS 세션에서 작은 관절 목표를 계획했으며, 이 화면을 표시하는 동안에는 실행하지 않았습니다.</figcaption></figure>
 <div class="note warn"><p><strong>실행 전 검사:</strong> 승인 시 시작 자세와 모델·환경을 다시 확인합니다. 계획 유효 시간은 60초이며 승인은 한 번만 사용할 수 있습니다. 표시한 최소 간격은 해당 계획의 검사 결과로, 실물 안전 기능이나 모든 환경의 회피 성능을 보증하지 않습니다.</p></div>
-<p class="small">검증: Python 619개, JavaScript 105개 검사와 독립 ROS 승인 검사 10개를 통과했습니다. 실제 브라우저에서 계획 만료·재계획·미리보기·승인 실행·연결 이력을 확인했습니다. 자세한 범위는 <a href="usability-validation.json">검증 기록</a>에서 확인합니다.</p>
+<p class="small">검증: Python 619개, JavaScript 106개 검사와 독립 ROS 승인 검사 10개를 통과했습니다. 실제 브라우저에서 계획 만료·재계획·미리보기·승인 실행·연결 이력을 확인했습니다. 자세한 범위는 <a href="usability-validation.json">검증 기록</a>에서 확인합니다.</p>
 </section>
 <section id="progress">
 <span class="section-no">05 / Progress against the original plan</span><h2>기존 계획과 현재 진행 상황</h2>
@@ -134,7 +134,7 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p class="small">확인일: 2026-10-26 · 측정 대상 코드: <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/1a44f19">1a44f19</a></p>
 <ol class="sources">
 <li><a href="../../2026-10-26-viewer-display/index.html">2026-10-26 표시 성능 측정 리포트</a><span>3개 연속 측정 구간과 조건, 렌더·자세·HTTP·서버 자원 지표와 해석 한계</span></li>
-<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/357360dc89e7693d18b6a06fe471127e3013617a/docs/operator_console.md">계획 검토·복구 사용법과 고정 구현</a> · <a href="usability-validation.json">검증 기록</a><span>기존 정지 장면 측정 이후 추가한 기능입니다. 표시 복구·계획 판단·작업 이력의 기능 검증이며 성능 재측정은 아닙니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/591384ec9dda48e6bfde76d2b674dca3b4086ca1/docs/operator_console.md">계획 검토·복구 사용법과 고정 구현</a> · <a href="usability-validation.json">검증 기록</a><span>기존 정지 장면 측정 이후 추가한 기능입니다. 표시 복구·계획 판단·작업 이력의 기능 검증이며 성능 재측정은 아닙니다.</span></li>
 <li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/549575928c3f262cb8db9eb0479433e3bdc6fdce/docs/reports/2026-10-26-viewer-moving-hardware/results.md">동일 GPU·해상도에서 움직이는 기록의 추가 비교</a><span>고정 로봇 메시와 관절 기록의 표시 시험입니다. 약 60 fps 렌더링과 약 4 Hz 새 자세 적용을 구분하며, 센서·점군·원격 제어 성능을 입증하지 않습니다.</span></li>
 <li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/34">PR #34</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/35">PR #35</a><span>측정 이전 로컬 3D·읽기 전용 모델/장면 미리보기의 구현 기록</span></li>
 <li><a href="../viewer-direction-2026-10-22/index.html">2026-10-22 뷰어 개발 방향성</a><span>기존 JPEG 구성, 당시 대안 검토와 P0~P4 개발 계획</span></li>

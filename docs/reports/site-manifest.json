@@ -217,7 +217,7 @@
     },
     "operator-demos.json": {
       "bytes": 3002,
-      "sha256": "ded1de75d4e9ddefe2cd514c90385238dfba1325862095182617df73bf33420b"
+      "sha256": "2602b9890ab4c88856282e809e8cf73354aa4d5e4598e7ab07397a5b3d1d8df2"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -389,11 +389,11 @@
     },
     "operator/viewer-improvements-2026-10-26/index.html": {
       "bytes": 30018,
-      "sha256": "2465a811c9e723a2947bf8ca2c87b1f52cb107af870b9696c078b6f13077e09a"
+      "sha256": "42cca2b01c2d7e29497ae386afffa637f807550ebe2b6d1c263fe4dafaff4cfb"
     },
     "operator/viewer-improvements-2026-10-26/manifest.json": {
       "bytes": 2909,
-      "sha256": "cda6ef909065d76ac23e1dcf926495a80181d7068f6ebfe3d59dad34836b5b24"
+      "sha256": "6df7e6d027c8819e1b2d3b38202dd3c70ab7ad9fd6251998b9986fa4f8f3570f"
     },
     "operator/viewer-improvements-2026-10-26/plan-review.png": {
       "bytes": 155084,
@@ -401,11 +401,11 @@
     },
     "operator/viewer-improvements-2026-10-26/review-notes.json": {
       "bytes": 3718,
-      "sha256": "bd83bfe1838ebff0b0ef841d53dd7be787556815bbe71283d71151054c8d6a93"
+      "sha256": "31ac37d99ac24d4c17eac8fdb2ce54cf1e8d1f526ff87d61b71594a578a720c7"
     },
     "operator/viewer-improvements-2026-10-26/usability-validation.json": {
-      "bytes": 3579,
-      "sha256": "fad1f54d7781c2b1bdb066fcfefb55f321640b1cdb968a3d76ff1d2b89738aa6"
+      "bytes": 3638,
+      "sha256": "21f4b5d2ef62318669bfce236faf0bcfe067d9dc1bd22d332da59b6e9f9773e7"
     }
   }
 }

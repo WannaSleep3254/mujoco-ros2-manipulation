@@ -36,7 +36,7 @@
   "document_revision": {
     "version": "1.2",
     "date": "2026-10-26",
-    "implementation_review_commit": "357360dc89e7693d18b6a06fe471127e3013617a",
+    "implementation_review_commit": "591384ec9dda48e6bfde76d2b674dca3b4086ca1",
     "scope": "Viewer improvements 1-4: read-only recovery, display identity, review facts and playback, explicit replan and linked request history.",
     "new_measurement": false,
     "validation": "usability-validation.json"

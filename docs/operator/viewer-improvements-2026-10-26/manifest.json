@@ -3,11 +3,11 @@
   "document_type": "design_review",
   "baseline_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "assets": {
-    "index.html": "2465a811c9e723a2947bf8ca2c87b1f52cb107af870b9696c078b6f13077e09a",
+    "index.html": "42cca2b01c2d7e29497ae386afffa637f807550ebe2b6d1c263fe4dafaff4cfb",
     "camera-controls.png": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766",
-    "review-notes.json": "bd83bfe1838ebff0b0ef841d53dd7be787556815bbe71283d71151054c8d6a93",
+    "review-notes.json": "31ac37d99ac24d4c17eac8fdb2ce54cf1e8d1f526ff87d61b71594a578a720c7",
     "plan-review.png": "1209f19346f4f98f2415968523a9750c23b550af36d749ff51d55b64276f2281",
-    "usability-validation.json": "fad1f54d7781c2b1bdb066fcfefb55f321640b1cdb968a3d76ff1d2b89738aa6"
+    "usability-validation.json": "21f4b5d2ef62318669bfce236faf0bcfe067d9dc1bd22d332da59b6e9f9773e7"
   },
   "measurement_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "feature_source_sha256": {
@@ -17,9 +17,9 @@
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "e5d0e52bc94705c34204adf591beae1b6733f9ba99901193817b039cde7e3321"
   },
   "document_version": "1.2",
-  "implementation_review_commit": "357360dc89e7693d18b6a06fe471127e3013617a",
+  "implementation_review_commit": "591384ec9dda48e6bfde76d2b674dca3b4086ca1",
   "usability_source_sha256": {
-    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "960ab8dbf4b04c531646d3bf335e6121a399b855f52eda62ea21ba54b96bdd66",
+    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "19127ba8c86351b2906d21c0659777b43baf16223269c6aa3f3b1fa7f9074d50",
     "src/mujoco_ros2_manipulation/operator_console/static/viewer.js": "df7dcd3bdad686b15145df7252fdbe8e0bbcfbaba714904fdf4eb2fca1ffba8d",
     "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "8c3fe321d0f8441e2efbfa21142eea897d36052142eac41c3a2791688abe2102",
     "src/mujoco_ros2_manipulation/operator_console/static/index.html": "8cf431322e8a684485eec58f1bd962e16fd59c7c0cfb7dfafa8f075da4fa45dd",
