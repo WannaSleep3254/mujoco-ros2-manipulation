@@ -35,6 +35,8 @@ PYTHONPATH=src python3 -m mujoco_ros2_manipulation.operator_console.recorded_ser
 
 `display-recording-v1` JSON은 `schema_version`, `kind`, `label`, `manifest`, `frames`를 포함합니다. 각 frame은 `time_sec`, 전체 `positions_rad`, 공통 pose를 갖습니다. 처음은 0초이고 원본 표본 시각은 엄격히 증가해야 합니다. 메시 바이너리는 인접한 `assets/<sha256>.bin`에서 읽습니다. 기록은 최대 64 MiB·20,000표본·3,600초이며 시작할 때 읽은 내용과 자산을 메모리에 고정합니다.
 
+성능 평가 도구의 `recording.json`은 `joint_names/samples/positions`를 받아 FK를 수행하는 별도 입력입니다. 이미 형상과 변환을 포함한 이 `display-recording-v1` 형식과 직접 호환되지 않습니다.
+
 재생은 다음 표본을 표시할 뿐 FK나 물리 적분을 하지 않습니다. 되감기·seek·기록 교체는 새 binding을 만들고 이전 요청을 무효화합니다. 일시 정지와 EOF에서는 마지막 표본의 나이가 증가하여 stale로 표시됩니다. 카메라는 계속 움직일 수 있습니다. 연결 중단도 마지막 자세와 구분해 표시하며 새 응답을 받으면 복구합니다.
 
 서버는 loopback에만 열리고 고정한 표시 자산만 제공합니다. 재생·정지·seek 요청은 같은 origin의 토큰을 요구합니다. `/api/command` 같은 로봇 명령 경로는 없습니다. 실행 중 임의 파일을 업로드하거나 다른 로봇 제어기로 바꾸는 기능도 없습니다.
