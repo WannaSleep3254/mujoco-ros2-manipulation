@@ -3,9 +3,9 @@
   "document_type": "design_review",
   "baseline_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "assets": {
-    "index.html": "83827d7576bafa8d0a6b85c43337e4a4316f465998224af62e46ab56c9032103",
+    "index.html": "ba9c813796b070b5b2f07d63d070a83834cc5bc1721baff31a965aee2755543e",
     "camera-controls.png": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766",
-    "review-notes.json": "03174da07eb7a2b00cd2f0a54ae2d00cd921bd8943cb9ce6823e76c7f52ac33a"
+    "review-notes.json": "f9e536e18478d612b3b3530e877aaee440819a50ec4a380b6b7105e79570a4c3"
   },
   "measurement_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "feature_source_sha256": {
