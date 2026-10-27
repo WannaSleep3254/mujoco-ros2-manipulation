@@ -145,7 +145,7 @@ export class LocalSceneView {
     this.graphicsInfo = graphicsIdentity(this.renderer);
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
     this.canvas = this.renderer.domElement;
-    this.canvas.setAttribute('aria-label', '읽기 전용 로봇 3D 장면. 드래그 회전, 휠 확대, 오른쪽 드래그 이동');
+    this.canvas.setAttribute('aria-label', '읽기 전용 로봇 3D 화면. 드래그 회전, 휠 확대, 오른쪽 드래그 이동');
     this.canvas.setAttribute('tabindex', '0');
     this.canvas.className = 'local-scene-canvas';
     this.canvas.style.width = '100%';
@@ -154,7 +154,7 @@ export class LocalSceneView {
     this.label = this.document.createElement('div');
     this.label.className = 'local-scene-status';
     this.label.setAttribute('role', 'status');
-    this.label.textContent = '장면과 관절 상태 대기';
+    this.label.textContent = '모델과 관절 상태 대기';
     container.append(this.canvas, this.label);
     this.controls = new OrbitControls(this.camera, this.canvas);
     this.controls.target.set(0, 0, .6);
@@ -231,7 +231,7 @@ export class LocalSceneView {
   }
 
   /** Blank an unavailable epoch without inventing a binding or resetting camera. */
-  clearBinding(reason = '장면 준비 대기') {
+  clearBinding(reason = '3D 표시 준비 대기') {
     requireValue(!this.disposed, 'Scene view is destroyed');
     this.loadController?.abort();
     this.cancelPoseRead();
@@ -563,7 +563,7 @@ export class LocalSceneView {
     } catch (error) {
       for (const geometry of geometries) geometry.dispose();
       for (const material of materials) material.dispose();
-      if (generation === this.loadGeneration && !this.disposed && error.name !== 'AbortError') this.sceneError = '3D 장면을 불러오지 못했습니다';
+      if (generation === this.loadGeneration && !this.disposed && error.name !== 'AbortError') this.sceneError = '3D 모델을 불러오지 못했습니다';
       throw error;
     } finally {
       if (generation === this.loadGeneration && !this.disposed) {this.loading = false; this._refreshStatus(); this._notifyGeometry();}
@@ -677,7 +677,7 @@ export class LocalSceneView {
     this.stats.source_age_ms = age;
     const state = this.sceneError ? 'error' : this.loading ? 'loading' : !this.hasPose ? 'waiting' : stale ? 'stale' : live ? 'fresh' : 'preview';
     this.canvas.style.visibility = this.hasPose && this.world.visible ? 'visible' : 'hidden';
-    const text = this.sceneError ?? (this.loading ? '3D 장면 준비 중' : !this.hasPose ? (!this.binding ? this.manualStaleReason ?? '관절 상태 대기' : '관절 상태 대기') :
+    const text = this.sceneError ?? (this.loading ? '3D 표시 준비 중' : !this.hasPose ? (!this.binding ? this.manualStaleReason ?? '관절 상태 대기' : '관절 상태 대기') :
       stale ? this.manualStaleReason ?? '갱신 대기 · 마지막 수신 자세' : live ? '현재 관절 자세 · 읽기 전용' :
         this.binding.mode === 'plan_preview' ? '계획 경로 미리보기 · 읽기 전용' : '모델 미리보기 · 읽기 전용');
     if (this.label.dataset.state !== state) {

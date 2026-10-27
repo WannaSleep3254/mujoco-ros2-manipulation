@@ -57,7 +57,7 @@ class DemoJobs:
     def _reason(self):
         app = self.app
         if app.views.preview:
-            return "미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요."
+            return "미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요."
         if self.busy or app.phase in ("starting", "running", "stopping"):
             return "진행 중인 실행을 종료한 뒤 시연을 시작하세요."
         if app.closing.is_set():
@@ -75,7 +75,7 @@ class DemoJobs:
         if not isinstance(options, dict) or set(options) != {"scenario", "native_gui"} or type(options["native_gui"]) is not bool or options["scenario"] not in {s["id"] for s in describe_scenarios()}:
             raise ValueError("지원하는 시연과 실행 옵션을 선택하세요.")
         if app.cell.id != "fr5_ur5e":
-            raise ValueError("이 시연은 FR5 + UR5e 장면에서 지원합니다.")
+            raise ValueError("이 시연은 FR5 + UR5e 작업 환경에서 지원합니다.")
         with app.lock, app.state.lock:
             reason = self.reason()
             if reason:

@@ -78,7 +78,7 @@ python3 build_workspace.py --download-debs
 # 또는 기존 명령: 캐시된 deb를 사용
 bash build_runtime.sh
 bash build_robot_packages.sh
-# 모델 하나와 장면을 선택
+# 모델 하나와 작업 환경을 선택
 bash build_robot_packages.sh --robots fr5 --scene pedestal
 ```
 
@@ -96,11 +96,11 @@ FR5·FR10·UR5e 모델을 생성합니다.
 변경이 있어도 중단합니다. 종료 수정의 근거와 적용 범위는 [문제 해결](troubleshooting.md)에 있습니다.
 
 빌드가 끝나면 [실행·검증 상세 안내의 빠른 실행](usage-and-validation.md#빠른-실행)으로 단일 모델을 실행할 수 있습니다.
-기본 전체 빌드는 단일 모델들을 생성하며, 웹 조작에 필요한 공동 장면은 다음 단계에서 준비합니다.
+기본 전체 빌드는 단일 모델들을 생성하며, 웹 조작에 필요한 공동 작업 환경은 다음 단계에서 준비합니다.
 
-### 웹 조작용 공동 장면 준비
+### 웹 조작용 공동 작업 환경 준비
 
-기본 빌드 후 실행 중인 시뮬레이션을 종료하고, 저장소 루트에서 FR5·UR5e 공동 장면을 생성합니다.
+기본 빌드 후 실행 중인 시뮬레이션을 종료하고, 저장소 루트에서 FR5·UR5e 공동 작업 환경을 생성합니다.
 
 ```bash
 python3 build_workspace.py --component models --workcell fr5_ur5e
@@ -108,12 +108,12 @@ source ./manipulation_env.sh
 python3 operator_console.py --domain 89 --port 8765
 ```
 
-이 준비 단계는 두 모델의 ROS 패키지·기본 모델과 공동 장면을 생성합니다.
-화면 서버는 생성물 무결성을 먼저 검사하며, 없는 공동 장면을 자동 생성하지 않습니다.
+이 준비 단계는 두 모델의 ROS 패키지·기본 모델과 공동 작업 환경을 생성합니다.
+화면 서버는 생성물 무결성을 먼저 검사하며, 없는 공동 작업 환경을 자동 생성하지 않습니다.
 설정·소스 변경으로 생성물이 오래된 경우에도 실행을 종료한 뒤 같은 준비 명령으로 재생성합니다.
-이미 두 기본 모델이 유효하게 생성되어 있다면 `.venv/bin/python prepare_workcell.py --workcell fr5_ur5e`로 공동 장면만 다시 생성할 수 있습니다.
+이미 두 기본 모델이 유효하게 생성되어 있다면 `.venv/bin/python prepare_workcell.py --workcell fr5_ur5e`로 공동 작업 환경만 다시 생성할 수 있습니다.
 
-새 PC에서 공동 장면에 필요한 모델과 런타임을 한 번에 준비하려면 기본 전체 빌드 대신
+새 PC에서 공동 작업 환경에 필요한 모델과 런타임을 한 번에 준비하려면 기본 전체 빌드 대신
 `python3 build_workspace.py --download-debs --workcell fr5_ur5e`를 사용합니다.
 이 경로는 FR5·UR5e를 선택하므로 FR10도 실행하려면 `python3 build_workspace.py --component models --robots fr10`으로 별도 준비합니다.
 화면 조작·완료 확인·종료는 [실행·검증 상세 안내](usage-and-validation.md#전용-조작-화면)를 따릅니다.
@@ -131,7 +131,7 @@ python3 operator_console.py --domain 89 --port 8765
 
 `home_rad`, `servo.kp`, `servo.kv`와 검증 목표 배열은 프로필의 `joints` 순서와 길이를 따릅니다.
 변환기는 관절 이름으로 MuJoCo 초기 자세와 구동기를 연결합니다.
-프로필·작업장면·빌드 명세·패키지 생성기·원본 URDF/SRDF·메시·Xacro 의존 파일·공통 제어 설정·requirements 변경 후 모델을 재생성해야 합니다.
+프로필·작업 환경·빌드 명세·패키지 생성기·원본 URDF/SRDF·메시·Xacro 의존 파일·공통 제어 설정·requirements 변경 후 모델을 재생성해야 합니다.
 실행 중인 모델은 종료하고 다시 실행합니다. 제조사 체크아웃에 추적 파일 변경이 있으면 덮어쓰지 않고 중단합니다.
 새 무결성 명세가 없는 기존 생성 모델은 한 번 재생성해야 합니다.
 
@@ -159,7 +159,7 @@ ROS 시스템 Python과 생성용 가상환경은 다르므로 실행 시 두 �
 ## 공통 코드 구성
 
 정식 구현은 [src/mujoco_ros2_manipulation](../src/mujoco_ros2_manipulation)에 있습니다.
-루트 Python·빌드 셸은 호환 진입점입니다. 폴더별 책임, 빌드 명세와 장면별 출력 경로는
+루트 Python·빌드 셸은 호환 진입점입니다. 폴더별 책임, 빌드 명세와 작업 환경별 출력 경로는
 [구조 설명](architecture.md)에 정리했습니다.
 
 `manipulation_env.sh`는 기존 다른 워크스페이스의 환경 대신 `/opt/ros/humble`과

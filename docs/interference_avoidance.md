@@ -1,6 +1,6 @@
 # 양팔 간섭 회피 전용 사례 — 첫 시도
 
-[README](../README.md) · [공동 장면](workcells.md) · [계획](plans/base_and_multi_robot.md) · [사례 설정](../config/scenarios/dual_arm_crossing.yaml)
+[README](../README.md) · [공동 작업 환경](workcells.md) · [계획](plans/base_and_multi_robot.md) · [사례 설정](../config/scenarios/dual_arm_crossing.yaml)
 
 ## 기록 범위
 
@@ -33,7 +33,7 @@ FR5·UR5e의 기존 받침대와 배치를 그대로 사용합니다. 시작·�
 
 ## 구현과 판정
 
-- 사례와 자세는 `config/scenarios`에 두며 로봇 모델·작업장면 설정을 복제하지 않습니다.
+- 사례와 자세는 `config/scenarios`에 두며 로봇 모델·작업 환경 설정을 복제하지 않습니다.
 - 실제 제어기의 `interpolation_method=splines`를 조회합니다. 위치만 있으면 선형,
   속도까지 있으면 3차, 가속도까지 있으면 5차 보간으로 중간 자세를 계산합니다.
   단순 위치 직선 보간으로 속도·가속도에 의한 오버슈트를 놓치지 않도록 검사합니다.
@@ -62,9 +62,9 @@ python3 verify_interference.py --gui --domain 128 \
 
 촬영 폴더는 새 `runtime/` 하위 경로여야 합니다. 촬영은 현재 PC의 X11 도구·OpenCV H.264 지원을 사용하며 CI에는 포함하지 않습니다.
 설치된 패키지는 `manipulation-verify-interference`로도 실행합니다.
-일반 장면의 계획 설정은 유지하고, 이 검증만 `planning_case:=dual_arm_crossing`을 전달합니다.
+일반 작업 환경의 계획 설정은 유지하고, 이 검증만 `planning_case:=dual_arm_crossing`을 전달합니다.
 
-공동 장면 CI는 위 headless 검증을 새 launch에서 두 번 실행하며 재시도로 실패를 숨기지 않습니다.
+공동 작업 환경 CI는 위 headless 검증을 새 launch에서 두 번 실행하며 재시도로 실패를 숨기지 않습니다.
 기존 단일 로봇·공동 동작·접촉·시계·크래시·A/B 검사는 유지합니다.
 
 ## 계획 후처리 설정을 보강한 이유

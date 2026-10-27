@@ -1,10 +1,10 @@
 # 시계 정지 감시와 양팔 위치 고정 검증
 
-[README](../README.md) · [공동 장면](workcells.md) · [접촉 정지](contact_stop.md) · [크래시 종료](process_crash.md)
+[README](../README.md) · [공동 작업 환경](workcells.md) · [접촉 정지](contact_stop.md) · [크래시 종료](process_crash.md)
 
 ## 동작
 
-공동 작업장면의 네이티브 물리 루프가 `/clock` 수신값의 변화 여부를 감시합니다.
+공동 작업 환경의 네이티브 물리 루프가 `/clock` 수신값의 변화 여부를 감시합니다.
 ROS 콜백은 다른 시각을 받았을 때 원자적 순번을 증가시키고, 물리 루프는
 `std::chrono::steady_clock`으로 마지막 변화 이후 시간을 계산합니다.
 ROS 시각으로 만든 타이머·서비스 완료를 기다려 정지를 판단하지 않습니다.
@@ -33,8 +33,8 @@ python3 verify_clock_stop.py --mode repeated --domain 120
 
 `missing`은 실제 시계 발행을 끊고, `repeated`는 같은 시각만 계속 발행합니다.
 네이티브 시험 서비스 `~/inject_test_clock_stall`은 실행별 검증 디렉터리가 있는
-`clock_test:=missing/repeated` launch에서만 생성합니다. 일반 장면에는 노출하지 않으며
-정상 공동 장면 검증에서 시험 서비스가 없는지도 검사합니다.
+`clock_test:=missing/repeated` launch에서만 생성합니다. 일반 실행에는 노출하지 않으며
+정상 공동 작업 환경 검증에서 시험 서비스가 없는지도 검사합니다.
 접촉 시험·고정 장애물 시연과 동시에 선택할 수 없습니다.
 
 각 실행은 다음을 실제 ROS에서 확인합니다.
@@ -52,7 +52,7 @@ python3 verify_clock_stop.py --mode repeated --domain 120
 6. 종료 후 현재 실행 ID·감시 코드 해시를 가진 네이티브 전체 스텝 보고서에서
    `stop_reason=clock_stall`, 접촉 0, 래치 이후 추가 물리 적분 0을 확인한다.
 
-공동 장면 CI에 두 실행을 추가했으며 기존 정상·접촉·A/B 대조·크래시 시험을 유지합니다.
+공동 작업 환경 CI에 두 실행을 추가했으며 기존 정상·접촉·A/B 대조·크래시 시험을 유지합니다.
 원본 JSON·로그·physics.json은 성공·실패 모두 실행 artifact에 보관합니다.
 
 ## 로컬 실행 결과

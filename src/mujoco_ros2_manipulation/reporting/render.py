@@ -114,7 +114,7 @@ def report_html(data):
             parts.append(f'<p><a href="{url}">{esc(asset["label"])}</a> <span class="note">{asset["role"]}</span></p>')
     commit_url = source["repository"].rstrip("/") + "/commit/" + source["commit"]
     parts.append(f'<p>기준 코드: <a href="{esc(commit_url)}"><code>{source["commit"]}</code></a></p>')
-    metadata = {"평가 ID": data["report_id"], "작업장면": source["workcell"],
+    metadata = {"평가 ID": data["report_id"], "작업 환경": source["workcell"],
                 "모델": ", ".join(source["models"]), "시나리오": source["scenario"],
                 "입력 종류": source["input_kind"], **{"환경 / " + k: v for k, v in data["environment"].items()}}
     parts.append('<dl class="dl">' + ''.join(f'<dt>{esc(k)}</dt><dd>{esc(v)}</dd>' for k, v in metadata.items()) + '</dl>')

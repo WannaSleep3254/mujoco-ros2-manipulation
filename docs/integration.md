@@ -9,7 +9,7 @@
 
 초기 통합 전에는 `main`에 CI 워크플로가 없었고,
 검증 보강 PR #5에도 검사 결과가 없습니다. 이후 PR #6에서 패키지 구조·빌드·CI를 도입했고,
-PR #7부터 공동 장면을 포함한 현재의 6개 검사를 실행합니다.
+PR #7부터 공동 작업 환경을 포함한 현재의 6개 검사를 실행합니다.
 따라서 필수 검사 6개를 유지한 상태에서 CI 도입 전 PR부터 하나씩 병합하는 경로는 사용할 수 없습니다.
 
 **2026-10-20 PR #9 → main 병합을 완료했습니다.** #9 브랜치에는 #5~#8의 커밋과 CI 구성이 모두 포함돼 있습니다.
@@ -19,8 +19,8 @@ PR #7부터 공동 장면을 포함한 현재의 6개 검사를 실행합니다.
 | PR | 포함하는 변경 | 처리 경로 |
 |---|---|---|
 | [#5](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/5) | 실패 보고서·생성물 무결성 | #9에 커밋 포함, 변경별 검토 이력 유지 |
-| [#6](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/6) | 패키지·빌드·작업장면 분리·CI | #9에 커밋 포함, 변경별 검토 이력 유지 |
-| [#7](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/7) | 공동 장면·양팔 제어와 계획 | #9에 커밋 포함, 변경별 검토 이력 유지 |
+| [#6](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/6) | 패키지·빌드·작업 환경 분리·CI | #9에 커밋 포함, 변경별 검토 이력 유지 |
+| [#7](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/7) | 공동 작업 환경·양팔 제어와 계획 | #9에 커밋 포함, 변경별 검토 이력 유지 |
 | [#8](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/8) | 매 스텝 접촉·GUI·성능 검증 | #9에 커밋 포함, 변경별 검토 이력 유지 |
 | [#9](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/9) | 위 변경 전체와 접촉 자동 정지·무장애물 대조 | main 병합 완료 |
 
@@ -37,10 +37,10 @@ PR #7부터 공동 장면을 포함한 현재의 6개 검사를 실행합니다.
 | 필수 검사 이름 | 범위 |
 |---|---|
 | `Python package and unit tests` | 패키지 빌드·구문/링크·단위 검사 |
-| `ROS Humble (fr5, default)` | FR5 기본 장면 |
-| `ROS Humble (fr10, default)` | FR10 기본 장면 |
-| `ROS Humble (ur5e, default)` | UR5e 기본 장면 |
-| `ROS Humble (fr5, pedestal)` | FR5 받침대 장면 |
+| `ROS Humble (fr5, default)` | FR5 기본 작업 환경 |
+| `ROS Humble (fr10, default)` | FR10 기본 작업 환경 |
+| `ROS Humble (ur5e, default)` | UR5e 기본 작업 환경 |
+| `ROS Humble (fr5, pedestal)` | FR5 받침대 작업 환경 |
 | `ROS Humble (workcell, fr5_ur5e)` | 공동 제어·접촉 정지·무장애물 대조 |
 
 이 이름은 [워크플로](../.github/workflows/ci.yml)의 작업 이름·행렬과 일치해야 합니다.

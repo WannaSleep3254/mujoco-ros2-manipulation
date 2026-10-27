@@ -49,7 +49,7 @@ class RecordingHandler(BaseHTTPRequestHandler):
             if parsed.path in ("/api/view/manifest", "/api/view/pose"):
                 query = parse_qs(parsed.query, keep_blank_values=True)
                 if set(query) != {"binding_id"} or len(query["binding_id"]) != 1:
-                    raise ValueError("현재 장면 식별자가 필요합니다.")
+                    raise ValueError("현재 표시 대상의 식별자가 필요합니다.")
                 identifier = query["binding_id"][0]
                 value = host.manifest_bytes(identifier) if parsed.path.endswith("manifest") else host.pose_envelope(identifier)
                 return self.respond(value)

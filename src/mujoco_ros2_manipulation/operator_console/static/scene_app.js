@@ -47,7 +47,7 @@ export class SceneControls {
       onFirstVisibleFrame:()=>{this.recoveryFailed=false;this.updateCameraControls();this.onAvailabilityChange();},
       onGeometryChange:snapshot=>this.updateGeometryControls(snapshot),
       onRenderFrame:frame=>this.sceneFrameSubmitted(frame,created),
-      onMetrics:metrics=>{this.metrics.textContent=JSON.stringify(metrics,null,2);if(!this.isImage()&&metrics.binding_id===this.expected){const age=metrics.mode==='live'?(Number.isFinite(metrics.source_age_ms)?Math.round(metrics.source_age_ms)+' ms 전 상태':'상태 수신 대기'):metrics.mode?'읽기 전용 보기':'장면 준비 대기';$('frame-age').textContent=$('demo-frame-age').textContent=age;const status={fresh:'현재 관절 자세',stale:'마지막 수신 자세',preview:'읽기 전용 미리보기',loading:'장면 준비 중',waiting:'관절 상태 대기',error:'장면 표시 오류'}[metrics.view_state]||'장면 준비 중';$('frame-label').textContent=$('demo-frame-label').textContent=status;}}});
+      onMetrics:metrics=>{this.metrics.textContent=JSON.stringify(metrics,null,2);if(!this.isImage()&&metrics.binding_id===this.expected){const age=metrics.mode==='live'?(Number.isFinite(metrics.source_age_ms)?Math.round(metrics.source_age_ms)+' ms 전 상태':'상태 수신 대기'):metrics.mode?'읽기 전용 보기':'3D 표시 준비 대기';$('frame-age').textContent=$('demo-frame-age').textContent=age;const status={fresh:'현재 관절 자세',stale:'마지막 수신 자세',preview:'읽기 전용 미리보기',loading:'3D 표시 준비 중',waiting:'관절 상태 대기',error:'3D 표시 오류'}[metrics.view_state]||'3D 표시 준비 중';$('frame-label').textContent=$('demo-frame-label').textContent=status;}}});
       this.viewer.setReviewMode(this.data?.mode==='plan_preview');
       this.viewer.setCollisionVisible(Boolean($('scene-collision')?.checked));this.updateGeometryControls(this.viewer.geometryCatalog());return true;}
     catch(error){this.viewer=null;this.element.textContent='로컬 3D를 시작하지 못했습니다. 3D 재시작 또는 서버 이미지를 선택하세요.';this.notify(error.message);return false;}
@@ -163,7 +163,7 @@ export class SceneControls {
     for(const input of cameraElements('[data-scene-geometry-opacity]')){input.value=String(selected?.opacity_multiplier??1);input.disabled=!ready||!selected||review;input.dataset.geometryScope=scope;input.setAttribute('aria-valuetext',Math.round(Number(input.value)*100)+'%');}
     for(const output of cameraElements('[data-scene-geometry-opacity-value]'))output.textContent=Math.round((selected?.opacity_multiplier??1)*100)+'%';
     for(const button of cameraElements('[data-scene-geometry-reset]')){button.disabled=!ready||review;button.dataset.geometryScope=scope;}
-    for(const help of cameraElements('[data-scene-geometry-help]'))help.textContent=review?'계획 검토 중에는 형상을 숨기거나 투명하게 바꿀 수 없습니다. 선택과 화면 맞춤은 사용할 수 있습니다.':selected&&!selected.visible?'선택 형상이 현재 보이지 않습니다. 숨김과 불투명도, 충돌 형상 표시를 확인하세요.':selected?.type==='plane'?'바닥 평면은 선택 맞춤에서 제외합니다.':'형상을 선택해 화면을 맞추거나 표시를 조절합니다. 불투명도는 원본 재질에 곱해 적용하며, 물리 장면에는 영향을 주지 않습니다.';
+    for(const help of cameraElements('[data-scene-geometry-help]'))help.textContent=review?'계획 검토 중에는 형상을 숨기거나 투명하게 바꿀 수 없습니다. 선택과 화면 맞춤은 사용할 수 있습니다.':selected&&!selected.visible?'선택 형상이 현재 보이지 않습니다. 숨김과 불투명도, 충돌 형상 표시를 확인하세요.':selected?.type==='plane'?'바닥 평면은 선택 맞춤에서 제외합니다.':'형상을 선택해 화면을 맞추거나 표시를 조절합니다. 불투명도는 원본 재질에 곱해 적용하며, 물리 시뮬레이션에는 영향을 주지 않습니다.';
   }
   resetCamera(){
     if(!this.cameraReady())return false;
@@ -267,10 +267,10 @@ export class SceneControls {
   update(state){
     if(this.destroyed)return;
     const data=state.view;if(data?.binding&&this.data?.binding&&data.binding.operator_session_id===this.data.binding.operator_session_id&&data.binding.generation<this.data.binding.generation)return;
-    if(this.recovering&&data?.binding_id!==this.expected){this.recoveryEpoch++;this.recovering=false;this.viewer?.clearBinding('표시 장면이 바뀌었습니다');this.pendingCamera=null;this.expected=this.loadedBinding=this.loading=null;}
+    if(this.recovering&&data?.binding_id!==this.expected){this.recoveryEpoch++;this.recovering=false;this.viewer?.clearBinding('표시 대상이 바뀌었습니다');this.pendingCamera=null;this.expected=this.loadedBinding=this.loading=null;}
     const previousError=Boolean(this.data?.status==='error'||this.data?.error),failed=Boolean(data?.status==='error'||data?.error);
     if(this.data?.binding_id!==data?.binding_id||failed||!data){this.pause();this._clearPendingSeek();this.resetPosePolling();}this.data=data;this.reconcilePreviewTime(data);this.viewer?.setReviewMode(data?.mode==='plan_preview');this.updateCameraControls();
-    if(!data){$('plan-play').disabled=$('plan-seek').disabled=true;if(this.viewer&&(this.expected!==null||previousError))this.viewer.clearBinding('장면 준비 대기');this.expected=null;this.loadedBinding=null;this.loading=null;return;}
+    if(!data){$('plan-play').disabled=$('plan-seek').disabled=true;if(this.viewer&&(this.expected!==null||previousError))this.viewer.clearBinding('3D 표시 준비 대기');this.expected=null;this.loadedBinding=null;this.loading=null;return;}
     this.mount();const image=this.isImage();this.element.hidden=image;
     $('scene-slot').hidden=image;$('demo-scene-slot').hidden=image;
     if(!image){$('frame').hidden=$('demo-frame').hidden=true;$('frame-empty').hidden=$('demo-frame-empty').hidden=true;$('stale-frame').hidden=$('demo-stale-frame').hidden=true;}
@@ -294,18 +294,18 @@ export class SceneControls {
     if(planReady){$('plan-seek').max=String(data.duration_sec);if(!this.playing&&!this.ownsSeek(data.binding_id)&&document.activeElement!==$('plan-seek'))$('plan-seek').value=String(this.poseTarget?.time??data.preview_time_sec??0);this.renderPlanTime();}
     else {this.pause();$('plan-time').textContent=data.mode==='plan_preview'?'계획 표시 대기':'';}
     if(!this.viewer||this.recovering)return;
-    if(failed){if(!previousError||this.expected!==null)this.viewer.clearBinding('장면 표시 오류 · 실시간/모델 보기를 다시 선택하세요.');this.expected=null;this.loadedBinding=null;this.loading=null;return;}
+    if(failed){if(!previousError||this.expected!==null)this.viewer.clearBinding('3D 표시 오류 · 실시간/모델 보기를 다시 선택하세요.');this.expected=null;this.loadedBinding=null;this.loading=null;return;}
     const id=data.binding_id;
-    if(!id){if(this.expected!==null||previousError){this.viewer.clearBinding('장면 준비 대기');this.expected=null;this.loadedBinding=null;this.loading=null;}return;}
+    if(!id){if(this.expected!==null||previousError){this.viewer.clearBinding('3D 표시 준비 대기');this.expected=null;this.loadedBinding=null;this.loading=null;}return;}
     if(this.expected!==id){$('frame-age').textContent=$('demo-frame-age').textContent=data.mode==='live'?'상태 수신 대기':'읽기 전용 보기';this.expected=id;this.viewer.setExpectedBinding(id,data.binding);this.loading=null;this.loadedBinding=null;this.manifestFailures=0;this.manifestRetryAt=0;this.notifiedManifest=null;}
     if(image)return;
     const descriptor=data.manifest_descriptor;
-    if(!descriptor){this.viewer.markStale(data.status==='error'?'장면을 준비하지 못했습니다':'장면 준비 대기');return;}
+    if(!descriptor){this.viewer.markStale(data.status==='error'?'3D 표시를 준비하지 못했습니다':'3D 표시 준비 대기');return;}
     if(this.loadedBinding!==id&&!this.loading&&this.manifestFailures<5&&performance.now()>=this.manifestRetryAt){
       const expected=id;
       const pending=this.viewer.loadManifest('/api/view/manifest?binding_id='+id,{binding_id:id,binding:data.binding,sha256:descriptor.sha256,model_sha256:descriptor.model_sha256,scene_sha256:descriptor.scene_sha256})
       .then(()=>{if(expected===this.expected&&this.loading===pending){this.loadedBinding=expected;this.manifestFailures=0;this.manifestRetryAt=0;}})
-      .catch(error=>{if(expected===this.expected&&this.loading===pending){this.manifestFailures++;this.manifestRetryAt=performance.now()+Math.min(30000,1000*2**(this.manifestFailures-1));if(this.notifiedManifest!==expected){this.notifiedManifest=expected;this.notify('3D 장면 로드 실패: '+error.message);}}})
+      .catch(error=>{if(expected===this.expected&&this.loading===pending){this.manifestFailures++;this.manifestRetryAt=performance.now()+Math.min(30000,1000*2**(this.manifestFailures-1));if(this.notifiedManifest!==expected){this.notifiedManifest=expected;this.notify('3D 모델 로드 실패: '+error.message);}}})
       .finally(()=>{if(expected===this.expected&&this.loading===pending){this.loading=null;this.syncPosePolling();}});
       this.loading=pending;
     }else if(this.loadedBinding===id&&!this.loading)this.syncPosePolling();

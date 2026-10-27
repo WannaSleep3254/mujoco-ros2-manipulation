@@ -508,14 +508,14 @@ test('frame age distinguishes live waiting, live telemetry, previews and no acti
   for (const [mode, source_age_ms, expected] of [
     ['live', null, '상태 수신 대기'], ['live', undefined, '상태 수신 대기'],
     ['live', 12.6, '13 ms 전 상태'], ['model_preview', null, '읽기 전용 보기'],
-    ['plan_preview', 10, '읽기 전용 보기'], [null, null, '장면 준비 대기'],
+    ['plan_preview', 10, '읽기 전용 보기'], [null, null, '3D 표시 준비 대기'],
   ]) {
     h.controls.viewer.onMetrics({binding_id: 'a'.repeat(64), mode, source_age_ms, view_state: 'waiting'});
     assert.equal(h.element('frame-age').textContent, expected);
     assert.equal(h.element('demo-frame-age').textContent, expected);
   }
   h.controls.viewer.onMetrics({binding_id: 'b'.repeat(64), mode: 'live', source_age_ms: 100, view_state: 'fresh'});
-  assert.equal(h.element('frame-age').textContent, '장면 준비 대기', 'Stale binding metrics cannot overwrite the current label');
+  assert.equal(h.element('frame-age').textContent, '3D 표시 준비 대기', 'Stale binding metrics cannot overwrite the current label');
 });
 
 function cameraReady(h){

@@ -1,7 +1,7 @@
 # 상시 모션 명령과 요청별 구간 계측
 
-MuJoCo 공동 장면을 한 번 실행한 상태에서 새 관절 목표를 받아 계획·검사·실행합니다.
-현재 대상은 FR5·UR5e 공동 장면이며, 실제 로봇 연결은 지원하지 않습니다.
+MuJoCo 공동 작업 환경을 한 번 실행한 상태에서 새 관절 목표를 받아 계획·검사·실행합니다.
+현재 대상은 FR5·UR5e 공동 작업 환경이며, 실제 로봇 연결은 지원하지 않습니다.
 
 ## 실행
 
@@ -60,7 +60,7 @@ python3 motion_command.py --cancel 출력된_32자리_요청_ID
 | schema_version | 정수 1 |
 | request_id | 중복 없는 소문자 16진수 32자리. 클라이언트가 기본 생성 |
 | strategy | `coordinated` 또는 `departure_timing` |
-| target_rad | 모든 공동 장면 관절을 한 번씩 포함하는 유한한 제한 범위 내 목표 |
+| target_rad | 모든 공동 작업 환경 관절을 한 번씩 포함하는 유한한 제한 범위 내 목표 |
 
 `coordinated`는 양팔 공동 MoveIt 계획을 사용합니다.
 `departure_timing`은 팔별 계획을 같은 시간으로 늦춰 맞춘 뒤 기존 출발 시점 탐색을 수행합니다.
@@ -143,7 +143,7 @@ CI 자료를 다른 경로로 다운로드했으면 `--traces`로 command sessio
 
 [고정 입력·원본·명령과 해석](reproductions/home-return-2026-10-23/README.md)에서 시작·홈 목표·중간 거부 표본을 구분합니다.
 새 trace에는 `clearance_endpoints`, 거부된 `planned_trajectories`/`source_trajectories`, `failure_stage`와 계획 후 `state_recheck` 구간을 추가했습니다.
-기존 명령 v1·거리 기준·예산·취소·최종 검사는 유지합니다. 작업장면 identity와 단위·frame은 [공통 모듈 계약](module_boundaries.md)에 정리했습니다.
+기존 명령 v1·거리 기준·예산·취소·최종 검사는 유지합니다. 작업 환경 identity와 단위·frame은 [공통 모듈 계약](module_boundaries.md)에 정리했습니다.
 
 
 ## 일반 요청의 제한된 공간 재계획
