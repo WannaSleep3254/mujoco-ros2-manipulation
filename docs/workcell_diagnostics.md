@@ -1,6 +1,6 @@
-# 공동 장면의 접촉 감시·GUI·성능 검증
+# 공동 작업 환경의 접촉 감시·GUI·성능 검증
 
-[공동 장면 사용법](workcells.md) · [작업 계획](plans/base_and_multi_robot.md)
+[공동 작업 환경 사용법](workcells.md) · [작업 계획](plans/base_and_multi_robot.md)
 
 ## 재현 방법
 
@@ -24,7 +24,7 @@ headless CI에서는 GPU나 GUI 검사를 수행하지 않습니다.
 `native/step_monitor.hpp`와 추가 런타임 패치가 초기 동기화·일반 실행·일시정지 단일 스텝의 세 경로를 감쌉니다.
 각 `mj_step` 직후, 같은 물리 스레드 안에서 `mjData.contact`를 읽습니다. ROS 토픽 주기에 의존하지 않습니다.
 MuJoCo가 제공하는 접촉 배열은 적분 전 동역학 평가의 결과이므로 접촉 시각과 적분 후 상태 시각을 구분합니다.
-현재 공동 장면의 적분기는 `implicitfast`, 시간 간격은 0.002초입니다.
+현재 공동 작업 환경의 적분기는 `implicitfast`, 시간 간격은 0.002초입니다.
 
 매 스텝의 접촉 수·활성 접촉 수, geom/body 쌍, 처음/마지막 접촉 시각, 최소 거리, 최대 법선 힘을 누적합니다.
 `verify_scene.py`가 실행별 경로와 ID를 전달해 감시를 활성화합니다.
@@ -51,7 +51,7 @@ MuJoCo가 제공하는 접촉 배열은 적분 전 동역학 평가의 결과이
 
 실제 네이티브 MuJoCo 3.12.0으로 작은 구체를 딱 한 스텝만 바닥과 겹치게 만든 시험에서,
 24개 스텝 중 해당 스텝의 접촉과 힘을 탐지하고 실패 정책이 동작하는지 확인합니다.
-별도의 오프라인 공동 장면 시험은 양팔 충돌 자세를 사용하며 ROS 로봇으로 해당 명령을 보내지 않습니다.
+별도의 오프라인 공동 작업 환경 시험은 양팔 충돌 자세를 사용하며 ROS 로봇으로 해당 명령을 보내지 않습니다.
 
 ## 성능 수치의 의미
 
@@ -107,6 +107,6 @@ headless는 SIGINT, GUI는 창 닫기 서비스로 정상 종료했으며 자식
 실행별 출처·정밀 수치는 [검증 기록](workcell_diagnostics_validation.json)에 있습니다.
 접촉을 의도적으로 만든 두 오프라인 시험은 감지기 확인용이며 정상 동작의 접촉 0건 결과와 구분합니다.
 
-![MuJoCo 공동 장면](workcells/fr5_ur5e/images/mujoco_gui.png)
+![MuJoCo 공동 작업 환경](workcells/fr5_ur5e/images/mujoco_gui.png)
 
 ![RViz 양팔 계획 그룹](workcells/fr5_ur5e/images/rviz.png)

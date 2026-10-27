@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "recording_date": "2026-10-27",
+  "summary_created_at_kst": "2026-10-27T14:19:27.280951+09:00",
+  "method": {
+    "nominal_capture_interval_ms": 250,
+    "playback_screen_samples_per_sec": 4,
+    "encoding_fps": 24,
+    "capture_gaps_removed": true,
+    "repeated_encoded_frames": true,
+    "frame_interpolation": false,
+    "shorter_comparison_panels_hold_last_frame": true,
+    "new_robot_motion_commands_submitted": 0
+  },
+  "scope": "Runtime screen history. Different sessions, joint poses and camera conditions; not an FPS, latency or image-quality benchmark.",
+  "clips": [
+    {
+      "stage": "a",
+      "file": "media/stage-a-camera.mp4",
+      "sample_count": 28,
+      "duration_sec": 7.0,
+      "encoding_fps": 24,
+      "playback_samples_per_sec": 4,
+      "steps": [
+        "overview",
+        "front",
+        "top",
+        "return-overview"
+      ],
+      "first_capture_utc": "2026-10-27T04:49:28.743000+00:00",
+      "last_capture_utc": "2026-10-27T04:49:45.426000+00:00",
+      "sha256": "4529970bfa67fee40d26c2dbf96a4beb234fbd6fcba912dc66b44fa0d39d082e",
+      "decoded_without_error": true
+    },
+    {
+      "stage": "b",
+      "file": "media/stage-b-camera.mp4",
+      "sample_count": 32,
+      "duration_sec": 8.0,
+      "encoding_fps": 24,
+      "playback_samples_per_sec": 4,
+      "steps": [
+        "overview",
+        "orbit",
+        "zoom",
+        "reset"
+      ],
+      "first_capture_utc": "2026-10-27T04:51:23.885000+00:00",
+      "last_capture_utc": "2026-10-27T04:51:33.233000+00:00",
+      "sha256": "f7a18b81f56767f8888bf437a6d8ac5533d4411844f25566ef8267a17b58c6ec",
+      "decoded_without_error": true
+    },
+    {
+      "stage": "c",
+      "file": "media/stage-c-features-v1.1.mp4",
+      "sample_count": 72,
+      "duration_sec": 18.0,
+      "encoding_fps": 24,
+      "playback_samples_per_sec": 4,
+      "steps": [
+        "overview",
+        "orbit",
+        "zoom",
+        "reset",
+        "geometry-select",
+        "fit-selected",
+        "opacity-half",
+        "hide-selected",
+        "restore"
+      ],
+      "first_capture_utc": "2026-10-27T05:13:11.035000+00:00",
+      "last_capture_utc": "2026-10-27T05:15:06.397000+00:00",
+      "sha256": "b90862aa76f953ef1b10e96afc3c6e43197acd9b3da069e724e67c3baa24264c",
+      "decoded_without_error": true
+    }
+  ],
+  "comparison": {
+    "file": "media/comparison-v1.1.mp4",
+    "size": "1920x470",
+    "encoding_fps": 24,
+    "sha256": "10f4e7171e9cd3ae4657dcf6846d5ef47ac768dabdb8f0fd8b6d355e0d171962",
+    "requested_duration_sec": 18,
+    "observed_browser_duration_sec": 17.958333,
+    "decoded_without_error": true
+  },
+  "legacy_simulation_video": {
+    "file": "media/legacy-motion.mp4",
+    "copied_without_transcoding": true,
+    "sha256": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba",
+    "duration_sec": 44.25,
+    "recording_fps": 12,
+    "product_image_cap_fps": 5,
+    "includes_grasp": false
+  },
+  "recapture": "A and B original recordings preserved. C recaptured after the old servers were stopped, without restarting them or submitting robot motion commands."
+}

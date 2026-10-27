@@ -59,10 +59,10 @@ td,th{padding:7px 10px;border:1px solid #c9d6dc;text-align:left}table{border-col
 측정값은 실제 LocalSceneView의 CPU 렌더 제출입니다. GPU 완료·실제 화면 paint·VRAM·CPU 사용률을 측정하지 않습니다.</p>
 <p id="source" class="code">코드 출처 확인 중</p>
 <details open><summary>실제 WebGL context 정보 · 시작 시 한 번 조회</summary><pre id="gl-info">확인 중</pre></details>
-<div><button id="static" disabled>정지 장면 10초 측정</button><button id="moving" disabled>4 Hz 자세 입력 10초 측정</button><button id="download" disabled>결과 JSON 저장</button></div>
-<p id="status" role="status">장면 준비 중</p>
+<div><button id="static" disabled>정지 상태 10초 측정</button><button id="moving" disabled>4 Hz 자세 입력 10초 측정</button><button id="download" disabled>결과 JSON 저장</button></div>
+<p id="status" role="status">3D 표시 준비 중</p>
 <p>각 측정은 동일한 카메라로 재설정하고 입력을 잠근 뒤 1초간 damping을 정리합니다. 측정 중 이 탭을 유지하세요.</p>
-<div id="scene" aria-label="단순 도형 측정 장면"></div>
+<div id="scene" aria-label="단순 도형 측정 화면"></div>
 <table><thead><tr><th>조건</th><th>제출 횟수 / 초</th><th>제출된 고유 자세</th><th>입력된 자세</th><th>CPU 제출 p95</th><th>유효성</th></tr></thead><tbody id="rows"></tbody></table>
 <h2>최신 뷰어 메트릭</h2><pre id="metrics">아직 없음</pre>
 <h2>측정 결과 JSON</h2><pre id="results">준비 중</pre>
@@ -147,7 +147,7 @@ async function start(mode){
  viewer.updatePose(poseAt(0));viewer.resetCamera();
  $('status').textContent='입력을 잠그고 damping 정리 중 (1초)…';
  await new Promise(resolve=>setTimeout(resolve,1000));
- if(document.hidden||!viewer.sized||viewer.contextLost){preparing=false;viewer.controls.enabled=true;$('status').textContent='보이는 장면에서 다시 측정하세요.';$('static').disabled=$('moving').disabled=false;return;}
+ if(document.hidden||!viewer.sized||viewer.contextLost){preparing=false;viewer.controls.enabled=true;$('status').textContent='측정 화면을 연 상태에서 다시 측정하세요.';$('static').disabled=$('moving').disabled=false;return;}
  const now=performance.now(),rect=$('scene').getBoundingClientRect();
  run={mode,started:now,end:now+10000,submissions:0,uniqueSequences:new Set(),cpuSubmitMs:[],appliedPoses:0,invalid:new Set(),
   camera:viewer.cameraSnapshot(),scenePixels:[rect.width,rect.height],canvasPixels:[viewer.canvas.width,viewer.canvas.height]};

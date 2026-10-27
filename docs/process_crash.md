@@ -1,6 +1,6 @@
 # 핵심 프로세스 크래시 시 전체 실행 종료 검증
 
-[README](../README.md) · [공동 장면](workcells.md) · [접촉 자동 정지](contact_stop.md) · [CI](../.github/workflows/ci.yml)
+[README](../README.md) · [공동 작업 환경](workcells.md) · [접촉 자동 정지](contact_stop.md) · [CI](../.github/workflows/ci.yml)
 
 ## 범위와 성공 조건
 
@@ -33,7 +33,7 @@ python3 verify_process_crash.py --target ros2_control_node --domain 116
 ```
 
 설치된 패키지는 `manipulation-verify-process-crash`도 제공합니다.
-ROS Humble 공동 장면 CI 작업에서 위 두 명령을 실행하고 성공·실패 원본 보고서와 로그를 artifact로 보관합니다.
+ROS Humble 공동 작업 환경 CI 작업에서 위 두 명령을 실행하고 성공·실패 원본 보고서와 로그를 artifact로 보관합니다.
 필수 검사 이름 6개와 main 보호 규칙은 유지합니다.
 
 2026-10-20 로컬 ROS Humble headless 실행 결과:
@@ -46,7 +46,7 @@ ROS Humble 공동 장면 CI 작업에서 위 두 명령을 실행하고 성공·
 [MoveIt 실행 로그](process_crash/move_group.txt) · [MuJoCo 실행 로그](process_crash/ros2_control_node.txt)
 
 로컬 단위 검사 73개·모델 검사 15개(총 88개), 구문·문서 링크·패키지 sdist/wheel 빌드,
-기존 실제 공동 장면 정상 실행과 접촉 자동 정지 회귀 검증도 통과했습니다.
+기존 실제 공동 작업 환경 정상 실행과 접촉 자동 정지 회귀 검증도 통과했습니다.
 
 최신 결과는 `runtime/validation/crash_<대상>_fr5_ur5e_headless.json`,
 실행별 원본은 해당 보고서의 `log_path` 옆 `result.json`에 남습니다.

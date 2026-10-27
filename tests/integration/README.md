@@ -14,13 +14,13 @@ python3 verify_robot.py --robot fr5 --scene pedestal --domain 97
 GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 잠긴 deb의 배포 중단 등으로
 빌드 준비가 실패할 수도 있으며, 이 경우 ROS 검증 성공으로 보고하지 않습니다.
 
-공동 장면 검증은 `python3 verify_scene.py --workcell fr5_ur5e --domain 93`을 실행합니다.
+공동 작업 환경 검증은 `python3 verify_scene.py --workcell fr5_ur5e --domain 93`을 실행합니다.
 `build_workspace.py --workcell fr5_ur5e`로 준비하며 CI에서는 두 번 연속 실행합니다.
 
-공동 장면 검증은 현재 실행 ID·감시 코드 해시를 가진 네이티브 `physics.json`을 필수로 요구합니다.
+공동 작업 환경 검증은 현재 실행 ID·감시 코드 해시를 가진 네이티브 `physics.json`을 필수로 요구합니다.
 전체 물리 스텝 수와 일치하지 않거나 접촉이 발견되면 검증이 실패합니다.
 CI는 5초 준비 후 기본 10초 성능 구간과 20회 양팔 계획을 포함합니다.
-로컬 60초·GPU GUI 검증 절차는 [공동 장면 진단](../../docs/workcell_diagnostics.md)을 참고합니다.
+로컬 60초·GPU GUI 검증 절차는 [공동 작업 환경 진단](../../docs/workcell_diagnostics.md)을 참고합니다.
 
 접촉 자동 정지 시험은 `python3 verify_contact_stop.py --domain 111`과
 `python3 verify_contact_stop.py --domain 112 --paused-contact`입니다.
@@ -34,7 +34,7 @@ python3 verify_process_crash.py --target move_group --domain 115
 python3 verify_process_crash.py --target ros2_control_node --domain 116
 ```
 
-CI의 공동 장면 작업에도 같은 명령을 포함합니다. 이 시험은 실행에서 소유한 프로세스 하나에만
+CI의 공동 작업 환경 작업에도 같은 명령을 포함합니다. 이 시험은 실행에서 소유한 프로세스 하나에만
 SIGKILL을 주입합니다. 정상 동작·접촉 정지의 물리 커버리지 검사를 대체하지 않습니다.
 자세한 성공 조건과 미검증 범위는 [크래시 검증](../../docs/process_crash.md)에 있습니다.
 
@@ -47,7 +47,7 @@ python3 verify_clock_stop.py --mode repeated --domain 120
 
 각 실행에 1.5초 의도한 일시정지·복귀, 양팔 이동, 시계 오류 관측, 물리 고정·양팔 목표 취소와
 제어기 비활성화·새 명령/리셋/재활성화 차단 검사를 포함합니다.
-CI의 공동 장면 작업도 동일 명령을 실행합니다. [범위·판정](../../docs/clock_stop.md)을 참고합니다.
+CI의 공동 작업 환경 작업도 동일 명령을 실행합니다. [범위·판정](../../docs/clock_stop.md)을 참고합니다.
 
 전용 양팔 간섭 회피 사례는 다음을 새 launch에서 두 번 실행합니다.
 
@@ -108,7 +108,7 @@ python3 verify_motion_replanning.py --domain 159
 
 ```bash
 source ./manipulation_env.sh
-# 기존 단일 모델 생성 후, 별도 기둥 장면만 추가 생성합니다.
+# 기존 단일 모델 생성 후, 별도 기둥이 있는 작업 환경만 추가 생성합니다.
 PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
 python3 benchmark_fixed_motion.py --list
 python3 benchmark_fixed_motion.py --repeats 3 --domain 171
@@ -121,7 +121,7 @@ python3 benchmark_fixed_motion.py --repeats 3 --domain 171
 
 준비·워밍업·실제 시작 자세 보정·끝점 사전 검사는 채점 시간에서 제외합니다.
 보정은 정상 명령 경로로 0.03 rad 이하, 최대 3회만 수행하며 실제 시작 오차는 0.0015 rad 이내여야 합니다.
-기둥은 URDF와 MJCF에 함께 포함합니다. 실제 MoveIt 장면에서 시작·목표의 유효성과
+기둥은 URDF와 MJCF에 함께 포함합니다. 실제 MoveIt Planning Scene에서 시작·목표의 유효성과
 직선 관절 보간의 기둥 충돌을 먼저 확인합니다. 이는 회피 경로의 존재나 최단 경로를 보장하지 않습니다.
 
 정상적인 후보 소진·예산 소진은 실패 결과로 보존하고 다음 행을 평가합니다. 준비·전송·실행·물리·정리 오류는
@@ -157,7 +157,7 @@ python3 verify_operator_views.py --domain 231 --port 8890 --with-demos
 별도 빈 도메인과 포트에서 콘솔을 시작해 준비된 FR5·FR10·UR5e 모델, 실제 ROS 관절
 상태, 이 콘솔에서 완료한 요청의 저장 계획을 확인합니다. 모델이나 계획을 미리보는 동안
 명령·시뮬레이션 시작·시연 시작을 거부하고, 계획 재생이 실제 관절을 움직이지 않는지도
-확인합니다. CPU 장면 worker는 물리를 진행하거나 ROS 명령을 보내지 않습니다.
+확인합니다. CPU 3D 표시 worker는 물리를 진행하거나 ROS 명령을 보내지 않습니다.
 정리 검사는 이 실행에서 소유한 콘솔과 worker만 대상으로 합니다.
 
 이 검사는 WebGL 브라우저 검사가 아닙니다. 브라우저에서는 드래그 회전, 확대·이동,
@@ -179,8 +179,8 @@ source ./manipulation_env.sh
 python3 verify_environment_views.py --catalog runtime/validation/environment-preview-catalog.json --domain 148 --port 8895
 ```
 
-첫 명령은 합성 메시 fixture로 새 장면을 만들고 단위·축·설치, 두 형식의 변조 거부와 native 3.12 기하를 검사합니다.
+첫 명령은 합성 메시 fixture로 새 작업 환경을 만들고 단위·축·설치, 두 형식의 변조 거부와 native 3.12 기하를 검사합니다.
 로컬에 FreeCADCmd가 설치돼 있으면 `--with-freecad`로 직접 만든 STEP의 실제 변환과 단위 오류 거부도 추가합니다.
-둘째 명령은 빈 도메인의 소유 콘솔에서 미리보기·명령 차단·기본 장면 불변과 프로세스 정리를 확인합니다.
+둘째 명령은 빈 도메인의 소유 콘솔에서 미리보기·명령 차단·기본 작업 환경 불변과 프로세스 정리를 확인합니다.
 설비가 포함된 ROS 실행·환경 여유 거리 검증을 수행하는 명령은 아닙니다. 결과·메시는 `runtime/`에만 보존합니다.
 같은 catalog 출력은 덮어쓰지 않으므로 재실행에는 새 경로를 지정합니다. [자세한 절차](../../docs/environment_design_import.md)를 참고합니다.

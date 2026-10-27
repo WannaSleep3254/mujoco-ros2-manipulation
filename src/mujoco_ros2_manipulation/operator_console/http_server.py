@@ -52,7 +52,7 @@ IMPORT_MAP_CSP_HASH = base64.b64encode(hashlib.sha256(LOCAL_IMPORT_MAP.encode())
 def _view_binding_query(path):
     query = parse_qs(urlsplit(path).query, keep_blank_values=True)
     if set(query) != {'binding_id'} or len(query['binding_id']) != 1 or not re.fullmatch('[0-9a-f]{64}',query['binding_id'][0]):
-        raise ValueError('현재 장면 식별자가 필요합니다.')
+        raise ValueError('현재 표시 대상의 식별자가 필요합니다.')
     return query['binding_id'][0]
 
 
@@ -109,9 +109,9 @@ class Handler(BaseHTTPRequestHandler):
             if path.startswith("/api/view/assets/"):
                 digest = path.removeprefix("/api/view/assets/")
                 if not re.fullmatch('[0-9a-f]{64}',digest):
-                    raise ValueError('올바른 장면 자산 식별자가 필요합니다.')
+                    raise ValueError('올바른 3D 자산 식별자가 필요합니다.')
                 value = app.views.host.asset_bytes(digest) if app.views.host else None
-                return self.respond(dict(error="현재 장면의 자산이 아닙니다."),404) if value is None else self.respond(value,mime="application/octet-stream")
+                return self.respond(dict(error="현재 표시 대상의 자산이 아닙니다."),404) if value is None else self.respond(value,mime="application/octet-stream")
             if path.startswith("/api/requests/"):
                 return self.respond(app.request_details(path.removeprefix("/api/requests/")))
             if path == "/api/frame":

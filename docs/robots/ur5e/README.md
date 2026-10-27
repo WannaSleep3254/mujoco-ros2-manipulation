@@ -2,7 +2,7 @@
 
 [모델 자료 목록](../README.md) · [프로젝트 README](../../../README.md)
 
-Universal Robots 공식 Humble Description의 Xacro를 사용합니다. 원본 DAE의 장면 변환·단위·색상·표면 법선을 보존해 OBJ로 변환하고, 공식 flange/tool0 좌표계와 시뮬레이션용 MoveIt 설정을 연결했습니다.
+Universal Robots 공식 Humble Description의 Xacro를 사용합니다. 원본 DAE의 Scene 변환·단위·색상·표면 법선을 보존해 OBJ로 변환하고, 공식 flange/tool0 좌표계와 시뮬레이션용 MoveIt 설정을 연결했습니다.
 
 ![Universal Robots UR5e 초기 자세 기준 렌더](images/home.png)
 
@@ -47,7 +47,7 @@ Universal Robots 공식 Humble Description의 Xacro를 사용합니다. 원본 D
 ## 시각 모델 변환과 수정 기록
 
 초기 MuJoCo 변환에서는 단순화된 충돌 STL을 외형 표시에도 사용해 링크가 판처럼 보이고
-관절 커버 색상이 사라졌습니다. 현재는 원본 DAE의 장면 변환·단위·표면 법선·재질별 색상을
+관절 커버 색상이 사라졌습니다. 현재는 원본 DAE의 Scene 변환·단위·표면 법선·재질별 색상을
 보존해 OBJ로 변환하며, RViz는 원본 DAE를 사용합니다.
 [수정 후 확인 이미지](../../images/ur5e_mujoco_visual.png)는 기존 비교 시점 자료로 보존합니다.
 
@@ -136,8 +136,8 @@ python3 verify_robot.py --robot ur5e --domain 91 --gui --stop-mode window
 ```
 
 이 오차는 예제 목표와 게인에서 얻은 결과입니다. 다른 모델과 성능 순위를 비교하는
-벤치마크 결과가 아닙니다. 그리퍼·TCP 도구·조립 부품·외부 장애물 장면과 실물 로봇
-연결은 아직 구현하지 않았고, MuJoCo 바닥은 MoveIt 계획 장면에 등록하지 않았습니다.
+벤치마크 결과가 아닙니다. 그리퍼·TCP 도구·조립 부품·외부 장애물이 있는 환경과 실물 로봇
+연결은 아직 구현하지 않았고, MuJoCo 바닥은 MoveIt Planning Scene에 등록하지 않았습니다.
 
 ## 출처와 자료
 

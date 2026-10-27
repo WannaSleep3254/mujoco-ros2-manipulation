@@ -16,8 +16,8 @@ MuJoCo와 ROS 2 Humble, ros2_control, MoveIt 2를 연결한 로봇팔 시뮬레�
 FAIRINO FR5·FR10과 Universal Robots UR5e를 공통 실행기로 선택하며,
 제조사 모델 변환부터 경로 계획·실행, 관절 상태 기반 완료 확인과 정상 종료까지 검증했습니다.
 
-FR5·UR5e 공동 장면과 상시 명령·취소·랜덤 평가도 제공합니다.
-[전용 통합 조작 화면](operator_console.md)에서 FR5·UR5e 공동 장면의 시작·목표 입력·계획 후 실행·양팔 취소·라이브 뷰·기록을 사용할 수 있습니다.
+FR5·UR5e 공동 작업 환경과 상시 명령·취소·랜덤 평가도 제공합니다.
+[전용 통합 조작 화면](operator_console.md)에서 FR5·UR5e 공동 작업 환경의 시작·목표 입력·계획 후 실행·양팔 취소·라이브 뷰·기록을 사용할 수 있습니다.
 [시뮬레이터 제작 상태와 현재 PC 점검](simulator_status.md)에 기능별 판정을 정리했습니다.
 
 ## 초기 테스트 모델과 실행 화면
@@ -59,8 +59,8 @@ MoveIt 2 / ROS 2 JointTrajectory 명령
 
 ## 전용 조작 화면
 
-[설치와 기본 런타임 빌드](setup.md)를 마친 뒤, 실행 중인 시뮬레이션을 종료하고 공동 장면을 준비합니다.
-기본 단일 모델 빌드만으로는 웹 조작용 공동 장면이 생성되지 않습니다.
+[설치와 기본 런타임 빌드](setup.md)를 마친 뒤, 실행 중인 시뮬레이션을 종료하고 공동 작업 환경을 준비합니다.
+기본 단일 모델 빌드만으로는 웹 조작용 공동 작업 환경이 생성되지 않습니다.
 
 ```bash
 python3 build_workspace.py --component models --workcell fr5_ur5e
@@ -69,15 +69,15 @@ python3 operator_console.py --domain 89 --port 8765
 ```
 
 [로컬 화면](http://127.0.0.1:8765/)에서 **시뮬레이션 시작 → 목표 설정 → 계획 후 실행**을 사용합니다.
-현재 대상은 FR5·UR5e 공동 장면입니다. 기존 MuJoCo·RViz·CLI도 계속 사용할 수 있습니다.
+현재 대상은 FR5·UR5e 공동 작업 환경입니다. 기존 MuJoCo·RViz·CLI도 계속 사용할 수 있습니다.
 
 1. **시뮬레이션 시작** 후 **실행 가능**을 확인합니다.
 2. 양팔 목표를 설정해 **계획 후 실행**을 누릅니다. 움직임이 필요한 요청은 **성공**·Action 완료·관절 수렴을 확인하며, 이미 목표 자세이면 안전검사 후 이동 없이 성공 처리합니다.
-3. **실행 종료**로 이 화면이 시작한 장면을 종료한 뒤, 화면 서버 터미널에서 **Ctrl+C**를 누릅니다.
+3. **실행 종료**로 이 화면이 시작한 시뮬레이션을 종료한 뒤, 화면 서버 터미널에서 **Ctrl+C**를 누릅니다.
 
 브라우저 탭 닫기는 화면 서버 종료나 모션 취소가 아닙니다.
-단일 모델·독립 검증으로 바꾸기 전에는 공동 장면과 화면 서버를 종료합니다.
-외부에서 시작한 장면은 원래 launch 터미널에서 Ctrl+C로 종료합니다.
+단일 모델·독립 검증으로 바꾸기 전에는 공동 작업 환경과 화면 서버를 종료합니다.
+외부에서 시작한 시뮬레이션은 원래 launch 터미널에서 Ctrl+C로 종료합니다.
 [사용 방법·연결·기록·검증 범위](operator_console.md)
 
 [현재 뷰어 상태와 접근·후퇴 비교 영상](https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/picking-comparison-2026-10-22/index.html) · [저장소 HTML 원본](operator/picking-comparison-2026-10-22/index.html)
@@ -196,10 +196,10 @@ GUI·종료·구조 검사 명령과 결과 필드는 [검증 안내](verificati
 | [자료 촬영과 재생성](robots/capture.md) | 기준 렌더, GUI 촬영, 출처·해시 갱신 |
 | [초기 1관절 데모](single_joint_demo.md) | Python 브리지, ROS 토픽 제어, rqt 및 초기 검증 기록 |
 | [양팔 접촉 자동 정지](contact_stop.md) | 접촉 후 물리 고정, 양팔 목표 취소·제어기 비활성화와 재시작 복구 |
-| [공동 장면 접촉·GUI·성능](workcell_diagnostics.md) | 매 물리 스텝 접촉 기록, 현재 PC의 headless·GUI 측정과 스크린샷 |
-| [베이스·다중 로봇 작업계획](plans/base_and_multi_robot.md) | 작업장면 설정 분리, 고정 베이스, FR5·UR5e 공동 제어와 단계별 완료 기준 |
+| [공동 작업 환경 접촉·GUI·성능](workcell_diagnostics.md) | 매 물리 스텝 접촉 기록, 현재 PC의 headless·GUI 측정과 스크린샷 |
+| [베이스·다중 로봇 작업계획](plans/base_and_multi_robot.md) | 작업 환경 설정 분리, 고정 베이스, FR5·UR5e 공동 제어와 단계별 완료 기준 |
 
-## 패키지·빌드·작업장면
+## 패키지·빌드·작업 환경
 
 정식 구현은 `src/mujoco_ros2_manipulation`에 있고 루트 명령은 호환성을 유지합니다.
 제조사/런타임 소스와 deb 잠금은 `config/build.yaml`, 로봇 설정은 `config/robots`,
@@ -211,7 +211,7 @@ python3 build_workspace.py --dry-run --robots fr5
 bash run_sim.sh robot:=fr5 scene:=pedestal
 ```
 
-기본 바닥과 40cm 받침대 장면을 제공합니다. 같은 형상을 MuJoCo·ROS·MoveIt이 공유합니다.
+기본 바닥과 40cm 받침대 환경을 제공합니다. 같은 형상을 MuJoCo·ROS·MoveIt이 공유합니다.
 [구조 설명](architecture.md)에 설치형 CLI, 출력 경로, CI와 지원 범위를 정리했습니다.
 [개발 검사](../CONTRIBUTING.md) · [GitHub Actions](../.github/workflows/ci.yml)
 
@@ -226,7 +226,7 @@ python3 verify_scene.py --workcell fr5_ur5e --domain 93
 ```
 
 물리 엔진·시계·전체 상태 하나와 팔별 궤적 제어기 두 개를 사용합니다.
-[공동 작업장면 안내](workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
+[공동 작업 환경 안내](workcells.md)에 설치 자세·Action·계획 그룹·검사와 남은 범위를 정리했습니다.
 
 ### 충돌 때문에 멈췄는지 확인하는 대조 시연
 
@@ -252,7 +252,7 @@ python3 verify_contact_demo.py --gui --control
 
 ## 양팔 간섭: 정상·접촉·회피 비교
 
-회피 대상은 **상대 로봇팔**입니다. 같은 장면·시작·목표와 고정된 궤적 묶음으로 세 조건을 비교합니다.
+회피 대상은 **상대 로봇팔**입니다. 같은 작업 환경·시작·목표와 고정된 궤적 묶음으로 세 조건을 비교합니다.
 
 1. FR5·UR5e 각각 단독 정상 동작: 상대 팔은 시작 자세 유지.
 2. 회피 없는 동시 동작: 손목 간 실제 접촉 후 양팔 자동 정지.
@@ -303,14 +303,14 @@ python3 verify_contact_demo.py --gui --control
 
 | 구분 | 구현·검증 범위 |
 |---|---|
-| 공통 구성 | 단일 로봇 작업장면 분리, 고정 받침대·공유 충돌 형상, 패키지 구조·CI·빌드 명세 통합 |
-| 공동 장면 | FR5·UR5e 공동 배치, 팔별 제어·계획, 관절 공간 공동 계획과 충돌 목표 거부 |
+| 공통 구성 | 단일 로봇 작업 환경 분리, 고정 받침대·공유 충돌 형상, 패키지 구조·CI·빌드 명세 통합 |
+| 공동 작업 환경 | FR5·UR5e 공동 배치, 팔별 제어·계획, 관절 공간 공동 계획과 충돌 목표 거부 |
 | 프로세스 감시 | [핵심 프로세스 크래시 시 자동 전체 종료](process_crash.md) |
 | 시계 감시 | [시계 누락·반복 감시와 양팔 위치 고정](clock_stop.md) |
 | 간섭 검사·회피 사례 | [양팔 간섭 참조 경로 차단·공동 회피 전용 사례](interference_avoidance.md) |
 | 명령·평가 | 상시 명령·랜덤 평가·탐색 최적화 A/B·현재 PC 실제 GUI 점검 |
 
-고정 받침대, FR5·UR5e 공동 장면, 매 물리 스텝 접촉 감시·자동 정지와 고정 장애물 접촉 시연을 지원합니다.
+고정 받침대, FR5·UR5e 공동 작업 환경, 매 물리 스텝 접촉 감시·자동 정지와 고정 장애물 접촉 시연을 지원합니다.
 
 ## 후속 개발·평가 방향
 

@@ -23,19 +23,19 @@ def _extra_view_sources(values, cell, *, enabled):
     model, ROS hardware identity, command limits or admission suspension state.
     """
     if type(values) not in (tuple,list) or len(values)>8:
-        raise ValueError('읽기 전용 장면은 명시적인 목록으로 최대 8개까지 등록하세요.')
+        raise ValueError('읽기 전용 작업 환경은 명시적인 목록으로 최대 8개까지 등록하세요.')
     if values and not enabled:
-        raise ValueError('장면 표시가 비활성화된 실행에는 추가 장면을 등록할 수 없습니다.')
+        raise ValueError('화면 표시가 비활성화된 실행에는 추가 작업 환경을 등록할 수 없습니다.')
     if not values:
         return ()
     names=tuple(cell.joints);home=dict(zip(names,cell.home));seen=set();result=[]
     for source in values:
         if (not isinstance(source,SceneSource) or not source.id.startswith('scene:')
                 or source.id in seen):
-            raise ValueError('중복되지 않는 scene: 식별자의 검증된 장면만 등록하세요.')
+            raise ValueError('중복되지 않는 scene: 식별자의 검증된 작업 환경만 등록하세요.')
         if (source.joint_names!=names or type(source.home) is not dict or source.home!=home
                 or any(type(value) not in (int,float) or not math.isfinite(value) for value in source.home.values())):
-            raise ValueError('추가 장면은 현재 작업장면과 정확히 같은 관절·홈 자세를 사용해야 합니다.')
+            raise ValueError('추가 작업 환경은 현재 작업 환경과 정확히 같은 관절·홈 자세를 사용해야 합니다.')
         seen.add(source.id)
         token=deepcopy(source.validate())
         # Source validators may return a token or None; SceneHost independently
@@ -45,10 +45,10 @@ def _extra_view_sources(values, cell, *, enabled):
         def validate(source=source,expected=deepcopy(token),token_json=token_json,contract=contract):
             current=(source.id,source.label,source.xml_path,source.joint_names,source.home)
             if current!=contract or type(source.home) is not dict or any(type(value) not in (int,float) or not math.isfinite(value) for value in source.home.values()):
-                raise ValueError('등록한 읽기 전용 장면의 모델 계약이 바뀌었습니다.')
+                raise ValueError('등록한 읽기 전용 작업 환경의 모델 계약이 바뀌었습니다.')
             current_token=source.validate()
             if json.dumps(current_token,sort_keys=True,separators=(',',':'),allow_nan=False)!=token_json:
-                raise ValueError('등록한 읽기 전용 장면이 바뀌었습니다. 시작 시 다시 검증하세요.')
+                raise ValueError('등록한 읽기 전용 작업 환경이 바뀌었습니다. 시작 시 다시 검증하세요.')
             return deepcopy(expected)
         result.append(SceneSource(source.id,source.label,source.xml_path,source.joint_names,deepcopy(source.home),validate))
     return tuple(result)
@@ -108,7 +108,7 @@ class ConsoleViews:
                 self.catalog.append(dict(id=name,label=identifier.upper(),available=False))
         for source in extra_sources:
             if source.id in self.registry or any(item['id']==source.id for item in self.catalog):
-                raise ValueError('기존 모델과 중복된 읽기 전용 장면 식별자입니다.')
+                raise ValueError('기존 모델과 중복된 읽기 전용 작업 환경 식별자입니다.')
             self.registry[source.id]=source
             self.catalog.append(dict(id=source.id,label=source.label,available=True))
         self.host = host_factory(app.directory/'scene-view',app.cell.root/'.venv/bin/python',cwd=app.cell.root)
@@ -161,7 +161,7 @@ class ConsoleViews:
         if app.closing.is_set() or app.demos.busy or app.state.active or app.phase in ('starting','stopping','demo'):
             raise RuntimeError('현재 요청이나 시연이 끝난 뒤 미리보기를 선택하세요.')
         if not self.enabled:
-            raise RuntimeError('이 실행은 장면 표시가 비활성화되어 있습니다.')
+            raise RuntimeError('이 실행은 화면 표시가 비활성화되어 있습니다.')
         if app.display_mode != 'web3d':
             raise RuntimeError('로컬 3D 표시에서 미리보기를 선택하세요.')
 
@@ -171,7 +171,7 @@ class ConsoleViews:
     def _unchanged(self, context):
         self._idle()
         if self._context() != context:
-            raise RuntimeError('검증 중 실행이나 장면 선택이 바뀌었습니다. 다시 선택하세요.')
+            raise RuntimeError('검증 중 실행이나 표시 대상 선택이 바뀌었습니다. 다시 선택하세요.')
 
     @staticmethod
     def _read_record(path, maximum):
@@ -187,12 +187,12 @@ class ConsoleViews:
         with app.lock, app.state.lock:
             self._idle()
             if type(payload) is not dict or set(payload) != {'mode','source_id'} or payload['mode'] not in ('live','model_preview'):
-                raise ValueError('지원하는 장면 보기 모드를 선택하세요.')
+                raise ValueError('지원하는 화면 보기 모드를 선택하세요.')
             if not isinstance(payload['source_id'],str) or payload['source_id'] not in self.registry:
                 raise ValueError('준비된 목록에서 모델을 선택하세요.')
             source = self.registry[payload['source_id']]
             if payload['mode'] == 'live' and source.id != self.base.id:
-                raise ValueError('실시간 제어는 현재 작업장면에서만 지원합니다.')
+                raise ValueError('실시간 제어는 현재 작업 환경에서만 지원합니다.')
             mode = payload['mode']
             context = self._context()
         # Hashing/validation may be slow and must not delay state callbacks or
