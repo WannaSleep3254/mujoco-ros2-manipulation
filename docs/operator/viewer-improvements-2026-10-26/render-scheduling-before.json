@@ -1,0 +1,193 @@
+{
+  "fixture_version": 1,
+  "robot_commands": 0,
+  "metadata": {
+    "fixture_html_sha256": "706bb1fa0159451e5630e3396c48e2e5df665d0220e86f01ce5225a02c9a5368",
+    "fixture_javascript_sha256": "db5db2f619ff53dc6426de845441ea7eb4a1b261597372e46893598a0e8ea589",
+    "fixture_python_sha256": "9847da93a0168a0b0314f8f0ad7b502ad6e250841e17259775da2d4c7c18603d",
+    "git_head": "cdfebf3ede6052c14586da07fe3c805e5f160af2",
+    "label": "baseline-pr44",
+    "manifest_sha256": "c64e2fe3715d618720906a2ae2da7aba7c27a560b02e443dd219807852303f9f",
+    "measurement_ms": 10000,
+    "nominal_pose_frequency_hz": 4,
+    "source_sha256": {
+      "vendor/OrbitControls.js": "3d79d07ecb686b4e5d93232eedab255331c1beef711e13164eaa1f68655a5f2b",
+      "vendor/three.core.js": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6",
+      "vendor/three.module.js": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea",
+      "viewer.js": "df7dcd3bdad686b15145df7252fdbe8e0bbcfbaba714904fdf4eb2fca1ffba8d",
+      "viewer_contract.mjs": "94173accfb93bce90654d38d7fac6eddc9b2017cd91586110c04a8b207ee0390"
+    },
+    "source_snapshot_policy": "Static files frozen in server memory at startup.",
+    "static_root": "/tmp/mujoco-viewer-usability-20261026/src/mujoco_ros2_manipulation/operator_console/static",
+    "warmup_ms": 1000
+  },
+  "graphics_info": {
+    "available": true,
+    "renderer": "WebKit WebGL",
+    "vendor": "WebKit",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "shading_language_version": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+    "unmasked_renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 3050/PCIe/SSE2, OpenGL 4.5.0)",
+    "unmasked_vendor": "Google Inc. (NVIDIA Corporation)",
+    "debug_renderer_info_available": true,
+    "context_attributes": {
+      "alpha": true,
+      "antialias": true,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "default",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    },
+    "note": "One-time context identity from this renderer, not GPU timing, hardware utilization or VRAM usage."
+  },
+  "limitations": [
+    "Two analytic boxes, not a robot or sensor dataset.",
+    "Pose delivery is in-memory schema-1 updatePose at nominal 4 Hz; no network, ROS or control pipeline is timed.",
+    "onRenderFrame observes CPU render submission, not GPU completion or physical display paint.",
+    "No CPU profile, VRAM measurement, or fresh-browser repetition is performed.",
+    "Page visibility changes, resize, or context loss invalidate an active observation.",
+    "The existing onRenderFrame hook is enabled in both comparison versions."
+  ],
+  "results": [
+    {
+      "mode": "static",
+      "requested_duration_ms": 10000,
+      "observed_duration_ms": 10000,
+      "completion_timer_delay_ms": 0.800000011920929,
+      "render_submissions": 599,
+      "render_submissions_per_sec": 59.9,
+      "unique_submitted_sequences": 1,
+      "applied_pose_count": 0,
+      "applied_poses_per_sec": 0,
+      "cpu_render_submit_ms_p95": 0.19999998807907104,
+      "cpu_render_submit_sample_count": 599,
+      "valid": true,
+      "invalid_reasons": [],
+      "scene_css_pixels": [
+        640,
+        480
+      ],
+      "canvas_pixels": [
+        640,
+        480
+      ],
+      "device_pixel_ratio": 1,
+      "camera": {
+        "position": [
+          2.296249876604639,
+          -2.296249876604594,
+          1.8023749176465294
+        ],
+        "target": [
+          0,
+          0,
+          0.19500000402331352
+        ],
+        "up": [
+          0,
+          0,
+          1
+        ],
+        "near": 0.0011555193808922971,
+        "far": 115.55193808922972,
+        "fov": 45
+      },
+      "latest_viewer_metrics": {
+        "manifest_fetch_ms": 3.599999964237213,
+        "manifest_parse_ms": 0,
+        "manifest_verify_ms": 0,
+        "assets_fetch_ms": 0,
+        "assets_parse_ms": 0,
+        "assets_verify_ms": 0,
+        "asset_bytes": 0,
+        "pose_fetch_ms": null,
+        "pose_parse_ms": null,
+        "pose_verify_ms": null,
+        "pose_apply_ms": 0,
+        "rendering_fps": 59.95802938014865,
+        "pose_apply_fps": 0,
+        "render_submit_ms": 0,
+        "source_age_ms": null,
+        "sequence": 2,
+        "binding_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "mode": "model_preview",
+        "view_state": "preview",
+        "stale": false,
+        "note": "Client FPS counts rendered frames; pose_apply_fps counts unique poses. Fetch/parse/apply are browser-local durations; render_submit_ms is CPU submission, not GPU time."
+      },
+      "measurement_endpoint": "actual LocalSceneView onRenderFrame CPU submission"
+    },
+    {
+      "mode": "moving-4Hz",
+      "requested_duration_ms": 10000,
+      "observed_duration_ms": 10000,
+      "completion_timer_delay_ms": 0.19999998807907104,
+      "render_submissions": 599,
+      "render_submissions_per_sec": 59.9,
+      "unique_submitted_sequences": 40,
+      "applied_pose_count": 40,
+      "applied_poses_per_sec": 4,
+      "cpu_render_submit_ms_p95": 0.19999998807907104,
+      "cpu_render_submit_sample_count": 599,
+      "valid": true,
+      "invalid_reasons": [],
+      "scene_css_pixels": [
+        640,
+        480
+      ],
+      "canvas_pixels": [
+        640,
+        480
+      ],
+      "device_pixel_ratio": 1,
+      "camera": {
+        "position": [
+          2.2962498766046386,
+          -2.2962498766045876,
+          1.8023749176465267
+        ],
+        "target": [
+          0,
+          0,
+          0.19500000402331352
+        ],
+        "up": [
+          0,
+          0,
+          1
+        ],
+        "near": 0.0011555193808922971,
+        "far": 115.55193808922972,
+        "fov": 45
+      },
+      "latest_viewer_metrics": {
+        "manifest_fetch_ms": 3.599999964237213,
+        "manifest_parse_ms": 0,
+        "manifest_verify_ms": 0,
+        "assets_fetch_ms": 0,
+        "assets_parse_ms": 0,
+        "assets_verify_ms": 0,
+        "asset_bytes": 0,
+        "pose_fetch_ms": null,
+        "pose_parse_ms": null,
+        "pose_verify_ms": null,
+        "pose_apply_ms": 0,
+        "rendering_fps": 59.98800240023507,
+        "pose_apply_fps": 3.999200160015671,
+        "render_submit_ms": 0.09999996423721313,
+        "source_age_ms": null,
+        "sequence": 42,
+        "binding_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "mode": "model_preview",
+        "view_state": "preview",
+        "stale": false,
+        "note": "Client FPS counts rendered frames; pose_apply_fps counts unique poses. Fetch/parse/apply are browser-local durations; render_submit_ms is CPU submission, not GPU time."
+      },
+      "measurement_endpoint": "actual LocalSceneView onRenderFrame CPU submission"
+    }
+  ]
+}

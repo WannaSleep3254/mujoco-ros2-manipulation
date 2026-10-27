@@ -76,3 +76,23 @@ python scripts/viewer_display_benchmark.py \
 기본 headless Chrome은 SwiftShader 소프트웨어 렌더러를 선택했습니다. 별도 실행 옵션을 적용한 비교에서는 JPEG와 WebGL 모두 NVIDIA RTX 3050 사용을 확인했습니다. 두 결과를 섞지 않으며, 측정된 브라우저 CPU와 실제 렌더러를 함께 읽어야 합니다.
 
 물리 마우스, Edge, Ubuntu의 간헐적인 입력 누락, 실제 input→display 지연, GPU 실행 시간·VRAM, 원격 네트워크와 수시간 이상의 연속 운용은 확인하지 않았습니다.
+
+
+## 렌더 제출 방식의 별도 확인
+
+화면 변화가 있을 때만 그리는 동작은 읽기 전용 도구로 확인할 수 있습니다.
+
+```bash
+python scripts/viewer_render_scheduling_fixture.py --label current --port 8910
+```
+
+표시된 로컬 주소를 브라우저에서 열고 정지 장면과 4 Hz 자세 입력을 각각 측정한 뒤 JSON을 저장합니다.
+`--root /path/to/checkout/src/mujoco_ros2_manipulation/operator_console/static`으로 비교할 소스를 지정할 수 있습니다.
+서버는 시작할 때 소스를 메모리에 고정하고 소스·manifest·측정 JS와 HTML의 SHA를 기록합니다.
+이전 코드와 비교할 때는 같은 브라우저, 실제 GL renderer, 640×480 캔버스, DPR과 카메라를 확인합니다.
+
+이 도구는 두 개의 단순 도형에 메모리 내 자세를 넣고 `onRenderFrame`의 CPU 제출 횟수를 셉니다.
+각 조건은 1초 정리 후 10초이며, 화면 숨김·크기 변경·context 손실이 생기면 해당 측정을 무효로 표시합니다.
+ROS, 네트워크, 실제 로봇이나 센서는 연결하지 않습니다. GPU 완료·paint·CPU 사용률·VRAM을 측정하지 않으므로,
+제출 횟수 감소를 곧바로 GPU 사용률이나 전체 시스템 부하의 감소로 해석할 수 없습니다.
+이전의 연속 렌더 방식에서 얻은 약 60 FPS 측정은 당시 코드의 결과로 보존합니다.

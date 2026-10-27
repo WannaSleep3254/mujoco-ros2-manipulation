@@ -1,0 +1,907 @@
+{
+  "fixture_version": 1,
+  "robot_commands": 0,
+  "metadata": {
+    "fixture_html_sha256": "706bb1fa0159451e5630e3396c48e2e5df665d0220e86f01ce5225a02c9a5368",
+    "fixture_javascript_sha256": "db5db2f619ff53dc6426de845441ea7eb4a1b261597372e46893598a0e8ea589",
+    "fixture_python_sha256": "cb7ab953d01c23adafab050308f1d54cc0e60863381c46c7b2de446c37bd9722",
+    "git_head": "579dd03c0e786b52933ceedf368c7db2106ca8be",
+    "label": "after-5-6",
+    "manifest_sha256": "c64e2fe3715d618720906a2ae2da7aba7c27a560b02e443dd219807852303f9f",
+    "measurement_ms": 10000,
+    "nominal_pose_frequency_hz": 4,
+    "source_sha256": {
+      "vendor/OrbitControls.js": "3d79d07ecb686b4e5d93232eedab255331c1beef711e13164eaa1f68655a5f2b",
+      "vendor/three.core.js": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6",
+      "vendor/three.module.js": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea",
+      "viewer.js": "5823ec14fd2459964ef833399623370153ee2e2dc100019ed9d2312dc4eab00d",
+      "viewer_contract.mjs": "94173accfb93bce90654d38d7fac6eddc9b2017cd91586110c04a8b207ee0390"
+    },
+    "source_snapshot_policy": "Static files frozen in server memory at startup.",
+    "static_root": "/tmp/mujoco-viewer-navigation-20261027/src/mujoco_ros2_manipulation/operator_console/static",
+    "warmup_ms": 1000
+  },
+  "graphics_info": {
+    "available": true,
+    "renderer": "WebKit WebGL",
+    "vendor": "WebKit",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "shading_language_version": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+    "unmasked_renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 3050/PCIe/SSE2, OpenGL 4.5.0)",
+    "unmasked_vendor": "Google Inc. (NVIDIA Corporation)",
+    "debug_renderer_info_available": true,
+    "context_attributes": {
+      "alpha": true,
+      "antialias": true,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "default",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    },
+    "note": "One-time context identity from this renderer, not GPU timing, hardware utilization or VRAM usage."
+  },
+  "limitations": [
+    "Two analytic boxes, not a robot or sensor dataset.",
+    "Pose delivery is in-memory schema-1 updatePose at nominal 4 Hz; no network, ROS or control pipeline is timed.",
+    "onRenderFrame observes CPU render submission, not GPU completion or physical display paint.",
+    "No CPU profile, VRAM measurement, or fresh-browser repetition is performed.",
+    "Page visibility changes, resize, or context loss invalidate an active observation.",
+    "The existing onRenderFrame hook is enabled in both comparison versions."
+  ],
+  "results": [
+    {
+      "mode": "static",
+      "requested_duration_ms": 10000,
+      "observed_duration_ms": 10000,
+      "completion_timer_delay_ms": 0.5,
+      "render_submissions": 0,
+      "render_submissions_per_sec": 0,
+      "unique_submitted_sequences": 0,
+      "applied_pose_count": 0,
+      "applied_poses_per_sec": 0,
+      "cpu_render_submit_ms_p95": null,
+      "cpu_render_submit_sample_count": 0,
+      "valid": true,
+      "invalid_reasons": [],
+      "scene_css_pixels": [
+        640,
+        480
+      ],
+      "canvas_pixels": [
+        640,
+        480
+      ],
+      "device_pixel_ratio": 1,
+      "camera": {
+        "position": [
+          2.2962498766046386,
+          -2.2962498766045876,
+          1.8023749176465267
+        ],
+        "target": [
+          0,
+          0,
+          0.19500000402331352
+        ],
+        "up": [
+          0,
+          0,
+          1
+        ],
+        "near": 0.0011555193808922971,
+        "far": 115.55193808922972,
+        "fov": 45
+      },
+      "latest_viewer_metrics": {
+        "manifest_fetch_ms": 3.300000011920929,
+        "manifest_parse_ms": 0.10000002384185791,
+        "manifest_verify_ms": 0.09999996423721313,
+        "assets_fetch_ms": 0,
+        "assets_parse_ms": 0,
+        "assets_verify_ms": 0,
+        "asset_bytes": 0,
+        "pose_fetch_ms": null,
+        "pose_parse_ms": null,
+        "pose_verify_ms": null,
+        "pose_apply_ms": 0.10000002384185791,
+        "rendering_fps": 0,
+        "pose_apply_fps": 0,
+        "render_submit_ms": null,
+        "source_age_ms": null,
+        "sequence": 2,
+        "render_policy": "on-demand",
+        "render_submit_ms_p95": null,
+        "render_submit_sample_count": 0,
+        "binding_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "mode": "model_preview",
+        "view_state": "preview",
+        "stale": false,
+        "render_activity": "idle",
+        "render_interval_ms_p95": null,
+        "recent_submit_window_ms": 5000,
+        "recent_submit_sample_limit": 240,
+        "last_submitted_age_ms": 10140.800000011921,
+        "last_draw": {
+          "draw_calls": 2,
+          "triangles": 24,
+          "lines": 0,
+          "points": 0,
+          "geometry_resources": 2,
+          "texture_resources": 1,
+          "shader_programs": 1
+        },
+        "renderer_resources": {
+          "draw_calls": 2,
+          "triangles": 24,
+          "lines": 0,
+          "points": 0,
+          "geometry_resources": 2,
+          "texture_resources": 1,
+          "shader_programs": 1
+        },
+        "graphics_context": {
+          "renderer": "WebKit WebGL",
+          "vendor": "WebKit",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "shading_language_version": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+          "unmasked_renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 3050/PCIe/SSE2, OpenGL 4.5.0)",
+          "unmasked_vendor": "Google Inc. (NVIDIA Corporation)"
+        },
+        "resource_history": [
+          {
+            "at_ms": 1844.1000000238419,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 2845.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 3846.5,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 4847.300000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 5847.300000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 6848.699999988079,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 7849.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 8849.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 9850.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 10851.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 11852.300000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 12853,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 13853.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 14854.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 15855.5,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 16856.30000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          }
+        ],
+        "resource_history_limit": 60,
+        "note": "On-demand FPS is zero while idle; render intervals include intentional idle gaps. CPU render-submit p95 uses at most 240 submissions from the last 5 seconds, not GPU time or physical paint. renderer.info counts resources, not VRAM bytes."
+      },
+      "measurement_endpoint": "actual LocalSceneView onRenderFrame CPU submission"
+    },
+    {
+      "mode": "moving-4Hz",
+      "requested_duration_ms": 10000,
+      "observed_duration_ms": 10000,
+      "completion_timer_delay_ms": 0.3999999761581421,
+      "render_submissions": 40,
+      "render_submissions_per_sec": 4,
+      "unique_submitted_sequences": 40,
+      "applied_pose_count": 40,
+      "applied_poses_per_sec": 4,
+      "cpu_render_submit_ms_p95": 0.3999999761581421,
+      "cpu_render_submit_sample_count": 40,
+      "valid": true,
+      "invalid_reasons": [],
+      "scene_css_pixels": [
+        640,
+        480
+      ],
+      "canvas_pixels": [
+        640,
+        480
+      ],
+      "device_pixel_ratio": 1,
+      "camera": {
+        "position": [
+          2.2962498766046386,
+          -2.2962498766045876,
+          1.8023749176465267
+        ],
+        "target": [
+          0,
+          0,
+          0.19500000402331352
+        ],
+        "up": [
+          0,
+          0,
+          1
+        ],
+        "near": 0.0011555193808922971,
+        "far": 115.55193808922972,
+        "fov": 45
+      },
+      "latest_viewer_metrics": {
+        "manifest_fetch_ms": 3.300000011920929,
+        "manifest_parse_ms": 0.10000002384185791,
+        "manifest_verify_ms": 0.09999996423721313,
+        "assets_fetch_ms": 0,
+        "assets_parse_ms": 0,
+        "assets_verify_ms": 0,
+        "asset_bytes": 0,
+        "pose_fetch_ms": null,
+        "pose_parse_ms": null,
+        "pose_verify_ms": null,
+        "pose_apply_ms": 0,
+        "rendering_fps": 3.9968025579060296,
+        "pose_apply_fps": 3.9968025579060296,
+        "render_submit_ms": 0.10000002384185791,
+        "source_age_ms": null,
+        "sequence": 40,
+        "render_policy": "on-demand",
+        "render_submit_ms_p95": 0.20000004768371582,
+        "render_submit_sample_count": 20,
+        "binding_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "mode": "model_preview",
+        "view_state": "preview",
+        "stale": false,
+        "render_activity": "rendering",
+        "render_interval_ms_p95": 250.9000000357628,
+        "recent_submit_window_ms": 5000,
+        "recent_submit_sample_limit": 240,
+        "last_submitted_age_ms": 216.69999998807907,
+        "last_draw": {
+          "draw_calls": 2,
+          "triangles": 24,
+          "lines": 0,
+          "points": 0,
+          "geometry_resources": 2,
+          "texture_resources": 1,
+          "shader_programs": 1
+        },
+        "renderer_resources": {
+          "draw_calls": 2,
+          "triangles": 24,
+          "lines": 0,
+          "points": 0,
+          "geometry_resources": 2,
+          "texture_resources": 1,
+          "shader_programs": 1
+        },
+        "graphics_context": {
+          "renderer": "WebKit WebGL",
+          "vendor": "WebKit",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "shading_language_version": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+          "unmasked_renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 3050/PCIe/SSE2, OpenGL 4.5.0)",
+          "unmasked_vendor": "Google Inc. (NVIDIA Corporation)"
+        },
+        "resource_history": [
+          {
+            "at_ms": 1844.1000000238419,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 2845.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 3846.5,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 4847.300000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 5847.300000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 6848.699999988079,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 7849.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 8849.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 9850.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 10851.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 11852.300000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 12853,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 13853.800000011921,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 14854.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 15855.5,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 16856.30000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 17857.100000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 18858.5,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 19859,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 20859.600000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 21860.399999976158,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 22861.399999976158,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 23862,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 24863.399999976158,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 25863.80000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 26864.899999976158,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 27864.899999976158,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 28866.19999998808,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 29867,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 30867.399999976158,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 31868.100000023842,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 32869.30000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 33870.39999997616,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 34870.89999997616,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 35871.19999998808,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 36872.19999998808,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 37873,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 38874,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 39874.80000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 40875.60000002384,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 41876.39999997616,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 42877.60000002384,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 43877.80000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 44878.5,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 45879.69999998808,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 46880.19999998808,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 47881,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          },
+          {
+            "at_ms": 48881.80000001192,
+            "draw_calls": 2,
+            "triangles": 24,
+            "lines": 0,
+            "points": 0,
+            "geometry_resources": 2,
+            "texture_resources": 1,
+            "shader_programs": 1
+          }
+        ],
+        "resource_history_limit": 60,
+        "note": "On-demand FPS is zero while idle; render intervals include intentional idle gaps. CPU render-submit p95 uses at most 240 submissions from the last 5 seconds, not GPU time or physical paint. renderer.info counts resources, not VRAM bytes."
+      },
+      "measurement_endpoint": "actual LocalSceneView onRenderFrame CPU submission"
+    }
+  ]
+}
