@@ -290,7 +290,7 @@ test('destroy removes only owned resources and cancels outstanding work exactly 
   view.canvas.removeEventListener = () => {removals++;};
   view.canvas.remove = view.label.remove = () => {removals++;};
   view.destroy(); view.destroy();
-  assert.equal(view.disposed, true); assert.equal(aborts, 2); assert.equal(disposals, 6); assert.equal(removals, 4);
+  assert.equal(view.disposed, true); assert.equal(aborts, 2); assert.equal(disposals, 6); assert.equal(removals, 8);
 });
 
 test('a GET header deadline aborts only the read request and permits a fresh pose retry', async () => {
@@ -383,4 +383,22 @@ test('common source restart, rewind and replay require a new binding before appl
   }
   const next=sample();next.sequence=2;next.source.sequence=2;next.source.stamp_sec=2;
   assert.equal(view.updatePose(next),true);
+});
+
+test('cancelPoseRead rejects a late same-binding response without clearing a newer pose read', async () => {
+  const view=fakeView(),releases=[];view._json=()=>new Promise(resolve=>releases.push(resolve));
+  const old=view.pollPose('/old');assert.equal(view.cancelPoseRead(),true);
+  const current=view.pollPose('/current'),controller=view.poseController;
+  const late=pose();late.sequence=99;releases[0]({data:late,requestStartedAt:1000});assert.equal(await old,false);
+  assert.equal(view.poseController,controller);assert.equal(view.hasPose,false);
+  releases[1]({data:pose(),requestStartedAt:1000});assert.equal(await current,true);assert.equal(view.sequence,1);
+});
+
+test('pose admission can reject a late seek time before applying any transforms', async () => {
+  const view=fakeView();view.binding=binding('plan_preview');
+  const input=pose('plan_preview');view._json=async()=>({data:input,requestStartedAt:1000});
+  assert.equal(await view.pollPose('/pose',{accept:data=>data.preview_time_sec===1}),false);
+  assert.equal(view.hasPose,false);assert.equal(view.sequence,-1);
+  assert.equal(await view.pollPose('/pose',{accept:data=>data.preview_time_sec===.25}),true);assert.equal(view.previewTimeSec,.25);
+  view.clearBinding();assert.equal(view.previewTimeSec,null);
 });

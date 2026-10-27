@@ -48,7 +48,24 @@ function emptyStats() {
   return {manifest_fetch_ms: null, manifest_parse_ms: null, manifest_verify_ms: null,
     assets_fetch_ms: null, assets_parse_ms: null, assets_verify_ms: null, asset_bytes: 0,
     pose_fetch_ms: null, pose_parse_ms: null, pose_verify_ms: null, pose_apply_ms: null, rendering_fps: 0,
-    pose_apply_fps: 0, render_submit_ms: null, source_age_ms: null, sequence: null};
+    pose_apply_fps: 0, render_submit_ms: null, source_age_ms: null, sequence: null,
+    render_policy: 'on-demand', render_submit_ms_p95: null, render_submit_sample_count: 0};
+}
+
+function recentPercentile(values, fraction = .95) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.ceil(sorted.length * fraction) - 1];
+}
+
+function graphicsIdentity(renderer) {
+  try {
+    const gl = renderer.getContext(), debug = gl.getExtension('WEBGL_debug_renderer_info');
+    return {renderer: gl.getParameter(gl.RENDERER), vendor: gl.getParameter(gl.VENDOR),
+      version: gl.getParameter(gl.VERSION), shading_language_version: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+      unmasked_renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : null,
+      unmasked_vendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : null};
+  } catch {return null;}
 }
 
 /** The class owns only the DOM children it creates inside container. */
@@ -82,6 +99,8 @@ export class LocalSceneView {
     this.loadGeneration = 0;
     this.loadController = null;
     this.poseController = null;
+    this.poseReadEpoch = 0;
+    this.previewTimeSec = null;
     this.sequence = -1;
     this.sourceSample = null;
     this.receivedAt = null;
@@ -93,6 +112,18 @@ export class LocalSceneView {
     this.hasPose = false;
     this.sized = false;
     this.collisionVisible = false;
+    this.reviewMode = false;
+    this.geometryEpoch = 0;
+    this.catalogBindingID = null;
+    this.selectedGeometryID = null;
+    this.displayOverrides = new Map();
+    this.pickPointers = new Set();
+    this.pickGesture = null;
+    this.renderDirty = true;
+    this.cpuSubmitSamples = [];
+    this.resourceHistory = [];
+    this.lastSubmittedAt = null;
+    this.lastDrawInfo = null;
     this.stats = emptyStats();
     this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
@@ -111,6 +142,7 @@ export class LocalSceneView {
     this.camera.up.set(0, 0, 1);
     this.camera.position.set(2, -2, 1.8);
     this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: false, powerPreference: 'default'});
+    this.graphicsInfo = graphicsIdentity(this.renderer);
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
     this.canvas = this.renderer.domElement;
     this.canvas.setAttribute('aria-label', '읽기 전용 로봇 3D 장면. 드래그 회전, 휠 확대, 오른쪽 드래그 이동');
@@ -130,25 +162,41 @@ export class LocalSceneView {
     this.controls.screenSpacePanning = true;
     this.controls.minDistance = .05;
     this.controls.maxDistance = 100;
+    this._onControlsChange = () => this._invalidate();
+    this.controls.addEventListener('change', this._onControlsChange);
     this.setControlSensitivity(options.controlSensitivity ?? {rotate: 1, zoom: 1, pan: 1});
     this.controls.update();
     this._onContextLost = event => {
       event.preventDefault();
       this.contextLost = true;
+      this._cancelPicking();
       this.loadController?.abort(); this.poseController?.abort();
       this.sceneError = '3D 표시 연결을 잃었습니다. 3D 재시작 또는 서버 이미지를 선택하세요.';
       this._refreshStatus();
+      this._emitMetrics(true);
       this.options.onContextLost?.();
     };
     this.canvas.addEventListener('webglcontextlost', this._onContextLost);
-    this._onVisibility = () => {this.statsAt = this.now(); this.renderCount = this.poseCount = 0; this._refreshStatus();};
+    this._onVisibility = () => {this.statsAt = this.now(); this.renderCount = this.poseCount = 0;
+      this._cancelPicking(); this._invalidate(); this._refreshStatus(); this._emitMetrics(true);};
     this.document.addEventListener('visibilitychange', this._onVisibility);
     this._onResize = () => this.resize();
     this.resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(this._onResize) : null;
     this.resizeObserver?.observe(container);
     globalThis.addEventListener?.('resize', this._onResize);
+    this._onPickDown = event => this._pickDown(event);
+    this._onPickMove = event => this._pickMove(event);
+    this._onPickUp = event => this._pickUp(event);
+    this._onPickCancel = () => this._cancelPicking();
+    this.canvas.addEventListener('pointerdown', this._onPickDown, true);
+    this.document.addEventListener('pointermove', this._onPickMove, true);
+    this.document.addEventListener('pointerup', this._onPickUp, true);
+    this.document.addEventListener('pointercancel', this._onPickCancel, true);
     this.resize();
     this.renderer.setAnimationLoop(() => this._frame());
+    // Hidden tabs may suspend RAF. This best-effort heartbeat also reports idle
+    // and unavailable views without submitting another GPU frame.
+    this.metricsTimer = setInterval(() => {this._refreshStatus(); this._emitMetrics();}, 1000);
     if (options.binding_id !== undefined) this.setExpectedBinding(options.binding_id, options.binding);
   }
 
@@ -157,23 +205,28 @@ export class LocalSceneView {
     const next = validateBinding(bindingID, binding);
     if (this.bindingID === bindingID && sameIdentity(this.binding, next)) return false;
     this.loadController?.abort();
-    this.poseController?.abort();
+    this.cancelPoseRead();
     this.loadGeneration++;
     this.bindingID = bindingID;
     this.binding = next;
     this.loading = false;
     this.sequence = -1;
     this.sourceSample = null;
+    this.previewTimeSec = null;
     this.receivedAt = this.sourceAgeSec = null;
     this.stats = emptyStats();
     this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
     this.renderCount = this.poseCount = 0;
+    this.cpuSubmitSamples = []; this.resourceHistory = []; this.lastSubmittedAt = this.lastDrawInfo = null;
+    this._resetGeometryState();
+    if (next.mode === 'plan_preview') this.reviewMode = true;
     this.hasPose = false;
     this.world.visible = false; // A previous job/model must never look current.
     if (!this.contextLost) this.sceneError = null;
     this.manualStaleReason = null;
     this._refreshStatus();
+    this._notifyGeometry();
     return true;
   }
 
@@ -181,24 +234,182 @@ export class LocalSceneView {
   clearBinding(reason = '장면 준비 대기') {
     requireValue(!this.disposed, 'Scene view is destroyed');
     this.loadController?.abort();
-    this.poseController?.abort();
+    this.cancelPoseRead();
     this.loadController = this.poseController = null;
     this.loadGeneration++;
     this.bindingID = this.binding = null;
     this.loading = false;
     this.sequence = -1;
     this.sourceSample = null;
+    this.previewTimeSec = null;
     this.receivedAt = this.sourceAgeSec = null;
     this.stats = emptyStats();
     this.firstVisibleSubmittedAt = null;
     this.statsAt = this.now();
     this.renderCount = this.poseCount = 0;
+    this.cpuSubmitSamples = []; this.resourceHistory = []; this.lastSubmittedAt = this.lastDrawInfo = null;
+    this._resetGeometryState();
     this.hasPose = false;
     this.world.visible = false;
     if (!this.contextLost) this.sceneError = null;
     this.manualStaleReason = String(reason);
     this._refreshStatus();
+    this._notifyGeometry();
     if (!this.contextLost && this.label.textContent !== this.manualStaleReason) this.label.textContent = this.manualStaleReason;
+  }
+
+  _invalidate() {this.renderDirty = true;}
+
+  _resetGeometryState() {
+    this.geometryEpoch = (this.geometryEpoch ?? 0) + 1;
+    this.selectedGeometryID = null;
+    this.displayOverrides = new Map();
+    this.catalogBindingID = null;
+    this._cancelPicking();
+    this._invalidate();
+  }
+
+  geometryCatalog() {
+    const current = !this.disposed && this.bindingID && this.manifest && this.catalogBindingID === this.bindingID && !this.loading;
+    return {scope_key: this._geometryScopeKey(),
+      binding_id: this.bindingID, review_mode: Boolean(this.reviewMode || this.binding?.mode === 'plan_preview'),
+      selected_id: current ? this.selectedGeometryID ?? null : null,
+      items: current ? [...this.objects.values()].map(object => {
+        const {geomId, geomType, alpha} = object.userData, override = this.displayOverrides?.get(geomId);
+        return {id: geomId, name: object.userData.geomName ?? object.name ?? '', type: geomType,
+          visible: Boolean(object.visible), local_visible: override?.visible !== false,
+          opacity_multiplier: override?.opacity ?? 1, base_alpha: alpha};
+      }) : []};
+  }
+
+  _notifyGeometry() {this.options?.onGeometryChange?.(this.geometryCatalog());}
+
+  _geometryScopeKey() {return this.bindingID ? `${this.bindingID}:${this.binding?.source_id}:${this.manifest?.scene_sha256}:${this.geometryEpoch ?? 0}` : null;}
+
+  _geometryScope(scopeKey) {
+    return !this.disposed && this.bindingID && this.manifest && this.catalogBindingID === this.bindingID && !this.loading &&
+      (scopeKey === undefined || scopeKey === this._geometryScopeKey());
+  }
+
+  _styleGeometry(object) {
+    const {geomId, geomGroup, alpha} = object.userData, override = this.displayOverrides?.get(geomId);
+    const opacity = alpha * (override?.opacity ?? 1);
+    object.visible = opacity > 0 && override?.visible !== false &&
+      (DEFAULT_GROUPS.includes(geomGroup) || (this.collisionVisible && geomGroup === 3));
+    if (object.material) {
+      const transparent = opacity < 1;
+      if (object.material.transparent !== transparent) object.material.needsUpdate = true;
+      object.material.opacity = opacity;
+      object.material.transparent = transparent;
+      object.material.depthWrite = !transparent;
+      object.material.emissive?.setRGB(...(geomId === this.selectedGeometryID ? [.3, .12, .015] : [0, 0, 0]));
+    }
+  }
+
+  selectGeometry(id, scopeKey) {
+    if (!this._geometryScope(scopeKey)) return false;
+    requireValue(id === null || (Number.isSafeInteger(id) && this.objects.has(id)), 'Unknown displayed geom ID');
+    if (this.selectedGeometryID === id) return false;
+    this.selectedGeometryID = id;
+    for (const object of this.objects.values()) this._styleGeometry(object);
+    this._invalidate(); this._notifyGeometry();
+    return true;
+  }
+
+  setGeometryVisible(id, visible, scopeKey) {
+    if (!this._geometryScope(scopeKey) || this.reviewMode || this.binding?.mode === 'plan_preview') return false;
+    requireValue(Number.isSafeInteger(id) && this.objects.has(id) && typeof visible === 'boolean', 'Invalid geom visibility');
+    const previous = this.displayOverrides?.get(id) ?? {};
+    if ((previous.visible !== false) === visible) return false;
+    this.displayOverrides ??= new Map(); this.displayOverrides.set(id, {...previous, visible});
+    this._styleGeometry(this.objects.get(id)); this._invalidate(); this._notifyGeometry();
+    return true;
+  }
+
+  setGeometryOpacity(id, multiplier, scopeKey) {
+    if (!this._geometryScope(scopeKey) || this.reviewMode || this.binding?.mode === 'plan_preview') return false;
+    requireValue(Number.isSafeInteger(id) && this.objects.has(id) && finite(multiplier) && multiplier >= 0 && multiplier <= 1,
+      'Geom opacity multiplier must be 0..1');
+    const previous = this.displayOverrides?.get(id) ?? {};
+    if ((previous.opacity ?? 1) === multiplier) return false;
+    this.displayOverrides ??= new Map(); this.displayOverrides.set(id, {...previous, opacity: multiplier});
+    this._styleGeometry(this.objects.get(id)); this._invalidate(); this._notifyGeometry();
+    return true;
+  }
+
+  resetDisplayOverrides(scopeKey) {
+    if (!this._geometryScope(scopeKey) || !this.displayOverrides?.size) return false;
+    this.displayOverrides.clear();
+    for (const object of this.objects.values()) this._styleGeometry(object);
+    this._invalidate(); this._notifyGeometry();
+    return true;
+  }
+
+  setReviewMode(value) {
+    requireValue(typeof value === 'boolean', 'Invalid review display mode');
+    if (this.disposed || this.reviewMode === value) return false;
+    this.reviewMode = value;
+    if (value) {
+      this.displayOverrides?.clear();
+      for (const object of this.objects.values()) this._styleGeometry(object);
+      this._invalidate();
+    }
+    this._notifyGeometry();
+    return true;
+  }
+
+  fitSelected(scopeKey) {
+    if (!this._geometryScope(scopeKey) || !this.hasPose || this.sceneError || this.contextLost) return false;
+    const object = this.objects.get(this.selectedGeometryID);
+    if (!object?.visible || object.userData.geomType === 'plane') return false;
+    return this._fitObjects([object], this.camera.position.clone().sub(this.controls.target));
+  }
+
+  _cancelPicking() {this.pickGesture = null; this.pickPointers?.clear();}
+
+  _pickDown(event) {
+    this.pickPointers ??= new Set(); this.pickPointers.add(event.pointerId);
+    if (this.pickPointers.size !== 1) {this.pickGesture = null; return;}
+    if (event.button !== 0 || event.isPrimary === false || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
+    this.pickGesture = {id: event.pointerId, x: event.clientX, y: event.clientY, maximum: 0,
+      scope: this._geometryScopeKey()};
+  }
+
+  _pickMove(event) {
+    const gesture = this.pickGesture;
+    if (gesture?.id === event.pointerId) gesture.maximum = Math.max(gesture.maximum,
+      Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y));
+  }
+
+  _pickUp(event) {
+    this._pickMove(event);
+    const gesture = this.pickGesture;
+    this.pickPointers?.delete(event.pointerId);
+    if (gesture?.id !== event.pointerId) return;
+    this.pickGesture = null;
+    if (gesture.maximum <= 4 && event.button === 0) this._pickAt(event.clientX, event.clientY, gesture.scope);
+  }
+
+  _pickAt(clientX, clientY, scopeKey) {
+    if (!this._geometryScope(scopeKey) || !this.hasPose || !this.world.visible || this.sceneError || this.contextLost ||
+      this.document?.hidden || !this.sized) return false;
+    const rect = this.canvas.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0 || clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return false;
+    this.world.updateMatrixWorld(true); this.camera.updateMatrixWorld?.();
+    const pointer = new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1);
+    this.raycaster ??= new THREE.Raycaster(); this.raycaster.setFromCamera(pointer, this.camera);
+    const candidates = [...this.objects.values()].filter(object => object.visible && object.userData.geomType !== 'plane');
+    const hit = this.raycaster.intersectObjects(candidates, false)[0];
+    return hit ? this.selectGeometry(hit.object.userData.geomId, scopeKey) : false;
+  }
+
+  /** Cancel only the display GET, including a late response for the same binding. */
+  cancelPoseRead() {
+    this.poseReadEpoch = (this.poseReadEpoch ?? 0) + 1;
+    const controller = this.poseController;
+    this.poseController = null;
+    controller?.abort();
+    return Boolean(controller);
   }
 
   async _bytes(url, {signal, sha256 = null, maximum, expectedBytes = null}) {
@@ -266,6 +477,9 @@ export class LocalSceneView {
     this.loadController?.abort();
     const controller = this.loadController = new AbortController();
     this.loading = true;
+    this.previewTimeSec = null;
+    this.catalogBindingID = null;
+    this._cancelPicking(); this._invalidate(); this._notifyGeometry();
     this.world.visible = false;
     this.stats = emptyStats();
     this.firstVisibleSubmittedAt = null;
@@ -313,10 +527,11 @@ export class LocalSceneView {
           opacity: alpha, transparent: alpha < 1, depthWrite: alpha >= 1, roughness: .7, metalness: .05, side: THREE.DoubleSide});
         materials.add(material);
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.name = descriptor.name ?? `geom-${descriptor.id}`;
+        mesh.name = typeof descriptor.name === 'string' && descriptor.name.trim() ? descriptor.name : `geom-${descriptor.id}`;
         mesh.matrixAutoUpdate = false;
         mesh.visible = alpha > 0 && (descriptor.default_visible || (this.collisionVisible && descriptor.group === 3));
-        mesh.userData = {geomId: descriptor.id, geomGroup: descriptor.group, geomType: descriptor.type, alpha};
+        mesh.userData = {geomId: descriptor.id, geomName: typeof descriptor.name === 'string' ? descriptor.name : '',
+          geomGroup: descriptor.group, geomType: descriptor.type, alpha};
         group.add(mesh);
         objects.set(descriptor.id, mesh);
       }
@@ -330,11 +545,13 @@ export class LocalSceneView {
       this.geometries = geometries;
       this.materials = materials;
       this.manifest = manifest;
+      this.catalogBindingID = expectedID;
       this.manifestSHA256 = downloaded.sha256;
       this.sequence = -1;
       this.receivedAt = this.sourceAgeSec = null;
       this.stats.sequence = this.stats.source_age_ms = null;
       this.hasPose = false;
+      for (const object of this.objects.values()) this._styleGeometry(object);
       this.stats.manifest_fetch_ms = downloaded.fetchMs;
       this.stats.manifest_verify_ms = downloaded.verifyMs;
       this.stats.manifest_parse_ms = downloaded.parseMs;
@@ -349,7 +566,7 @@ export class LocalSceneView {
       if (generation === this.loadGeneration && !this.disposed && error.name !== 'AbortError') this.sceneError = '3D 장면을 불러오지 못했습니다';
       throw error;
     } finally {
-      if (generation === this.loadGeneration && !this.disposed) {this.loading = false; this._refreshStatus();}
+      if (generation === this.loadGeneration && !this.disposed) {this.loading = false; this._refreshStatus(); this._notifyGeometry();}
     }
   }
 
@@ -398,6 +615,7 @@ export class LocalSceneView {
     }
     this.sequence = envelope.sequence;
     this.sourceSample = envelope.schema_version === 2 ? {...envelope.source} : null;
+    this.previewTimeSec = Number.isFinite(envelope.preview_time_sec) ? envelope.preview_time_sec : null;
     this.receivedAt = this.now();
     // Conservatively include the whole locally observed request duration if supplied.
     this.sourceAgeSec = envelope.source_state_age_sec === null ? null : envelope.source_state_age_sec + elapsedRequestMs / 1000;
@@ -408,20 +626,24 @@ export class LocalSceneView {
     this.stats.pose_apply_ms = this.now() - started;
     this.stats.sequence = this.sequence;
     this.poseCount++;
+    this._invalidate();
     this._refreshStatus();
     return true;
   }
 
   /** Optional polling helper. At most one request may run; the app owns its cadence. */
-  async pollPose(url) {
+  async pollPose(url, {accept} = {}) {
     if (this.poseController || this.loading || !this.manifest || this.disposed) return false;
     const expected = {...this.binding};
     const expectedID = this.bindingID;
     const controller = this.poseController = new AbortController();
+    const epoch = this.poseReadEpoch ?? 0;
     try {
       const item = await this._json(url, {signal: controller.signal, maximum: LIMITS.manifestBytes});
-      if (this.disposed || expectedID !== this.bindingID || !sameIdentity(expected, this.binding)) return false;
+      if (this.disposed || controller.signal.aborted || epoch !== (this.poseReadEpoch ?? 0) ||
+        expectedID !== this.bindingID || !sameIdentity(expected, this.binding)) return false;
       if (item.data === null) {this.markStale(); return false;}
+      if (accept && !accept(item.data)) return false;
       const applied = this.updatePose(item.data, {elapsedRequestMs: this.now() - item.requestStartedAt});
       this.stats.pose_fetch_ms = item.fetchMs;
       this.stats.pose_parse_ms = item.parseMs;
@@ -438,10 +660,8 @@ export class LocalSceneView {
   setCollisionVisible(visible) {
     requireValue(typeof visible === 'boolean', 'Collision visibility must be boolean');
     this.collisionVisible = visible;
-    for (const object of this.objects.values()) {
-      const {geomGroup, alpha} = object.userData;
-      object.visible = alpha > 0 && (DEFAULT_GROUPS.includes(geomGroup) || (visible && geomGroup === 3));
-    }
+    for (const object of this.objects.values()) this._styleGeometry(object);
+    this._invalidate(); if (this.objects.size) this._notifyGeometry();
   }
 
   markStale(reason = '갱신 대기 · 마지막 수신 자세') {
@@ -537,6 +757,7 @@ export class LocalSceneView {
       this.camera.up.set(0, 0, 1);
       this.camera.position.copy(target).add(direction.clone().normalize().multiplyScalar(distance));
       this.controls.update();
+      this._invalidate();
     } finally {this.controls.enableDamping = damping;}
   }
 
@@ -550,6 +771,11 @@ export class LocalSceneView {
     // group-0 mesh fallback is only a camera heuristic: CAD meshes can share it.
     // Geometry classification/rendering is unchanged; explicit fit uses all bounds.
     const candidates = robotVisuals.length ? robotVisuals : groupZeroMeshes.length ? groupZeroMeshes : visible;
+    return this._fitObjects(candidates, direction);
+  }
+
+  _fitObjects(candidates, direction) {
+    this.world.updateMatrixWorld(true);
     const box = new THREE.Box3();
     for (const object of candidates) box.expandByObject(object);
     if (box.isEmpty()) return false;
@@ -605,17 +831,28 @@ export class LocalSceneView {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
+    this._invalidate();
   }
 
   _frame() {
     if (this.disposed) return;
     this._refreshStatus();
-    if (this.document.hidden || !this.sized || this.sceneError || this.contextLost) return;
-    this.controls.update(); // Remains independent of ROS state/polling cadence.
+    if (this.document.hidden || !this.sized || this.sceneError || this.contextLost) {this._emitMetrics(); return;}
+    if (this.controls.update()) this._invalidate(); // Keep damping independent of pose cadence.
+    if (this.renderDirty === false || !this.hasPose || !this.world.visible || this.loading) {this._emitMetrics(); return;}
+    // Clear before callbacks: a synchronous observer may invalidate the next frame.
+    this.renderDirty = false;
     const started = this.now();
     this.renderer.render(this.scene, this.camera);
     const displayingPose = this.hasPose && this.world.visible;
     this.stats.render_submit_ms = displayingPose ? this.now() - started : null; // CPU submission, not GPU timing.
+    const submitted = this.now();
+    this.cpuSubmitSamples ??= [];
+    this.cpuSubmitSamples.push({at: submitted, duration: this.stats.render_submit_ms,
+      interval: this.lastSubmittedAt === null || this.lastSubmittedAt === undefined ? null : submitted - this.lastSubmittedAt});
+    if (this.cpuSubmitSamples.length > 240) this.cpuSubmitSamples.shift();
+    this.lastSubmittedAt = submitted;
+    this.lastDrawInfo = this._rendererCounters();
     // Optional read-only benchmark hook. A render submission is not GPU
     // completion or a physical display paint; consumers must retain that label.
     if (displayingPose && this.firstVisibleSubmittedAt === null) {
@@ -627,17 +864,47 @@ export class LocalSceneView {
       first_visible_submitted_at_ms: this.firstVisibleSubmittedAt,
       camera_position: this.camera.position.toArray(), camera_quaternion: this.camera.quaternion.toArray()});
     if (displayingPose) this.renderCount++;
+    this._emitMetrics();
+  }
+
+  _rendererCounters() {
+    const info = this.renderer.info, count = value => Number.isFinite(value) && value >= 0 ? value : null;
+    return {draw_calls: count(info?.render?.calls), triangles: count(info?.render?.triangles),
+      lines: count(info?.render?.lines), points: count(info?.render?.points),
+      geometry_resources: count(info?.memory?.geometries), texture_resources: count(info?.memory?.textures),
+      shader_programs: Array.isArray(info?.programs) ? info.programs.length : null};
+  }
+
+  _emitMetrics(force = false) {
+    if (this.disposed) return;
     const now = this.now();
     const windowMs = now - this.statsAt;
-    if (windowMs >= 1000) {
-      this.stats.rendering_fps = this.renderCount * 1000 / windowMs;
-      this.stats.pose_apply_fps = this.poseCount * 1000 / windowMs;
-      this.statsAt = now;
-      this.renderCount = this.poseCount = 0;
-      this.options.onMetrics?.({...this.stats, binding_id: this.bindingID, mode: this.binding?.mode ?? null,
-        view_state: this.label.dataset.state, stale: this.label.dataset.state === 'stale',
-        note: 'Client FPS counts rendered frames; pose_apply_fps counts unique poses. Fetch/parse/apply are browser-local durations; render_submit_ms is CPU submission, not GPU time.'});
-    }
+    if (!force && windowMs < 1000) return;
+    const unavailable = this.document?.hidden || !this.sized || this.sceneError || this.contextLost || !this.hasPose;
+    const activity = this.sceneError || this.contextLost ? 'error' : this.document?.hidden ? 'hidden' :
+      !this.sized ? 'zero-size' : !this.hasPose ? 'waiting' : this.renderCount ? 'rendering' : 'idle';
+    this.stats.render_policy = 'on-demand';
+    this.stats.rendering_fps = unavailable ? 0 : this.renderCount * 1000 / Math.max(1, windowMs);
+    this.stats.pose_apply_fps = this.poseCount * 1000 / Math.max(1, windowMs);
+    if (!this.renderCount) this.stats.render_submit_ms = null;
+    this.cpuSubmitSamples = (this.cpuSubmitSamples ?? []).filter(sample => sample.at >= now - 5000);
+    this.stats.render_submit_ms_p95 = recentPercentile(this.cpuSubmitSamples.map(sample => sample.duration));
+    this.stats.render_submit_sample_count = this.cpuSubmitSamples.length;
+    const counters = this._rendererCounters();
+    this.resourceHistory ??= [];
+    this.resourceHistory.push({at_ms: now, ...counters});
+    if (this.resourceHistory.length > 60) this.resourceHistory.shift();
+    this.statsAt = now;
+    this.renderCount = this.poseCount = 0;
+    this.options?.onMetrics?.({...this.stats, binding_id: this.bindingID, mode: this.binding?.mode ?? null,
+      view_state: this.label.dataset.state, stale: this.label.dataset.state === 'stale', render_activity: activity,
+      render_interval_ms_p95: recentPercentile(this.cpuSubmitSamples.map(sample => sample.interval).filter(Number.isFinite)),
+      recent_submit_window_ms: 5000, recent_submit_sample_limit: 240,
+      last_submitted_age_ms: this.lastSubmittedAt === null || this.lastSubmittedAt === undefined ? null : Math.max(0, now - this.lastSubmittedAt),
+      last_draw: this.lastDrawInfo ? {...this.lastDrawInfo} : null, renderer_resources: counters,
+      graphics_context: this.graphicsInfo ? {...this.graphicsInfo} : null,
+      resource_history: this.resourceHistory.map(sample => ({...sample})), resource_history_limit: 60,
+      note: 'On-demand FPS is zero while idle; render intervals include intentional idle gaps. CPU render-submit p95 uses at most 240 submissions from the last 5 seconds, not GPU time or physical paint. renderer.info counts resources, not VRAM bytes.'});
   }
 
   _disposeModel() {
@@ -653,12 +920,19 @@ export class LocalSceneView {
     this.disposed = true;
     this.loadGeneration++;
     this.loadController?.abort();
-    this.poseController?.abort();
+    this.cancelPoseRead();
+    this._cancelPicking();
+    clearInterval(this.metricsTimer);
     this.renderer.setAnimationLoop(null);
     this.resizeObserver?.disconnect();
     globalThis.removeEventListener?.('resize', this._onResize);
     this.document.removeEventListener('visibilitychange', this._onVisibility);
     this.canvas.removeEventListener('webglcontextlost', this._onContextLost);
+    this.canvas.removeEventListener('pointerdown', this._onPickDown, true);
+    this.document.removeEventListener('pointermove', this._onPickMove, true);
+    this.document.removeEventListener('pointerup', this._onPickUp, true);
+    this.document.removeEventListener('pointercancel', this._onPickCancel, true);
+    this.controls.removeEventListener?.('change', this._onControlsChange);
     this.controls.dispose();
     this._disposeModel();
     this.renderer.dispose();
