@@ -5,6 +5,7 @@ import time
 
 from mujoco_ros2_manipulation.workcells.interference import Spline
 from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path
+from mujoco_ros2_manipulation.workcells.environment_clearance import required_environment_distance
 
 MAX_PLAN_CANDIDATES = 12
 
@@ -98,13 +99,18 @@ class _ObservedEvaluator:
         minimum = self.progress["minimum"]
         if minimum is None or result["distance_m"] < minimum["distance_m"]:
             self.progress["minimum"] = dict(state_rad=dict(state), **deepcopy(result))
+        environment = result.get("environment")
+        if environment is not None:
+            previous = self.progress.get("environment_minimum")
+            if previous is None or environment["distance_m"] < previous["distance_m"]:
+                self.progress["environment_minimum"] = dict(state_rad=dict(state), **deepcopy(environment))
         return result
 
 
 def select_clearance_plan(
     propose, initial, cell, evaluator, policy, moveit_check, save,
     *, max_candidates=MAX_PLAN_CANDIDATES, checkpoint=None, diagnostics=None,
-    validate_curve=None,
+    validate_curve=None, environment_policy=None,
 ):
     """Return the first valid trajectory, preserving every bounded attempt.
 
@@ -124,6 +130,8 @@ def select_clearance_plan(
         raise TypeError("diagnostics must be a dict")
     diagnostics = {} if diagnostics is None else diagnostics
     threshold = policy["min_inter_arm_distance_m"] + policy["tracking_reserve_m"]
+    environment_options = {} if environment_policy is None else dict(
+        environment_reject_below=required_environment_distance(environment_policy))
     candidates = []
     started = time.monotonic()
     diagnostics.update(status="running", stage="proposal", max_candidates=max_candidates,
@@ -191,10 +199,13 @@ def select_clearance_plan(
                         native = record["native"] = evaluate_path(
                             [curve], initial, cell, _ObservedEvaluator(evaluator, progress),
                             dt=policy["sample_dt_sec"], reject_below=threshold, checkpoint=check,
+                            **environment_options,
                         )
                         check()
                         if not native["complete"]:
-                            reject("native_clearance", "Native clearance below planning minimum")
+                            kind = native.get("rejection_kind", "native_clearance")
+                            reject(kind, "Environment clearance below planning minimum" if kind == "environment_clearance"
+                                   else "Native inter-arm clearance below planning minimum")
                         else:
                             stage("moveit")
                             check()

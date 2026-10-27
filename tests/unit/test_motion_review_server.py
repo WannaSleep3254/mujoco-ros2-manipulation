@@ -22,6 +22,8 @@ from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
 from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path, evaluate_states, sample_schedule
 from mujoco_ros2_manipulation.workcells.motion_diagnostics import measure_endpoints, path_clearance_diagnostic
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
+from mujoco_ros2_manipulation.model_build.integrity import file_sha256
+from mujoco_ros2_manipulation.workcells.environment_clearance import EnvironmentClearanceRejected
 
 
 def require(condition, message):
@@ -39,6 +41,7 @@ def load_server():
         decode_message=decode_message,validate_command=validate_command,validate_cancel=validate_cancel,
         validate_approval=validate_approval,require=require,Spline=Spline,PlanningBudget=PlanningBudget,
         PlanningBudgetExceeded=PlanningBudgetExceeded,PlanCandidatesExhausted=type("Candidates",(RuntimeError,),{}),
+        EnvironmentClearanceRejected=EnvironmentClearanceRejected,file_sha256=file_sha256,
         TimingRejected=type("Timing",(RuntimeError,),{}),measure_endpoints=measure_endpoints,
         path_clearance_diagnostic=path_clearance_diagnostic,evaluate_path=evaluate_path,
         evaluate_states=evaluate_states,sample_schedule=sample_schedule,MAX_PLAN_CANDIDATES=12,
@@ -62,6 +65,11 @@ class ReviewServerTests(unittest.TestCase):
             SimpleNamespace(id="left",joints=["left"]),SimpleNamespace(id="right",joints=["right"])])
         n.metadata = dict(joint_limits={name:dict(lower=-1,upper=1) for name in n.joint_names})
         n.policy = dict(min_inter_arm_distance_m=.02,tracking_reserve_m=.01,sample_dt_sec=.01)
+        n.environment_policy = dict(schema_version=1,min_environment_distance_m=.005,tracking_reserve_m=.01)
+        n.environment_threshold_m = .015
+        n.environment_policy_path = n.directory / "environment-policy.yaml"
+        n.environment_policy_path.write_text("test policy snapshot")
+        n.environment_policy_sha256 = file_sha256(n.environment_policy_path)
         n.review_store = PlanReviewStore(n.session_id)
         n.review_identity = None
         self.identity = dict(build=dict(model="base",policy="timing"),planning_scene_sha256="b"*64)
@@ -86,13 +94,18 @@ class ReviewServerTests(unittest.TestCase):
         n.quiet = Mock()
         n.get_logger = lambda:SimpleNamespace(warning=Mock())
         n.validity_of = Mock(return_value=SimpleNamespace(valid=True))
-        n.evaluator = SimpleNamespace(at=Mock(return_value=dict(distance_m=.1,tips_m=[[0,0,0],[1,0,0]])))
+        n.evaluator = SimpleNamespace(at=Mock(return_value=dict(distance_m=.1,tips_m=[[0,0,0],[1,0,0]],
+            environment=dict(distance_m=.1,bodies=["left","fixture"],
+                nearest_points_m=[[0,0,0],[.1,0,0]],pair_count=2,
+                scope="moving_robot_vs_fixed_environment"))))
         self.curve = Spline(["left","right"],[
             dict(t=0.0,p=[0.0,0.0],v=[],a=[]),dict(t=.1,p=[.1,.1],v=[],a=[])])
         n.coordinated_path = Mock(return_value=self.curve)
         n.split = Mock(return_value=[("left","left curve"),("right","right curve")])
         def dispatch(commands,**kwargs):
             n.dispatched += len(commands)
+            n.observations = [dict(simulation_sec=10.,state_rad=dict(n.actual)),
+                              dict(simulation_sec=10.1,state_rad=dict(left=.1,right=.1))]
             n.commanded = dict(left=.1,right=.1)
         n.dispatch = Mock(side_effect=dispatch)
         n.settle = Mock()
@@ -124,6 +137,66 @@ class ReviewServerTests(unittest.TestCase):
         self.assertEqual(record["review"]["state"],"awaiting_approval")
         self.assertEqual(record["events"][-1]["name"],"terminal")
         self.assertEqual(record["review_payload"]["trajectories"],record["trajectories"])
+
+    def test_approved_curve_is_rechecked_against_fixed_environment_before_dispatch(self):
+        _, _, approval = self.make_review()
+        self.send(approval, "approve")
+        baseline = deepcopy(self.node.evaluator.at.return_value)
+        def assess(state):
+            value = deepcopy(baseline)
+            if .03 < state["left"] < .07:
+                value["environment"]["distance_m"] = .002
+            return value
+        self.node.evaluator.at.side_effect = assess
+        self.node.process_next()
+        value = json.loads((self.node.directory / (approval["request_id"] + ".json")).read_text())
+        self.assertEqual(value["status"], "failed")
+        self.assertEqual(value["failure_kind"], "environment_clearance")
+        self.assertEqual(value["planned_clearance"]["environment_minimum"]["distance_m"], .002)
+        self.node.dispatch.assert_not_called()
+        self.assertEqual(self.node.review_store.summary()["state"], "consumed")
+
+    def test_environment_policy_change_after_approval_cannot_dispatch_old_plan(self):
+        _, _, approval = self.make_review()
+        self.send(approval, "approve")
+        self.node.environment_policy_path.write_text("changed policy; restart required")
+        self.node.process_next()
+        value = json.loads((self.node.directory / (approval["request_id"] + ".json")).read_text())
+        self.assertEqual(value["status"], "failed")
+        self.assertIn("Environment clearance policy changed", value["error"]["message"])
+        self.node.dispatch.assert_not_called()
+
+    def test_environment_policy_change_at_final_state_gate_is_still_refused(self):
+        _, _, approval = self.make_review()
+        self.send(approval, "approve")
+        original = self.node.confirm_start_unchanged
+        count = [0]
+        def change_at_last_gate(initial):
+            original(initial)
+            count[0] += 1
+            if count[0] == 2:
+                self.node.environment_policy_path.write_text("changed just before dispatch")
+        self.node.confirm_start_unchanged = change_at_last_gate
+        self.node.process_next()
+        value = json.loads((self.node.directory / (approval["request_id"] + ".json")).read_text())
+        self.assertEqual(count[0], 2)
+        self.assertEqual(value["status"], "failed")
+        self.assertIn("Environment clearance policy changed", value["error"]["message"])
+        self.node.dispatch.assert_not_called()
+
+    def test_action_completion_without_observed_joint_states_is_not_success(self):
+        _, _, approval = self.make_review()
+        self.send(approval, "approve")
+        def incomplete_dispatch(commands, **kwargs):
+            self.node.dispatched += len(commands)
+            self.node.observations = []
+        self.node.dispatch.side_effect = incomplete_dispatch
+        self.node.process_next()
+        value = json.loads((self.node.directory / (approval["request_id"] + ".json")).read_text())
+        self.assertEqual(value["status"], "failed")
+        self.assertEqual(value["failure_kind"], "execution_failed")
+        self.assertIn("observed joint-state coverage", value["error"]["message"])
+        self.assertTrue(self.node.blocked)
 
     def test_approval_rechecks_same_curves_without_replanning_and_consumes_once(self):
         _,_,approval = self.make_review()

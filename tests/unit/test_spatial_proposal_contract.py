@@ -55,9 +55,13 @@ class SpatialProposalContractTests(unittest.TestCase):
         self.initial = dict(left=0., right=0.)
         self.target = dict(left=.1, right=.1)
         self.evaluator = NS(at=Mock(return_value=dict(distance_m=1., bodies=["left", "right"],
-            nearest_points_m=[[0., 0., 0.], [1., 0., 0.]], tips_m=[[0., 0., 0.], [1., 0., 0.]])))
+            nearest_points_m=[[0., 0., 0.], [1., 0., 0.]], tips_m=[[0., 0., 0.], [1., 0., 0.]],
+            environment=dict(distance_m=.1, bodies=["left", "fixture"],
+                nearest_points_m=[[0., 0., 0.], [.1, 0., 0.]], pair_count=2,
+                scope="moving_robot_vs_fixed_environment"))))
         self.node = NS(goal_tolerance_rad=.003, max_plan_candidates=2,
             policy=dict(min_inter_arm_distance_m=.02, tracking_reserve_m=.01, sample_dt_sec=.02),
+            environment_policy=dict(schema_version=1, min_environment_distance_m=.005, tracking_reserve_m=.01),
             cell=NS(joints=["left", "right"], instances=[NS(id="left", joints=["left"]), NS(id="right", joints=["right"])]),
             evaluator=self.evaluator, event=Mock(), compute_checkpoint=Mock(),
             assess_spatial_candidate=Mock(return_value=dict(invalid_samples=0)),

@@ -1,0 +1,9 @@
+schema_version: 1
+# Experimental simulation policy, not a hardware-certified clearance or safety guarantee.
+# This is independent of the inter-arm policy (20 mm + 10 mm tracking reserve).
+# A planned robot/environment sample needs 5 mm + 10 mm = 15 mm clearance.
+# Keep the native physical-contact interlock enabled; this sampled margin replaces no stop.
+# Scope: moving robot collision geometry vs fixed environment outside robot roots.
+# Native collision masks/excludes apply; only static world-welded robot mounts are omitted.
+min_environment_distance_m: 0.005
+tracking_reserve_m: 0.01

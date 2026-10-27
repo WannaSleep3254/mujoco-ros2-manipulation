@@ -251,7 +251,8 @@ def main():
             vendor = ROOT / 'runtime/root/opt/ros/humble/opt/mujoco_vendor'
             run(['g++', '-std=c++17', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
                  '-DMANIPULATION_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/path_distance.cpp').read_bytes()).hexdigest() + '"',
-                 '-I' + str(vendor / 'include'), ROOT / 'native/path_distance.cpp',
+                 '-DMANIPULATION_ENVIRONMENT_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/path_distance_environment.cpp').read_bytes()).hexdigest() + '"',
+                 '-I' + str(vendor / 'include'), ROOT / 'native/path_distance_environment.cpp',
                  vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
                  '-o', native / 'path_distance.so'])
             definition = manifest['packages'][runtime['package']]

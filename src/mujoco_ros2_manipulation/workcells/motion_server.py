@@ -29,6 +29,9 @@ from mujoco_ros2_manipulation.verification.reports import atomic_json
 from mujoco_ros2_manipulation.workcells.config import load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import check_workcell
 from mujoco_ros2_manipulation.workcells.distance import DistanceEvaluator
+from mujoco_ros2_manipulation.workcells.environment_clearance import (
+    EnvironmentClearanceRejected, environment_policy_snapshot, required_environment_distance,
+)
 from mujoco_ros2_manipulation.workcells.interference import Spline, stretch
 from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path, evaluate_states, sample_schedule
 from mujoco_ros2_manipulation.workcells.timing import choose_delay, load_policy, TimingRejected
@@ -91,6 +94,9 @@ class MotionCommandServer(WorkcellVerification):
         self.goal_tolerance_rad = 0.003
         self.metadata = check_workcell(cell)
         policy_path, self.policy = load_policy(cell, policy_name)
+        (self.environment_policy_path, self.environment_policy,
+         self.environment_policy_sha256) = environment_policy_snapshot(cell)
+        self.environment_threshold_m = required_environment_distance(self.environment_policy)
         self.directory = Path(output).resolve()
         # The optional internal root is used by isolated verification workspaces;
         # it is never accepted from command messages, HTTP or the public CLI.
@@ -110,7 +116,7 @@ class MotionCommandServer(WorkcellVerification):
         self.first_by_arm = set()
         self.motion_start = None
         super().__init__(cell, progress)
-        self.evaluator = DistanceEvaluator(cell)
+        self.evaluator = DistanceEvaluator(cell, environment=True)
         self.publisher = self.create_publisher(String, STATUS_TOPIC, status_qos())
         self.command_subscription = self.create_subscription(String, COMMAND_TOPIC, self.receive, 10)
         self.create_subscription(String, PLAN_TOPIC, self.receive_plan, 10)
@@ -127,6 +133,8 @@ class MotionCommandServer(WorkcellVerification):
         atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
             workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
             policy_name=policy_name, policy_sha256=file_sha256(policy_path),
+            environment_policy=self.environment_policy,
+            environment_policy_sha256=self.environment_policy_sha256,
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
             runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
                          middleware=get_rmw_implementation_identifier()),
@@ -495,7 +503,7 @@ class MotionCommandServer(WorkcellVerification):
                 trajectory = select_clearance_plan(propose, initial, self.cell, self.evaluator, self.policy,
                     moveit_check, save, max_candidates=self.max_plan_candidates,
                     checkpoint=self.compute_checkpoint, diagnostics=selection,
-                    validate_curve=validate_curve)
+                    validate_curve=validate_curve, environment_policy=self.environment_policy)
             except (CommandCancelled, PlanningBudgetExceeded):
                 # A production checkpoint may also interrupt inside a ROS callback
                 # supplied to the engine-independent selector.
@@ -515,9 +523,12 @@ class MotionCommandServer(WorkcellVerification):
         try:
             metadata = check_workcell(self.cell)
             require(metadata == self.metadata, "Validated workcell changed; restart and replan")
+            require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
+                    "Environment clearance policy changed; restart and replan")
             return dict(workcell_sha256=self.cell.fingerprint,
                         outputs_sha256=metadata["outputs"],
-                        policy_sha256=file_sha256(self.policy_path))
+                        policy_sha256=file_sha256(self.policy_path),
+                        environment_policy_sha256=self.environment_policy_sha256)
         except OSError as error:
             raise ReviewRejected("Model or policy files changed; replan") from error
 
@@ -655,13 +666,18 @@ class MotionCommandServer(WorkcellVerification):
                 initial = deepcopy(approved_plan["initial_state_rad"])
                 trace.data["initial_state_rad"] = initial
             self.compute_budget = PlanningBudget(self.compute_budget_sec)
+            trace.data["environment_policy"] = deepcopy(self.environment_policy)
+            trace.data["environment_policy_sha256"] = self.environment_policy_sha256
+            require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
+                    "Environment clearance policy changed; restart and replan")
             self.event("computation_started")
             target = trace.data["command"]["target_rad"]
             strategy = trace.data["command"]["strategy"]
             threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
             self.event("endpoint_clearance")
             with trace.span("endpoint_clearance"):
-                trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold, checkpoint=self.compute_checkpoint)
+                trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold,
+                    checkpoint=self.compute_checkpoint, environment_threshold_m=self.environment_threshold_m)
             if ((approved_plan is None and max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001)
                     or (approved_plan is not None and approved_plan["no_motion_required"])):
                 trace.data["no_motion_required"] = True
@@ -670,6 +686,8 @@ class MotionCommandServer(WorkcellVerification):
                 with trace.span("safety_checks"):
                     require(self.validity_of(initial).valid, "Current state is colliding")
                     require(self.evaluator.at(initial)["distance_m"] >= self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"], "Current clearance below planning policy")
+                    require(not trace.data["clearance_endpoints"]["endpoints"]["start"]["below_policy"],
+                            "Current state below inter-arm or environment planning policy")
                 self.finish_computation(trace)
                 with trace.span("final_state_recheck"):
                     self.confirm_start_unchanged(initial)
@@ -722,10 +740,15 @@ class MotionCommandServer(WorkcellVerification):
             self.event("safety_checks")
             with trace.span("safety_checks"):
                 threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
-                planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"], reject_below=threshold, checkpoint=self.compute_checkpoint)
+                planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"],
+                    reject_below=threshold, checkpoint=self.compute_checkpoint,
+                    environment_reject_below=self.environment_threshold_m)
                 trace.data["planned_clearance"] = planned
                 trace.data["clearance_diagnostic"] = path_clearance_diagnostic(trace.data["clearance_endpoints"], planned, max(c.duration for c in curves))
-                require(planned["complete"], "Planned clearance below 30mm policy")
+                if not planned["complete"]:
+                    if planned.get("rejection_kind") == "environment_clearance":
+                        raise EnvironmentClearanceRejected("Planned fixed-environment clearance below policy")
+                    raise RuntimeError("Planned inter-arm clearance below policy")
                 samples = 0
                 for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
                     self.compute_checkpoint()
@@ -753,6 +776,8 @@ class MotionCommandServer(WorkcellVerification):
             # last received state again, with no intervening spin before dispatch.
             with trace.span("final_state_recheck"):
                 self.confirm_start_unchanged(initial)
+                require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
+                        "Environment clearance policy changed; restart and replan")
                 if approved_plan is not None:
                     self._recheck_approved(approved_plan, live=False)
             self.motion_start = self.clock_last + 1.0
@@ -767,11 +792,14 @@ class MotionCommandServer(WorkcellVerification):
                 self.settle([endpoint[n] for n in self.joint_names])
             self.event("settled")
             self.check_abort()
+            require(len(self.observations) >= 2, "Executed motion lacks observed joint-state coverage")
             if len(self.observations) >= 2:
                 with trace.span("observed_clearance"):
                     observed = evaluate_states(((s["simulation_sec"], s["state_rad"]) for s in self.observations), self.cell, self.evaluator)
                     trace.data["observed_clearance"] = observed
                     require(observed["minimum"]["distance_m"] >= self.policy["min_inter_arm_distance_m"], "Observed clearance below 20mm policy")
+                    if observed["environment_minimum"]["distance_m"] < self.environment_policy["min_environment_distance_m"]:
+                        raise EnvironmentClearanceRejected("Observed fixed-environment clearance below policy")
             trace.finish("succeeded")
         except BaseException as error:
             if isinstance(error, (CommandCancelled, KeyboardInterrupt)):
@@ -784,6 +812,8 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data["failure_kind"] = "departure_exhausted"
             elif isinstance(error, InvalidMotionEndpoint):
                 trace.data["failure_kind"] = "invalid_" + error.role
+            elif isinstance(error, EnvironmentClearanceRejected):
+                trace.data["failure_kind"] = "environment_clearance"
             elif isinstance(error, MotionPlanningFailed):
                 trace.data["failure_kind"] = "planner_failed"
             elif isinstance(error, MotionStateChanged):

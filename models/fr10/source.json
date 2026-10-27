@@ -111,7 +111,7 @@
         "external/frcobot_ros2/fairino_description/meshes/fairino10_v6/wrist3_link.STL": "f1d3f981e79299ace78993af7f9016077b4a85c65281f9b7e99470d8c4942482",
         "external/frcobot_ros2/fairino_description/urdf/fairino10_v6.urdf": "07bf55aa15b26f65ffcb6f85eed094826469e2309c9a70bfa8b6e00390e9d448",
         "requirements.txt": "026a2375666b41ccedf33dffdede7eab22c2e7a4d3fda81dcd160a2317ffcd1c",
-        "src/mujoco_ros2_manipulation/build.py": "b042c890bab90d828c814a76146c1f474f08f8f30b31f5ee0d0dc4c34f925e38",
+        "src/mujoco_ros2_manipulation/build.py": "e0d6b793c6285418e314034a85df155b290009ce34ceff8f5e5cc15a4f76f9ff",
         "src/mujoco_ros2_manipulation/model_build/collada.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
         "src/mujoco_ros2_manipulation/model_build/integrity.py": "23d6f8cfe4366ba3865a0c82401a52303f863b6409451e8c81c03501f5684f89",
         "src/mujoco_ros2_manipulation/model_build/prepare.py": "7ed4f9cfdaa65adb3088ab875bc2128ae98ec963b967b49630a9036035cb1173",
@@ -122,7 +122,7 @@
     },
     "outputs": {
       "fr10.xml": "e98cff3b8e6bfc2ae73ff658bb1196591578d41fc9d74a9008399e55c7cb330a",
-      "fr10.ros2_control.urdf": "dfa6d3e806d441858f3a12a25ec5300a549e22a7dde7c304309958b464a275e7"
+      "fr10.ros2_control.urdf": "d303717398c7789ae0693590e83cbc324c8274dbaf2d26d93a4cc251cb48f8de"
     }
   },
   "generator_environment": {
