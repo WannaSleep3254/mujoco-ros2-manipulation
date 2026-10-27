@@ -145,6 +145,31 @@ python3 verify_operator_demos.py --domain 201 --port 8911 --no-render
 
 위 도메인과 포트는 실행 전 비어 있는지 확인하고 선택합니다. 검증기는 자신의 프로세스만 정리하며, 강제 정리·프로세스 잔류가 발생한 실행을 정상 종료로 판정하지 않습니다. 이 진단 추가만으로 과거의 간헐적 정리 지연 원인이 해결됐다고 판단하지 않습니다.
 
+## 접촉 전후 상태와 제어기 관측
+
+`MANIPULATION_STEP_WITNESS=1`로 검증기를 실행하면 각 소유 실행 폴더에 `step-witness.json`을 추가합니다. 재빌드한 네이티브 플러그인이 필요합니다. 기존 `physics.json`과 정상 종료·접촉 판정은 유지합니다.
+
+네이티브 기록은 최근 512개 물리 스텝의 계산 직전 `qpos/qvel/ctrl`, 계산 직후 상태와 스텝 ID를 보존합니다. 첫 접촉이나 정지에서 기록 창을 고정하고, 인터록 적용 후 상태를 별도로 남깁니다. `ctrl`은 그 스텝에 적용된 액추에이터 입력이며 관절 목표 라디안이라는 일반 의미를 부여하지 않습니다. 파일 쓰기는 종료 시 수행합니다. 상태·접촉 수와 용량 제한, 잘린 기록, 오류를 확인한 뒤 분석해야 합니다. 현재 실증 대상은 모델을 바꾸지 않는 headless 실행입니다.
+
+제어기의 표준 상태는 별도 관측기로 수집합니다. 실행 전에 독립 도메인을 정하고, 새 파일의 부모 폴더를 준비합니다.
+
+```bash
+source ./manipulation_env.sh
+python3 capture_controller_witness.py --domain 202 \
+  --output runtime/새진단폴더/controller-witness.json --duration 120 --capacity 20000
+```
+
+이 도구는 두 제어기의 `controller_state`, 액션 상태와 `/clock`을 구독합니다. 위치·속도·오차의 현대 필드와 호환 필드를 보존하고, 원천 stamp와 수신 단조 시각을 분리합니다. 표준 메시지에는 native 스텝 ID가 없어 같은 2ms 스텝과 정확히 일치한다고 판단하지 않습니다. 액션 UUID를 요청 ID로 추정하지도 않습니다. 실행의 모델·도메인·시계·요청 자료와 함께 연결해야 합니다. 용량 때문에 제거된 표본과 잘못된 입력은 계수에 남으며, DDS 전송 유실을 모두 측정한 값은 아닙니다.
+
+접촉 전 취소와 접촉 후 취소는 별도로 실행합니다.
+
+```bash
+MANIPULATION_STEP_WITNESS=1 python3 verify_operator_demos.py \
+  --domain 201 --port 8911 --no-render --cancel-after-latch
+```
+
+접촉 후 취소 검사는 고정 장애물의 인터록이 걸리고 두 제어기가 비활성인 상태에서 취소합니다. 완료 자료의 run ID, native 원본 해시와 내용, 스텝 coverage, 모니터 소스, timestep과 접촉 쌍을 대조합니다. 정상 취소와 물리 시연 전체 완료를 구분하며, 과거의 지연이 매번 발생한다고 가정하지 않습니다.
+
 ## 보관한 실행 기록
 
 | 모델 | 검증 날짜 (KST) | headless / GUI / 창 닫기 경로 | 최대 관절 오차 | 요약 |

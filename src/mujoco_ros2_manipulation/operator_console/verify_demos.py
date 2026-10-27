@@ -17,8 +17,10 @@ from ..model_build.integrity import file_sha256
 from ..paths import ROOT
 from ..verification.reports import VerificationReport, utc_now
 from ..verification.runner import group_gone, stop_process
+from ..verification.diagnostics import check_stop_physics
 from ..workcells.config import load_workcell
 from ..workcells.contact_comparison import compare_runs
+from ..workcells.contact_demo import OBSTACLE_BODY
 from ..workcells.integrity import check_workcell
 from ..workcells.motion_request import command
 from ..workcells.timing_comparison import compare_timing
@@ -96,11 +98,62 @@ def archive_console_evidence(session, destination):
     return evidence, errors
 
 
+def checked_cancelled_report(job, root, domain, started_utc, *, require_latched=False,
+                             expected_timestep=None):
+    """Validate the cancelled nested run, including its actual contact condition."""
+    require(job.get("status") == "cancelled" and job.get("comparison") is None,
+            "Expected a cancelled comparison without a completed comparison")
+    results = job.get("results", [])
+    require(len(results) == 1 and results[0].get("variant") == "contact",
+            "Cancelled comparison ran another variant")
+    summary = results[0]
+    path = Path(summary["report_path"]).resolve()
+    expected = root / "runtime/validation/runs" / summary["run_id"] / "result.json"
+    require(path == expected.resolve() and path.parent.parent == (root / "runtime/validation/runs").resolve(),
+            "Cancelled report escaped its owned verification directory")
+    require(path.stat().st_size <= 64 * 1024 * 1024, "Cancelled report is unexpectedly large")
+    require(file_sha256(path) == summary["report_sha256"], "Cancelled report changed")
+    value = json.loads(path.read_text())
+    require(value["run_id"] == summary["run_id"] and value["ros_domain_id"] == domain,
+            "Cancelled report belongs to another launch/domain")
+    require(datetime.fromisoformat(value["started_utc"]) >= datetime.fromisoformat(started_utc),
+            "Cancelled report reused archived evidence")
+    require(value["status"] == "interrupted" and value["shutdown_clean"] is True
+            and value["process_group_gone"] is True
+            and value.get("error", {}).get("type") == "DemoCancelled",
+            "Nested cancellation did not finish with clean owned shutdown")
+    if require_latched:
+        physics = value.get("physics") or {}
+        require(value.get("failure_stage") == "approach_fixed_obstacle"
+                and physics.get("complete") is True and physics.get("stop_latched") is True
+                and physics.get("contacts", 0) > 0 and physics.get("hold_ticks", 0) >= 10,
+                "Cancellation did not occur after a latched contact with a stationary hold")
+        physics_path = path.parent / "physics.json"
+        require(physics_path.resolve().parent == path.parent
+                and physics_path.stat().st_size <= 64 * 1024 * 1024,
+                "Cancelled physics report escaped its run or exceeded its bound")
+        require(file_sha256(physics_path) == value.get("physics_report_sha256")
+                and json.loads(physics_path.read_text()) == physics,
+                "Cancelled physics report changed or differs from embedded evidence")
+        require(expected_timestep is not None, "Expected physics timestep is required")
+        check_stop_physics(physics, run_id=value["run_id"],
+                           source_sha256=file_sha256(root / "native/step_monitor.hpp"),
+                           timestep=expected_timestep)
+        require(physics.get("stop_reason") == "contact"
+                and all(OBSTACLE_BODY in p.get("bodies", [])
+                        and any(n.startswith("left_") for n in p["bodies"])
+                        and p.get("min_distance_m", -1) > -.01 for p in physics["pairs"]),
+                "Latched cancellation has an unexpected stop reason or contact pair")
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain", type=int, default=156)
     parser.add_argument("--port", type=int, default=8879)
     parser.add_argument("--no-render", action="store_true")
+    parser.add_argument("--cancel-after-latch", action="store_true",
+                        help="Cancel after the fixed obstacle has latched and both controllers stopped")
     args = parser.parse_args()
     if not 0 <= args.domain <= 232 or not 1024 <= args.port <= 65535:
         parser.error("Invalid isolated domain or loopback port")
@@ -268,25 +321,55 @@ def main():
         if not args.no_render:
             require(set(run_ids).issubset(frames), "A live run had no matching fresh rendered frame")
 
-        report.stage("cancel_active_contact_job")
+        report.stage("cancel_latched_contact_job" if args.cancel_after_latch else "cancel_active_contact_job")
         identifier = start("contact_comparison")
+        stopped_since = [None]
         def approaching():
             state = observe(identifier)
             current = state["demo"]["current"]
             if current["job_id"] == identifier and current["status"] in ("succeeded", "failed", "cancelled"):
                 raise RuntimeError("Contact job ended before cancellation was exercised")
-            return state if (current["job_id"] == identifier and current.get("variant") == "contact"
-                             and current.get("stage") in ("approach_fixed_obstacle", "waiting_for_frame")) else None
-        until(approaching, 120, "owned contact approach before cancellation")
+            matching = (current["job_id"] == identifier and current.get("variant") == "contact"
+                        and current.get("stage") in ("approach_fixed_obstacle", "waiting_for_frame"))
+            if not matching:
+                return None
+            if args.cancel_after_latch:
+                guard = state.get("guard") or {}
+                if not (current.get("stage") == "approach_fixed_obstacle"
+                        and guard.get("latched") is True and guard.get("phase") == "stopped"
+                        and all((guard.get("controllers") or {}).get(i.controller) == "inactive"
+                                for i in cell.instances)
+                        and state.get("state_age_sec") is not None and state["state_age_sec"] < 1):
+                    stopped_since[0] = None
+                    return None
+                if stopped_since[0] is None:
+                    stopped_since[0] = time.monotonic()
+                return state if time.monotonic() - stopped_since[0] >= .1 else None
+            return state
+        cancellation_state = until(approaching, 120, "owned contact approach before cancellation")
+        cancellation_launch = cancellation_state["demo"]["current"].get("active_launch") or {}
+        require(cancellation_launch.get("run_id") and cancellation_launch["run_id"] not in run_ids,
+                "Cancellation did not observe a new owned launch")
+        report.update(cancellation_observation=dict(run_id=cancellation_launch["run_id"],
+            stage=cancellation_state["demo"]["current"]["stage"],
+            after_latch=args.cancel_after_latch, guard=cancellation_state.get("guard"),
+            simulation_sec=cancellation_state.get("simulation_sec")))
         response = api("/api/demos/stop", dict(job_id=identifier))
         require(response["job_id"] == identifier and response["status"] == "cancel_requested", "Wrong cancellation acknowledgement")
         cancelled = save_job(identifier, 90, "cancelled")
         require(cancelled["comparison"] is None
                 and all(r["variant"] != "control" for r in cancelled["results"]),
                 "Cancelled contact job continued to its control/comparison")
+        nested = checked_cancelled_report(cancelled, ROOT, args.domain, report.data["started_utc"],
+                                          require_latched=args.cancel_after_latch,
+                                          expected_timestep=cell.data["physics"]["timestep"])
+        require(nested["run_id"] == cancellation_launch["run_id"],
+                "Cancelled evidence differs from the observed launch")
         report.update(motion_checks_passed=True, exclusive_owner_checked=True,
                       invalid_scenario_rejected=True, wrong_job_stop_rejected=True,
                       manual_commands_rejected=True, active_cancel_checked=True,
+                      latched_cancel_checked=args.cancel_after_latch,
+                      cancelled_nested_run_id=nested["run_id"],
                       renderer_checked=not args.no_render)
     except (Exception, KeyboardInterrupt) as error:
         failed = True

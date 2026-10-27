@@ -11,11 +11,14 @@ from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 
 
 def diagnostic_environment(report, args):
-    return dict(
+    environment = dict(
         os.environ,
         MANIPULATION_DIAGNOSTICS_PATH=str(report.directory / "physics.json"),
         MANIPULATION_DIAGNOSTICS_RUN_ID=report.run_id,
     )
+    if os.environ.get("MANIPULATION_STEP_WITNESS") == "1":
+        environment["MANIPULATION_STEP_WITNESS_PATH"] = str(report.directory / "step-witness.json")
+    return environment
 
 
 def check_step_coverage(data, *, run_id, source_sha256, timestep):
