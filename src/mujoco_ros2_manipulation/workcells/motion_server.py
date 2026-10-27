@@ -44,6 +44,7 @@ from mujoco_ros2_manipulation.workcells.motion_request import (
 )
 from mujoco_ros2_manipulation.workcells.motion_review import PlanReviewStore, ReviewRejected
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
+from mujoco_ros2_manipulation.workcells.operation_contract import describe_operation
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
 from mujoco_ros2_manipulation.workcells.plan_selection import MAX_PLAN_CANDIDATES, PlanCandidateRejected, PlanCandidatesExhausted, select_clearance_plan
 from mujoco_ros2_manipulation.workcells.contracts import describe_workcell
@@ -143,7 +144,7 @@ class MotionCommandServer(WorkcellVerification):
             compute_budget_sec=self.compute_budget_sec, max_plan_candidates=self.max_plan_candidates,
             selection_policy="Bounded first valid RRT or two arm-order waypoint candidates; not shortest-path optimization",
             implementation_sha256={name: file_sha256(Path(__file__).with_name(name))
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
+                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py", "request_trace.py", "verify.py", "planning_adapter.py", "execution_adapter.py", "operation_contract.py", "environment_clearance.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
             note="Warm persistent server; simulator startup excluded from request latency. Simulation only."))
 
     def destroy_node(self):
@@ -194,6 +195,13 @@ class MotionCommandServer(WorkcellVerification):
             current = self.review_store.summary()
             reply["review"] = (current if current and current["plan_request_id"] == trace.data["review"]["plan_request_id"]
                                else deepcopy(trace.data["review"]))
+        reply["operation"] = describe_operation(dict(trace.data, **reply))
+        # Status polling carries the latest event. Full bounded timelines are
+        # available from the requested trace; do not repeat them in forty rows.
+        observed_events = reply["operation"]["events"]
+        observed_events["items"] = observed_events["items"][-1:]
+        observed_events["retained_count"] = len(observed_events["items"])
+        observed_events["omitted_prefix_count"] = observed_events["source_count"] - observed_events["retained_count"]
         self.replies[trace.data["request_id"]] = reply
         self.publish(reply)
 
@@ -311,6 +319,9 @@ class MotionCommandServer(WorkcellVerification):
             review = self.review_store.invalidate("Plan review was cancelled; create a new plan")
             if identifier in self.replies:
                 reply = dict(self.replies[identifier], review=review, stage="plan_revoked")
+                # The revoked review is a new status observation. Its old
+                # projection described plan_ready and must not be replayed.
+                reply["operation"] = describe_operation(reply)
                 self.replies[identifier] = reply
                 self.publish(reply)
         elif identifier in self.replies:
@@ -641,6 +652,7 @@ class MotionCommandServer(WorkcellVerification):
         self._defer_trace_persist = False
         self._trace_journal_cursor = 0
         self.handles = []
+        self.execution_ledger = self.execution_adapter = self.execution_transport = None
         self.motion_start = None
         self.observations, self.first_by_arm = [], set()
         trace.data["status"] = "running"
@@ -802,6 +814,8 @@ class MotionCommandServer(WorkcellVerification):
                         raise EnvironmentClearanceRejected("Observed fixed-environment clearance below policy")
             trace.finish("succeeded")
         except BaseException as error:
+            ledger = self.execution_ledger
+            execution_uncertain = ledger is not None and ledger.cleanup_uncertain
             if isinstance(error, (CommandCancelled, KeyboardInterrupt)):
                 trace.data["failure_kind"] = "cancelled"
             elif isinstance(error, PlanningBudgetExceeded):
@@ -821,8 +835,11 @@ class MotionCommandServer(WorkcellVerification):
             elif isinstance(error, ReviewRejected):
                 trace.data["failure_kind"] = "review_invalidated"
             else:
-                trace.data["failure_kind"] = "execution_failed" if self.dispatched > before_dispatch else "planning_error"
-            if self.dispatched > before_dispatch:
+                trace.data["failure_kind"] = "execution_failed" if self.dispatched > before_dispatch or execution_uncertain else "planning_error"
+            if self.dispatched > before_dispatch or execution_uncertain:
+                # A transport exception can leave submission unknown even when
+                # no acceptance future was returned and the send counter is 0.
+                self.blocked = self.blocked or execution_uncertain
                 try:
                     self.quiet(cancellable=False)
                 except Exception as settling_error:
@@ -839,7 +856,18 @@ class MotionCommandServer(WorkcellVerification):
                 self.compute_budget = None
             trace.data["shutdown_requested"] = self.stop_requested
             trace.data["dispatched_goals"] = self.dispatched - before_dispatch
-            trace.data["action_results"] = [dict(status=f.result().status, error_code=f.result().result.error_code) for _, f in self.handles if f.done() and f.result() is not None]
+            ledger = self.execution_ledger
+            if ledger is not None:
+                transport = ledger.snapshot()
+                trace.data["execution_transport"] = transport
+                # Read the bounded terminal observations already validated by
+                # the adapter. Re-reading an exceptional ROS future here could
+                # erase the primary failure and prevent trace persistence.
+                trace.data["action_results"] = [dict(status=item["terminal_status"],
+                    error_code=item["terminal_error_code"])
+                    for item in transport["attempts"] if item["terminal_seen"]]
+            else:
+                trace.data["action_results"] = []
             trace.data["observations"] = self.observations
             trace.data["contact_guard"] = deepcopy(self.contact_guard)
             self._defer_trace_persist = False

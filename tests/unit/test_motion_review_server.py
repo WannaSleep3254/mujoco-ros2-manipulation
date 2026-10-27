@@ -24,6 +24,8 @@ from mujoco_ros2_manipulation.workcells.motion_diagnostics import measure_endpoi
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 from mujoco_ros2_manipulation.workcells.environment_clearance import EnvironmentClearanceRejected
+from mujoco_ros2_manipulation.workcells.operation_contract import describe_operation
+from mujoco_ros2_manipulation.workcells.execution_adapter import ExecutionLedger, ExecutionAttempt
 
 
 def require(condition, message):
@@ -42,6 +44,7 @@ def load_server():
         validate_approval=validate_approval,require=require,Spline=Spline,PlanningBudget=PlanningBudget,
         PlanningBudgetExceeded=PlanningBudgetExceeded,PlanCandidatesExhausted=type("Candidates",(RuntimeError,),{}),
         EnvironmentClearanceRejected=EnvironmentClearanceRejected,file_sha256=file_sha256,
+        describe_operation=describe_operation,
         TimingRejected=type("Timing",(RuntimeError,),{}),measure_endpoints=measure_endpoints,
         path_clearance_diagnostic=path_clearance_diagnostic,evaluate_path=evaluate_path,
         evaluate_states=evaluate_states,sample_schedule=sample_schedule,MAX_PLAN_CANDIDATES=12,
@@ -137,6 +140,14 @@ class ReviewServerTests(unittest.TestCase):
         self.assertEqual(record["review"]["state"],"awaiting_approval")
         self.assertEqual(record["events"][-1]["name"],"terminal")
         self.assertEqual(record["review_payload"]["trajectories"],record["trajectories"])
+        operation = self.node.replies[payload["request_id"]]["operation"]
+        self.assertEqual(operation["source_stage"], "plan_ready")
+        self.assertEqual(operation["phase"], "review")
+        self.assertEqual(operation["mode"], "plan_only")
+        self.assertEqual(operation["plan_request_id"], payload["request_id"])
+        self.assertIsNone(operation["execution_request_id"])
+        self.assertEqual(operation["events"]["retained_count"], 1)
+        self.assertGreater(operation["events"]["omitted_prefix_count"], 0)
 
     def test_approved_curve_is_rechecked_against_fixed_environment_before_dispatch(self):
         _, _, approval = self.make_review()
@@ -272,6 +283,11 @@ class ReviewServerTests(unittest.TestCase):
         payload,_,approval = self.make_review()
         self.send(dict(request_id=payload["request_id"]),"cancel")
         self.assertEqual(self.node.review_store.summary()["state"],"invalidated")
+        revoked = self.node.publish.call_args.args[0]
+        self.assertEqual(revoked["stage"], "plan_revoked")
+        self.assertEqual(revoked["operation"]["source_stage"], "plan_revoked")
+        self.assertEqual(revoked["operation"]["phase"], "review")
+        self.assertIsNone(revoked["operation"]["physical_guard"])
         self.send(approval,"approve")
         self.assertIsNone(self.node.pending)
         self.node.dispatch.assert_not_called()
@@ -307,6 +323,48 @@ class ReviewServerTests(unittest.TestCase):
         record = json.loads((self.node.directory/(payload["request_id"]+".json")).read_text())
         self.assertEqual(record["events"][-1]["name"],"terminal")
         self.node.dispatch.assert_not_called()
+
+    def test_unknown_submission_blocks_even_when_no_send_future_was_returned(self):
+        payload = command(dict(left=.1, right=.1))
+        self.send(payload, "command")
+        def unknown(*args, **kwargs):
+            self.node.execution_ledger = ExecutionLedger(attempts=[ExecutionAttempt(
+                "left", submission_started=True, submission_uncertain=True)],
+                cleanup_requested=True, cleanup_uncertain=True)
+            # A future with an exception must not be read again by finally.
+            future = Mock()
+            future.done.return_value = True
+            future.result.side_effect = RuntimeError("must not erase primary")
+            self.node.handles = [(Mock(), future)]
+            raise RuntimeError("original send failure")
+        self.node.dispatch.side_effect = unknown
+        self.node.process_next()
+        reply = self.node.replies[payload["request_id"]]
+        self.assertEqual(reply["status"], "failed")
+        self.assertEqual(reply["failure_kind"], "execution_failed")
+        self.assertTrue(self.node.blocked)
+        record = json.loads((self.node.directory/(payload["request_id"]+".json")).read_text())
+        self.assertEqual(record["error"]["message"], "original send failure")
+        self.assertEqual(record["dispatched_goals"], 0)
+        self.assertEqual(record["action_results"], [])
+        self.assertTrue(record["execution_transport"]["cleanup_uncertain"])
+        self.node.handles[0][1].result.assert_not_called()
+        later = command(dict(left=.2, right=.2))
+        self.send(later, "command")
+        self.assertIsNone(self.node.pending)
+        self.assertEqual(self.node.replies[later["request_id"]]["status"], "rejected")
+        self.node.dispatch.assert_called_once()
+
+    def test_plan_only_clears_old_execution_ledger_without_reusing_old_diagnostics(self):
+        self.node.execution_ledger = ExecutionLedger(cleanup_uncertain=True)
+        self.node.execution_transport = {"previous_request": True}
+        payload, _, _ = self.make_review()
+        self.assertIsNone(self.node.execution_ledger)
+        self.assertIsNone(self.node.execution_transport)
+        record = json.loads((self.node.directory/(payload["request_id"]+".json")).read_text())
+        self.assertNotIn("execution_transport", record)
+        self.assertEqual(record["action_results"], [])
+        self.assertFalse(self.node.blocked)
 
 
 if __name__ == "__main__":

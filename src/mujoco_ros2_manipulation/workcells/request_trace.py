@@ -82,7 +82,7 @@ class RequestTrace:
         if since == count:
             return count
         event_fields = ("name", "wall_sec", "simulation_sec", "joint_state_stamp_simulation_sec",
-                        "arm", "status", "error_code", "accepted")
+                        "arm", "status", "error_code", "accepted", "controller", "goal_uuid")
         budget_fields = ("limit_wall_sec", "elapsed_wall_sec", "exceeded", "enforcement")
         budget = self.data.get("compute_budget")
         if budget is not None:
