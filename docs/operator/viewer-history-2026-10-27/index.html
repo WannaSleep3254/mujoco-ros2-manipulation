@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="서버 이미지에서 현행 WebGL까지 뷰어의 변화와 화면 기록, 기존 측정 결과, 로컬 서버 정리 이력을 모은 공개 자료입니다."><title>3D 뷰어 전환 과정 및 운영 보존 기록 · 2026-10-27</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--bg:#f1f4f5;--ink:#182b35;--muted:#526772;--line:#d6e0e3;--accent:#126268;--soft:#e9f3f2;--warm:#fff5e6;--warm-ink:#79500b;--blue:#edf2fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Noto Sans KR",sans-serif;word-break:keep-all;overflow-wrap:anywhere}a{color:var(--accent);text-underline-offset:3px}button,a{touch-action:manipulation}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #c86b27;outline-offset:4px}button{font:inherit;cursor:pointer}header{background:#142e37;color:#f4f7f8;padding:62px max(24px,calc((100vw - 1160px)/2)) 48px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:650;color:#a4d5d1;margin:0 0 16px}h1{font-size:clamp(28px,4.2vw,48px);line-height:1.25;letter-spacing:-.04em;margin:0 0 22px}header .lead{max-width:800px;font-size:19px;color:#d7e6e9;margin:0}.meta{display:flex;gap:10px 22px;flex-wrap:wrap;font-size:13px;color:#c0d5da;margin-top:26px}.topbar{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.nav{max-width:1208px;margin:auto;padding:12px 24px;display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}.nav a{font-size:14px;text-decoration:none;color:var(--ink);padding:4px 0}.nav button{margin-left:auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:13px;border-radius:5px;padding:5px 13px}main{max-width:1208px;margin:auto;padding:36px 24px 64px}section{margin-bottom:36px;background:var(--paper);padding:32px;border:1px solid var(--line);border-radius:10px}section h2{font-size:27px;line-height:1.4;margin:0 0 16px;letter-spacing:-.03em}h3{font-size:20px;line-height:1.5;margin:30px 0 12px}h4{font-size:16px;margin:0 0 8px}p{margin:10px 0 16px}.section-no{display:block;font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent);margin-bottom:10px}.note{border-left:4px solid var(--accent);background:var(--soft);padding:17px 20px;margin:20px 0}.note.warn{background:var(--warm);border-color:#b97a21;color:var(--warm-ink)}.note p:last-child{margin-bottom:0}.note p:first-child{margin-top:0}.small{font-size:13px;color:var(--muted)}.tag{display:inline-block;font-size:12px;font-weight:650;border-radius:4px;background:var(--soft);color:#175e57;padding:1px 7px;vertical-align:middle}.tag.proposed{background:var(--blue);color:#264f83}.tag.unmeasured{background:var(--warm);color:var(--warm-ink)}.legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted);margin-top:18px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.panel{border:1px solid var(--line);border-radius:7px;padding:20px}.panel p{margin-bottom:0}.panel ul{padding-left:20px;margin:8px 0 0}.callout{font-size:20px;font-weight:600;max-width:920px}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fact{border-top:2px solid var(--accent);padding:14px 10px;background:#f7fafb}.fact strong{display:block;font-size:23px;line-height:1.5;letter-spacing:-.02em}.fact span{font-size:13px;color:var(--muted)}figure{margin:22px 0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}figcaption{font-size:13px;color:var(--muted);margin-top:10px}.table-scroll{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:6px;margin:18px 0}table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.7}caption{text-align:left;font-size:13px;color:var(--muted);padding:12px 14px;background:#f8fafb}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:13px 14px}th{font-weight:650;background:#edf3f4}tr:last-child td,tr:last-child th{border-bottom:0}td:first-child{font-weight:600}.wide{min-width:850px}.metrics{min-width:790px}.source{font-size:12px;white-space:nowrap}code{font:0.88em/1.7 ui-monospace,monospace;background:#edf2f4;padding:2px 5px;border-radius:3px;word-break:break-all}.flow{padding:20px;background:#f6f9fa;border:1px solid var(--line);border-radius:7px}.flow-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center}.node{padding:16px;border:1px solid #b9cdd2;background:var(--paper);border-radius:6px}.node strong{display:block;font-size:15px}.node span{display:block;font-size:13px;color:var(--muted);margin-top:4px}.arrow{text-align:center;font-size:22px;color:var(--accent)}.flow-label{font-size:13px;color:var(--accent);font-weight:650;margin:0 0 10px}.flow-row+.flow-label{margin-top:20px}.stage{display:grid;grid-template-columns:100px 1fr;gap:22px;border-top:1px solid var(--line);padding:22px 0}.stage:last-child{padding-bottom:0}.stage-id{font-size:13px;font-weight:700;color:var(--accent);padding-top:4px}.stage h3{margin:0 0 10px}.stage p{margin:8px 0}.stage ul{margin:8px 0;padding-left:20px}ul,ol{padding-left:24px}li{margin:6px 0}.sources{font-size:14px}.sources li{padding:8px 0;border-bottom:1px solid var(--line)}.sources span{display:block;font-size:13px;color:var(--muted)}details{border:1px solid var(--line);border-radius:6px;margin:14px 0;padding:14px 18px}summary{font-weight:600;cursor:pointer}.check{padding:12px 0;border-bottom:1px solid var(--line)}.check:last-child{border:0}.check strong{display:block}.footer{font-size:13px;color:var(--muted);display:flex;gap:12px 24px;flex-wrap:wrap}.nowrap{white-space:nowrap}
+@media(max-width:760px){html{scroll-padding-top:145px}header{padding:38px 20px 30px}.nav{padding:10px 20px;gap:8px 14px}.nav a{font-size:13px}.nav button{margin-left:0}main{padding:22px 14px 38px}section{padding:22px 18px;margin-bottom:22px}section h2{font-size:23px}.grid{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.flow{padding:16px}.flow-row{grid-template-columns:1fr;gap:6px}.arrow{transform:rotate(90deg);height:30px}.stage{grid-template-columns:1fr;gap:4px}.callout{font-size:18px}.meta{gap:6px 16px}header .lead{font-size:17px}}
+@media print{@page{size:A4;margin:16mm}body{background:white;font-size:10pt;line-height:1.65}header{padding:0 0 18px;background:white;color:#182b35}header .lead,.eyebrow,.meta{color:#526772}.topbar,.print-hide{display:none}main{max-width:none;padding:0}section{border:0;border-radius:0;padding:15px 0;margin:0;break-inside:auto}h1{font-size:27pt}h2{font-size:18pt}h3{font-size:13pt}h2,h3,caption{break-after:avoid}.panel,.fact,.stage,.node,tr{break-inside:avoid}.table-scroll{overflow:visible;border:0}.wide,.metrics{min-width:0}table{font-size:8pt}th,td{padding:7px}a{color:inherit}.source{white-space:normal}.flow-row{grid-template-columns:1fr auto 1fr auto 1fr}figure{max-width:150mm;margin:14px auto}details{display:block}.footer{padding-top:14px}}
+</style>
+<style>
+/* Editorial review: paragraph groups preserve meaning as the viewport changes. */
+.copy-paragraphs{margin:10px 0 18px}.copy-paragraphs p{margin:0 0 10px}
+.summary-grid .panel-followup{margin-top:16px}.summary-grid li{margin:7px 0}
+.role-summary{margin:10px 0 22px}.role-summary p{margin-bottom:8px}.role-summary ul{margin-top:0}
+.validation-summary{padding-left:16px;border-left:2px solid var(--line)}
+.runtime-summary{margin:22px 0;padding:20px;background:#f6f9fa;border:1px solid var(--line);border-radius:7px}
+.runtime-list{margin:12px 0}.runtime-list>div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.runtime-list>div:last-child{border:0}.runtime-list dt{font-weight:650;color:var(--accent)}.runtime-list dd{margin:0}
+.qt-scope{margin:20px 0}.qt-scope h4{font-size:17px}.qt-scope p,.qt-scope ul{margin:10px 0}
+.evaluation-summary{margin:10px 0 20px}.evaluation-summary p{margin-bottom:8px}.evaluation-summary ul{margin-top:0}
+@media(max-width:760px){.desktop-break{display:none}.runtime-list>div{grid-template-columns:1fr;gap:3px}}
+@media print{.desktop-break{display:none}.runtime-summary,.qt-scope{break-inside:avoid}}
+</style>
+<style id="layout-review-style">
+/* Screenshot review: preserve semantic text flow, token boundaries and content-driven height. */
+body{font-family:"Noto Sans KR",system-ui,-apple-system,sans-serif}
+h1,h2,h3,h4,p,li,td,th,dt,dd{word-break:keep-all;overflow-wrap:break-word}
+.panel,.node,.fact,.stage>div,.runtime-card{min-inline-size:0;height:auto}
+.panel p,.runtime-card p{line-height:1.85}
+.panel .panel-followup{margin-top:16px}
+.selection-points{padding-top:6px}
+.callout{max-inline-size:100%;font-size:21px;line-height:1.65}
+code{display:inline-block;position:static;white-space:nowrap;word-break:normal;overflow-wrap:normal;max-inline-size:100%;line-height:1.5;vertical-align:baseline;letter-spacing:0}
+code.code-wrap{white-space:normal;word-break:break-all;overflow-wrap:anywhere}
+.runtime-grid{margin-top:16px;gap:16px;align-items:stretch}
+.runtime-card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:20px}
+.runtime-role{display:block;color:var(--accent);font-weight:650;font-size:13px;margin-bottom:5px}
+.runtime-card h4{font-size:20px;line-height:1.5;margin:0 0 12px}
+.api-token{margin:0 0 12px}.api-token code{font-size:16px;padding:5px 9px}
+.runtime-card p{margin:0}
+.runtime-notes{margin-top:18px}.runtime-notes p{margin:10px 0}
+.local-operation{margin:20px 0 0;padding:20px;border-top:1px solid var(--line)}
+.local-operation h4{margin-bottom:12px}
+.endpoint-row{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+.endpoint-label{font-size:13px;color:var(--muted)}
+.local-operation p{margin:12px 0 0}
+.extension-sequence{margin:8px 0 16px}
+.extension-scope p{margin:12px 0}
+td p{margin:0 0 10px}td p:last-child{margin-bottom:0}
+.source{display:inline-block;white-space:nowrap}
+.sources a{overflow-wrap:anywhere}
+.review-origin{font-size:12px;color:var(--muted);margin-top:14px}
+@media(max-width:900px){.runtime-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.callout{font-size:19px}.local-operation{padding:16px 0}.runtime-card{padding:16px}.runtime-card h4{font-size:18px}}
+@media print{.runtime-grid{grid-template-columns:1fr 1fr}.runtime-summary{break-inside:auto}.runtime-card,.local-operation{break-inside:avoid}.api-token code{font-size:10pt}}
+</style>
+<style id="overview-list-style">
+.overview-context{margin:20px 0 24px;padding:0}
+.overview-context-row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:18px;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.overview-context-row:last-child{border-bottom:0}
+.overview-context dt{margin:0;color:var(--accent);font-weight:650;line-height:1.85}
+.overview-context dd{margin:0;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+@media(max-width:760px){.overview-context-row{grid-template-columns:1fr;gap:4px;padding:12px 0}.overview-context{margin:16px 0 22px}}
+@media print{.overview-context-row{break-inside:avoid;grid-template-columns:66px minmax(0,1fr);gap:12px;padding:7px 0}}
+</style>
+<style id="technical-summary-style">
+.technical-summary h4{margin-bottom:16px}
+.technical-details{margin:0;padding:0}
+.technical-details>div{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.technical-details>div:first-child{padding-top:0}
+.technical-details>div:last-child{padding-bottom:0;border-bottom:0}
+.technical-details dt{margin:0;color:var(--muted);font-size:13px;font-weight:650;line-height:1.8}
+.technical-details dd{margin:0;font-size:15px;line-height:1.8;word-break:keep-all;overflow-wrap:break-word}
+.technical-details dd>span{display:block}
+.technical-details .technical-detail-note{margin-top:3px;font-size:12px;color:var(--muted)}
+@media(max-width:760px){.technical-details>div{grid-template-columns:1fr;gap:4px}.technical-details dd{font-size:15px}}
+</style>
+<style id="summary-card-alignment-style">
+/* Shared semantic rows; desktop subgrid aligns corresponding separators without fixed heights. */
+@supports(grid-template-rows:subgrid){
+ @media(min-width:761px){
+  #summary-panels{grid-template-rows:auto auto auto auto;row-gap:0}
+  #summary-panels>.technical-summary{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0}
+  #summary-panels>.technical-summary h4{margin:0 0 16px}
+  #summary-panels .technical-details{display:contents}
+ }
+}
+#current>figure>figcaption{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;line-height:1.7}
+#current>figure>figcaption a{white-space:nowrap}
+</style>
+<style id="consistent-report-list-style">
+.report-list{--list-label-width:108px;margin:16px 0 22px;padding:0}
+.report-list>div{display:grid;grid-template-columns:var(--list-label-width) minmax(0,1fr);gap:18px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line)}
+.report-list>div:last-child{border-bottom:0}
+.report-list dt{margin:0;color:var(--accent);font-weight:650;line-height:1.85}
+.report-list dd{margin:0;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+.report-list dd>p{margin:0}
+.uniform-panel h4{margin-bottom:16px}
+.evaluation-summary>.report-list{margin-top:8px}
+.stage .report-list{--list-label-width:100px;margin:8px 0 18px}
+.stage .report-list>div{padding:10px 0}
+.role-summary{margin-bottom:20px}
+.bullet-list{margin:12px 0 18px;padding-left:22px}
+.bullet-list>li{margin:8px 0;line-height:1.85;padding-left:1px}
+.bullet-list>li:first-child{margin-top:0}
+.bullet-list>li:last-child{margin-bottom:0}
+.panel>.bullet-list{margin:10px 0 0}
+.stage .bullet-list{margin:8px 0 18px;padding-left:22px}
+.validation-list>.bullet-list{margin:12px 0 20px}
+@media(max-width:760px){.report-list>div{grid-template-columns:1fr;gap:4px;padding:12px 0}.report-list{margin:14px 0 20px}}
+@media print{.report-list>div{break-inside:avoid;padding:7px 0;gap:12px}.report-list{margin:8px 0 12px}.uniform-panel{break-inside:auto}.bullet-list>li{break-inside:avoid}}
+</style>
+<style id="visual-title-pattern-style">
+.visual-title{color:var(--ink);font-size:14px;font-weight:650;line-height:1.7;letter-spacing:0}
+.flow>.visual-title{margin:0 0 16px}
+table caption.visual-title{padding:12px 14px;text-align:left}
+.visual-note{margin:-6px 0 20px;font-size:13px;line-height:1.75;color:var(--muted)}
+.rationale-table{min-width:650px;table-layout:fixed}
+.rationale-table thead th:first-child{width:21%}
+.rationale-table thead th:last-child{width:108px}
+.rationale-table tbody th{background:var(--paper);font-weight:600}
+.rationale-table .evidence-cell{white-space:nowrap}
+.rationale-table .tag{font-size:12px;text-decoration:none}
+@media print{.rationale-table{min-width:0;table-layout:auto}.visual-note{font-size:8pt}.visual-title{font-size:10pt}}
+</style>
+<style id="completion-criteria-style">
+.stage .completion-block{background:var(--soft);padding:16px 18px;border-radius:4px;margin-top:18px}
+.stage .completion-block>h4{margin:0 0 8px;color:var(--accent);font-size:14px;font-weight:650}
+.stage .completion-criteria{margin:0;padding-left:20px;list-style:disc}
+.stage .completion-criteria>li{margin:0 0 7px;line-height:1.85;padding-left:2px}
+.stage .completion-criteria>li:last-child{margin-bottom:0}
+@media(max-width:760px){.stage .completion-block{padding:14px}.stage .completion-criteria{padding-left:18px}}
+@media print{.stage .completion-block{break-inside:auto;padding:10px 12px}.stage .completion-criteria>li{break-inside:avoid;margin-bottom:4px}}
+</style><style>
+.media-player{display:block;width:100%;height:auto;max-height:76vh;background:#0e1d25;border:1px solid var(--line);border-radius:6px}
+.stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.stage-card{min-width:0;border:1px solid var(--line);border-radius:7px;padding:20px}.stage-card h3{margin:6px 0 12px;font-size:21px}.stage-card p{font-size:14px}.stage-card .tag{margin-bottom:4px}.stage-card img{border-radius:4px}.stage-card figure{margin:16px 0}.media-links{font-size:13px;margin:12px 0 0}.media-links a{display:inline-block;margin-right:12px}.table-scroll:focus-visible{outline:3px solid #c86b27;outline-offset:3px}.comparison-table{min-width:760px}.comparison-table th[scope=row]{background:white;min-width:130px}.comparison-table td{width:27%}.metric-table{min-width:660px}pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;background:#f6f9fa;padding:16px;border-radius:4px;font:12px/1.7 ui-monospace,monospace}.provenance{padding:16px 20px;background:#f6f9fa;border:1px solid var(--line);border-radius:6px}.provenance p{font-size:14px;margin:4px 0 12px}.provenance p:last-child{margin-bottom:0}.evidence-links{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px}.runtime-table{min-width:600px}video:focus-visible{outline:3px solid #c86b27;outline-offset:4px}.video-caption{margin-top:10px}.page-source{font-size:13px}#cleanup-status{font-weight:600}
+@media(max-width:1000px){.stage-grid{grid-template-columns:1fr}.stage-card figure{max-width:800px;margin:16px auto}.stage-card{padding:18px}.media-player{max-height:none}}
+@media print{video{display:none!important}.stage-grid{display:block}.stage-card{margin-bottom:18px;break-inside:avoid}.stage-card figure{max-width:100mm}.comparison-table,.metric-table,.runtime-table{min-width:0}.comparison-table th[scope=row]{min-width:0}.provenance{break-inside:avoid}.media-links{display:block}}
+</style></head><body>
+<header><p class="eyebrow">개발 이력 · 운영 정리 · 2026-10-27</p><h1>3D 뷰어 전환 과정 및 운영 보존 기록</h1><p class="lead">서버 2D 이미지 스트리밍, 초기 WebGL, 현행 WebGL을 화면과 영상으로 비교합니다.<br>구형 서버는 실행 환경 대신 소스 코드와 자료 형태로 보존합니다.</p><div class="meta"><span>대상: FR5 + UR5e 뷰어</span><span>현행 : main (a095f44)</span><span>보존 문서: v1.6 (양식 v1.9)</span></div></header>
+<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="../../index.html">자료 모음</a><a href="#summary">요약</a><a href="#screens">화면·영상</a><a href="#features">기능 비교</a><a href="#measurements">기존 측정</a><a href="#cleanup">서버 정리</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
+<main>
+<section id="summary"><span class="section-no">Overview / What changed</span><h2>단순 출력 화면에 조작·검토 기능 추가</h2><p class="callout">서버의 2D 이미지 스트리밍 화면에서, 브라우저가 3D 모델을 직접 렌더링하고 계획을 확인하는 화면으로 확장되었습니다.</p><p>초기 WebGL에서는 시점을 직접 조작할 수 있게 했습니다.<br>현행 버전은 표시할 모델과 실행 대상을 구분하고, 계획 검토·승인·이력 연결과 형상 탐색을 지원합니다.</p>
+<div class="note warn"><p><strong>포트 번호는 개발 버전이 아닙니다.</strong></p></div>
+<dl class="report-list"><div><dt>A · 이미지</dt><dd>10월 22일 원본 시연은 촬영 코드 <code>50b549b</code>로 확인됩니다. 8765의 새 촬영본은 별도의 현재 운영 기록입니다.</dd></div><div><dt>B · 초기 3D</dt><dd>원본 저장소 화면 코드 <code>9b390ef</code>를 기준으로 설명합니다. 8890의 적재된 Python 코드 전체 버전은 확정하지 않습니다.</dd></div><div><dt>C · 현행 3D</dt><dd>main <code>a095f44</code>를 기준으로 합니다. 8897은 촬영 당시 로컬 main 뷰어의 포트이며, 8902 개발 환경은 비교 당시 같은 화면 기능을 갖습니다.</dd></div></dl>
+<div class="evidence-links"><a href="evidence/capture-summary.json">촬영 방법과 영상 해시</a><a href="evidence/publication-notes.json">공개 범위와 기준 코드</a><a href="../viewer-improvements-2026-10-26/index.html">WebGL 뷰어 개선과 표시 성능</a><a href="../viewer-direction-2026-10-22/index.html">뷰어 개발 방향성</a></div></section>
+<section id="screens"><span class="section-no">01 / Screens &amp; recordings</span><h2>WebGL 확장 단계</h2>
+<figure aria-labelledby="figure-title-1"><img src="media/comparison.jpg" alt="서버 이미지, 초기 WebGL, 현행 WebGL의 촬영 화면을 나란히 배치한 비교" loading="lazy"><figcaption><span class="visual-title" id="figure-title-1">그림 1. 종료 전 화면 비교</span> · <a href="media/comparison.jpg">원본 보기</a></figcaption></figure>
+<figure aria-labelledby="video-title-1"><video class="media-player" controls playsinline preload="none" poster="media/comparison.jpg" aria-describedby="capture-note"><source src="media/comparison-v1.1.mp4" type="video/mp4"><a href="media/comparison-v1.1.mp4">비교 영상 열기</a></video><figcaption><span class="visual-title" id="video-title-1">영상 1. 세 단계의 화면 기록</span> · <a href="media/comparison-v1.1.mp4">영상 원본</a></figcaption></figure>
+<p class="visual-note" id="correction-note"><strong>v1.1 영상 수정:</strong> 8897 영상에서 3D 하단이 잘리던 부분을 다시 촬영했습니다. 전체 페이지에서 3D 카드 전체를 가져와, 형상 패널을 펼쳐도 캔버스가 빠짐없이 보이도록 구성했습니다. A·B는 정리 전 촬영본을 유지하고 C만 정리 후 다시 촬영했습니다. <a href="evidence/framing-validation.json">촬영 영역 검증</a></p>
+<p class="visual-note" id="capture-note"><strong>화면 기록(샘플 캡처 재구성), 성능평가 영상 아님.</strong> 브라우저 화면을 약 250 ms 간격으로 캡처하고, 촬영 공백을 제외해 초당 4개 표본으로 재구성했습니다. 24 fps 인코딩에는 반복 프레임이 포함됩니다. 짧은 구간이 먼저 끝나면 마지막 화면을 유지합니다. 새 촬영에서는 로봇 명령을 발행하지 않았습니다. 촬영·인코딩 속도로 실제 표시 FPS나 입력 지연을 판단할 수 없습니다. 각 화면은 서로 다른 실행 상태를 기록했으며, 로봇 자세와 카메라·픽셀 색상을 맞춘 시험이 아닙니다.</p>
+<div class="stage-grid">
+<article class="stage-card"><span class="tag">A · 서버 이미지</span><h3>서버의 캡처 이미지</h3><p>MuJoCo 렌더러가 관절 상태로 이미지를 만들고 웹 화면으로 보냅니다. 10월 22일 시연은 카메라 프리셋과 관절 목표 입력을 사용했습니다.</p><figure aria-labelledby="figure-title-2"><img src="media/stage-a-runtime.jpg" alt="8765 서버 이미지 뷰어의 종료 전 운영 화면" loading="lazy"><figcaption><span class="visual-title" id="figure-title-2">그림 2. 8765 운영 기록</span></figcaption></figure><video class="media-player" controls playsinline preload="none" poster="media/stage-a-runtime.jpg" aria-label="서버 이미지 뷰어 화면 기록"><source src="media/stage-a-camera.mp4" type="video/mp4"><a href="media/stage-a-camera.mp4">영상 열기</a></video><p class="media-links"><a href="media/stage-a-runtime.jpg">사진 원본</a><a href="media/stage-a-camera.mp4">영상 2. 이미지 화면</a></p><p class="small">새 촬영본의 실행 코드 전체 버전은 미확정입니다. 아래 22일 원본 영상과 구분합니다.</p></article>
+<article class="stage-card"><span class="tag">B · 초기 WebGL</span><h3>시점 조작 기능 확장</h3><p>로봇 모델과 작업 환경, 관절 자세를 받아 브라우저에서 3D로 표시합니다. 회전·이동·줌, 감도 설정과 저장된 계획의 읽기 전용 재생을 제공합니다.</p><figure aria-labelledby="figure-title-3"><img src="media/stage-b-runtime.jpg" alt="8890 초기 WebGL 뷰어의 종료 전 운영 화면" loading="lazy"><figcaption><span class="visual-title" id="figure-title-3">그림 3. 8890 운영 기록</span></figcaption></figure><video class="media-player" controls playsinline preload="none" poster="media/stage-b-runtime.jpg" aria-label="초기 WebGL 뷰어 카메라 화면 기록"><source src="media/stage-b-camera.mp4" type="video/mp4"><a href="media/stage-b-camera.mp4">영상 열기</a></video><p class="media-links"><a href="media/stage-b-runtime.jpg">사진 원본</a><a href="media/stage-b-camera.mp4">영상 3. 초기 3D 화면</a></p><p class="small">기능 설명의 화면 코드 기준은 9b390ef입니다. 현재 서버의 적재된 Python 코드와 동일하다는 주장은 하지 않습니다.</p></article>
+<article class="stage-card"><span class="tag">C · 현행 WebGL</span><h3>모션플랜 기능 확장</h3><p>기존 모션 플래너를 유지하면서 계획을 화면에서 검토하고 승인하는 기능을 추가했습니다. 표시 모델과 실행 대상을 구분하고, 형상을 선택해 화면에 맞추거나 로컬 표시를 조절할 수 있습니다.</p><figure aria-labelledby="figure-title-4"><img src="media/stage-c-runtime.jpg" alt="8897 현행 main 뷰어의 화면" loading="lazy"><figcaption><span class="visual-title" id="figure-title-4">그림 4. 8897 현행 화면</span></figcaption></figure><video class="media-player" controls playsinline preload="none" poster="media/main-features.jpg" aria-label="현행 WebGL 뷰어 형상 탐색 화면 기록"><source src="media/stage-c-features-v1.1.mp4" type="video/mp4"><a href="media/stage-c-features-v1.1.mp4">영상 열기</a></video><p class="media-links"><a href="media/stage-c-runtime.jpg">사진 원본</a><a href="media/stage-c-features-v1.1.mp4">영상 4. 현행 기능</a></p><p class="small">main a095f44, 기능 구현 f5079ea 기준입니다. 모델 보기와 로컬 표시 변경은 로봇 실행을 요청하지 않습니다.</p></article></div>
+<figure aria-labelledby="figure-title-5"><img src="media/main-features.jpg" alt="현행 뷰어의 형상 선택과 표시 조절 기능" loading="lazy"><figcaption><span class="visual-title" id="figure-title-5">그림 5. 현행 형상 탐색</span> · <a href="media/main-features.jpg">원본 보기</a></figcaption></figure>
+<details><summary>10월 22일 시뮬레이션 동작 시연 원본</summary><p>당시 시뮬레이션에서 FR5의 이동, 접근, 후퇴, 홈 복귀를 실행한 영상입니다. 이번에 새로 실행한 동작이 아닙니다. 물체 파지는 포함하지 않습니다.</p><video class="media-player" controls playsinline preload="none" poster="media/legacy-motion-poster.png" aria-describedby="legacy-note"><source src="media/legacy-motion.mp4" type="video/mp4"><a href="media/legacy-motion.mp4">기존 동작 영상 열기</a></video><p class="video-caption"><span class="visual-title">영상 5. 서버 이미지 뷰어의 기존 동작 시연</span> · <a href="media/legacy-motion.mp4">영상 원본</a></p><p class="small" id="legacy-note">44.25초, 2400 × 1796, 12 fps 녹화입니다. 당시 제품의 이미지 표시 상한은 5 fps이며, 반복 프레임을 포함합니다. 촬영 코드 50b549b와 원본 파일 SHA는 고정 근거에서 확인할 수 있습니다.</p></details></section>
+<section id="features"><span class="section-no">02 / Functional changes</span><h2>기능 개선점</h2><p>코드와 기존 검증 기록을 기준으로 한 정성 비교입니다. 포트별 신규 촬영만으로 기능의 유무나 성능을 판정하지 않습니다.</p><div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-1"><table class="comparison-table" aria-describedby="feature-note"><caption class="visual-title" id="table-title-1">표 1. 개발 단계별 기능</caption><thead><tr><th scope="col">항목</th><th scope="col">A · 서버 이미지</th><th scope="col">B · 초기 WebGL</th><th scope="col">C · 현행 WebGL</th></tr></thead><tbody>
+<tr><th scope="row">3D·이미지 표시</th><td>서버 MuJoCo 이미지</td><td>브라우저 Three.js와 관절 자세</td><td>WebGL 유지, 서버 이미지 전환도 유지</td></tr>
+<tr><th scope="row">시점 조작</th><td>전체·정면·상단 프리셋</td><td>회전·이동·줌, 조작 감도</td><td>기존 조작, 전체 맞춤·선택 맞춤·기본 시점</td></tr>
+<tr><th scope="row">로컬 형상 탐색</th><td>3D 선택 없음</td><td>개별 형상 선택·표시 조절 없음</td><td>직접 선택·목록 선택·강조·숨김·투명도</td></tr>
+<tr><th scope="row">계획·실행</th><td>관절 목표의 계획 후 실행·취소</td><td>기존 실행, 저장된 계획 읽기 전용 표시</td><td>계획 검토와 명시적 승인, 느린 재생·최소 간격 시점·재계획·이력 연결</td></tr>
+<tr><th scope="row">표시와 실행 대상</th><td>현재 FR5 + UR5e 작업 환경 중심</td><td>모델·실시간·저장 계획 표시</td><td>공급원과 표시 모드, 실행 대상·실시간 관절 상태를 분리해 표시</td></tr>
+<tr><th scope="row">화면 제출</th><td>주기적으로 전달되는 이미지</td><td>연속 WebGL 렌더링</td><td>자세·카메라·표시 변화 때 렌더링, 유휴·숨김 조회 조절</td></tr>
+<tr><th scope="row">검토 중 표시 변경</th><td>해당 기능 없음</td><td>해당 기능 없음</td><td>계획 검토 중 숨김·투명도 잠금, 선택·맞춤 허용</td></tr>
+<tr><th scope="row">실패·복구</th><td>요청 상태와 오류 표시</td><td>stale 상태·모델/sequence 검사</td><td>GET 본문까지 시간 제한, 오래된 응답 차단, 그래픽 복구·실시간 복귀</td></tr>
+</tbody></table></div><p class="visual-note" id="feature-note">A는 22일 촬영 코드, B는 9b390ef 화면 코드, C는 a095f44 코드와 검증 기록을 사용합니다. 형상 선택은 로봇 목표 지정이나 TCP 드래그 기능이 아닙니다. 여러 시뮬레이터·센서를 즉시 연결하는 범용 통합 완료를 의미하지 않습니다.</p></section>
+<section id="measurements"><span class="section-no">03 / Existing measurement evidence</span><h2>성능 수치 비교</h2><p>새 비교 영상은 화면 기록입니다. 아래 수치는 이미 보존된 별도 시험의 결과이며, 서로 다른 시험의 숫자를 하나의 성능 개선율로 합치지 않습니다.</p>
+<h3>로봇 동작 기록 재생 시의 렌더링 관측</h3><p>FR5 + UR5e의 8.622초 관절 기록을 반복 재생했습니다. 같은 640 × 480, DPR 1, 카메라, 250 ms 조회, NVIDIA RTX 3050에서 새 서버·Chrome 프로세스로 방식별 15초 × 3회 측정한 중앙값입니다.</p><div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-2"><table class="metric-table" aria-describedby="moving-note"><caption class="visual-title" id="table-title-2">표 2. 10월 26일 움직이는 기록 비교</caption><thead><tr><th scope="col">측정값</th><th scope="col">JPEG</th><th scope="col">당시 연속 렌더 WebGL</th></tr></thead><tbody><tr><th scope="row">표시 횟수 / 초</th><td>3.991</td><td>59.962</td></tr><tr><th scope="row">새 자세·이미지 / 초</th><td>3.991</td><td>3.989</td></tr><tr><th scope="row">반복 응답 본문</th><td>68.39 kB/s</td><td>48.79 kB/s</td></tr><tr><th scope="row">브라우저 CPU</th><td>2.99%</td><td>18.02%</td></tr><tr><th scope="row">시험 서버 CPU</th><td>1.73%</td><td>0.60%</td></tr></tbody></table></div><p class="visual-note" id="moving-note">WebGL은 같은 자세를 다시 그린 제출도 포함합니다. JPEG는 decode·draw 후 다음 rAF 도달 횟수입니다. 두 값은 실제 paint 측정이 아닙니다. CPU 100%는 코어 하나이며, 전체 CPU 감소는 확인하지 않았습니다. WebGL 초기 자산 3,442,575 bytes, 상태 API·HTTP 헤더는 반복 본문량에서 제외합니다. 제품의 비동기 이미지 작업자·ROS 제어 경로 전체를 비교한 시험이 아닙니다. <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/a095f448bbbbf58051f928102e3fa0d75ec5016d/docs/reports/2026-10-26-viewer-moving-hardware/results.md">조건·원본 자료</a></p>
+<h3>유휴 상태의 렌더링 관측</h3><p>로봇 대신 단순 도형 두 개를 사용한 별도 시험입니다. 같은 브라우저·RTX 3050·640 × 480·DPR 1·카메라에서 1초 대기 후 10초씩 한 번 관찰했습니다.</p><div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-3"><table class="metric-table" aria-describedby="scheduling-note"><caption class="visual-title" id="table-title-3">표 3. 연속·필요 시 렌더 제출</caption><thead><tr><th scope="col">조건</th><th scope="col">이전 연속 렌더</th><th scope="col">현행 필요 시 렌더</th></tr></thead><tbody><tr><th scope="row">정지 · 10초간 제출</th><td>599회</td><td>0회</td></tr><tr><th scope="row">4 Hz 입력 · 10초간 제출</th><td>599회</td><td>40회</td></tr><tr><th scope="row">4 Hz 입력 · 적용 자세</th><td>40개</td><td>40개</td></tr></tbody></table></div><p class="visual-note" id="scheduling-note">이전 cdfebf3, 이후 f5079ea 파일 해시를 확인했습니다. 독립 반복·장시간 시험은 아닙니다. CPU 제출 횟수를 측정했으며 GPU 완료, paint 지연, CPU·GPU 사용률이나 VRAM 감소를 측정하지 않았습니다. 현행 화면이 멈춰 있을 때 0 FPS가 표시되어도 연결 끊김을 의미하지 않습니다. <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/a095f448bbbbf58051f928102e3fa0d75ec5016d/docs/operator/viewer-improvements-2026-10-26/navigation-validation.json">조건·원본 해시</a></p>
+<p class="small">26일 제품 기본 설정의 정지 자세 예비 시험, SwiftShader 소프트웨어 시험, 위의 NVIDIA 시험은 조건이 다릅니다. 이 문서는 원본을 변경하거나 결과를 합산하지 않습니다.</p></section>
+<section id="cleanup"><span class="section-no">04 / Runtime cleanup &amp; archive</span><h2>서버 대신 재현할 수 있는 자료 보존</h2><p>과거 실행 서버를 계속 켜두면 포트와 버전이 혼동되고 시뮬레이션 자원이 사용됩니다. 화면과 기존 영상, 고정 코드 링크, 실행 정보와 종료 결과를 함께 보관했습니다.</p><p class="small">아래 포트는 촬영 당시 개발 PC에서 사용한 로컬 포트입니다. 공개 웹 서비스의 접속 주소나 현재 실행 상태를 나타내지 않습니다.</p><div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-4"><table class="runtime-table"><caption class="visual-title" id="table-title-4">표 4. 로컬 포트별 역할과 정리 기록</caption><thead><tr><th scope="col">포트</th><th scope="col">기록한 역할</th><th scope="col">2026-10-27 14:01 기준</th></tr></thead><tbody><tr><th scope="row">8765</th><td>이전 서버 이미지 환경</td><td>자료 보존 후 서버·소유 시뮬레이션 종료 완료</td></tr><tr><th scope="row">8890</th><td>이전 WebGL 환경</td><td>자료 보존 후 서버·소유 시뮬레이션 종료 완료</td></tr><tr><th scope="row">8897</th><td>당시 main 로컬 뷰어</td><td>유지</td></tr><tr><th scope="row">8902</th><td>개발·검증 뷰어</td><td>개발용으로 구분해 유지</td></tr><tr><th scope="row">8904</th><td>리포트 미리보기</td><td>제어 서버와 구분해 유지</td></tr></tbody></table></div>
+<div class="note"><p id="cleanup-status">2026-10-27 14:01 기준 8765·8890 종료 완료, 8897·8902·8904 유지. <a href="evidence/cleanup-summary.json">정리 결과 요약</a></p><p class="small">원본 실행 로그와 세부 프로세스 정보는 로컬에 보관했습니다. 이 공개 페이지는 개발 PC의 프로세스 상태를 조회하지 않습니다.</p></div>
+<h3>고정 코드와 실행 기록 보존</h3><p>이전 소스와 실행 기록은 로컬 보관본에 남겼으며, 공개 자료에서는 같은 시점의 Git 커밋을 연결합니다. A·B의 고정 코드가 촬영 당시 서버에 그대로 적재되어 있었다고 단정하지 않습니다.</p><div class="evidence-links"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/50b549b24ff33b9286e4ac7545c01d893c1ac193">A · 이미지 기준 코드</a><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/9b390ef1d66fbe8431233c508e9b0ff60edd6ab4">B · 초기 WebGL 기준 코드</a><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/a095f448bbbbf58051f928102e3fa0d75ec5016d">C · 현행 기능 기준 코드</a></div><p>원본 저장소와 Git 이력, 기존 리포트는 유지합니다. 공개한 파일은 <a href="manifest.json">파일별 SHA-256</a>으로 확인할 수 있습니다.</p><p class="small">재실행은 고정 커밋의 별도 체크아웃과 해당 의존성을 준비한 뒤 진행합니다. 포트만 다시 열어서 과거 버전 재현으로 취급하지 않습니다.</p></section>
+<section id="limits"><span class="section-no">Scope &amp; limitations</span><h2>이 자료로 확인할 수 있는 범위</h2><ul class="bullet-list"><li>새 영상은 카메라·로컬 표시 기능과 촬영 당시 화면을 기록합니다. 새 로봇 실행이나 새로운 경로·접촉 검증을 수행한 자료가 아닙니다.</li><li>세 단계의 UI·시점·자세·실행 세션은 다를 수 있습니다. 픽셀 품질, 종단 지연, 동일 작업 성공률의 비교 자료가 아닙니다.</li><li>8765·8890의 적재된 백엔드 코드 전체 버전은 미확정입니다. 신규 운영 기록과 고정 Git 기준의 기능 설명을 구분합니다.</li><li>기존 취소 정리의 간헐적 CI 실패와 기둥 근접 경로의 접촉 사례는 이 화면 정리로 해결되었다고 주장하지 않습니다.</li></ul></section>
+<section id="sources"><span class="section-no">Evidence / Source baseline</span><h2>고정 코드와 근거 파일</h2><p class="small">확인일: 2026-10-27 · 아래 저장소 링크는 커밋으로 고정했습니다. 새 사진·영상의 시각과 구성 방법은 공개용 촬영 요약에 기록합니다.</p><ol class="sources">
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/50b549b24ff33b9286e4ac7545c01d893c1ac193">A · 22일 이미지 뷰어 촬영 코드</a><span>원본 시연 manifest에서 확인한 촬영 코드입니다. 병합 코드 bae37cda와 구현 트리가 같습니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/a095f448bbbbf58051f928102e3fa0d75ec5016d/docs/operator/picking-comparison-2026-10-22/manifest.json">22일 시연의 원본 파일·구현 해시</a><span>실제 동작 4개, 영상 44.25초, 반복 프레임과 파지 제외 조건을 확인합니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/9b390ef1d66fbe8431233c508e9b0ff60edd6ab4/src/mujoco_ros2_manipulation/operator_console/static">B · 초기 WebGL 화면 코드</a><span>줌·감도·모델·실시간·저장 계획 표시의 기준입니다. 이후 계획 승인·형상 탐색 단계와 구분합니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/a095f448bbbbf58051f928102e3fa0d75ec5016d">C · 현행 main 코드</a><span>1~6번 개선을 통합한 main 기준입니다. 화면 코드의 형상 탐색 구현은 f5079ea와 같습니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/a095f448bbbbf58051f928102e3fa0d75ec5016d/docs/operator/viewer-improvements-2026-10-26/index.html">기존 뷰어 개선 리포트 v1.3</a><span>선정 이유, 계획 검토, 복구, 형상 탐색과 렌더 제출 검증을 연결합니다.</span></li>
+<li><a href="evidence/framing-validation.json">v1.1 촬영 영역 검증 요약</a><span>8897의 전체 페이지 캡처 72장 모두에서 3D 카드와 캔버스가 포함됐는지 확인한 집계입니다. 원본 프레임과 개별 좌표는 로컬에 보관했습니다.</span></li>
+<li><a href="evidence/capture-summary.json">새 촬영 방법과 영상 해시</a><span>촬영 시각·캡처 간격·영상 구성과 로봇 명령 미발행 범위를 확인합니다.</span></li>
+<li><a href="evidence/cleanup-summary.json">로컬 서버 정리 결과 요약</a><span>당시 종료·유지한 포트만 공개하며, 원본 로그·프로세스 목록·파일 경로는 포함하지 않습니다.</span></li>
+<li><a href="evidence/publication-notes.json">공개 범위·고정 코드·영상 출처</a><span>로컬 원본의 공개용 요약입니다. 실행 로그, 소스 압축본과 전체 보관 ZIP은 공개 자산에 포함하지 않습니다.</span></li>
+<li><a href="manifest.json">공개 파일 목록과 SHA-256</a><span>이 페이지와 검토한 사진·영상·요약 근거만 게시합니다.</span></li></ol></section>
+<div class="footer"><span>개발 이력·운영 정리 · 2026-10-27</span><span>새 로봇 동작 요청 없음</span><a href="#summary">처음으로 ↑</a></div></main>
+<script>document.getElementById('print').addEventListener('click',()=>window.print());</script></body></html>

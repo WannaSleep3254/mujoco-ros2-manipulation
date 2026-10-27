@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "document_type": "design_review",
+  "document_version": "1.6",
+  "published_date": "2026-10-27",
+  "scope": "Public review of viewer UI evolution, selected runtime screen recordings and previously published measurements; no new benchmark or robot motion execution.",
+  "source_baselines": {
+    "a_original_simulation_capture": "50b549b24ff33b9286e4ac7545c01d893c1ac193",
+    "b_frontend": "9b390ef1d66fbe8431233c508e9b0ff60edd6ab4",
+    "c_main": "a095f448bbbbf58051f928102e3fa0d75ec5016d",
+    "c_geometry_navigation": "f5079eafc39a9880070c2fef2bb4c5a1b7a37460"
+  },
+  "runtime_provenance": {
+    "a_loaded_backend_commit": null,
+    "b_loaded_backend_commit": null,
+    "c_loaded_backend_commit": "a095f448bbbbf58051f928102e3fa0d75ec5016d",
+    "caveat": "Historical local port numbers identify recordings, not version numbers or public live services. A and B loaded backend revisions are not established."
+  },
+  "existing_measurement_references": [
+    "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/a095f448bbbbf58051f928102e3fa0d75ec5016d/docs/reports/2026-10-26-viewer-moving-hardware/results.md",
+    "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/a095f448bbbbf58051f928102e3fa0d75ec5016d/docs/operator/viewer-improvements-2026-10-26/navigation-validation.json"
+  ],
+  "publication_curation": {
+    "media_copied_without_transcoding": true,
+    "measurement_sources_unchanged": true,
+    "raw_runtime_logs_and_state_not_published": true,
+    "source_archives_not_published": true,
+    "raw_capture_frames_not_published": true,
+    "local_archive_and_revision_packages_not_published": true,
+    "live_status_fetch_removed": true
+  },
+  "media": {
+    "media/comparison.jpg": {
+      "bytes": 78526,
+      "sha256": "90c5130559ab0ae2721fa25da840ded72db0c0437c1ce9370fa5092a0ac761b0"
+    },
+    "media/comparison-v1.1.mp4": {
+      "bytes": 157904,
+      "sha256": "10f4e7171e9cd3ae4657dcf6846d5ef47ac768dabdb8f0fd8b6d355e0d171962"
+    },
+    "media/stage-a-runtime.jpg": {
+      "bytes": 93459,
+      "sha256": "b823fd70e157fc17b216ae095f5519739b20e0ccaedc8f5c928c39f0db3a6c3b"
+    },
+    "media/stage-a-camera.mp4": {
+      "bytes": 64753,
+      "sha256": "4529970bfa67fee40d26c2dbf96a4beb234fbd6fcba912dc66b44fa0d39d082e"
+    },
+    "media/stage-b-runtime.jpg": {
+      "bytes": 105129,
+      "sha256": "ab0940bab959233b7ec50d50e2e91e45ef209ce70a1f1ccf5aadc04649c191e9"
+    },
+    "media/stage-b-camera.mp4": {
+      "bytes": 91527,
+      "sha256": "f7a18b81f56767f8888bf437a6d8ac5533d4411844f25566ef8267a17b58c6ec"
+    },
+    "media/stage-c-runtime.jpg": {
+      "bytes": 142856,
+      "sha256": "b4846f683bdbe7df91b80c34ad6ffd33d751556f34ad17f6134be08ef7be0843"
+    },
+    "media/stage-c-features-v1.1.mp4": {
+      "bytes": 122271,
+      "sha256": "b90862aa76f953ef1b10e96afc3c6e43197acd9b3da069e724e67c3baa24264c"
+    },
+    "media/main-features.jpg": {
+      "bytes": 154520,
+      "sha256": "2bf2d6b7c99370ec42e7638f606f319c89e758da8e736147daa1cba84cc06c90"
+    },
+    "media/legacy-motion-poster.png": {
+      "bytes": 323052,
+      "sha256": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1"
+    },
+    "media/legacy-motion.mp4": {
+      "bytes": 1807105,
+      "sha256": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba"
+    }
+  }
+}

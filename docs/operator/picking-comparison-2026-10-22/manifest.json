@@ -30,7 +30,7 @@
     "actual-state.rviz": "eef633a420912ca83ee3ddaefadd7f4ac647618985a68729dc95662e75c9c70d",
     "approach.png": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9",
     "evidence.json.gz": "a03303ef0c0c809d842bf1ee9c0caf873ce85a38fe5b537cb21822bfa3a6c766",
-    "index.html": "3f12ec32a14a10c70d19de012b8ea29dd3336a978c3b9bacfdd29f4e7f92f2f4",
+    "index.html": "2a862cd8113d49a2fc1621c46276bda733a3eb203d22f019cb61547ec66f07d4",
     "motion-closeup.mp4": "d1f3faec3995b6d1be83581ca48daccfaa7fa5514adac7b9d776fdae585ca5b5",
     "operation-poster.png": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9",
     "poster.png": "e9689186b3ba7fd899bc00aa6229ab3178317104b6db93c196d2b08d631ed310",
@@ -490,5 +490,6 @@
       "different_actual_runs_same_target": true
     }
   },
-  "previous_recording": "/home/sea21jk/projects/isaac_sim_setup/runtime/recordings/operator-picking-2026-10-22-7957268e"
+  "previous_recording": "/home/sea21jk/projects/isaac_sim_setup/runtime/recordings/operator-picking-2026-10-22-7957268e",
+  "editorial_revision": "2026-10-27 terminology and approved browser comments"
 }
