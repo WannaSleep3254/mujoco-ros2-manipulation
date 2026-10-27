@@ -28,9 +28,9 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p class="eyebrow">뷰어 개선 기록 · 2026-10-26</p>
 <h1>WebGL 뷰어 개선과 표시 성능</h1>
 <p class="lead">관절 상태 수신과 카메라 표시를 분리한 로컬 3D 뷰어<br/>JPEG 방식과의 정지 장면 비교, Three.js 유지·확장 이유와 다음 계획</p>
-<div class="meta"><span>대상: FR5·UR5e 공동 장면</span><span>정지 측정 코드: 1a44f19</span><span>문서 v1.2 · 양식 v1.9</span><span>개정: 2026-10-26 · 실행 전 검토와 복구 흐름 보완</span></div>
+<div class="meta"><span>대상: FR5·UR5e 공동 장면</span><span>정지 측정 코드: 1a44f19</span><span>문서 v1.3 · 양식 v1.9</span><span>개정: 2026-10-27 · 장면 탐색과 대기 렌더링 보완</span></div>
 </header>
-<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#rationale">채택 이유</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#review-operations">계획 검토·복구</a><a href="#progress">기존 계획과 진행</a><a href="#roadmap">다음 확장</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
+<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#rationale">채택 이유</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#review-operations">계획 검토·복구</a><a href="#navigation-idle">장면 탐색·대기</a><a href="#progress">기존 계획과 진행</a><a href="#roadmap">다음 확장</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
 <main>
 <section id="overview">
 <span class="section-no">Overview</span><h2>상태 갱신과 화면 렌더링의 분리</h2>
@@ -100,6 +100,17 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <div class="note warn"><p><strong>실행 전 검사:</strong> 승인 시 시작 자세와 모델·환경을 다시 확인합니다. 계획 유효 시간은 60초이며 승인은 한 번만 사용할 수 있습니다. 표시한 최소 간격은 해당 계획의 검사 결과로, 실물 안전 기능이나 모든 환경의 회피 성능을 보증하지 않습니다.</p></div>
 <p class="small">검증: Python 619개, JavaScript 106개 검사와 독립 ROS 승인 검사 10개를 통과했습니다. 실제 브라우저에서 계획 만료·재계획·미리보기·승인 실행·연결 이력을 확인했습니다. 자세한 범위는 <a href="usability-validation.json">검증 기록</a>에서 확인합니다.</p>
 </section>
+<section id="navigation-idle">
+<span class="section-no">Scene navigation &amp; demand rendering · 2026-10-27</span><h2>형상 탐색과 대기 중 반복 렌더 감소</h2>
+<p>전체 맞춤은 현재 보이는 형상을 포함하면서 시선 방향을 유지하고, 기본 시점은 로봇 중심의 기본 방향으로 돌아갑니다. 장면 클릭이나 목록에서 형상을 선택하면 강조 표시와 선택 맞춤을 사용할 수 있습니다. 개별 숨김과 원본 재질 대비 불투명도 조절은 브라우저 표시에 적용합니다.</p>
+<p>새 장면에서는 개별 설정을 초기화합니다. 계획 검토 중에는 숨김·불투명도 변경을 막고, 선택과 맞춤은 유지합니다. 시간축 이동은 요청한 시점의 자세가 도착하고 화면에 제출됐는지를 확인합니다. 갱신 대기와 실제 표시 시각도 구분합니다.</p>
+<p>새 자세, 카메라 감쇠, 크기나 표시 설정에 변화가 있을 때만 렌더를 제출합니다. 모델 보기와 일시정지한 기록은 필요한 자세만 받고, 숨긴 화면은 조회를 줄입니다. 화면이 보이는 실시간 조회는 기존 250 ms 간격이며 실행 상태 확인과 취소 처리는 유지합니다.</p>
+<figure><img src="geometry-navigation.jpg" alt="개별 형상 선택과 계획 검토 중 숨김·불투명도 잠금, 실제 계획 시점과 상태를 구분하는 작업장면" loading="lazy"><figcaption>그림 3. 장면 탐색과 계획 검토. 작은 관절 목표의 계획만 생성했으며 승인 실행은 요청하지 않았습니다.</figcaption></figure>
+<div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-3"><table><caption class="visual-title" id="table-title-3">표 3. 단순 도형 장면의 10초간 CPU 렌더 제출</caption><thead><tr><th scope="col">조건</th><th scope="col">변경 전</th><th scope="col">변경 후</th><th scope="col">입력 자세 적용</th></tr></thead><tbody><tr><th scope="row">정지 · 새 자세 없음</th><td>599회</td><td>0회</td><td>새 입력 없음</td></tr><tr><th scope="row">4 Hz 자세 입력</th><td>599회</td><td>40회</td><td>전·후 모두 40개</td></tr></tbody></table></div>
+<p class="small">같은 RTX 3050 WebGL context, 640×480, DPR 1, 같은 카메라·측정 JS와 도형을 사용했습니다. 각 조건은 1초 정리 후 10초이며 방식별 1회 관찰입니다. 두 도형의 메모리 내 자세 입력 시험으로, 실제 로봇·센서·전송 성능이나 CPU·GPU 사용률을 측정하지 않았습니다. 이전 약 60 FPS 결과는 당시의 연속 렌더 코드에 대한 기록으로 보존합니다.</p>
+<p>계측에는 실제 GL renderer, draw call·삼각형·geometry·texture·program 수, 최근 CPU 제출 p95와 최대 60개 자원 이력을 추가했습니다. 대기 중 0 FPS는 변화가 없어 그리기를 쉬는 상태입니다. 자원 개수는 VRAM 바이트가 아니며 CPU 제출 시간은 GPU 완료·paint 지연과 구분합니다.</p>
+<p class="small"><a href="navigation-validation.json">5~6번 검증 기록</a> · <a href="render-scheduling-before.json">변경 전 원본</a> · <a href="render-scheduling-after.json">변경 후 원본</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/f5079eafc39a9880070c2fef2bb4c5a1b7a37460/scripts/viewer_render_scheduling_fixture.py">고정 측정 도구</a></p>
+</section>
 <section id="progress">
 <span class="section-no">05 / Progress against the original plan</span><h2>기존 계획과 현재 진행 상황</h2>
 <p><a href="../viewer-direction-2026-10-22/index.html#roadmap">10/22 단계별 계획</a>에 10/26까지의 구현과 측정 결과를 대응시켰습니다. 각 단계의 일부 작업이 진행된 상태이며, 아래 표가 원래 완료 조건의 전부를 충족했다는 뜻은 아닙니다.</p>
@@ -119,7 +130,7 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p><span class="tag proposed">후속 개발안</span> 공통 연결부를 작은 사례로 검증한 뒤 데이터 종류와 공급원을 늘립니다.</p>
 <ol>
 <li><strong>공통 형식의 확장:</strong> 구현한 형상·자세 형식에 직선 관절과 새로운 데이터 종류를 단계적으로 추가합니다. 표시부의 확대가 로봇 실행 권한을 추가하지 않도록 구분합니다.</li>
-<li><strong>장면 탐색과 대기 부하:</strong> 화면 맞춤과 개별 대상 탐색을 보완하고, 대기 중 렌더링과 조회를 줄입니다. 표시 프레임 분포와 장면 규모를 계측한 뒤 최적화 여부를 판단합니다.</li>
+<li><strong>장면 규모의 확대 검증:</strong> 위 탐색·대기 렌더 보완을 바탕으로 대규모 설비와 긴 시간의 자원 사용을 측정합니다. 로봇·부품 계층 탐색은 별도 공통 형식이 필요합니다.</li>
 <li><strong>센서·점군 확장:</strong> 자세와 별도의 전송 경로에서 데이터 크기와 대기열을 제한하고, 데이터 취득 시각의 좌표 변환과 오래된 데이터 처리 규칙을 검증합니다. 임의 설계파일의 변환·가져오기도 별도 과제로 진행합니다.</li>
 <li><strong>관측·분석 도구 평가:</strong> ROS 센서·TF 관측이 주가 되면 Foxglove를, 시간축 기록 분석이 주가 되면 Rerun을 비교합니다. 원격 배포·라이선스와 실제 자료의 처리 성능을 확인하고, 실행·취소 경로와 구분해 연결합니다.</li>
 </ol>
@@ -142,6 +153,6 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <li><a href="https://docs.foxglove.dev/docs/getting-started/frameworks/ros2">Foxglove ROS 2 연동</a> · <a href="https://rerun.io/docs/howto/integrations/embed-web">Rerun 웹 임베드</a><span>확인일: 2026-10-26. 관측·분석 도구의 후속 평가 자료이며, 이 프로젝트의 연동 구현이나 도구 간 성능 비교 결과는 아닙니다.</span></li>
 </ol>
 </section>
-<div class="footer"><span>문서 v1.2 · 2026-10-26 실행 전 검토와 복구 흐름 보완</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
+<div class="footer"><span>문서 v1.3 · 2026-10-27 장면 탐색과 대기 렌더링 보완</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
 </main><script>document.getElementById("print").addEventListener("click",()=>window.print());</script>
 </body></html>

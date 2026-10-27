@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "implementation_commit": "f5079eafc39a9880070c2fef2bb4c5a1b7a37460",
+  "scope": "Geometry navigation, demand rendering, bounded renderer metrics, static/paused/hidden pose polling and confirmed-time preview seek.",
+  "checks": {
+    "python_unit_tests": 619,
+    "javascript_tests": 146,
+    "repository_checks": "passed",
+    "publication_tests": 51,
+    "package_sdist_and_wheel": "passed",
+    "report_generation_and_check": "passed"
+  },
+  "comparison": {
+    "before": "render-scheduling-before.json",
+    "after": "render-scheduling-after.json",
+    "same_fixture_javascript_html_manifest": true,
+    "camera_numeric_tolerance": 1e-10,
+    "maximum_observed_camera_delta": 6.217248937900877e-15,
+    "same_actual_gl": true,
+    "conditions": "640x480 CSS/canvas, DPR1, same browser context, 1s settle then10s each. One observation per mode/version; before2026-10-26, after2026-10-27.",
+    "fixture_launcher_change": "Published portable launcher changes only default root and label; measurement JS/HTML/manifest SHA match the original launcher.",
+    "measured_source_sha256": {
+      "vendor/OrbitControls.js": "3d79d07ecb686b4e5d93232eedab255331c1beef711e13164eaa1f68655a5f2b",
+      "vendor/three.core.js": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6",
+      "vendor/three.module.js": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea",
+      "viewer.js": "5823ec14fd2459964ef833399623370153ee2e2dc100019ed9d2312dc4eab00d",
+      "viewer_contract.mjs": "94173accfb93bce90654d38d7fac6eddc9b2017cd91586110c04a8b207ee0390"
+    },
+    "before_source_commit": "cdfebf3ede6052c14586da07fe3c805e5f160af2",
+    "after_worktree_base_commit": "579dd03c0e786b52933ceedf368c7db2106ca8be",
+    "after_source_matches_implementation_commit": true
+  },
+  "browser": {
+    "geometry_select_fit_hide_opacity_reset": true,
+    "direct_3d_picking": true,
+    "review_hide_opacity_locked_selection_fit_available": true,
+    "record_play_pause_eof_and_final_pose": true,
+    "new_motion_execution_requests": 0,
+    "final_implementation_verified": true,
+    "owned_plan_only_http_state": {
+      "domain": 168,
+      "lifecycle_phase": "running",
+      "active_request_id": null,
+      "history": [
+        {
+          "request_id": "3ce930f011dc452c873c435f01cd8f91",
+          "mode": "plan_only",
+          "status": "succeeded"
+        },
+        {
+          "request_id": "325ae4749b9a41159cb766817ccbc751",
+          "mode": "plan_only",
+          "status": "succeeded"
+        }
+      ],
+      "view_mode": "plan_preview",
+      "preview_time_sec": 1.68
+    },
+    "preview_seek_display_time": "1.68 / 1.69 s",
+    "preview_seek_frame_ready_and_approve_enabled": true,
+    "browser_console_errors": 0,
+    "responsive": {
+      "new_viewer_controls_390px": "fit within viewport; pre-existing top navigation extends approximately1.6px",
+      "report_390px_and_820px": "no horizontal page overflow; table and all images checked",
+      "desktop": "checked",
+      "actual_pdf_pagination": "not checked"
+    }
+  },
+  "limits": [
+    "Two analytic boxes with in-memory4Hz pose delivery; no robot/control/network performance evaluation.",
+    "CPU submission counts and duration, not GPU completion, paint latency, utilization or VRAM.",
+    "One browser observation per condition/version; no fresh-browser repetition or long soak.",
+    "Physical touch, Edge, remote sessions and actual PDF pagination not newly verified."
+  ]
+}

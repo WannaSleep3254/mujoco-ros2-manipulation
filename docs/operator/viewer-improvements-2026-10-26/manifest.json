@@ -3,11 +3,15 @@
   "document_type": "design_review",
   "baseline_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "assets": {
-    "index.html": "42cca2b01c2d7e29497ae386afffa637f807550ebe2b6d1c263fe4dafaff4cfb",
+    "index.html": "11dffdf57541e16202afcdf32f51658fab9d336377389593b362005144ee9c50",
     "camera-controls.png": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766",
-    "review-notes.json": "31ac37d99ac24d4c17eac8fdb2ce54cf1e8d1f526ff87d61b71594a578a720c7",
+    "review-notes.json": "d9b7eb66f02478c16654c95a1d2e1c318bffc526b2cfb6df7d1a57ad092f8de3",
     "plan-review.png": "1209f19346f4f98f2415968523a9750c23b550af36d749ff51d55b64276f2281",
-    "usability-validation.json": "21f4b5d2ef62318669bfce236faf0bcfe067d9dc1bd22d332da59b6e9f9773e7"
+    "usability-validation.json": "21f4b5d2ef62318669bfce236faf0bcfe067d9dc1bd22d332da59b6e9f9773e7",
+    "render-scheduling-before.json": "ebd97ddc518ca1564256a22894c7de4fc70c781de3c7e449db12f7fcaf069b48",
+    "render-scheduling-after.json": "b6216904add244c8bb171256a6539f687b50e5823313e412654379c3632bbcb4",
+    "navigation-validation.json": "4a59e11596c8a952e37b948746396590d2f045113ef8304ce075d3c712d827f4",
+    "geometry-navigation.jpg": "04f540f2918c4e528715fd2b7728043c147d7cb9cdc723299322e777a7bd4338"
   },
   "measurement_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "feature_source_sha256": {
@@ -16,7 +20,7 @@
     "src/mujoco_ros2_manipulation/operator_console/static/index.html": "ca90e9c851ee55e79d98ed60c054d65ac483a2d28d25ef93973692afb7dbec8a",
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "e5d0e52bc94705c34204adf591beae1b6733f9ba99901193817b039cde7e3321"
   },
-  "document_version": "1.2",
+  "document_version": "1.3",
   "implementation_review_commit": "591384ec9dda48e6bfde76d2b674dca3b4086ca1",
   "usability_source_sha256": {
     "src/mujoco_ros2_manipulation/operator_console/static/app.js": "19127ba8c86351b2906d21c0659777b43baf16223269c6aa3f3b1fa7f9074d50",
@@ -30,5 +34,14 @@
     "src/mujoco_ros2_manipulation/operator_console/view_plan.py": "fe13aaeae3b0dc20ce2f7b96725e602d3b64fcfd281ba6a732b9fe30d8f738eb",
     "src/mujoco_ros2_manipulation/operator_console/console_views.py": "a1c7c7cdc4ef1ddffadaf2c1e62fc7b742bec97344284c91a68e486e483bf9c7",
     "src/mujoco_ros2_manipulation/workcells/motion_server.py": "9dfd298a50e2052c89262036a151873eaf052388344807e6c7412cc34fee43c4"
+  },
+  "navigation_implementation_commit": "f5079eafc39a9880070c2fef2bb4c5a1b7a37460",
+  "navigation_source_sha256": {
+    "src/mujoco_ros2_manipulation/operator_console/static/viewer.js": "5823ec14fd2459964ef833399623370153ee2e2dc100019ed9d2312dc4eab00d",
+    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "2a799531836dfc7c9cbdc2d315cf1f3563b603739d37daa9c30bb6e74783007c",
+    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "b2370f077ba68deaf0e605c8c1e8205750c3adf7475c898182bc24285b75ab63",
+    "src/mujoco_ros2_manipulation/operator_console/static/style.css": "15366a9aabb6cbdddebcec0a43555e544625e91daa3e5b4dd02b53fe9edb2b31",
+    "src/mujoco_ros2_manipulation/operator_console/static/recording.js": "b9894d6993648a274689e6b4031c386b1bd34566802076d01d50f8588b8c1917",
+    "src/mujoco_ros2_manipulation/operator_console/static/recording.html": "7dcd1857db0e0fb530db61b62386586f1b9b90bc30fd85bd680fb55300f6663e"
   }
 }
