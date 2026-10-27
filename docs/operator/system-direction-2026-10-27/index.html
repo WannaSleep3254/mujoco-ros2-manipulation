@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="description" content="로봇 시뮬레이션 시스템의 현재 구현, 구성 요소 교체·설치 환경·동작 검증 방향과 W01~W09 작업 순서"/><title>로봇 시뮬레이션 시스템 개발 방향 · v1.0</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--bg:#f1f4f5;--ink:#182b35;--muted:#526772;--line:#d6e0e3;--accent:#126268;--soft:#e9f3f2;--warm:#fff5e6;--warm-ink:#79500b;--blue:#edf2fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Noto Sans KR",sans-serif;word-break:keep-all;overflow-wrap:anywhere}a{color:var(--accent);text-underline-offset:3px}button,a{touch-action:manipulation}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #c86b27;outline-offset:4px}button{font:inherit;cursor:pointer}header{background:#142e37;color:#f4f7f8;padding:62px max(24px,calc((100vw - 1160px)/2)) 48px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:650;color:#a4d5d1;margin:0 0 16px}h1{font-size:clamp(28px,4.2vw,48px);line-height:1.25;letter-spacing:-.04em;margin:0 0 22px}header .lead{max-width:800px;font-size:19px;color:#d7e6e9;margin:0}.meta{display:flex;gap:10px 22px;flex-wrap:wrap;font-size:13px;color:#c0d5da;margin-top:26px}.topbar{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.nav{max-width:1208px;margin:auto;padding:12px 24px;display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}.nav a{font-size:14px;text-decoration:none;color:var(--ink);padding:4px 0}.nav button{margin-left:auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:13px;border-radius:5px;padding:5px 13px}main{max-width:1208px;margin:auto;padding:36px 24px 64px}section{margin-bottom:36px;background:var(--paper);padding:32px;border:1px solid var(--line);border-radius:10px}section h2{font-size:27px;line-height:1.4;margin:0 0 16px;letter-spacing:-.03em}h3{font-size:20px;line-height:1.5;margin:30px 0 12px}h4{font-size:16px;margin:0 0 8px}p{margin:10px 0 16px}.section-no{display:block;font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent);margin-bottom:10px}.note{border-left:4px solid var(--accent);background:var(--soft);padding:17px 20px;margin:20px 0}.note.warn{background:var(--warm);border-color:#b97a21;color:var(--warm-ink)}.note p:last-child{margin-bottom:0}.note p:first-child{margin-top:0}.small{font-size:13px;color:var(--muted)}.tag{display:inline-block;font-size:12px;font-weight:650;border-radius:4px;background:var(--soft);color:#175e57;padding:1px 7px;vertical-align:middle}.tag.proposed{background:var(--blue);color:#264f83}.tag.unmeasured{background:var(--warm);color:var(--warm-ink)}.legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted);margin-top:18px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.panel{border:1px solid var(--line);border-radius:7px;padding:20px}.panel p{margin-bottom:0}.panel ul{padding-left:20px;margin:8px 0 0}.callout{font-size:20px;font-weight:600;max-width:920px}.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fact{border-top:2px solid var(--accent);padding:14px 10px;background:#f7fafb}.fact strong{display:block;font-size:23px;line-height:1.5;letter-spacing:-.02em}.fact span{font-size:13px;color:var(--muted)}figure{margin:22px 0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}figcaption{font-size:13px;color:var(--muted);margin-top:10px}.table-scroll{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:6px;margin:18px 0}table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.7}caption{text-align:left;font-size:13px;color:var(--muted);padding:12px 14px;background:#f8fafb}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:13px 14px}th{font-weight:650;background:#edf3f4}tr:last-child td,tr:last-child th{border-bottom:0}td:first-child{font-weight:600}.wide{min-width:850px}.metrics{min-width:790px}.source{font-size:12px;white-space:nowrap}code{font:0.88em/1.7 ui-monospace,monospace;background:#edf2f4;padding:2px 5px;border-radius:3px;word-break:break-all}.flow{padding:20px;background:#f6f9fa;border:1px solid var(--line);border-radius:7px}.flow-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center}.node{padding:16px;border:1px solid #b9cdd2;background:var(--paper);border-radius:6px}.node strong{display:block;font-size:15px}.node span{display:block;font-size:13px;color:var(--muted);margin-top:4px}.arrow{text-align:center;font-size:22px;color:var(--accent)}.flow-label{font-size:13px;color:var(--accent);font-weight:650;margin:0 0 10px}.flow-row+.flow-label{margin-top:20px}.stage{display:grid;grid-template-columns:100px 1fr;gap:22px;border-top:1px solid var(--line);padding:22px 0}.stage:last-child{padding-bottom:0}.stage-id{font-size:13px;font-weight:700;color:var(--accent);padding-top:4px}.stage h3{margin:0 0 10px}.stage p{margin:8px 0}.stage ul{margin:8px 0;padding-left:20px}ul,ol{padding-left:24px}li{margin:6px 0}.sources{font-size:14px}.sources li{padding:8px 0;border-bottom:1px solid var(--line)}.sources span{display:block;font-size:13px;color:var(--muted)}details{border:1px solid var(--line);border-radius:6px;margin:14px 0;padding:14px 18px}summary{font-weight:600;cursor:pointer}.check{padding:12px 0;border-bottom:1px solid var(--line)}.check:last-child{border:0}.check strong{display:block}.footer{font-size:13px;color:var(--muted);display:flex;gap:12px 24px;flex-wrap:wrap}.nowrap{white-space:nowrap}
+@media(max-width:760px){html{scroll-padding-top:145px}header{padding:38px 20px 30px}.nav{padding:10px 20px;gap:8px 14px}.nav a{font-size:13px}.nav button{margin-left:0}main{padding:22px 14px 38px}section{padding:22px 18px;margin-bottom:22px}section h2{font-size:23px}.grid{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.flow{padding:16px}.flow-row{grid-template-columns:1fr;gap:6px}.arrow{transform:rotate(90deg);height:30px}.stage{grid-template-columns:1fr;gap:4px}.callout{font-size:18px}.meta{gap:6px 16px}header .lead{font-size:17px}}
+@media print{@page{size:A4;margin:16mm}body{background:white;font-size:10pt;line-height:1.65}header{padding:0 0 18px;background:white;color:#182b35}header .lead,.eyebrow,.meta{color:#526772}.topbar,.print-hide{display:none}main{max-width:none;padding:0}section{border:0;border-radius:0;padding:15px 0;margin:0;break-inside:auto}h1{font-size:27pt}h2{font-size:18pt}h3{font-size:13pt}h2,h3,caption{break-after:avoid}.panel,.fact,.stage,.node,tr{break-inside:avoid}.table-scroll{overflow:visible;border:0}.wide,.metrics{min-width:0}table{font-size:8pt}th,td{padding:7px}a{color:inherit}.source{white-space:normal}.flow-row{grid-template-columns:1fr auto 1fr auto 1fr}figure{max-width:150mm;margin:14px auto}details{display:block}.footer{padding-top:14px}}
+</style>
+<style>
+/* Editorial review: paragraph groups preserve meaning as the viewport changes. */
+.copy-paragraphs{margin:10px 0 18px}.copy-paragraphs p{margin:0 0 10px}
+.summary-grid .panel-followup{margin-top:16px}.summary-grid li{margin:7px 0}
+.role-summary{margin:10px 0 22px}.role-summary p{margin-bottom:8px}.role-summary ul{margin-top:0}
+.validation-summary{padding-left:16px;border-left:2px solid var(--line)}
+.runtime-summary{margin:22px 0;padding:20px;background:#f6f9fa;border:1px solid var(--line);border-radius:7px}
+.runtime-list{margin:12px 0}.runtime-list>div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.runtime-list>div:last-child{border:0}.runtime-list dt{font-weight:650;color:var(--accent)}.runtime-list dd{margin:0}
+.qt-scope{margin:20px 0}.qt-scope h4{font-size:17px}.qt-scope p,.qt-scope ul{margin:10px 0}
+.evaluation-summary{margin:10px 0 20px}.evaluation-summary p{margin-bottom:8px}.evaluation-summary ul{margin-top:0}
+@media(max-width:760px){.desktop-break{display:none}.runtime-list>div{grid-template-columns:1fr;gap:3px}}
+@media print{.desktop-break{display:none}.runtime-summary,.qt-scope{break-inside:avoid}}
+</style>
+<style id="layout-review-style">
+/* Screenshot review: preserve semantic text flow, token boundaries and content-driven height. */
+body{font-family:"Noto Sans KR",system-ui,-apple-system,sans-serif}
+h1,h2,h3,h4,p,li,td,th,dt,dd{word-break:keep-all;overflow-wrap:break-word}
+.panel,.node,.fact,.stage>div,.runtime-card{min-inline-size:0;height:auto}
+.panel p,.runtime-card p{line-height:1.85}
+.panel .panel-followup{margin-top:16px}
+.selection-points{padding-top:6px}
+.callout{max-inline-size:100%;font-size:21px;line-height:1.65}
+code{display:inline-block;position:static;white-space:nowrap;word-break:normal;overflow-wrap:normal;max-inline-size:100%;line-height:1.5;vertical-align:baseline;letter-spacing:0}
+code.code-wrap{white-space:normal;word-break:break-all;overflow-wrap:anywhere}
+.runtime-grid{margin-top:16px;gap:16px;align-items:stretch}
+.runtime-card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:20px}
+.runtime-role{display:block;color:var(--accent);font-weight:650;font-size:13px;margin-bottom:5px}
+.runtime-card h4{font-size:20px;line-height:1.5;margin:0 0 12px}
+.api-token{margin:0 0 12px}.api-token code{font-size:16px;padding:5px 9px}
+.runtime-card p{margin:0}
+.runtime-notes{margin-top:18px}.runtime-notes p{margin:10px 0}
+.local-operation{margin:20px 0 0;padding:20px;border-top:1px solid var(--line)}
+.local-operation h4{margin-bottom:12px}
+.endpoint-row{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+.endpoint-label{font-size:13px;color:var(--muted)}
+.local-operation p{margin:12px 0 0}
+.extension-sequence{margin:8px 0 16px}
+.extension-scope p{margin:12px 0}
+td p{margin:0 0 10px}td p:last-child{margin-bottom:0}
+.source{display:inline-block;white-space:nowrap}
+.sources a{overflow-wrap:anywhere}
+.review-origin{font-size:12px;color:var(--muted);margin-top:14px}
+@media(max-width:900px){.runtime-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.callout{font-size:19px}.local-operation{padding:16px 0}.runtime-card{padding:16px}.runtime-card h4{font-size:18px}}
+@media print{.runtime-grid{grid-template-columns:1fr 1fr}.runtime-summary{break-inside:auto}.runtime-card,.local-operation{break-inside:avoid}.api-token code{font-size:10pt}}
+</style>
+<style id="overview-list-style">
+.overview-context{margin:20px 0 24px;padding:0}
+.overview-context-row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:18px;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.overview-context-row:last-child{border-bottom:0}
+.overview-context dt{margin:0;color:var(--accent);font-weight:650;line-height:1.85}
+.overview-context dd{margin:0;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+@media(max-width:760px){.overview-context-row{grid-template-columns:1fr;gap:4px;padding:12px 0}.overview-context{margin:16px 0 22px}}
+@media print{.overview-context-row{break-inside:avoid;grid-template-columns:66px minmax(0,1fr);gap:12px;padding:7px 0}}
+</style>
+<style id="technical-summary-style">
+.technical-summary h4{margin-bottom:16px}
+.technical-details{margin:0;padding:0}
+.technical-details>div{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.technical-details>div:first-child{padding-top:0}
+.technical-details>div:last-child{padding-bottom:0;border-bottom:0}
+.technical-details dt{margin:0;color:var(--muted);font-size:13px;font-weight:650;line-height:1.8}
+.technical-details dd{margin:0;font-size:15px;line-height:1.8;word-break:keep-all;overflow-wrap:break-word}
+.technical-details dd>span{display:block}
+.technical-details .technical-detail-note{margin-top:3px;font-size:12px;color:var(--muted)}
+@media(max-width:760px){.technical-details>div{grid-template-columns:1fr;gap:4px}.technical-details dd{font-size:15px}}
+</style>
+<style id="summary-card-alignment-style">
+/* Shared semantic rows; desktop subgrid aligns corresponding separators without fixed heights. */
+@supports(grid-template-rows:subgrid){
+ @media(min-width:761px){
+  #summary-panels{grid-template-rows:auto auto auto auto;row-gap:0}
+  #summary-panels>.technical-summary{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0}
+  #summary-panels>.technical-summary h4{margin:0 0 16px}
+  #summary-panels .technical-details{display:contents}
+ }
+}
+#current>figure>figcaption{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;line-height:1.7}
+#current>figure>figcaption a{white-space:nowrap}
+</style>
+<style id="consistent-report-list-style">
+.report-list{--list-label-width:108px;margin:16px 0 22px;padding:0}
+.report-list>div{display:grid;grid-template-columns:var(--list-label-width) minmax(0,1fr);gap:18px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line)}
+.report-list>div:last-child{border-bottom:0}
+.report-list dt{margin:0;color:var(--accent);font-weight:650;line-height:1.85}
+.report-list dd{margin:0;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+.report-list dd>p{margin:0}
+.uniform-panel h4{margin-bottom:16px}
+.evaluation-summary>.report-list{margin-top:8px}
+.stage .report-list{--list-label-width:100px;margin:8px 0 18px}
+.stage .report-list>div{padding:10px 0}
+.role-summary{margin-bottom:20px}
+.bullet-list{margin:12px 0 18px;padding-left:22px}
+.bullet-list>li{margin:8px 0;line-height:1.85;padding-left:1px}
+.bullet-list>li:first-child{margin-top:0}
+.bullet-list>li:last-child{margin-bottom:0}
+.panel>.bullet-list{margin:10px 0 0}
+.stage .bullet-list{margin:8px 0 18px;padding-left:22px}
+.validation-list>.bullet-list{margin:12px 0 20px}
+@media(max-width:760px){.report-list>div{grid-template-columns:1fr;gap:4px;padding:12px 0}.report-list{margin:14px 0 20px}}
+@media print{.report-list>div{break-inside:avoid;padding:7px 0;gap:12px}.report-list{margin:8px 0 12px}.uniform-panel{break-inside:auto}.bullet-list>li{break-inside:avoid}}
+</style>
+<style id="visual-title-pattern-style">
+.visual-title{color:var(--ink);font-size:14px;font-weight:650;line-height:1.7;letter-spacing:0}
+.flow>.visual-title{margin:0 0 16px}
+table caption.visual-title{padding:12px 14px;text-align:left}
+.visual-note{margin:-6px 0 20px;font-size:13px;line-height:1.75;color:var(--muted)}
+.rationale-table{min-width:650px;table-layout:fixed}
+.rationale-table thead th:first-child{width:21%}
+.rationale-table thead th:last-child{width:108px}
+.rationale-table tbody th{background:var(--paper);font-weight:600}
+.rationale-table .evidence-cell{white-space:nowrap}
+.rationale-table .tag{font-size:12px;text-decoration:none}
+@media print{.rationale-table{min-width:0;table-layout:auto}.visual-note{font-size:8pt}.visual-title{font-size:10pt}}
+</style>
+<style id="completion-criteria-style">
+.stage .completion-block{background:var(--soft);padding:16px 18px;border-radius:4px;margin-top:18px}
+.stage .completion-block>h4{margin:0 0 8px;color:var(--accent);font-size:14px;font-weight:650}
+.stage .completion-criteria{margin:0;padding-left:20px;list-style:disc}
+.stage .completion-criteria>li{margin:0 0 7px;line-height:1.85;padding-left:2px}
+.stage .completion-criteria>li:last-child{margin-bottom:0}
+@media(max-width:760px){.stage .completion-block{padding:14px}.stage .completion-criteria{padding-left:18px}}
+@media print{.stage .completion-block{break-inside:auto;padding:10px 12px}.stage .completion-criteria>li{break-inside:avoid;margin-bottom:4px}}
+</style>
+<style>.flow figcaption.visual-title{margin:0 0 18px}.flow-label{margin-top:20px}.sources li:target{background:var(--soft)}@media print{.flow{break-inside:avoid}.flow-row{gap:6px}.node{padding:10px}}</style></head><body>
+<header><p class="eyebrow">System direction · 2026-10-27</p><h1>로봇 시뮬레이션 시스템 개발 방향</h1>
+<p class="lead">구성 요소를 교체하고 설치 환경을 반영하며, 로봇의 동작과 실패 원인을 검증하는 환경을 만듭니다.<br/>현재 MuJoCo·ROS 2·MoveIt 2·Three.js 구현에서 시작해 실행 신뢰성과 공통 규약을 먼저 보강합니다.</p>
+<div class="meta"><span>대상: mujoco-ros2-manipulation</span><span>초기 테스트: FR5·FR10·UR5e</span><span>기준 코드: main 61e55ba</span><span>확인일: 2026-10-27</span><span>문서 v1.0 · 양식 v1.9</span></div></header>
+<div class="topbar"><nav aria-label="문서 목차" class="nav"><a href="#decision">개발 요약</a><a href="#current">현재 구성</a><a href="#reliability">미해결 사례</a><a href="#alternatives">참고 기술</a><a href="#roadmap">작업 순서</a><a href="#evaluation">평가 계획</a><a href="#review">범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
+<main>
+<section id="decision"><span class="section-no">Project overview</span><h2>교체 가능한 동작 검증 환경</h2>
+<p class="callout">현재 기능을 유지하면서 로봇 모델·물리 엔진·계획기·제어 인터페이스·뷰어의 교체 경계를 단계적으로 정리합니다.</p>
+<dl class="report-list"><div><dt>개발 방향</dt><dd>현장 설비의 설계 파일과 배치를 반영하고, 같은 환경에서 계획·실행·충돌·실패 원인을 확인하고 기록합니다.</dd></div><div><dt>구현 상태</dt><dd>FR5·FR10·UR5e 단일 모델과 FR5·UR5e 공동 물리, 요청별 실행·취소·계측, Three.js 조작 화면을 구현했습니다. 다른 엔진과 범용 센서의 실제 연결은 후속 작업입니다.</dd></div><div><dt>도입 배경</dt><dd>계획한 경로와 실행 상태를 연결해 실패를 설명하고, 설치 환경이나 모델이 달라져도 필요한 부분을 바꾸어 검증할 수 있어야 합니다.</dd></div><div><dt>구현 방식</dt><dd>MuJoCo·ROS 2·MoveIt 2로 동작 검증을 개발합니다. ROS 2는 익숙한 개발 스택과 센서 SDK 연계의 활용성을 고려한 현재 수단입니다. Three.js는 유지하며 공통 형상·상태·센서 공급원을 확장합니다.</dd></div></dl>
+<div class="grid"><div class="panel"><h4>현재 우선순위</h4><ul class="bullet-list"><li>취소 후 정리 지연과 기둥 접촉 사례의 원인 진단</li><li>원인에 맞춘 수정과 실행 회귀 기준 확보</li><li>작업·계획·실행의 공통 규약과 설치 환경 연결</li></ul></div><div class="panel"><h4>확장 기준</h4><ul class="bullet-list"><li>FR5·FR10·UR5e를 초기 테스트 기준으로 사용</li><li>안정된 생성·실행·취소·종료 규약으로 지원 로봇 확대</li><li>기대 효과·변경 규모·선행 조건으로 새 제안 선별</li></ul></div></div>
+<div class="legend"><span class="tag">현재 사실</span><span>기준 코드·기존 기록</span><span class="tag proposed">확장안</span><span>후속 구현</span><span class="tag unmeasured">미검증</span><span>추가 진단·평가</span></div>
+<p class="small">실행할 세부 항목과 상태는 <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/development_worklist.md">통합 작업리스트</a>에서 관리합니다. 이 보고서는 2026-10-27의 작업 순서와 선택 근거를 보존합니다.</p></section>
+
+<section id="current"><span class="section-no">01 / Current implementation</span><h2>현재 구성과 완료 범위</h2>
+<dl class="report-list"><div><dt>모델·환경</dt><dd>RobotProfile·Workcell과 생성 자산 해시, 이름 기반 관절·설치 자세를 공유합니다. 프로필과 생성기는 ROS·MuJoCo·제어기 설정에 아직 연결되어 있습니다.</dd></div><div><dt>계획·검사</dt><dd>현재 상시 서버가 MoveIt 계획·유효성 검사, 출발 시점 탐색, 최종 spline 검사와 실행을 연결합니다. 제한된 후보 중 처음 통과한 경로를 선택하며 최단 경로를 보장하지 않습니다.</dd></div><div><dt>실행·기록</dt><dd>ROS 2의 FollowJointTrajectory로 팔별 궤적을 전달합니다. 요청 ID·중복 처리·취소·완료·추종 상태를 기록하고, MuJoCo 접촉·시계 인터록을 유지합니다.</dd></div><div><dt>표시·분석</dt><dd>별도 표시 작업자가 만든 형상·상태를 Three.js로 표시합니다. 공통 표시 형식과 ROS 없는 읽기 전용 기록 재생을 구현했습니다. 표시용 모델은 제어용 물리 시뮬레이션과 역할이 다릅니다.</dd></div></dl>
+<figure class="flow" aria-labelledby="diagram-title-1" aria-describedby="diagram-note-1"><figcaption class="visual-title" id="diagram-title-1">도식 1. 현재 실행·표시 경로와 분리 확장안</figcaption>
+<p class="flow-label">현재 실행 경로</p><div class="flow-row"><div class="node"><strong>조작 화면·HTTP</strong><span>관절 목표·계획 검토·취소</span></div><div class="arrow" aria-hidden="true">→</div><div class="node"><strong>상시 명령 서버</strong><span>MoveIt 계획·검사·상태 재확인</span></div><div class="arrow" aria-hidden="true">→</div><div class="node"><strong>ROS 2·MuJoCo</strong><span>궤적 실행·상태·접촉·시계 감시</span></div></div>
+<p class="flow-label">현재 표시 경로</p><div class="flow-row"><div class="node"><strong>실시간·기록 공급원</strong><span>공통 형상·전체 상태·좌표·시간</span></div><div class="arrow" aria-hidden="true">→</div><div class="node"><strong>표시용 작업자·HTTP</strong><span>모델·세션·관절 대응 확인</span></div><div class="arrow" aria-hidden="true">→</div><div class="node"><strong>Three.js</strong><span>카메라·형상 탐색·계획 미리보기</span></div></div>
+<p class="flow-label">확장안 · W04~W06</p><div class="flow-row"><div class="node"><strong>작업·요청 규약</strong><span>목적·상태·실패·취소 의미</span></div><div class="arrow" aria-hidden="true">→</div><div class="node"><strong>계획·실행 어댑터</strong><span>요청 변환·전송·취소·상태 수신 분리</span></div><div class="arrow" aria-hidden="true">→</div><div class="node"><strong>교체·확장 대상</strong><span>로봇·엔진·설치 환경·센서</span></div></div></figure>
+<p class="visual-note" id="diagram-note-1">현재 서버의 결합을 점진적으로 분리하는 계획입니다. 범용 Planner·Executor·Simulator 플러그인이나 ROS 2 없는 로봇 실행을 이미 제공한다는 의미는 아닙니다. <a href="#src-boundaries">공통 모듈 경계</a>에 현재 결합을 기록했습니다.</p>
+<div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-1"><table class="wide"><caption class="visual-title" id="table-title-1">표 1. 완료한 개발과 후속 경계</caption><thead><tr><th scope="col">완료 항목</th><th scope="col">현재 제공 범위</th><th scope="col">후속 검증·확장</th></tr></thead><tbody>
+<tr><th scope="row">실행 기반·계측</th><td>단일 모델, FR5·UR5e 공동 물리, 계획 후보·계산 예산·최종 상태 검사, 요청·취소·완료 기록, 접촉 정지·출발 조정의 실제 시뮬레이션 시연</td><td>과거 취소 정리·접촉 사례의 원인 진단과 수정 검증</td></tr>
+<tr><th scope="row">검증·결과 도구</th><td>고정 suite·runner·결과 검사·공개 리포트, 같은 예산의 후보 1개/N개 비교와 실패·미실행 결과 보존</td><td>고정 회귀와 구분한 대표 입력·성능 표본 확대</td></tr>
+<tr><th scope="row">뷰어 개선 1~6</th><td>WebGL, 카메라·감도, 공급원 선택, 계획 검토, 형상 선택·맞춤·숨김·투명도, 필요 시 렌더링과 진단</td><td>현재 geom ID 목록에서 로봇·부품·공구 계층으로 확장</td></tr>
+<tr><th scope="row">계획 검토·승인</th><td>정확한 궤적 미리보기, 유효 시간·해시·시작 상태 검사, 일회 승인과 동일 궤적 실행</td><td>현재 검토 UI에 적용합니다. 호환 자동 계획·실행 API와 시연 경로도 유지합니다.</td></tr>
+<tr><th scope="row">공통 표시·기록</th><td>공통 형상·상태 형식, ROS 없는 읽기 전용 재생</td><td>대표 센서 입력과 요청·계획·상태·이벤트의 시간축 연결</td></tr>
+<tr><th scope="row">설계 파일 첫 단계</th><td>단일 solid STEP 변환, 단위·좌표 정규화, 별도 환경 생성과 기하 검사, 읽기 전용 미리보기</td><td>새 설비를 포함한 MoveIt·MuJoCo·명령 서버의 환경 일치와 실행 검증</td></tr>
+<tr><th scope="row">자료·공개·운영</th><td>소개·뷰어·모션·성능 자료, 사진·영상, 영상 잘림 수정, 보존 문서 v1.6과 공개 사이트, 기능 브랜치→devel→main·필수 CI 6개</td><td>완료 항목을 다시 개발하지 않고 기능 변경에 따라 관련 문서와 상태 갱신</td></tr></tbody></table></div>
+<p class="small">완료한 화면과 자료는 <a href="../viewer-improvements-2026-10-26/index.html">뷰어 개선 리포트</a>와 <a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a>에서 확인할 수 있습니다. 새 보고서 작성으로 기존 측정 원본과 버전별 영상·기록을 교체하지 않습니다.</p></section>
+
+<section id="reliability"><span class="section-no">02 / Open evidence</span><h2>원인 확인이 필요한 두 사례</h2>
+<div class="grid"><div class="panel"><h4>취소 후 정리 지연</h4><p><span class="tag">관측 사실</span> 과거 비교 시연의 취소가 중첩 실행까지 전달됐지만 최종 종료·정리가 지연된 사례가 있습니다.</p><p><span class="tag unmeasured">미확정</span> 정확한 대기 호출과 자원 수명 문제는 확정하지 않았습니다. 노드 해제·ROS 종료·소유 launch 종료·작업자 대기의 진행 시각과 스택을 연결해 W01에서 진단합니다.</p><p class="small"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40440094953">공개 CI 실행 기록</a> · 취소 수신, 정지 확인, 작업 종료, 프로세스 종료를 각각 판정합니다.</p></div>
+<div class="panel"><h4>기둥 근처 실행 접촉</h4><p><span class="tag">관측 사실</span> 기둥과 약 1.8 mm 떨어진 명목 경로가 검사를 통과한 뒤 실행 상태에서 접촉하여 네이티브 인터록이 정지한 사례가 있습니다.</p><p><span class="tag proposed">원인 후보</span> 작은 환경 여유와 추종 차이의 조합을 의심합니다. 검사·전송 궤적의 일치, 형상 근사·표본 간격·실제 상태를 대조하기 전에는 기여도와 빈도를 단정하지 않습니다.</p><p class="small"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40445409751/job/121995397417">공개 CI 실행 기록</a> · W02 진단 뒤 W03에서 원인에 맞게 수정합니다.</p></div></div>
+<div class="note warn"><p>현재 <strong>팔 사이 30 mm 계획·20 mm 관측 기준</strong>은 설비 전체와의 공통 여유가 아닙니다. 이산 표본·형상 근사 검사는 연속 시간이나 실물의 안전 인증으로 해석하지 않습니다. 수정 효과는 고정 입력과 인접 조건에서 확인하고, 재실행 성공만으로 과거 실패를 닫지 않습니다.</p></div></section>
+
+<section id="alternatives"><span class="section-no">03 / Selective reference adoption</span><h2>참고 기술의 역할과 반영 기준</h2>
+<p>외부 레퍼런스의 제안은 현재 구현과 개발 목표에 대조해 기대 효과·변경 규모·선행 조건을 평가합니다. 유용한 설계 패턴은 반영하고, 큰 런타임 변경은 구체적인 요구와 비교 결과가 생겼을 때 도입합니다.</p>
+<div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-2" aria-describedby="table-note-2"><table class="wide"><caption class="visual-title" id="table-title-2">표 2. 공식 참고자료의 선택적 반영</caption><thead><tr><th scope="col">참고 대상</th><th scope="col">기대 효과·반영안</th><th scope="col">변경 규모·선행 조건</th><th scope="col">판정</th></tr></thead><tbody>
+<tr><th scope="row"><a href="#src-foxglove">Foxglove 패널</a></th><td>명령·상태·진단의 역할을 나누고 요청·응답을 드러내는 패널 구성</td><td>현재 Three.js와 검증된 백엔드 명령 규약에 적용합니다. Publish·Service Call 패널 자체는 계획기나 작업 완료 정책을 제공하지 않습니다.</td><td>W04·W05에 패턴 반영</td></tr>
+<tr><th scope="row"><a href="#src-rerun">Rerun 시간축</a></th><td>실시간 상태와 기록 재생을 구분하고 시간·선택을 연결하는 분석</td><td>먼저 현재 화면의 요청·계획·상태·이벤트를 연결합니다. 임베딩 시 SDK·뷰어 버전을 고정하고 v0.39.0의 제어 API와 iframe의 한계를 확인합니다.</td><td>W05에 반영, 임베딩 조건부</td></tr>
+<tr><th scope="row"><a href="#src-bt">Behavior Tree</a></th><td>작업 상태·재사용 단계·실패 결과·복구 경계 명확화</td><td>W04·W07의 단계 규약을 먼저 정리합니다. BT 런타임 도입만으로 계획 속도가 개선된다고 보지 않습니다.</td><td>규약 우선, 런타임 후속</td></tr>
+<tr><th scope="row"><a href="#src-planners">MoveIt Pro 계획·IK</a></th><td>IK·경로 탐색·충돌 검사·시간 후처리·실행을 나누어 측정</td><td>현재 입력·예산으로 대안을 비교합니다. 결정적 IK 해는 일정한 전체 계획 지연을 뜻하지 않으며 제품 버전별 API를 별도 확인합니다.</td><td>W08 평가 설계 반영</td></tr>
+<tr><th scope="row"><a href="#src-isaac">Isaac Lab 제어</a></th><td>상위 동작 의도·관절 목표·물리 단계의 역할 분리</td><td>미분 IK의 관절 목표 계산과 장애물 전체 경로 계획을 구분합니다. 학습·대규모 병렬 환경 등의 요구가 생기면 엔진 비용을 평가합니다.</td><td>경계 참고, 엔진 전환 보류</td></tr>
+<tr><th scope="row"><a href="#src-servo">MoveIt Servo</a></th><td>조그·시각 피드백을 이용한 미세 보정 후보</td><td>연속 피드백과 제어권 인계·명령 유실·정지 정책이 필요합니다. 충돌 근처 감속·정지는 장애물 우회 경로 탐색과 역할이 다릅니다.</td><td>구체적인 보정 요구 뒤 평가</td></tr>
+<tr><th scope="row"><a href="#src-cache">궤적 캐시</a></th><td>반복되는 정적 구간의 계획 대기 감소 후보</td><td>기본 캐시의 충돌·Planning Scene 제약 누락과 시작 허용 오차를 고려합니다. 환경·시작·전체 경로를 재검사하고 불일치 시 새로 계획합니다.</td><td>W08에서 검증 후 선정</td></tr>
+<tr><th scope="row"><a href="#src-humble">Humble 호환성</a></th><td>배포 버전과 실제 패키지에 맞는 도입 범위 확인</td><td>확인한 공식 Humble 배포 목록의 MoveIt 2.5.10-1에는 궤적 캐시 패키지가 없습니다. 소스 빌드 환경은 별도 조사하며 Rolling/main 예제의 즉시 적용을 가정하지 않습니다.</td><td>새 의존성 도입 전 확인</td></tr>
+</tbody></table></div><p class="visual-note" id="table-note-2">정성 설계 검토입니다. 외부 제품의 수치를 현재 시스템 성능으로 인용하지 않으며, 새 기술의 성능 순위는 아직 측정하지 않았습니다. 공식 문서 확인일은 2026-10-27입니다.</p></section>
+
+<section id="roadmap"><span class="section-no">04 / Ordered worklist</span><h2>다음 작업 순서와 완료 조건</h2>
+<p>W01·W02의 두 진단은 병행할 수 있습니다. 원인 확인 뒤 W03을 진행하고, 회귀 기준을 바탕으로 W04를 분리합니다. W05·W06은 W04의 공통 규약을 공유하며 병행할 수 있습니다. W08 계측은 W01부터 시작하되 실행 방식을 바꾸는 실험은 W03·W04 이후 진행합니다.</p>
+<div class="stage"><div class="stage-id">W01 · 우선 진단</div><div><h3>취소 후 종료·정리 지연</h3><p>실패 입력을 보존하고 취소·타임아웃·접촉 정지를 구분합니다. 실패 뒤에도 작업 식별자·단계·신호 시각·정리 진행·스택이 남도록 합니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>지연 위치와 소유 프로세스의 최종 상태 설명</li><li>정지 확인·작업 종료·프로세스 종료의 구분</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W02 · 병행 진단</div><div><h3>기둥 접촉과 실행 추종 차이</h3><p>보존한 명목 궤적·실제 관절 상태·접촉 기록을 같은 실행에 연결합니다. 형상 근사·검사 간격·제어 추종의 영향을 나누어 확인합니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>검사·전송 궤적의 일치, 환경 간격·관절 오차·접촉 시점의 대조</li><li>확인한 원인과 남은 불확실성의 구분</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W03 · 원인별 수정</div><div><h3>실행 회귀 기준 보강</h3><p>W01·W02의 진단에 따라 종료 순서·자원 수명·환경 여유·추종 정책을 수정합니다. 접촉·시계 감시와 최종 경로 검사를 유지합니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>고정 입력과 인접 조건에서 수정 효과·정상 취소·종료 확인</li><li>실패 원본과 수정 결과의 함께 보존, 재실행 통과 외의 원인 근거 확보</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W04 · 공통 규약</div><div><h3>작업·계획·실행 책임 분리</h3><p>W03의 회귀 기준을 바탕으로 MoveIt 요청 변환, 궤적 전송·취소, 상태 수신을 작은 단계로 분리합니다. 명령 종류·실행 방식·계획 전략을 구분합니다. <code>coordinated</code>와 <code>departure_timing</code>은 계획 전략으로 유지합니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>단계별 입력·출력·완료·실패·취소 정의</li><li>관절 이름·순서·단위·좌표·제어 모드·시계 영역·신선도 규약 정의</li><li>명령 v1·호환 자동 실행·승인한 동일 궤적·모델/환경/정책/시작 상태 검사·중복 전송 방지 보존</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W05 · 공급원 확장</div><div><h3>공통 표시·센서와 시간축 분석</h3><p>W04의 요청·이벤트 경계를 사용해 상태·계획·실행 이력을 연결합니다. 필요한 이미지·프로파일·점군 중 대표 입력 1종을 선정하고 로봇·부품·공구 계층을 정의합니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>공급원·자산·좌표·단위·원천 시각·수신 나이·순번, 누락·재연결 검증</li><li>실시간·검토·기록의 구분과 기록 재생의 명령 미발생 확인</li><li>입력량 제한·최신 상태 우선 처리·유휴·비활성 탭·실패 복구 평가</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W06 · 설치 환경</div><div><h3>설계 파일에서 실행 검증으로 연결</h3><p>기존 STEP 미리보기와 W03·W04에서 이어갑니다. 대표 자산의 단위·원점·설치 변환·시각/충돌 형상을 대조하고, 보수적인 box 충돌 근사가 작업 경로를 과도하게 막는지 평가합니다. 실행 환경 선택은 표시 모델 선택과 별도 동작으로 둡니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>명시적으로 선택한 환경을 MuJoCo·MoveIt·명령 서버에 동일하게 반영</li><li>환경 불일치 시 실행 거부와 환경 변경 시 이전 계획 무효화</li><li>같은 환경에서 계획·검토·승인·취소·접촉 정지 확인</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W07 · 기본 작업</div><div><h3>TCP·Pose/IK·그리퍼와 집기</h3><p>작업 요구와 W04·W06의 모델 일치를 바탕으로 공구·목표·파지 후보·물체 상태를 정의합니다. 현재 이동·접근·후퇴 시연에는 실제 파지가 포함되지 않습니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>접근·파지 확인·인출·운반·해제의 성공·실패 규칙과 대표 사례 검증</li><li>물체 부착·분리 상태 정의와 계획상 부착/물리적 파지·미끄럼 판정의 구분</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W08 · 병목 기반</div><div><h3>캐시·플래너 비교</h3><p>계측은 W01부터 병행합니다. 실행 실험은 W03·W04 이후 반복 구간과 실제 계획 대기를 확인한 뒤 시작합니다. 전체 지연·성공률·경로 품질·재검증 비용을 같은 입력·예산에서 비교합니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>캐시 적중·실패·환경 변경·시작 불일치와 새 계획으로 복귀하는 동작 검증</li><li>고정 회귀와 별도 성능 표본·반복·실패 보존</li><li>충분한 표본의 p50·p95·최댓값, 작은 표본의 개별값·중앙값 제시</li></ul></div></div></div>
+<div class="stage"><div class="stage-id">W09 · 모델 확대</div><div><h3>다음 테스트 로봇 등록</h3><p>W03·W04 이후 다음 모델을 선정해 모델·관절·제어·좌표 규약을 등록합니다. 초기 세 모델의 검증 사례를 재사용하며 지원 범위를 늘립니다.</p><div class="completion-block"><h4>완료 조건</h4><ul class="completion-criteria"><li>기존 사례와 같은 생성·실행·취소·종료 검증 통과</li><li>새 모델의 제어·단위·관절 대응과 적용 한계 기록</li></ul></div></div></div>
+<h3>시스템 변경이 큰 후속 후보</h3><div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-3"><table class="wide"><caption class="visual-title" id="table-title-3">표 3. 후속 후보의 이유와 착수 조건</caption><thead><tr><th scope="col">후보·기대 효과</th><th scope="col">후순위 이유</th><th scope="col">착수 조건</th></tr></thead><tbody>
+<tr><th scope="row">선행 계획 · 대기 감소</th><td>단일 활성 요청에서 동시 계획·예상 시작 상태·무효화 처리로 확장해야 합니다.</td><td>W03·W04, 다음 상태 예측·실제 시작 재검증과 CPU 경쟁 평가</td></tr>
+<tr><th scope="row">Servo · 미세 보정</th><td>연속 명령과 궤적 실행 사이 제어권·유실·정지 정책이 필요합니다.</td><td>구체적 보정 요구, TCP·피드백과 충돌·특이점·오래된 명령 처리</td></tr>
+<tr><th scope="row">Behavior Tree · 분기·복구</th><td>단계 규약 정리 전 런타임 변경은 실패 원인 분리를 어렵게 합니다.</td><td>W04·W07, 재시도·분기·복구의 복잡성과 기존 상태 관리 비용 확인</td></tr>
+<tr><th scope="row">MPC · 피드백 보정</th><td>계획기 비교보다 제어·상태·시간 구조의 변경이 큽니다.</td><td>W08에서 확인한 문제, 필요한 제어 주기와 실패 시 정지·복귀 기준</td></tr>
+<tr><th scope="row">Isaac Sim 어댑터 · 환경·센서</th><td>다른 엔진의 모델·시계·제어·접촉 의미를 대조해야 합니다.</td><td>구체적 환경 요구, 같은 입력의 상태·취소·완료 비교</td></tr>
+<tr><th scope="row">실물 어댑터 · 실행 비교</th><td>드라이버·TCP·추종·취소·보호 정지의 별도 검증이 필요합니다.</td><td>사용 로봇·드라이버 선정과 실물 검증 절차 확보</td></tr>
+</tbody></table></div><p class="visual-note">선행 계획의 대기 0초나 대체 플래너의 일정한 계산시간을 완료 기준으로 미리 가정하지 않습니다. 개념 설계는 현재 규약에 반영하고 실제 도입은 조건을 만족한 개별 작업으로 진행합니다.</p></section>
+
+<section id="evaluation"><span class="section-no">05 / Evaluation plan</span><h2>비교 평가 계획</h2><p><span class="tag unmeasured">신규 평가 미실시</span> 이 보고서는 새 성능 측정이나 ROS 실행 결과를 추가하지 않습니다. 기존 검증을 출발점으로 다음 평가 묶음을 설계합니다.</p>
+<div class="table-scroll" role="region" tabindex="0" aria-labelledby="table-title-4"><table class="wide"><caption class="visual-title" id="table-title-4">표 4. 공통 입력과 판정 근거</caption><thead><tr><th scope="col">평가 영역</th><th scope="col">입력·측정 방법</th><th scope="col">판정 근거</th></tr></thead><tbody>
+<tr><th scope="row">실패·종료</th><td>보존한 실패 입력과 인접 조건에서 취소·타임아웃·접촉 정지를 나누고 단계별 시각·상태를 기록합니다.</td><td>원인 설명, 정상 정지·완료·종료, 실패 기록 보존</td></tr>
+<tr><th scope="row">추종·환경 여유</th><td>검사·전송 궤적, 실제 전체 관절 상태, 환경 최소 간격과 접촉을 같은 실행에 연결합니다.</td><td>명목/실제 차이와 형상·표본·추종 요인의 분리</td></tr>
+<tr><th scope="row">계획·캐시 지연</th><td>같은 모델·환경·공구·정책·목표·예산을 고정하고 워밍업·반복·순서를 명시합니다. 실패·취소와 재검증 비용도 포함합니다.</td><td>전체 지연·성공률·경로 길이·최소 간격·계산 비용의 동시 비교</td></tr>
+<tr><th scope="row">요청부터 결과까지</th><td>브라우저·클라이언트 요청, 서버 수신, 계획 왕복, 출발 탐색, 최종 검사, 예약 대기, 첫 이동, Action 완료·정착을 구분합니다. 사람이 계획을 검토·승인하는 대기는 계산 지연과 별도 구간으로 기록합니다.</td><td>사용자 체감 대기와 실제 병목, 준비 비용·의도된 대기·승인 대기의 분리</td></tr>
+<tr><th scope="row">표시·센서</th><td>고정 데이터량과 상태 주기로 실시간·기록·센서의 좌표·신선도·누락·재연결, 유휴·비활성 탭을 비교합니다.</td><td>모델 일치·오래된 상태 식별·부하 제한·조작 복구</td></tr>
+<tr><th scope="row">설치 환경·모델</th><td>자산·단위·변환·관절·충돌 근사를 고정하고 환경 변경·시작 불일치·새 로봇을 검증합니다.</td><td>세 구성의 환경 일치, 오래된 계획 실행 거부, 기존 회귀 통과</td></tr>
+</tbody></table></div>
+<ul class="bullet-list"><li>wall 시간과 simulation 시간을 구분합니다. 다른 프로세스의 monotonic 시각을 직접 빼지 않으며, 서비스 왕복에서 planning_time을 뺀 값을 순수 DDS 지연으로 단정하지 않습니다.</li><li>코드·환경·입력 해시·표본 수·반복·난수 조건·뷰어 동시 실행 여부를 기록합니다. 고정 회귀는 성능 표본이나 전체 공간 성공률과 구분합니다.</li><li>p95는 꼬리 분포를 평가할 표본을 확보한 뒤 제시합니다. 작은 표본에는 개별값·중앙값·최댓값과 해석 한계를 남깁니다.</li></ul>
+<div class="note"><p><strong>기존 수치의 범위:</strong> 1.975 → 1.537 s(wall)는 2026-10-21의 동일 입력 <a href="../../2026-10-21-search-optimization/index.html">오프라인 출발 탐색 A/B</a>에서 얻은 교차 입력 중앙값입니다. OMPL 자체나 요청부터 실행까지의 전체 지연 개선 수치가 아닙니다.</p><p>현재 검토 계획은 일회 승인용이며 과거 저장 계획은 읽기 전용 재생 자료입니다. 장기 실행 캐시로 사용하려면 모델·환경·공구·정책·시작 상태와 연결 구간을 포함한 전체 경로를 다시 검사해야 합니다.</p></div></section>
+
+<section id="review"><span class="section-no">Review scope &amp; limitations</span><h2>검토 범위와 운영 원칙</h2><dl class="report-list"><div><dt>확인한 근거</dt><dd>main 61e55ba의 모듈·표시·설계 파일·모션 문서, 기존 공개 리포트, 미해결 CI 사례와 공식 참고자료를 대조했습니다.</dd></div><div><dt>설계 판단</dt><dd>Three.js와 현재 스택을 유지하며 신뢰성 진단·규약·환경 일치부터 확장합니다. 각 변경은 작은 기능 브랜치에서 완료 기준을 확인하고 devel 검증 뒤 main으로 승격합니다.</dd></div><div><dt>별도 프로젝트</dt><dd>별도의 로컬 CAD 뷰어와 설비 공정 시뮬레이션은 각각의 요구와 일정으로 관리합니다. 필요한 자산·좌표·상태 규약은 맞추되 작업 순서를 그대로 가져오지 않습니다.</dd></div><div><dt>미검증 범위</dt><dd>일반 센서 통합, 가져온 환경의 실제 회피 실행, 범용 교체 어댑터, 새 플래너·캐시의 성능, 실제 물체 파지·실물 실행은 후속 검증 대상입니다.</dd></div></dl>
+<p>원본 설계와 파생 메시가 담긴 현장 자산은 로컬에서 관리합니다. 공개 자료에는 비공개 경로·프로세스 식별자·원시 로그·세션 식별자를 넣지 않고 관측 사실과 미확정 해석을 구분합니다.</p>
+<p class="small"><a href="review-data.json">구조화된 판단·출처 데이터</a> · <a href="../viewer-direction-2026-10-22/index.html">초기 뷰어 방향 검토</a> · <a href="../motion-planning-direction-2026-10-22/index.html">이전 모션 방향 검토</a><br/>이전 방향 보고서는 작성 당시의 검토 기록입니다. 현재 구현 상태와 다음 작업 순서는 이 문서와 통합 작업리스트를 기준으로 확인합니다.</p></section>
+
+<section id="sources"><span class="section-no">Evidence / Source baseline</span><h2>근거와 확인 범위</h2><p class="small">확인일: 2026-10-27 · 구현 기준: <code class="code-wrap">61e55ba7040910bb25758b6310e353f35ed92b6f</code> · 구현 근거는 고정 커밋, 관련 HTML 보고서는 상대 링크로 연결합니다. 새 작업리스트는 게시 후 갱신되는 main 문서입니다.</p>
+<ol class="sources">
+<li id="src-worklist"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/development_worklist.md">통합 작업리스트</a><span>2026-10-27 개정 1.0의 W01~W09와 완료 조건을 본 보고서에 반영했습니다.</span></li>
+<li id="src-boundaries"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/module_boundaries.md">공통 모듈 경계</a><span>현재 결합·정적 작업 환경 설명·상태/시간 규약·교체 어댑터의 의무를 확인했습니다.</span></li>
+<li id="src-viewer"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/viewer_sources.md">공통 표시·기록·계획 검토</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/src/mujoco_ros2_manipulation/workcells/motion_review.py">계획 검토 구현</a><span>읽기 전용 재생, 현재 검토 UI와 호환 실행 경로, 유효 시간·시작 상태·일회 승인 범위를 확인했습니다.</span></li>
+<li id="src-environment"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/environment_design_import.md">설계 파일 반영</a><span>단일 solid STEP·정규화·별도 overlay·box 충돌 근사·읽기 전용 미리보기와 실행 연결의 남은 범위를 확인했습니다.</span></li>
+<li id="src-motion"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/motion_requests.md">모션 요청·구간 계측</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/src/mujoco_ros2_manipulation/workcells/motion_server.py">상시 명령 서버</a><span>계획 후보·예산·최종 검사·취소·시간 경계와 고정 회귀 검증의 한계를 확인했습니다.</span></li>
+<li id="src-search"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/search_optimization.md">오프라인 출발 탐색</a> · <a href="../../2026-10-21-search-optimization/index.html">기존 A/B 측정 리포트</a><span>1.975 → 1.537 s(wall)의 원래 입력·반복·측정 범위를 유지합니다.</span></li>
+<li id="src-completed"><a href="../viewer-improvements-2026-10-26/index.html">뷰어 개선 1~6</a> · <a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/CONTRIBUTING.md">개발 운영 절차</a><span>완료한 화면·실행 사례·자료와 기능 브랜치→devel→main 절차의 근거입니다.</span></li>
+<li id="src-open"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40440094953">취소 사례 CI 실행</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40445409751/job/121995397417">접촉 사례 CI 작업</a><span>과거 실패의 공개 근거입니다. 취소의 정확한 대기 위치와 접촉의 원인별 기여도는 미확정이며 W01·W02에서 확인합니다.</span></li>
+<li id="src-foxglove"><a href="https://docs.foxglove.dev/docs/visualization/panels/publish">Foxglove Publish</a> · <a href="https://docs.foxglove.dev/docs/visualization/panels/service-call">Service Call</a><span>메시지 발행·서비스 요청/응답 패널의 역할과 지원 연결 조건입니다. 장기 작업 완료는 별도 규약이 필요합니다.</span></li>
+<li id="src-bt"><a href="https://docs.picknik.ai/concepts/behavior_trees/">MoveIt Pro Behavior Trees</a><span>v10의 Objective·Behavior·실행 상태 구성입니다. 현재 프로젝트의 런타임 통합이나 계획 지연 개선 근거로 사용하지 않습니다.</span></li>
+<li id="src-planners"><a href="https://docs.picknik.ai/concepts/planners_and_solvers/">MoveIt Pro Planners and Solvers</a><span>경로 계획·Cartesian 계획·PoseIK의 역할과 결정적 해의 의미를 확인했습니다.</span></li>
+<li id="src-rerun"><a href="https://rerun.io/docs/howto/integrations/embed-web">Rerun 웹 임베딩</a> · <a href="https://ref.rerun.io/docs/js/0.39.0/web-viewer/classes/WebViewer.html">WebViewer v0.39.0 API</a><span>기록·실시간 입력, iframe 제어 한계, 시간·타임라인·선택 이벤트와 버전 호환 조건입니다.</span></li>
+<li id="src-isaac"><a href="https://isaac-sim.github.io/IsaacLab/main/source/how-to/run_diff_ik.html">Isaac Lab task-space controller</a><span>현재 자세·Jacobian·관절 상태에서 관절 목표를 계산하는 미분 IK의 범위입니다. 장애물 전체 경로 계획이나 학습 정책의 신뢰성을 보증하지 않습니다.</span></li>
+<li id="src-servo"><a href="https://moveit.picknik.ai/main/doc/examples/realtime_servo/realtime_servo_tutorial.html">MoveIt Realtime Servo</a><span>실시간 명령·충돌/특이점 근처 속도 조절의 역할입니다. Rolling 문서의 인터페이스는 실제 배포 버전에 다시 대조해야 합니다.</span></li>
+<li id="src-cache"><a href="https://moveit.picknik.ai/main/doc/how_to_guides/trajectory_cache/trajectory_cache_tutorial.html">MoveIt Trajectory Cache</a><span>유사 요청의 궤적 조회, 기본 캐시의 충돌·Planning Scene 제약 누락, 시작 허용 오차와 반복 정적 동작의 적용 조건입니다.</span></li>
+<li id="src-humble"><a href="https://raw.githubusercontent.com/ros/rosdistro/master/humble/distribution.yaml">Humble 배포 목록</a> · <a href="https://moveit.ai/install-moveit2/source/">MoveIt 2 소스 빌드</a><span>확인일의 공식 배포 목록과 main/안정 브랜치의 구분입니다. 특정 로컬 소스 빌드에 어떤 패키지가 설치됐는지는 별도 확인해야 합니다.</span></li>
+</ol></section>
+<div class="footer"><span>문서 v1.0 · 기술 설계 / 개발 방향</span><span>신규 성능 측정·로봇 실행 없음</span><span>구현 기준: 61e55ba</span><a href="#decision">처음으로 ↑</a></div>
+</main><script>document.getElementById("print").addEventListener("click",()=>window.print());</script>
+</body></html>
