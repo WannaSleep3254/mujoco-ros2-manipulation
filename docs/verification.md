@@ -113,6 +113,7 @@ GUI GPU 관측은 해당 실행 디렉터리의 `nvidia_smi.txt`에 저장합니
 | `model_manifest_sha256` | 검증한 모델 무결성 명세의 해시 |
 | `motion_checks_passed` | 선택한 검증기의 동작 검사 통과. 크래시 전용 검증은 양팔 이동 전제만 포함하며 전체 정상 동작 검증과 구분 |
 | `direct_tracking_error_rad` / `moveit_tracking_error_rad` | 상태 확인을 마친 시점의 관절별 오차 |
+| `cleanup_diagnostics` | 노드 해제, ROS 종료, launch 정리, 추가 진단(finalize 콜백)의 시작·완료 시각과 소요 시간. 진단 기록이며 정상 종료 판정을 대신하지 않음 |
 | `shutdown_clean` | 종료 검사 통과 |
 | `launch_return_code` | launch 프로세스의 종료 코드, 정상값 0 |
 | `process_group_gone` | 검증이 실행한 프로세스 그룹의 잔류 없음 |
@@ -125,6 +126,24 @@ GUI GPU 관측은 해당 실행 디렉터리의 `nvidia_smi.txt`에 저장합니
 정리 오류가 발생해도 최초 실패 원인을 덮어쓰지 않습니다. SIGINT로 끝나지 않으면 SIGTERM·SIGKILL로 단계적으로 정리하며 강제 정리는 정상 종료로 판정하지 않습니다.
 촬영 자료 수집기는 최신 상태가 `passed`이고 모델 명세까지 일치하는 결과만 사용합니다. 기존 형식의 로컬 촬영 결과는 재검증해야 합니다.
 종료 오류의 원인과 로컬 수정은 [문제 해결](troubleshooting.md)에 정리했습니다.
+
+
+## 취소와 정리 지연 진단
+
+중첩 시연의 취소 경로에서는 정지 요청, 검증 작업 종료, 소유 프로세스 정리를 나누어 확인합니다. 공통 `run_verification` 수명주기를 사용하는 실행의 `cleanup_diagnostics.steps`에는 `destroy_node`, `ros_shutdown`, `launch_stop`, `finalize` 순서로 시작 시각을 먼저 저장합니다. 호출이 끝나지 않으면 해당 항목이 `running`으로 남습니다. 완료 항목에는 UTC 시각, 단조 시계 값, 소요 시간과 추가 오류를 기록합니다. 최초 동작 오류는 기존 `error`에 보존합니다.
+
+시연 worker는 첫 SIGINT 수신 때 10초 후 자신의 작업 폴더의 `cancel-stacks.log`에 Python 스레드 프레임을 한 번 기록하도록 예약합니다. 작업 처리가 끝나면 예약을 취소합니다. 네이티브 C/C++ 스택을 수집하는 기능은 아니며, 수집 자체가 worker를 종료하지 않습니다. 정상적으로 빨리 끝난 취소에는 지연 스택이 생성되지 않을 수 있습니다. 진단 파일 생성 실패도 원래 취소 결과를 바꾸지 않습니다.
+
+상위 조작 화면의 `events.jsonl`에는 `demo_worker_wait_started`와 `demo_worker_wait_finished`를 남깁니다. 기존 worker 대기의 PID, 제한 시간, 대기 구간의 경과 시간, 반환 코드와 시간 초과 여부를 확인할 수 있습니다. 45초는 `process.wait`의 제한이며, audit 기록과 후속 정리를 포함한 전체 기한은 아닙니다. 시간 초과 기록은 강제 정리를 시작하기 전에 저장합니다.
+
+`verify_operator_demos.py`는 종료 확인 후 소유 console 세션을 검증 실행 폴더의 `console-session`에 먼저 복사하고 audit을 검사합니다. 정리 실패나 audit 오류 때문에 작업 상태·로그·스택이 버려지지 않도록 한 것입니다. 결과의 `console_evidence.copied`와 `audit_valid`를 구분해 확인합니다. 자료 복사 성공이 정상 종료를 뜻하지 않습니다.
+
+```bash
+source ./manipulation_env.sh
+python3 verify_operator_demos.py --domain 201 --port 8911 --no-render
+```
+
+위 도메인과 포트는 실행 전 비어 있는지 확인하고 선택합니다. 검증기는 자신의 프로세스만 정리하며, 강제 정리·프로세스 잔류가 발생한 실행을 정상 종료로 판정하지 않습니다. 이 진단 추가만으로 과거의 간헐적 정리 지연 원인이 해결됐다고 판단하지 않습니다.
 
 ## 보관한 실행 기록
 
