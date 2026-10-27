@@ -1,0 +1,416 @@
+{
+  "document_type": "design_review",
+  "document_schema_version": 1,
+  "document_version": "1.0",
+  "id": "system-direction-2026-10-27",
+  "title": "로봇 시뮬레이션 시스템 개발 방향",
+  "reviewed_date": "2026-10-27",
+  "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
+  "template_version": "1.9",
+  "authoritative_worklist": {
+    "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/development_worklist.md",
+    "edition": "2026-10-27 1.0",
+    "link_policy": "Main worklist is updated after publication. Implementation evidence is fixed to baseline_commit."
+  },
+  "direction": {
+    "goals": [
+      "구성 요소 교체",
+      "설치 환경 반영",
+      "동작 검증"
+    ],
+    "current_stack": [
+      "MuJoCo",
+      "ROS 2",
+      "MoveIt 2",
+      "Three.js"
+    ],
+    "retain_threejs": true,
+    "initial_test_models": [
+      "FAIRINO FR5",
+      "FAIRINO FR10",
+      "UR5e"
+    ],
+    "robot_expansion": "After shared contracts and execution reliability checks",
+    "separate_projects": [
+      "비공개 QML 로컬뷰어",
+      "별도 설비 공정 공정 일정"
+    ]
+  },
+  "current_architecture": {
+    "model": "RobotProfile/Workcell, asset hashes, named joints and installation transforms",
+    "planning_execution": "Motion server still directly connects MoveIt requests, validation, FollowJointTrajectory and ROS state",
+    "display": "Common geometry/state contract, separate display worker, Three.js and ROS-free read-only recorded source",
+    "already_generic_runtime_plugins": false,
+    "cad_scope": "Single solid STEP to normalized immutable overlay and read-only preview; execution integration pending"
+  },
+  "completed": [
+    "Single-model FR5/FR10/UR5e and shared FR5/UR5e simulation",
+    "Bounded spatial replanning, budgets, final validation and request instrumentation",
+    "Existing fixed suite, runner, result validation and public reports; same-budget one/N candidate comparison with failed and not-executed preservation",
+    "Viewer improvements 1-6, exact reviewed trajectory and one-use approval",
+    "Common display and ROS-free recording playback",
+    "STEP normalization and read-only environment preview",
+    "Existing reports, media, archive and publication workflow"
+  ],
+  "interpretation_guards": {
+    "approval": "Exact one-use review flow applies to the review UI; compatibility automatic plan/execute API remains.",
+    "saved_plans": "Past saved plans are read-only playback, not a long-term execution cache.",
+    "distance": "30 mm planned / 20 mm observed inter-arm criteria are not common environment clearance.",
+    "search_measurement": "1.975 to 1.537 s wall is the historical offline departure-search median for the crossing input, not OMPL or end-to-end latency.",
+    "replay": "Recorded display does not issue robot motion commands.",
+    "contact": "Observed nominal clearance and execution contact do not establish individual causal contributions."
+  },
+  "open_cases": [
+    {
+      "id": "cleanup-delay",
+      "status": "observed_unresolved",
+      "fact": "Cancellation reached the nested verification flow; final cleanup was delayed.",
+      "unknown": "Exact blocking call and causal resource lifetime are not established.",
+      "next_work": "W01",
+      "public_evidence": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40440094953"
+    },
+    {
+      "id": "pillar-contact",
+      "status": "observed_unresolved",
+      "fact": "A nominal path passed with about 1.8 mm pillar clearance, then execution contact triggered the native interlock.",
+      "inference": "Low environment clearance combined with tracking difference is a candidate explanation, not a completed root-cause finding.",
+      "next_work": "W02",
+      "public_evidence": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40445409751/job/121995397417"
+    }
+  ],
+  "work_items": [
+    {
+      "id": "W01",
+      "title": "취소 후 종료·정리 지연 재현과 진단",
+      "depends_on": [],
+      "status": "planned",
+      "acceptance": [
+        "지연 위치와 소유 프로세스 최종 상태 설명",
+        "실패 진단 보존·정지/작업/프로세스 종료 구분"
+      ]
+    },
+    {
+      "id": "W02",
+      "title": "기둥 접촉과 추종 차이 분석",
+      "depends_on": [],
+      "status": "planned",
+      "acceptance": [
+        "검사·전송 궤적 일치와 실제 상태·환경 간격·접촉 대조",
+        "원인과 불확실성 구분"
+      ]
+    },
+    {
+      "id": "W03",
+      "title": "원인별 수정과 회귀 보강",
+      "depends_on": [
+        "W01",
+        "W02"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "고정 입력·인접 조건 수정 효과와 정상 취소·종료 확인",
+        "실패와 수정 결과 함께 보존"
+      ]
+    },
+    {
+      "id": "W04",
+      "title": "작업·계획·실행 책임 분리",
+      "depends_on": [
+        "W03"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "명령 종류·실행 방식·계획 전략과 단계별 입출력/완료/실패/취소 정의",
+        "관절 이름·순서·단위·좌표·제어 모드·시계 영역·신선도 규약 정의",
+        "현재 v1·검토 동일 궤적·호환 자동 실행·검사·한 번 전송 보존"
+      ]
+    },
+    {
+      "id": "W05",
+      "title": "공통 표시·센서와 시간축 분석",
+      "depends_on": [
+        "W04"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "대표 센서 입력 1종의 좌표·단위·시각·신선도·누락·재연결 검증",
+        "기록의 명령 미발생과 입력량·유휴·복구 평가"
+      ]
+    },
+    {
+      "id": "W06",
+      "title": "설치 환경의 실행 연결",
+      "depends_on": [
+        "W03",
+        "W04"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "실행 환경 선택과 표시 모델 선택의 별도 동작",
+        "선택 환경의 MuJoCo·MoveIt·명령 서버 일치",
+        "환경 변경의 이전 계획 무효화·실행 검증"
+      ]
+    },
+    {
+      "id": "W07",
+      "title": "TCP·Pose/IK·그리퍼와 기본 집기",
+      "depends_on": [
+        "W04",
+        "W06"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "접근·파지 확인·인출·운반·해제 성공/실패 정의와 사례 검증",
+        "물체 부착·분리 상태 정의와 계획상 부착/물리 파지 판정 구분"
+      ]
+    },
+    {
+      "id": "W08",
+      "title": "병목 기반 캐시·플래너 비교",
+      "depends_on": [
+        "W03",
+        "W04"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "같은 입력·예산으로 전체 지연·성공률·품질·재검증 비용 비교",
+        "캐시 불일치 시 새 계획과 실패 보존"
+      ]
+    },
+    {
+      "id": "W09",
+      "title": "지원 로봇 확대",
+      "depends_on": [
+        "W03",
+        "W04"
+      ],
+      "status": "planned",
+      "acceptance": [
+        "새 모델·관절·제어·좌표 규약 등록",
+        "기존과 같은 생성·실행·취소·종료 검증"
+      ]
+    }
+  ],
+  "parallelism": {
+    "diagnostics": [
+      "W01",
+      "W02"
+    ],
+    "after_shared_contract": [
+      "W05",
+      "W06"
+    ],
+    "measurement_from": "W01",
+    "execution_experiments_after": [
+      "W03",
+      "W04"
+    ]
+  },
+  "reference_assessment": {
+    "principle": "Assess suggestions against current code for benefit, change size and dependencies even when a review session lacks full root context.",
+    "adopt_now": [
+      "Explicit task states, completion/failure/cancellation semantics",
+      "Command/status/diagnostics panel roles",
+      "Common timelines and live/replay separation",
+      "Separate IK/path/collision/postprocessing/coordination/execution measurements"
+    ],
+    "conditional": [
+      "Embedded Rerun",
+      "Validated trajectory reuse",
+      "Alternative planners and solvers"
+    ],
+    "no_performance_rank": true
+  },
+  "deferred": [
+    {
+      "candidate": "Lookahead planning",
+      "reason": "Concurrency, predicted start state, invalidation and CPU contention",
+      "trigger": "W03/W04 and measured planning waits with actual-start revalidation"
+    },
+    {
+      "candidate": "MoveIt Servo",
+      "reason": "Continuous command ownership, stale-command and stop policy",
+      "trigger": "Specific jog or feedback correction requirement and TCP/state feedback"
+    },
+    {
+      "candidate": "Behavior Tree runtime",
+      "reason": "Task-state contracts and failure diagnosis first",
+      "trigger": "W04/W07 and demonstrated branching/recovery complexity"
+    },
+    {
+      "candidate": "MPC/control loop",
+      "reason": "Larger changes to control, state and time than planner substitution",
+      "trigger": "W08 evidence, required control period and stop/fallback policy"
+    },
+    {
+      "candidate": "Isaac Sim adapter",
+      "reason": "Different model, clock, control and contact semantics",
+      "trigger": "Concrete environment/sensor requirement and equivalent state/cancel/completion checks"
+    },
+    {
+      "candidate": "Real robot adapter",
+      "reason": "Driver, TCP, tracking, cancellation and protective-stop checks",
+      "trigger": "Selected robot/driver and dedicated physical validation procedure"
+    }
+  ],
+  "evaluation": {
+    "status": "planned_not_measured",
+    "conditions": [
+      "Pinned code/model/environment/tool/policy/input/budget",
+      "Separate warmup, repetitions, run order and failures",
+      "Separate wall, simulation and per-process monotonic clocks",
+      "Include revalidation and fallback costs",
+      "Human plan review/approval waiting is recorded separately from computational latency"
+    ],
+    "metrics": [
+      "End-to-end latency",
+      "Success/failure/cancel rates",
+      "Path quality and minimum clearance",
+      "Planning and validation segment costs",
+      "Display freshness/load/recovery"
+    ],
+    "statistics": "Report p50/p95/max with adequate samples; use individual values and median for small samples.",
+    "fixed_regression_is_workspace_success_rate": false
+  },
+  "new_performance_measurements": [],
+  "new_ros_motion_tests": [],
+  "public_data_policy": "No private CAD or derived assets, private paths, process IDs, raw logs or session identifiers included.",
+  "implementation_sources": [
+    {
+      "title": "공통 모듈 경계",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/module_boundaries.md"
+    },
+    {
+      "title": "공통 표시와 계획 검토",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/viewer_sources.md"
+    },
+    {
+      "title": "설계 파일 반영",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/environment_design_import.md"
+    },
+    {
+      "title": "모션 요청과 계측",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/motion_requests.md"
+    },
+    {
+      "title": "출발 탐색 최적화",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/docs/search_optimization.md"
+    },
+    {
+      "title": "계획 검토 구현",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/src/mujoco_ros2_manipulation/workcells/motion_review.py"
+    },
+    {
+      "title": "상시 명령 서버",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/src/mujoco_ros2_manipulation/workcells/motion_server.py"
+    },
+    {
+      "title": "기여 절차",
+      "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/61e55ba7040910bb25758b6310e353f35ed92b6f/CONTRIBUTING.md"
+    }
+  ],
+  "web_sources": [
+    {
+      "topic": "Foxglove",
+      "title": "Foxglove Docs — Publish panel",
+      "url": "https://docs.foxglove.dev/docs/visualization/panels/publish",
+      "role_fact": "The Publish panel sends messages on a topic back to the robotics stack.",
+      "limitation": "Publishing requires a live connection whose data source supports publishing; the panel does not supply a motion planner or execution policy.",
+      "relevant_proposal": "Borrow the pattern of an explicit command panel alongside the existing Three.js scene. Route commands through the application's validated backend contract."
+    },
+    {
+      "topic": "Foxglove",
+      "title": "Foxglove Docs — Service Call panel",
+      "url": "https://docs.foxglove.dev/docs/visualization/panels/service-call",
+      "role_fact": "The Service Call panel sends a service request and displays the response.",
+      "limitation": "Service calls require a supporting live connection. A service response is distinct from completion of a long-running robot task.",
+      "relevant_proposal": "Use request and response visibility for diagnostics and configuration. Give long-running execution its own progress, cancellation, and terminal-result semantics."
+    },
+    {
+      "topic": "MoveIt Pro Behavior Trees",
+      "title": "MoveIt Pro v10 Docs — Behavior Trees",
+      "url": "https://docs.picknik.ai/concepts/behavior_trees/",
+      "role_fact": "An Objective is a top-level Behavior Tree for a complete robotic task; a Behavior is an action-node plugin executed within the Objective Server.",
+      "limitation": "Behavior Trees organize execution and state management; their adoption alone does not establish faster motion planning. Interfaces and implementation details from older product versions need separate verification.",
+      "relevant_proposal": "Adopt explicit task states, reusable steps, failure results, and recovery boundaries now. Consider a Behavior Tree runtime when branching recovery, retries, or reusable multi-step workflows outgrow the current executor."
+    },
+    {
+      "topic": "MoveIt Pro planners and solvers",
+      "title": "MoveIt Pro v10 Docs — Planners and Solvers",
+      "url": "https://docs.picknik.ai/concepts/planners_and_solvers/",
+      "role_fact": "The documentation distinguishes ProRRT path planning, Cartesian planning, and PoseIK. PoseIK determinism is described as returning the same solution for the same input.",
+      "limitation": "Deterministic IK output is not a guarantee of fixed end-to-end planning latency. PoseIK optimize_distance intentionally searches for improvements for a configured time period.",
+      "relevant_proposal": "Separate IK, path search, collision validation, time parameterization, coordination search, and execution timing in measurements. Evaluate alternative solvers against representative workloads before changing the runtime."
+    },
+    {
+      "topic": "Rerun",
+      "title": "Rerun Docs — Embed Rerun in Web pages",
+      "url": "https://rerun.io/docs/howto/integrations/embed-web",
+      "role_fact": "The web viewer can open recorded RRD files or live SDK gRPC connections and can be embedded through an iframe or JavaScript package.",
+      "limitation": "The documented iframe approach lacks programmable viewer control. The JavaScript viewer package must be compatible with the SDK version that produced the data.",
+      "relevant_proposal": "Adopt a common time axis and live-versus-replay semantics in the existing UI. Add an embedded Rerun diagnostics view only if recording analysis would materially benefit; retain the primary Three.js interaction surface."
+    },
+    {
+      "topic": "Rerun",
+      "title": "Rerun Web Viewer v0.39.0 API — WebViewer",
+      "url": "https://ref.rerun.io/docs/js/0.39.0/web-viewer/classes/WebViewer.html",
+      "role_fact": "The inspected API includes time_update, timeline_change, and selection_change events, together with methods for setting the active timeline, current time, and playback state.",
+      "limitation": "These API facts were verified for v0.39.0. Viewer interaction events do not themselves define a robot command or execution interface.",
+      "relevant_proposal": "Use event-driven synchronization between diagnostics and the existing scene if embedding is adopted. Pin viewer and SDK versions and keep replay inspection separate from live execution commands."
+    },
+    {
+      "topic": "Isaac Lab",
+      "title": "Isaac Lab Docs — Using a task-space controller",
+      "url": "https://isaac-sim.github.io/IsaacLab/main/source/how-to/run_diff_ik.html",
+      "role_fact": "DifferentialIKController computes desired joint positions from a desired end-effector pose using the current pose, Jacobian, and joint positions; supported methods include damped least squares and pseudoinverse.",
+      "limitation": "The demonstrated IK controller computes joint targets. This alone does not establish collision-free whole-path planning through obstacles or the reliability of a learned policy.",
+      "relevant_proposal": "Borrow the separation between high-level action intent, control targets, and physics stepping. Consider Isaac Lab when policy learning, large-scale parallel learning environments, or its simulation features become explicit requirements."
+    },
+    {
+      "topic": "MoveIt Servo",
+      "title": "MoveIt Rolling Docs — Realtime Servo",
+      "url": "https://moveit.picknik.ai/main/doc/examples/realtime_servo/realtime_servo_tutorial.html",
+      "role_fact": "Servo supports real-time joint or end-effector commands. Its collision and singularity checks scale down velocities near hazards, and collision checking is configurable.",
+      "limitation": "Velocity scaling and stopping are not a guarantee of finding a global route around an obstacle. Rolling command interfaces and configuration must be checked against the deployed MoveIt version.",
+      "relevant_proposal": "Keep collision-aware path planning for bin entry and exit. Consider Servo when visual feedback correction, teleoperation, or fine approach control becomes necessary and a suitable feedback/control loop exists."
+    },
+    {
+      "topic": "Trajectory cache",
+      "title": "MoveIt Rolling Docs — Fuzzy-Matching Trajectory Cache Quickstart",
+      "url": "https://moveit.picknik.ai/main/doc/how_to_guides/trajectory_cache/trajectory_cache_tutorial.html",
+      "role_fact": "The cache retrieves trajectories by fuzzy request matching and can rank candidates by planned execution time. The guide recommends repetitive non-dynamic motion and known starting poses.",
+      "limitation": "The documented default cache ignores collision and planning-scene constraints. A large start tolerance can return a trajectory whose first state differs substantially from the current robot state. A cache hit is not evidence that execution is valid in the current scene.",
+      "relevant_proposal": "Pilot validated reuse on repeated static segments. Check the current scene, trajectory constraints, current start state, and any connecting motion before execution; fall back to a fresh plan when validation fails."
+    },
+    {
+      "topic": "Humble compatibility",
+      "title": "ROS rosdistro — Humble distribution manifest",
+      "url": "https://raw.githubusercontent.com/ros/rosdistro/master/humble/distribution.yaml",
+      "role_fact": "At the inspection date, the Humble MoveIt release entry is 2.5.10-1 and its release-package list does not contain moveit_ros_trajectory_cache.",
+      "limitation": "This manifest describes the official distribution release and does not identify packages present in a particular source-built workspace. Documentation generated from main is not proof that a package is included in the stable Humble binary release.",
+      "relevant_proposal": "Inventory the deployed MoveIt version, source branch, and available packages before choosing a cache implementation. Do not assume a Rolling example can be installed unchanged in the current Humble environment."
+    },
+    {
+      "topic": "Humble compatibility",
+      "title": "MoveIt — MoveIt 2 Source Build for Linux",
+      "url": "https://moveit.ai/install-moveit2/source/",
+      "role_fact": "The inspected installation page lists Humble among platforms currently supported by main and recommends distro branches for stable versions.",
+      "limitation": "The page explicitly describes main as an unstable API and says Humble support may be phased out once incompatible. Source-build feasibility does not guarantee compatibility with an existing workspace.",
+      "relevant_proposal": "Prefer the current stable deployment. If a needed feature requires main or a backport, evaluate it in isolation with pinned revisions and a representative compatibility test before changing the production workspace."
+    }
+  ],
+  "web_sources_checked_date": "2026-10-27",
+  "publication": {
+    "registry_document_type": "design_review",
+    "measurement_catalog_registered": false,
+    "new_measurement_schema": false
+  },
+  "editorial_notes": [
+    "Reuses v1.9 template CSS with small figure-caption/print adjustments.",
+    "Existing direction reports remain historical records; new work follows W01-W09.",
+    "Public failure links are evidence of observations; causal claims remain qualified.",
+    "No runtime, tests, past measurements or media changed.",
+    "Read-only editorial review identified human approval waiting as a separate timing segment; clarified in HTML and data.",
+    "README remains user edited; handle only on a separate review request."
+  ]
+}
