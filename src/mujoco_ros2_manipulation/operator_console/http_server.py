@@ -179,6 +179,8 @@ class Handler(BaseHTTPRequestHandler):
                 result = app.views.select(payload)
             elif path == "/api/view/plan" and set(payload) == {"request_id"}:
                 result = app.views.select_plan(payload["request_id"])
+            elif path == "/api/view/review" and set(payload) == {"request_id"}:
+                result = app.views.select_review_plan(payload["request_id"])
             elif path == "/api/view/seek" and set(payload) == {"time_sec","binding_id"}:
                 result = app.views.seek(payload["time_sec"],binding_id=payload["binding_id"])
             elif path == "/api/view/display" and set(payload) == {"mode"}:
@@ -199,6 +201,12 @@ class Handler(BaseHTTPRequestHandler):
                 result = app.stop_async()
             elif path == "/api/command":
                 result = app.submit(payload)
+            elif path == "/api/plan":
+                result = app.create_plan(payload)
+            elif path == "/api/plan/execute":
+                result = app.execute_plan(payload)
+            elif path == "/api/plan/discard" and set(payload) == {"request_id"}:
+                result = app.discard_plan(payload["request_id"])
             elif path == "/api/target" and set(payload) == {"text"} and isinstance(payload["text"], str):
                 target = decode_message(payload["text"])
                 validate_command(command(target), app.state.config["joint_limits"])

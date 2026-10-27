@@ -1,5 +1,6 @@
 """Read-only replay of an observed request's saved, fully checked trajectory."""
 from copy import deepcopy
+import hashlib
 import json
 import math
 import re
@@ -40,7 +41,7 @@ def _load(raw, maximum):
 class SavedPlan:
     """A detached visual replay; no ROS entities, publication, or physics steps."""
     def __init__(self, trace_raw, session_raw, *, request_id, motion_session_id,
-                 model_manifest, joint_names, joint_limits):
+                 model_manifest, joint_names, joint_limits, _pending_review=None):
         trace, session = _load(trace_raw, 32*1024*1024), _load(session_raw, 4*1024*1024)
         _require(all(isinstance(value, str) and re.fullmatch('[0-9a-f]{32}', value)
                      for value in (request_id, motion_session_id)), 'Invalid replay request/session identity')
@@ -51,6 +52,30 @@ class SavedPlan:
             'Saved plan belongs to another observed request/session')
         _require(type(model_manifest) is dict and session.get('model_manifest') == model_manifest,
                  'Saved plan uses different model assets')
+        if _pending_review is not None:
+            review = trace.get('review')
+            _require(type(review) is dict and trace.get('mode') == 'plan_only'
+                     and review.get('state') == 'awaiting_approval' and trace.get('dispatched_goals', 0) == 0
+                     and review.get('plan_request_id') == request_id and review.get('session_id') == motion_session_id
+                     and review.get('plan_sha256') == _pending_review.get('plan_sha256')
+                     and _pending_review.get('state') == 'awaiting_approval'
+                     and _finite(_pending_review.get('remaining_sec')) and _pending_review['remaining_sec'] > 0,
+                     'Pending plan identity changed or approval expired')
+            payload = trace.get('review_payload')
+            _require(type(payload) is dict and set(payload) == {'schema_version','plan_request_id','session_id',
+                'identity','initial_state_rad','simulation_sec','command','trajectories','no_motion_required'},
+                'Missing exact pending plan payload')
+            digest = hashlib.sha256(json.dumps(payload, sort_keys=True, allow_nan=False,
+                separators=(',', ':')).encode()).hexdigest()
+            _require(digest == _pending_review['plan_sha256']
+                     and payload['schema_version'] == 1 and payload['plan_request_id'] == request_id
+                     and payload['session_id'] == motion_session_id and payload['command'] == trace.get('command')
+                     and payload['initial_state_rad'] == trace.get('initial_state_rad')
+                     and payload['trajectories'] == trace.get('trajectories')
+                     and payload['no_motion_required'] is False,
+                     'Displayed path differs from the exact pending plan digest')
+        else:
+            _require(trace.get('mode') != 'plan_only', 'Use pending-plan preview for an unexecuted plan')
         events = trace.get('events')
         _require(trace.get('status') == 'succeeded' and trace.get('error') is None
                  and type(events) is list and events and type(events[-1]) is dict
@@ -126,6 +151,8 @@ class SavedPlan:
         _require(_finite(quality.get('duration_sec')) and abs(quality['duration_sec']-self.duration) <= 1e-8
                  and type(quality.get('samples')) is int and quality['samples'] >= 2,
                  'Saved full-path check has a different duration or no samples')
+        stamp = quality['minimum'].get('time_sec')
+        self.clearance_minimum_time_sec = stamp if _finite(stamp) and 0 <= stamp <= self.duration else None
         self.positions(0)
         self.positions(self.duration)
 
@@ -149,3 +176,9 @@ class SavedPlan:
             result.update(zip(curve.names, curve.position(min(stamp, curve.duration))))
         self._check(result)
         return result
+
+
+class ReviewPlan(SavedPlan):
+    """Visualize a current checked plan before dispatch; never approve or execute."""
+    def __init__(self, trace_raw, session_raw, *, review, **options):
+        super().__init__(trace_raw, session_raw, _pending_review=review, **options)

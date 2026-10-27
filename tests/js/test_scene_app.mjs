@@ -39,7 +39,7 @@ function state(character = 'a', generation = 1, overrides = {}) {
       ...overrides}};
 }
 
-function harness({manifest} = {}) {
+function harness({manifest, poseResult = false, submitFrame = true, collision = false} = {}) {
   let now = 0, nextTimer = 0, active = 0, maximumActive = 0;
   const elements = new Map(), timers = new Map(), requests = [], notices = [];
   const element = id => {
@@ -47,6 +47,7 @@ function harness({manifest} = {}) {
     return elements.get(id);
   };
   element('demos').hidden = true;
+  element('scene-collision').checked = collision;
   const cameraNodes=[];
   for(const scope of ['operate','demo']) {
     const add=(name,dataset)=>{const node=element(scope+'-'+name);Object.assign(node.dataset,dataset);cameraNodes.push(node);};
@@ -60,7 +61,7 @@ function harness({manifest} = {}) {
       return cameraNodes.filter(node=>fields.some(field=>Object.hasOwn(node.dataset,field)));
     }};
   class FakeViewer {
-    constructor(container, options) {this.onMetrics = options.onMetrics; this.sensitivity={...options.controlSensitivity};this.zoomCalls=[];this.resets=0;this.loads = []; this.poses = []; this.bindings = []; this.clears = 0; this.aborts = 0; this.destroyed = 0;}
+    constructor(container, options) {this.options=options;this.sized=true;this.document={hidden:false};this.firstVisibleSubmittedAt=null;this.onMetrics = options.onMetrics; this.sensitivity={...options.controlSensitivity};this.zoomCalls=[];this.resets=0;this.collisionUpdates=[];this.loads = []; this.poses = []; this.bindings = []; this.clears = 0; this.aborts = 0; this.destroyed = 0;}
     setExpectedBinding(id, binding) {this.bindingID=id;this.hasPose=false;this.bindings.push({id, binding});}
     clearBinding() {this.bindingID=null;this.hasPose=false;this.clears++; this.aborts += this.loads.filter(load => !load.finished).length;}
     loadManifest(url, options) {
@@ -68,20 +69,23 @@ function harness({manifest} = {}) {
       const promise = manifest ? manifest(item) : Promise.resolve({});
       return promise.finally(() => {item.finished = true;});
     }
-    pollPose(url) {this.poses.push(url); return Promise.resolve(false);}
+    pollPose(url) {this.poses.push(url);if(poseResult){this.hasPose=true;this.manifest={scene_sha256:'3'.repeat(64)};if(submitFrame)this.firstVisibleSubmittedAt=1;}return Promise.resolve(poseResult);}
     markStale(reason) {this.staleReason = reason;}
-    setCollisionVisible() {}
+    setCollisionVisible(value) {assert.equal(typeof value,'boolean');this.collisionVisible=value;this.collisionUpdates.push(value);}
     setControlSensitivity(value) {this.sensitivity={...value};return {...value};}
     zoomCamera(direction) {this.zoomCalls.push(direction);return true;}
     resetCamera() {this.resets++;return true;}
     resize() {}
+    cameraSnapshot(){return {position:[1,2,3]};}
+    restoreCamera(value){this.restored=value;return true;}
     destroy() {this.destroyed++;this.disposed=true;}
   }
   const SceneControls = new Function('LocalSceneView', 'document', 'performance', 'setTimeout', 'clearTimeout',
     source + '\nreturn SceneControls;')(FakeViewer, document, {now: () => now},
       (callback, delay) => {const id = ++nextTimer; timers.set(id, {callback, delay}); return id;},
       id => timers.delete(id));
-  const controls = new SceneControls({request: (path, payload) => {
+  let availabilityChanges=0;
+  const controls = new SceneControls({onAvailabilityChange:()=>{availabilityChanges++;},request: (path, payload) => {
     const request = {...deferred(), path, payload}; requests.push(request);
     active++; maximumActive = Math.max(maximumActive, active);
     return request.promise.finally(() => active--);
@@ -89,9 +93,125 @@ function harness({manifest} = {}) {
   return {controls, element, requests, notices, timers, advance: milliseconds => {now += milliseconds;},
     createController:()=>new SceneControls({request:()=>{throw new Error('Camera must not request');},notify:message=>notices.push(message),showOperate(){}}),
     get maximumActive() {return maximumActive;},
+    get availabilityChanges(){return availabilityChanges;},
     reply(index, value = {}) {requests[index].resolve(value);},
     fail(index, message = 'Synthetic request failure') {requests[index].reject(new Error(message));}};
 }
+
+test('explicit 3D restart disposes the old view and requires current pose before approval', async () => {
+  const loads=[];
+  const h=harness({manifest:item=>{const pending=deferred();loads.push(pending);return pending.promise;},poseResult:true});
+  h.controls.update(state());loads[0].resolve({});await drain();
+  const old=h.controls.viewer;old.hasPose=true;old.manifest={scene_sha256:'3'.repeat(64)};old.sceneError='context lost';
+  old.options.onContextLost();
+  assert.equal(h.controls.cameraReady(),false);
+  assert.equal(h.element('scene-restart').hidden,false);
+  const restarting=h.controls.restartScene();
+  assert.equal(old.destroyed,1);assert.notEqual(h.controls.viewer,old);
+  assert.equal(h.controls.recovering,true);assert.equal(h.controls.cameraReady(),false);
+  assert.equal(h.element('scene-restart').disabled,true);
+  loads[1].resolve({});assert.equal(await restarting,true);
+  assert.equal(h.controls.recovering,false);assert.equal(h.controls.cameraReady(),true);
+  assert.equal(h.controls.viewer.poses.length,1);
+  assert.deepEqual(h.controls.viewer.restored,{position:[1,2,3]});
+  assert.equal(h.requests.length,0,'Restart only fetches scene resources; it never submits robot actions');
+  assert.ok(h.availabilityChanges>=3);
+});
+
+test('initial creation and explicit renderer restart preserve the collision checkbox in both states', async () => {
+  for(const checked of [true,false]){
+    const h=harness({collision:checked,poseResult:true});
+    assert.deepEqual(h.controls.viewer.collisionUpdates,[checked]);
+    h.controls.update(state());await drain();
+    const old=h.controls.viewer;old.sceneError='context lost';old.options.onContextLost();
+    assert.equal(await h.controls.restartScene(),true);
+    assert.notEqual(h.controls.viewer,old);assert.equal(old.destroyed,1);
+    assert.deepEqual(h.controls.viewer.collisionUpdates,[checked]);
+    assert.equal(h.element('scene-collision').checked,checked);
+    assert.equal(h.requests.length,0,'Restoring a display preference cannot publish commands');
+    h.controls.destroy();
+  }
+});
+
+test('changing the binding during 3D restart cannot restore the old scene', async () => {
+  const loads=[];
+  const h=harness({manifest:item=>{const pending=deferred();loads.push(pending);return pending.promise;},poseResult:true});
+  h.controls.update(state());loads[0].resolve({});await drain();
+  h.controls.viewer.sceneError='lost';
+  const pending=h.controls.restartScene();
+  h.controls.update(state('b',2));
+  loads[1].resolve({});await drain();
+  assert.equal(await pending,false);assert.equal(h.controls.expected,'b'.repeat(64));
+  assert.equal(h.controls.viewer.poses.length,0,'Old restart cannot poll/apply its pose into a new binding');
+  loads[2].resolve({});await drain();
+  h.controls.destroy();
+});
+
+test('a restarted pose cannot enable approval until its first visible frame submission', async () => {
+  const h=harness({poseResult:true,submitFrame:false});h.controls.update(state());await drain();
+  h.controls.viewer.sceneError='lost';
+  assert.equal(await h.controls.restartScene(),true);
+  assert.equal(h.controls.viewer.hasPose,true);assert.equal(h.controls.recovering,false);
+  assert.equal(h.controls.cameraReady(),false,'Pose fetch completion is not a submitted frame');
+  h.controls.viewer.firstVisibleSubmittedAt=123;h.controls.viewer.options.onFirstVisibleFrame();
+  assert.equal(h.controls.cameraReady(),true);
+  h.controls.viewer.document.hidden=true;assert.equal(h.controls.cameraReady(),false);
+  h.controls.viewer.document.hidden=false;h.controls.viewer.sized=false;assert.equal(h.controls.cameraReady(),false);
+  h.controls.destroy();
+});
+
+test('a failed explicit restart leaves retry/fallback visible and approval unavailable', async () => {
+  let count=0;
+  const h=harness({manifest:()=>++count===1?Promise.resolve({}):Promise.reject(new Error('Synthetic manifest timeout'))});
+  h.controls.update(state());await drain();h.controls.viewer.sceneError='lost';
+  assert.equal(await h.controls.restartScene(),false);
+  assert.equal(h.controls.cameraReady(),false);assert.equal(h.controls.recovering,false);
+  assert.equal(h.element('scene-restart').hidden,false);assert.equal(h.element('scene-restart').disabled,false);
+  assert.match(h.notices.at(-1),/재시작 실패/);assert.equal(h.requests.length,0);
+  h.controls.destroy();
+});
+
+test('server image fallback is explicit and leaves a preview without issuing a motion', async () => {
+  const h=harness();h.controls.update(state());await drain();
+  assert.equal(h.requests.length,0);
+  const fallback=h.controls.useServerImage();
+  assert.equal(h.requests[0].path,'/api/view/select');
+  assert.deepEqual(h.requests[0].payload,{mode:'live',source_id:'workcell:manual'});
+  h.reply(0);await drain();assert.equal(h.requests[1].path,'/api/view/display');
+  h.reply(1);assert.equal(await fallback,true);
+  assert.equal(h.requests.some(r=>/command|plan\/execute|demos/.test(r.path)),false);
+});
+
+test('slow playback maps wall time to the selected speed without extra seek chains', async () => {
+  const h=harness();h.controls.update(state());await drain();
+  assert.equal(h.controls.setPlaybackSpeed(.25),true);h.controls.play();
+  h.reply(0);await drain();h.advance(2000);
+  const timer=[...h.timers.values()][0];timer.callback();
+  assert.equal(h.requests[1].payload.time_sec,.5);
+  h.reply(1);await drain();
+  assert.equal(h.controls.setPlaybackSpeed(9),false);
+  h.controls.pause();h.controls.destroy();
+});
+
+test('minimum clearance seek uses only a finite selected-plan stamp', async () => {
+  const h=harness();h.controls.update(state('a',1,{clearance_minimum_time_sec:2.75}));await drain();
+  assert.equal(h.element('plan-clearance-seek').disabled,false);
+  const pending=h.controls.seekMinimumClearance();
+  assert.deepEqual(h.requests[0].payload,{time_sec:2.75,binding_id:'a'.repeat(64)});
+  h.reply(0);assert.equal(await pending,true);
+  h.controls.update(state('b',2,{clearance_minimum_time_sec:NaN}));await drain();
+  assert.equal(h.element('plan-clearance-seek').disabled,true);
+  assert.equal(await h.controls.seekMinimumClearance(),false);assert.equal(h.requests.length,1);
+});
+
+test('destroy removes every owned non-camera control listener before recreation', () => {
+  const h=harness();
+  for(const id of ['scene-model','scene-live','display-mode','scene-collision','plan-seek','plan-play','plan-speed','plan-clearance-seek','scene-restart','scene-fallback'])
+    assert.ok(Object.keys(h.element(id).listeners).length);
+  h.controls.destroy();
+  for(const id of ['scene-model','scene-live','display-mode','scene-collision','plan-seek','plan-play','plan-speed','plan-clearance-seek','scene-restart','scene-fallback'])
+    assert.equal(Object.keys(h.element(id).listeners).length,0,id);
+});
 
 test('an old seek response cannot change a new preview slider', async () => {
   const h = harness(); h.controls.update(state()); await drain();
@@ -384,7 +504,7 @@ test('frame age distinguishes live waiting, live telemetry, previews and no acti
 });
 
 function cameraReady(h){
-  h.controls.viewer.hasPose=true;h.controls.viewer.manifest={};h.controls.updateCameraControls();
+  h.controls.viewer.hasPose=true;h.controls.viewer.firstVisibleSubmittedAt=1;h.controls.viewer.manifest={};h.controls.updateCameraControls();
 }
 
 test('explicit camera buttons act locally on either screen without changing request/playback state', async () => {

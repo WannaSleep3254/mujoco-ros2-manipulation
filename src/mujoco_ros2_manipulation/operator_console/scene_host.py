@@ -138,6 +138,12 @@ class SceneSource:
 
 def _manifest(raw, source, model_sha256):
     data = _json(raw)
+    if type(data) is dict and data.get("schema_version") == 2:
+        from .display_contract import validate_manifest
+        data = validate_manifest(data)
+        _require(data["model_sha256"] == model_sha256 and data["joint_names"] == list(source.joint_names)
+                 and data["home_rad"] == source.home, "Display source model/joint mismatch")
+        return data, {item["sha256"]: item for item in data["assets"]}
     fields = {"schema_version", "export_version", "scene_sha256", "model_sha256", "compiled_model_sha256",
               "mujoco_version", "units", "joint_names", "home_rad", "default_visible_groups", "geoms", "assets"}
     _require(type(data) is dict and set(data) == fields and type(data["schema_version"]) is int

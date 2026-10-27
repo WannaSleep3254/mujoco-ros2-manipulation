@@ -34,26 +34,36 @@
     "print_styles": "unchanged; print preview not newly tested"
   },
   "document_revision": {
-    "version": "1.1",
+    "version": "1.2",
     "date": "2026-10-26",
-    "implementation_review_commit": "e8ac5029915472a39a7d65a0e9ef5a25baf8fb37",
-    "scope": "Added current Three.js retention rationale, original P0-P4 progress mapping, proposed common-source/sensor expansion and reciprocal navigation; original measurements and camera evidence preserved.",
-    "decision_type": "Current project requirements and implementation review; no cross-tool performance or development-cost ranking.",
+    "implementation_review_commit": "591384ec9dda48e6bfde76d2b674dca3b4086ca1",
+    "scope": "Viewer improvements 1-4: read-only recovery, display identity, review facts and playback, explicit replan and linked request history.",
     "new_measurement": false,
-    "cross_engine_adapters_implemented": false,
-    "sensor_point_cloud_support_implemented": false,
-    "validation": {
-      "status": "passed_with_print_preview_limit",
-      "checks": [
-        "Independent editorial review: implementation vs proposal and original P0-P4 mapping",
-        "51 publication/deployed-byte unit tests passed",
-        "Export validation: 248 relative links, assets and anchors passed",
-        "Desktop, 820x1180 tablet and 390x844 mobile viewport layout reviewed; table scroll kept within page",
-        "Historical 10/22 body preserved outside dated follow-up; measurement and camera sections preserved apart from numbering",
-        "Root README, performance inputs/evidence, runtime code and tests unchanged"
-      ],
-      "print_styles": "Reviewed A4 rules, hidden navigation, row break avoidance and progress-table min-width reset; actual PDF pagination/print preview not verified in available browser.",
-      "new_motion_or_performance_test": false
+    "validation": "usability-validation.json"
+  },
+  "prior_document_revisions": [
+    {
+      "version": "1.1",
+      "date": "2026-10-26",
+      "implementation_review_commit": "e8ac5029915472a39a7d65a0e9ef5a25baf8fb37",
+      "scope": "Added current Three.js retention rationale, original P0-P4 progress mapping, proposed common-source/sensor expansion and reciprocal navigation; original measurements and camera evidence preserved.",
+      "decision_type": "Current project requirements and implementation review; no cross-tool performance or development-cost ranking.",
+      "new_measurement": false,
+      "cross_engine_adapters_implemented": false,
+      "sensor_point_cloud_support_implemented": false,
+      "validation": {
+        "status": "passed_with_print_preview_limit",
+        "checks": [
+          "Independent editorial review: implementation vs proposal and original P0-P4 mapping",
+          "51 publication/deployed-byte unit tests passed",
+          "Export validation: 248 relative links, assets and anchors passed",
+          "Desktop, 820x1180 tablet and 390x844 mobile viewport layout reviewed; table scroll kept within page",
+          "Historical 10/22 body preserved outside dated follow-up; measurement and camera sections preserved apart from numbering",
+          "Root README, performance inputs/evidence, runtime code and tests unchanged"
+        ],
+        "print_styles": "Reviewed A4 rules, hidden navigation, row break avoidance and progress-table min-width reset; actual PDF pagination/print preview not verified in available browser.",
+        "new_motion_or_performance_test": false
+      }
     }
-  }
+  ]
 }

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "implementation_commit": "591384ec9dda48e6bfde76d2b674dca3b4086ca1",
+  "date": "2026-10-26",
+  "scope": "Viewer improvements 1-4: read-only recovery, display identity, review facts and playback, explicit replan and linked request history.",
+  "checks": {
+    "python_unit_tests": 619,
+    "javascript_contract_tests": 106,
+    "package_sdist_and_wheel": "passed",
+    "repository_checks": "passed",
+    "owned_ros_review_checks": 10,
+    "owned_ros_domain": 167
+  },
+  "browser": {
+    "owned_console_domain": 166,
+    "plan_only_does_not_move": true,
+    "expiry_blocks_approval": true,
+    "explicit_replan_requires_new_review": true,
+    "summary_refreshes_after_plan_completion": true,
+    "preview_speed_and_minimum_time": true,
+    "approved_small_motion_succeeded": true,
+    "plan_request_id": "7f79b86f7ece482f973f2131cd40a730",
+    "execution_request_id": "967c46b953594fe28d084db10d13901d",
+    "linked_history_and_readable_detail": true,
+    "recorded_before_final_review_fixes_commit": "0beb71f4a24628ae71ab773144dfa069fdbd31a0"
+  },
+  "isolated_graphics_fixture": {
+    "real_webgl_context_loss": true,
+    "explicit_restart_recovers": true,
+    "first_render_submission_gate": true,
+    "server_image_selection_exits_preview": true,
+    "server_image_pixels_newly_verified": false,
+    "robot_commands": 0
+  },
+  "performance_remeasured": false,
+  "limits": [
+    "No physical robot or safety certification",
+    "Functional browser/ROS checks, not a new performance comparison",
+    "Actual PDF pagination not checked"
+  ],
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/operator_console/static/app.js": "19127ba8c86351b2906d21c0659777b43baf16223269c6aa3f3b1fa7f9074d50",
+    "src/mujoco_ros2_manipulation/operator_console/static/viewer.js": "df7dcd3bdad686b15145df7252fdbe8e0bbcfbaba714904fdf4eb2fca1ffba8d",
+    "src/mujoco_ros2_manipulation/operator_console/static/scene_app.js": "8c3fe321d0f8441e2efbfa21142eea897d36052142eac41c3a2791688abe2102",
+    "src/mujoco_ros2_manipulation/operator_console/static/index.html": "8cf431322e8a684485eec58f1bd962e16fd59c7c0cfb7dfafa8f075da4fa45dd",
+    "src/mujoco_ros2_manipulation/operator_console/static/style.css": "5498df104475c3e9fc7f7964a519efdc5e0dd2fa0897ab3225dc80e45fda9c98",
+    "src/mujoco_ros2_manipulation/operator_console/application.py": "7921382818da631c7e26449c2375363006c7179f09c4af293f4774cf0cb17aed",
+    "src/mujoco_ros2_manipulation/operator_console/review_summary.py": "2e32b54fc0629090ce70e913294a441fa773fae2c7290403b434a6fb59c6ca3b",
+    "src/mujoco_ros2_manipulation/operator_console/state.py": "44c4056b88f27434a326a4450c09c45b4667d67df83f3ddf8f11dd68ca1c4945",
+    "src/mujoco_ros2_manipulation/operator_console/view_plan.py": "fe13aaeae3b0dc20ce2f7b96725e602d3b64fcfd281ba6a732b9fe30d8f738eb",
+    "src/mujoco_ros2_manipulation/operator_console/console_views.py": "a1c7c7cdc4ef1ddffadaf2c1e62fc7b742bec97344284c91a68e486e483bf9c7",
+    "src/mujoco_ros2_manipulation/workcells/motion_server.py": "9dfd298a50e2052c89262036a151873eaf052388344807e6c7412cc34fee43c4"
+  },
+  "publication_layout": {
+    "desktop": true,
+    "mobile_390x844_no_page_overflow": true,
+    "tablet_820x1180_no_page_overflow": true,
+    "images_loaded": true,
+    "local_anchors_present": true,
+    "print_pagination_tested": false
+  },
+  "final_review_fixes": {
+    "stale_read_cannot_create_new_plan": true,
+    "collision_setting_restored_on_3d_restart": true,
+    "validation": "Targeted regression tests and full JavaScript contract suite; no new performance measurement",
+    "periodic_poll_does_not_starve_explicit_replan": true
+  }
+}

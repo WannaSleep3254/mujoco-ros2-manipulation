@@ -1,8 +1,14 @@
 """Read-only saved-plan replay rejects cross-session/model or partial paths."""
 from copy import deepcopy
+import ast
+from importlib.util import find_spec
 import json
+from pathlib import Path
+from types import SimpleNamespace
 import unittest
-from mujoco_ros2_manipulation.operator_console.view_plan import SavedPlan
+from mujoco_ros2_manipulation.operator_console.view_plan import SavedPlan, ReviewPlan
+from mujoco_ros2_manipulation.workcells.motion_review import PlanReviewStore
+from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
 
 
 def fixture():
@@ -25,7 +31,48 @@ def build(trace, session, options):
     return SavedPlan(json.dumps(trace).encode(),json.dumps(session).encode(),**options)
 
 
+def production_review_fixture():
+    """Use the server's real issuer and store, without constructing a ROS node."""
+    trace_data,session,options=fixture()
+    source=Path(find_spec('mujoco_ros2_manipulation.workcells.motion_server').origin)
+    tree=ast.parse(source.read_text())
+    server=next(node for node in tree.body if isinstance(node,ast.ClassDef) and node.name=='MotionCommandServer')
+    method=deepcopy(next(node for node in server.body if isinstance(node,ast.FunctionDef) and node.name=='_issue_review'))
+    def require(condition,message):
+        if not condition:raise ValueError(message)
+    namespace={'require':require}
+    exec(compile(ast.Module(body=[method],type_ignores=[]),str(source),'exec'),namespace)
+    store=PlanReviewStore(options['motion_session_id'],clock=lambda:3.)
+    identity={'build':{'model':'test'},'planning_scene_sha256':'f'*64}
+    owner=SimpleNamespace(_review_runtime_identity=lambda:deepcopy(identity),
+        confirm_start_unchanged=lambda state:None,review_store=store,clock_last=7.)
+    trace=RequestTrace(options['request_id'],clock=lambda:1_000_000_000)
+    trace.data.update({key:deepcopy(value) for key,value in trace_data.items()
+                       if key not in ('events','status','error')})
+    trace.data.update(mode='plan_only',dispatched_goals=0)
+    namespace['_issue_review'](owner,trace,trace.data['initial_state_rad'],identity)
+    return trace.data,session,options,store.summary()
+
+
+def build_review(trace,session,options,review):
+    return ReviewPlan(json.dumps(trace).encode(),json.dumps(session).encode(),review=review,**options)
+
+
 class ViewPlanTests(unittest.TestCase):
+    def test_minimum_time_is_optional_finite_and_bounded_by_the_accepted_path(self):
+        for stamp in (0.,.5,1.,None,True,-.01,1.001,float('nan'),float('inf')):
+            with self.subTest(stamp=stamp):
+                trace,session,options=fixture()
+                if isinstance(stamp,float) and (stamp != stamp or stamp == float('inf')):
+                    # The strict source parser rejects nonfinite records entirely.
+                    trace['planned_clearance']['minimum']['time_sec']=stamp
+                    with self.assertRaises(ValueError):build(trace,session,options)
+                    continue
+                trace['planned_clearance']['minimum']['time_sec']=stamp
+                plan=build(trace,session,options)
+                expected=stamp if type(stamp) is float and 0 <= stamp <= 1 else None
+                self.assertEqual(plan.clearance_minimum_time_sec,expected)
+
     def test_detached_interpolation_and_end_hold(self):
         trace,session,options=fixture();plan=build(trace,session,options)
         self.assertEqual(plan.duration,1.)
@@ -135,6 +182,60 @@ class ViewPlanTests(unittest.TestCase):
             with self.assertRaises(ValueError):build(trace,session,options)
         trace,session,options=fixture();plan=build(trace,session,options)
         with self.assertRaises(ValueError):plan.positions(10**400)
+
+
+class ReviewPlanTests(unittest.TestCase):
+    def test_real_issuer_finishes_terminal_after_plan_ready_and_replays_exact_store_payload(self):
+        trace,session,options,review=production_review_fixture()
+        self.assertEqual([item['name'] for item in trace['events'][-2:]],['plan_ready','terminal'])
+        self.assertEqual(trace['status'],'succeeded')
+        self.assertEqual(trace['dispatched_goals'],0)
+        plan=build_review(trace,session,options,review)
+        self.assertEqual(plan.positions(.5),{'joint':.5})
+        self.assertEqual(plan.positions(1.),{'joint':1.})
+
+    def test_changing_trace_path_or_anchor_cannot_keep_the_store_issued_digest(self):
+        def changed_path(trace):
+            trace['trajectories'][0]['points'][1]['p']=[1.5]
+            trace['planned_trajectories']=deepcopy(trace['trajectories'])
+        for mutate in (changed_path,
+                       lambda trace:trace['initial_state_rad'].update(joint=.001),
+                       lambda trace:trace['command']['target_rad'].update(joint=1.5)):
+            with self.subTest(mutate=mutate):
+                trace,session,options,review=production_review_fixture();mutate(trace)
+                with self.assertRaisesRegex(ValueError,'exact pending plan digest'):
+                    build_review(trace,session,options,review)
+
+    def test_changing_the_detached_payload_or_digest_is_rejected_before_interpolation(self):
+        for mutate in (
+            lambda trace:trace['review_payload']['identity'].update(planning_scene_sha256='e'*64),
+            lambda trace:trace['review_payload'].update(simulation_sec=8.),
+            lambda trace:trace['review_payload']['trajectories'][0]['points'][1].update(p=[1.5]),
+            lambda trace:trace['review'].update(plan_sha256='e'*64),
+            lambda trace:trace.pop('review_payload'),
+        ):
+            with self.subTest(mutate=mutate):
+                trace,session,options,review=production_review_fixture();mutate(trace)
+                with self.assertRaises(ValueError):build_review(trace,session,options,review)
+
+    def test_expired_consumed_or_invalidated_pending_review_is_not_a_valid_preview(self):
+        for change in ({'remaining_sec':0.},{'remaining_sec':-1.},{'remaining_sec':float('nan')},
+                       {'state':'expired'},{'state':'consumed'},{'state':'invalidated'}):
+            with self.subTest(change=change):
+                trace,session,options,review=production_review_fixture();review.update(change)
+                with self.assertRaises(ValueError):build_review(trace,session,options,review)
+
+    def test_pending_preview_and_executed_replay_cannot_be_substituted_for_each_other(self):
+        trace,session,options,review=production_review_fixture()
+        with self.assertRaisesRegex(ValueError,'pending-plan preview'):build(trace,session,options)
+        for mode in ('automatic','approved_plan',None):
+            with self.subTest(mode=mode):
+                changed=deepcopy(trace);changed['mode']=mode
+                with self.assertRaises(ValueError):build_review(changed,session,options,review)
+        trace['dispatched_goals']=1
+        with self.assertRaises(ValueError):build_review(trace,session,options,review)
+        executed,session,options=fixture();executed['mode']='approved_plan'
+        self.assertEqual(build(executed,session,options).positions(1.),{'joint':1.})
 
 
 if __name__=='__main__':unittest.main()

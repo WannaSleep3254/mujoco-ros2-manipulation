@@ -292,3 +292,95 @@ test('destroy removes only owned resources and cancels outstanding work exactly 
   view.destroy(); view.destroy();
   assert.equal(view.disposed, true); assert.equal(aborts, 2); assert.equal(disposals, 6); assert.equal(removals, 4);
 });
+
+test('a GET header deadline aborts only the read request and permits a fresh pose retry', async () => {
+  const view = fakeView(); view.requestTimeoutMs = 20; view.updatePose(pose());
+  let receivedSignal, release;
+  view.fetch = (_, options) => {receivedSignal = options.signal; assert.equal(options.method, undefined);
+    return new Promise(resolve => {release = resolve;});};
+  const pending = view.pollPose('/pose');
+  await assert.rejects(pending, error => error.name === 'TimeoutError');
+  assert.equal(receivedSignal.aborted, true); assert.equal(view.poseController, null);
+  assert.equal(view.sequence, 1); assert.equal(view.label.dataset.state, 'stale');
+  const late = pose(); late.sequence = 99;
+  release(new Response(JSON.stringify(late)));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(view.sequence, 1, 'Late network completion cannot apply a timed-out pose');
+  const next = pose(); next.sequence = 2;
+  view.fetch = async () => new Response(JSON.stringify(next));
+  assert.equal(await view.pollPose('/pose'), true); assert.equal(view.sequence, 2);
+});
+
+test('a GET deadline also bounds a stalled response body after successful headers', async () => {
+  const view = fakeView(); view.requestTimeoutMs = 20;
+  let receivedSignal, cancelCount = 0;
+  view.fetch = async (_, options) => {
+    receivedSignal = options.signal;
+    const body = new ReadableStream({start(controller) {
+      options.signal.addEventListener('abort', () => controller.error(options.signal.reason), {once: true});
+      controller.enqueue(new Uint8Array([1, 2]));
+    }, cancel() {cancelCount++;}});
+    return new Response(body);
+  };
+  await assert.rejects(view._bytes('/asset', {maximum: 10}), error => error.name === 'TimeoutError');
+  assert.equal(receivedSignal.aborted, true);
+  assert.ok(cancelCount <= 1);
+});
+
+test('superseding a binding aborts immediately without replacing it with a timeout', async () => {
+  const view = fakeView(); view.requestTimeoutMs = 1000;
+  view.fetch = () => new Promise(() => {});
+  const pending = view.pollPose('/pose');
+  view.setExpectedBinding(OTHER_BINDING_ID, {...binding(), generation: 2});
+  await assert.rejects(pending, error => error.name === 'AbortError');
+  assert.equal(view.bindingID, OTHER_BINDING_ID); assert.equal(view.hasPose, false);
+  assert.equal(view.poseController, null);
+});
+
+test('an asset timeout leaves the old model hidden without publishing partial geometry', async () => {
+  const view = fakeView(), previous = view.world, {descriptor} = triangle();
+  view.requestTimeoutMs = 20;
+  const data = manifest(); data.assets = [descriptor]; data.geoms[0].type = 'mesh'; data.geoms[0].asset_sha256 = descriptor.sha256;
+  view.fetch = async url => url.endsWith('/manifest') ? new Response(JSON.stringify(data)) : new Promise(() => {});
+  await assert.rejects(view.loadManifest('/manifest'), error => error.name === 'TimeoutError');
+  assert.equal(view.world, previous); assert.equal(view.world.visible, false);
+  assert.equal(view.loading, false); assert.match(view.sceneError, /불러오지 못했습니다/);
+});
+
+test('a binding change cannot conceal a lost graphics context or authorize a manifest reload', async () => {
+  const view=fakeView();view.contextLost=true;view.sceneError='lost graphics context';
+  view.setExpectedBinding(OTHER_BINDING_ID,{...binding(),generation:2});
+  assert.equal(view.sceneError,'lost graphics context');
+  view.clearBinding('다음 장면 준비');assert.equal(view.label.dataset.state,'error');
+  assert.equal(view.label.textContent,'lost graphics context');
+  await assert.rejects(view.loadManifest('/manifest'),/explicit restart/);
+});
+
+test('common display format accepts a producer with no engine metadata', () => {
+  const value=manifest();delete value.compiled_model_sha256;
+  Object.assign(value,{schema_version:2,export_version:'display-scene-v1',
+    world_frame:{name:'world',handedness:'right',primitive_size:'half-extents-radius-half-length'},
+    provenance:{adapter:'recorded-analytic',source_sha256:'4'.repeat(64),engine:null}});
+  assert.equal(contract.validateManifest(value),value);
+  const reflected=structuredClone(value);reflected.world_frame.handedness='left';
+  assert.throws(()=>contract.validateManifest(reflected),/frame/);
+  const duplicate=structuredClone(value);duplicate.joint_names=['same','same'];duplicate.home_rad={same:0,other:1};
+  assert.throws(()=>contract.validateManifest(duplicate),/joint/);
+  const partial=structuredClone(value);partial.joint_names=['joint'];partial.home_rad={other:0};
+  assert.throws(()=>contract.validateManifest(partial),/home/);
+});
+
+test('common source restart, rewind and replay require a new binding before applying transforms', () => {
+  const view=fakeView();
+  const sample=()=>({...pose(),schema_version:2,source:{session_id:'5'.repeat(32),clock_domain:'recording:test',
+    sequence:1,stamp_sec:1,joint_positions_rad:{}}});
+  assert.equal(view.updatePose(sample()),true);
+  for(const changes of [{stamp_sec:.5,sequence:2},{sequence:1},{session_id:'6'.repeat(32),sequence:2},
+    {clock_domain:'other',sequence:2}]){
+    const next=sample();next.sequence=2;Object.assign(next.source,changes);
+    assert.throws(()=>view.updatePose(next),/new binding/);
+    assert.equal(view.sequence,1);
+  }
+  const next=sample();next.sequence=2;next.source.sequence=2;next.source.stamp_sec=2;
+  assert.equal(view.updatePose(next),true);
+});

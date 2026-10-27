@@ -9,6 +9,8 @@ import signal
 import platform
 from rclpy.utilities import get_rmw_implementation_identifier
 import uuid
+import hashlib
+import xml.etree.ElementTree as ET
 
 import rclpy
 from rcl_interfaces.srv import GetParameters
@@ -16,6 +18,9 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 from rclpy.signals import SignalHandlerOptions
 from std_msgs.msg import String
 from moveit_msgs.msg import MoveItErrorCodes
+from moveit_msgs.msg import PlanningSceneComponents
+from moveit_msgs.srv import GetPlanningScene
+from rosidl_runtime_py.convert import message_to_ordereddict
 
 from mujoco_ros2_manipulation.paths import ROOT
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
@@ -31,8 +36,10 @@ from mujoco_ros2_manipulation.workcells.verify import WorkcellVerification, requ
 from mujoco_ros2_manipulation.workcells.verify_interference import InterferenceVerification
 from mujoco_ros2_manipulation.workcells.verify_interference_comparison import to_ros
 from mujoco_ros2_manipulation.workcells.motion_request import (
-    COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, decode_message, request_id, validate_command, validate_cancel,
+    COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, PLAN_TOPIC, APPROVE_TOPIC,
+    decode_message, request_id, validate_command, validate_cancel, validate_approval,
 )
+from mujoco_ros2_manipulation.workcells.motion_review import PlanReviewStore, ReviewRejected
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
 from mujoco_ros2_manipulation.workcells.plan_selection import MAX_PLAN_CANDIDATES, PlanCandidateRejected, PlanCandidatesExhausted, select_clearance_plan
@@ -71,7 +78,7 @@ class MotionStateChanged(RuntimeError):
 class MotionCommandServer(WorkcellVerification):
     split = InterferenceVerification.split
 
-    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing"):
+    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing", trace_root=None):
         PlanningBudget(compute_budget_sec)  # Validate before creating a ROS node/output directory.
         if type(max_plan_candidates) is not int or not 1 <= max_plan_candidates <= MAX_PLAN_CANDIDATES:
             raise ValueError(f"Expected 1..{MAX_PLAN_CANDIDATES} plan candidates")
@@ -85,9 +92,15 @@ class MotionCommandServer(WorkcellVerification):
         self.metadata = check_workcell(cell)
         policy_path, self.policy = load_policy(cell, policy_name)
         self.directory = Path(output).resolve()
-        require(self.directory.is_relative_to((cell.root / "runtime").resolve()), "Command traces must be under runtime/")
+        # The optional internal root is used by isolated verification workspaces;
+        # it is never accepted from command messages, HTTP or the public CLI.
+        allowed_runtime = (cell.root / "runtime").resolve() if trace_root is None else Path(trace_root).resolve()
+        require(self.directory.is_relative_to(allowed_runtime), "Command traces must be under runtime/")
         self.directory.mkdir(parents=True, exist_ok=False)
         self.session_id = uuid.uuid4().hex
+        self.review_store = PlanReviewStore(self.session_id)
+        self.review_identity = None
+        self.policy_path = policy_path
         self.pending = self.active = None
         self.initialized = self.cancel_requested = self.blocked = self.stop_requested = False
         self.state_received_ns = self.clock_received_ns = None
@@ -100,22 +113,29 @@ class MotionCommandServer(WorkcellVerification):
         self.evaluator = DistanceEvaluator(cell)
         self.publisher = self.create_publisher(String, STATUS_TOPIC, status_qos())
         self.command_subscription = self.create_subscription(String, COMMAND_TOPIC, self.receive, 10)
+        self.create_subscription(String, PLAN_TOPIC, self.receive_plan, 10)
+        self.create_subscription(String, APPROVE_TOPIC, self.receive_approval, 10)
         self.create_subscription(String, CANCEL_TOPIC, self.cancel, 10)
+        self.review_scene_client = self.create_client(GetPlanningScene, "/get_planning_scene")
+        self.review_hardware_client = self.create_client(GetParameters, "/mujoco_ros2_control_node/get_parameters")
+        self.review_moveit_client = self.create_client(GetParameters, "/move_group/get_parameters")
         self.create_timer(1.0, self.heartbeat)
         self.dispatch_observer = self.action_event
         self.dispatch_abort = self.check_abort
+        implementation_root = Path(__file__).resolve().parents[3]
+        code_root = implementation_root if (implementation_root / ".git").exists() else cell.root
         atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
             workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
             policy_name=policy_name, policy_sha256=file_sha256(policy_path),
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
             runtime=dict(python=platform.python_version(), os=platform.freedesktop_os_release().get("PRETTY_NAME", platform.platform()),
                          middleware=get_rmw_implementation_identifier()),
-            code_commit=subprocess.check_output(["git", "-C", str(cell.root), "rev-parse", "HEAD"], text=True).strip(),
-            code_worktree_dirty=bool(subprocess.check_output(["git", "-C", str(cell.root), "status", "--porcelain"], text=True).strip()),
+            code_commit=subprocess.check_output(["git", "-C", str(code_root), "rev-parse", "HEAD"], text=True).strip(),
+            code_worktree_dirty=bool(subprocess.check_output(["git", "-C", str(code_root), "status", "--porcelain"], text=True).strip()),
             compute_budget_sec=self.compute_budget_sec, max_plan_candidates=self.max_plan_candidates,
             selection_policy="Bounded first valid RRT or two arm-order waypoint candidates; not shortest-path optimization",
-            implementation_sha256={name: file_sha256(cell.root / "src/mujoco_ros2_manipulation/workcells" / name)
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
+            implementation_sha256={name: file_sha256(Path(__file__).with_name(name))
+                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py", "request_trace.py", "verify.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
             note="Warm persistent server; simulator startup excluded from request latency. Simulation only."))
 
     def destroy_node(self):
@@ -132,7 +152,8 @@ class MotionCommandServer(WorkcellVerification):
     def heartbeat(self):
         if self.initialized and self.active is None and self.pending is None:
             self.publish(dict(schema_version=1, session_id=self.session_id, request_id=None,
-                              status="blocked" if self.blocked else "ready", trace_directory=str(self.directory)))
+                              status="blocked" if self.blocked else "ready", trace_directory=str(self.directory),
+                              review=self.review_store.summary()))
 
     def path(self, trace):
         return self.directory / (trace.data["request_id"] + ".json")
@@ -147,6 +168,24 @@ class MotionCommandServer(WorkcellVerification):
         else:
             trace.save(self.path(trace))
         reply = trace.summary(self.path(trace), self.session_id)
+        if "mode" in trace.data:
+            reply["mode"] = trace.data["mode"]
+        if trace.data.get("mode") == "approved_plan":
+            approval = trace.data.get("approval")
+            try:
+                validate_approval(approval)
+            except (ValueError, TypeError):
+                pass
+            else:
+                if approval["request_id"] == trace.data["request_id"] and approval["session_id"] == self.session_id:
+                    reply.update(approval=deepcopy(approval), plan_request_id=approval["plan_request_id"],
+                                 execution_request_id=trace.data["request_id"])
+        if trace.data.get("mode") == "plan_only" and trace.data["status"] == "succeeded":
+            reply["stage"] = "plan_not_required" if trace.data.get("no_motion_required") else "plan_ready"
+        if "review" in trace.data:
+            current = self.review_store.summary()
+            reply["review"] = (current if current and current["plan_request_id"] == trace.data["review"]["plan_request_id"]
+                               else deepcopy(trace.data["review"]))
         self.replies[trace.data["request_id"]] = reply
         self.publish(reply)
 
@@ -160,7 +199,22 @@ class MotionCommandServer(WorkcellVerification):
             raise CommandCancelled("Cancellation requested; no later command stage is allowed")
         require(not self.contact_guard or not self.contact_guard["latched"], "Contact/clock interlock latched")
 
+    def replay_reply(self, identifier):
+        reply = deepcopy(self.replies[identifier])
+        current = self.review_store.summary()
+        if (current is not None and isinstance(reply.get("review"), dict)
+                and reply["review"]["plan_request_id"] == current["plan_request_id"]):
+            reply["review"] = current
+            self.replies[identifier] = reply
+        self.publish(reply)
+
     def receive(self, message):
+        self._receive_command(message, plan_only=False)
+
+    def receive_plan(self, message):
+        self._receive_command(message, plan_only=True)
+
+    def _receive_command(self, message, *, plan_only):
         received = time.monotonic_ns()
         identifier = uuid.uuid4().hex
         try:
@@ -173,10 +227,12 @@ class MotionCommandServer(WorkcellVerification):
             return
         # Repeated IDs replay the original reply and never dispatch a second trajectory.
         if identifier in self.replies:
-            self.publish(self.replies[identifier])
+            self.replay_reply(identifier)
             return
         trace = RequestTrace(identifier, received_ns=received)
         trace.data["command"] = data
+        if plan_only:
+            trace.data["mode"] = "plan_only"
         try:
             validate_command(data, self.metadata["joint_limits"])
             require(self.initialized, "Command server is not ready")
@@ -185,8 +241,51 @@ class MotionCommandServer(WorkcellVerification):
         except (ValueError, RuntimeError) as error:
             trace.finish("rejected", dict(type=type(error).__name__, message=str(error)))
         else:
+            self.review_store.invalidate("A newer plan or motion request was accepted; replan")
             trace.data["status"] = "queued"
             self.pending = trace
+        self.persist(trace)
+
+    def receive_approval(self, message):
+        """Claim the immutable plan before publishing an execution reservation.
+
+        This callback does not spin; the single-threaded ROS executor owns both
+        the busy gate and pending assignment. The store also locks consumption.
+        Runtime scene/state checks are repeated in process_next before dispatch.
+        """
+        received, identifier = time.monotonic_ns(), uuid.uuid4().hex
+        try:
+            data = decode_message(message.data)
+            identifier = request_id(data.get("request_id"))
+        except (ValueError, TypeError) as error:
+            trace = RequestTrace(identifier, received_ns=received)
+            trace.finish("rejected", dict(type=type(error).__name__, message=str(error)))
+            self.persist(trace)
+            return
+        if identifier in self.replies:
+            self.replay_reply(identifier)
+            return
+        trace = RequestTrace(identifier, received_ns=received)
+        trace.data.update(mode="approved_plan", approval=data)
+        try:
+            validate_approval(data)
+            require(self.initialized and not self.blocked, "Command server is not ready for approval")
+            require(self.pending is None and self.active is None, "Busy: another command owns both arms")
+            self.check_abort()
+            self.fresh()
+            # Disk changes are refused here; dynamic planning-scene changes are
+            # checked after this callback, under the newly reserved ownership.
+            identity = self._review_build_identity()
+            require(self.review_identity is not None and identity == self.review_identity["build"],
+                    "Model, environment or policy changed; create a new plan")
+            payload, review = self.review_store.claim(data, identity=self.review_identity,
+                state_rad=self.state(), simulation_sec=self.clock_last)
+            trace.approved_plan = payload
+            trace.data.update(status="queued", review=review,
+                command=dict(payload["command"], request_id=identifier))
+            self.pending = trace
+        except (ValueError, RuntimeError) as error:
+            trace.finish("rejected", dict(type=type(error).__name__, message=str(error)))
         self.persist(trace)
 
     def cancel(self, message):
@@ -200,8 +299,14 @@ class MotionCommandServer(WorkcellVerification):
             self.cancel_requested = True
             target.event("cancel_received", simulation_sec=self.clock_last)
             self.persist(target)
+        elif (self.review_store.summary() or {}).get("plan_request_id") == identifier and self.review_store.summary()["state"] == "awaiting_approval":
+            review = self.review_store.invalidate("Plan review was cancelled; create a new plan")
+            if identifier in self.replies:
+                reply = dict(self.replies[identifier], review=review, stage="plan_revoked")
+                self.replies[identifier] = reply
+                self.publish(reply)
         elif identifier in self.replies:
-            self.publish(self.replies[identifier])
+            self.replay_reply(identifier)
         else:
             self.publish(dict(schema_version=1, session_id=self.session_id, request_id=identifier,
                 status="rejected", stage="cancel_not_found", trace_path=None, metrics={},
@@ -402,6 +507,115 @@ class MotionCommandServer(WorkcellVerification):
         if max(abs(self.state()[n] - initial[n]) for n in self.joint_names) >= 0.002:
             raise MotionStateChanged("Robot moved while planning; stale plan refused")
 
+    def _review_build_identity(self):
+        """Rehash the current generated model, environment, limits and policy."""
+        try:
+            metadata = check_workcell(self.cell)
+            require(metadata == self.metadata, "Validated workcell changed; restart and replan")
+            return dict(workcell_sha256=self.cell.fingerprint,
+                        outputs_sha256=metadata["outputs"],
+                        policy_sha256=file_sha256(self.policy_path))
+        except OSError as error:
+            raise ReviewRejected("Model or policy files changed; replan") from error
+
+    @staticmethod
+    def _review_xml_sha(text):
+        # Ignore XML formatting, while retaining every element and attribute.
+        return hashlib.sha256(ET.canonicalize(text, strip_text=True).encode()).hexdigest()
+
+    def _review_robot_sha(self, text):
+        robot = ET.fromstring(text)
+        # Launch changes this rendering-only option for native GUI/headless.
+        # Keep every model, control and collision field in the identity.
+        headless = robot.find("ros2_control/hardware/param[@name='headless']")
+        require(headless is not None and headless.text in ("true", "false"),
+                "Invalid simulation headless option")
+        headless.text = "false"
+        return self._review_xml_sha(ET.tostring(robot, encoding="unicode"))
+
+    def _review_runtime_identity(self):
+        """Bind review to actual hardware/MoveIt geometry, including scene edits.
+
+        Only review mode needs these additive queries. Legacy command timing and
+        its strict four-field contract retain their original execution path.
+        Header stamps are excluded from scene geometry identity; transforms and
+        object poses themselves remain part of the hash.
+        """
+        self.check_abort()
+        require(len(self.get_publishers_info_by_topic("/clock")) == 1
+                and len(self.get_publishers_info_by_topic("/joint_states")) == 1
+                and self.count_publishers(STATUS_TOPIC) == 1,
+                "Review requires one simulation state, clock and command owner")
+        build = self._review_build_identity()
+        for client in (self.review_hardware_client, self.review_moveit_client, self.review_scene_client):
+            self.until(client.service_is_ready, 5, "plan review identity service")
+        hardware = self.result(self.review_hardware_client.call_async(GetParameters.Request(
+            names=["robot_description", "use_sim_time"])), 5, "review simulation identity").values
+        require(len(hardware) == 2 and hardware[1].bool_value, "Review requires simulation time")
+        root = ET.fromstring(hardware[0].string_value)
+        model = root.find("ros2_control/hardware/param[@name='mujoco_model']")
+        require(model is not None and model.text is not None
+                and Path(model.text).resolve() == (self.cell.output / "cell.xml").resolve(),
+                "Live simulator uses a different model/environment; replan")
+        expected_robot = (self.cell.output / "cell.urdf").read_text()
+        expected_semantics = (self.cell.output / "cell.srdf").read_text()
+        require(self._review_robot_sha(hardware[0].string_value) == self._review_robot_sha(expected_robot),
+                "Live simulator robot description differs from the checked model")
+        moveit = self.result(self.review_moveit_client.call_async(GetParameters.Request(
+            names=["robot_description", "robot_description_semantic"])), 5, "review MoveIt identity").values
+        require(len(moveit) == 2
+                and self._review_robot_sha(moveit[0].string_value) == self._review_robot_sha(expected_robot)
+                and self._review_xml_sha(moveit[1].string_value) == self._review_xml_sha(expected_semantics),
+                "MoveIt model/environment differs from the checked model")
+        components = (PlanningSceneComponents.WORLD_OBJECT_GEOMETRY
+            | PlanningSceneComponents.ROBOT_STATE_ATTACHED_OBJECTS
+            | PlanningSceneComponents.ALLOWED_COLLISION_MATRIX
+            | PlanningSceneComponents.LINK_PADDING_AND_SCALING
+            | PlanningSceneComponents.TRANSFORMS)
+        request = GetPlanningScene.Request()
+        request.components.components = components
+        scene = self.result(self.review_scene_client.call_async(request), 5, "review planning scene").scene
+        # Deliberately omit current joint positions: they have their own strict
+        # initial-state gate and naturally change while ROS messages arrive.
+        geometry = dict(world=message_to_ordereddict(scene.world),
+            attached=[message_to_ordereddict(v) for v in scene.robot_state.attached_collision_objects],
+            allowed_collision_matrix=message_to_ordereddict(scene.allowed_collision_matrix),
+            link_padding=[message_to_ordereddict(v) for v in scene.link_padding],
+            link_scale=[message_to_ordereddict(v) for v in scene.link_scale],
+            fixed_frame_transforms=[message_to_ordereddict(v) for v in scene.fixed_frame_transforms])
+        def without_stamps(value):
+            if isinstance(value, dict):
+                return {k: (dict(v, stamp={"sec": 0, "nanosec": 0}) if k == "header" and isinstance(v, dict)
+                            else without_stamps(v)) for k, v in value.items()}
+            return [without_stamps(v) for v in value] if isinstance(value, list) else value
+        encoded = json.dumps(without_stamps(geometry), sort_keys=True, allow_nan=False,
+                             separators=(",", ":")).encode()
+        require(len(encoded) <= 8*1024*1024, "Planning-scene review identity exceeds its 8MiB bound")
+        self.check_abort()
+        self.fresh()
+        return dict(build=build, planning_scene_sha256=hashlib.sha256(encoded).hexdigest(),
+                    simulator_description_sha256=self._review_robot_sha(hardware[0].string_value))
+
+    def _issue_review(self, trace, initial, identity):
+        current = self._review_runtime_identity()
+        require(current == identity, "Model/environment changed while planning; create a new plan")
+        self.confirm_start_unchanged(initial)
+        self.review_identity = current
+        trace.data["review"] = self.review_store.issue(trace.data["request_id"], identity=current,
+            initial_state_rad=initial, simulation_sec=self.clock_last,
+            command=trace.data["command"], trajectories=trace.data.get("trajectories", []),
+            no_motion_required=trace.data.get("no_motion_required", False))
+        trace.data["review_payload"] = self.review_store.payload_for(
+            trace.data["request_id"], trace.data["review"]["plan_sha256"])
+        trace.event("plan_ready", simulation_sec=self.clock_last)
+        trace.finish("succeeded")
+
+    def _recheck_approved(self, payload, *, live):
+        identity = self._review_runtime_identity() if live else self.review_identity
+        require(identity is not None, "Plan identity is no longer available; replan")
+        self.review_store.recheck_claim(payload, identity=identity,
+            state_rad=self.state(), simulation_sec=self.clock_last)
+
     def action_event(self, name, arm, **details):
         self.event(name, arm=arm, **details)
 
@@ -417,6 +631,8 @@ class MotionCommandServer(WorkcellVerification):
         self.observations, self.first_by_arm = [], set()
         trace.data["status"] = "running"
         before_dispatch = self.dispatched
+        approved_plan = getattr(trace, "approved_plan", None)
+        plan_only = trace.data.get("mode") == "plan_only"
         try:
             self.event("state_snapshot")
             with trace.span("state_snapshot"):
@@ -426,6 +642,15 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data.update(initial_state_rad=initial, joint_state_stamp_simulation_sec=self.state_stamp,
                     state_receive_age_wall_sec=(time.monotonic_ns() - self.state_received_ns) / 1e9,
                     clock_receive_age_wall_sec=(time.monotonic_ns() - self.clock_received_ns) / 1e9)
+            review_identity = self._review_runtime_identity() if plan_only else None
+            if approved_plan is not None:
+                self.event("approved_plan_recheck")
+                self._recheck_approved(approved_plan, live=True)
+                # Preserve the exact reviewed anchor. The live state has passed
+                # the same <0.002rad gate and is still checked before dispatch.
+                trace.data["approval_observed_state_rad"] = dict(initial)
+                initial = deepcopy(approved_plan["initial_state_rad"])
+                trace.data["initial_state_rad"] = initial
             self.compute_budget = PlanningBudget(self.compute_budget_sec)
             self.event("computation_started")
             target = trace.data["command"]["target_rad"]
@@ -434,7 +659,8 @@ class MotionCommandServer(WorkcellVerification):
             self.event("endpoint_clearance")
             with trace.span("endpoint_clearance"):
                 trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold, checkpoint=self.compute_checkpoint)
-            if max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001:
+            if ((approved_plan is None and max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001)
+                    or (approved_plan is not None and approved_plan["no_motion_required"])):
                 trace.data["no_motion_required"] = True
                 trace.skip("planning", "Target already within the 0.001rad movement threshold")
                 trace.skip("departure_search", "No motion required")
@@ -443,6 +669,15 @@ class MotionCommandServer(WorkcellVerification):
                     require(self.evaluator.at(initial)["distance_m"] >= self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"], "Current clearance below planning policy")
                 self.finish_computation(trace)
                 with trace.span("final_state_recheck"):
+                    self.confirm_start_unchanged(initial)
+                if plan_only:
+                    # A no-op has no path to inspect or approve. Preserve its
+                    # successful zero-dispatch result without issuing a token.
+                    trace.event("plan_not_required", simulation_sec=self.clock_last)
+                    trace.finish("succeeded")
+                    return
+                if approved_plan is not None:
+                    self._recheck_approved(approved_plan, live=True)
                     self.confirm_start_unchanged(initial)
                 self.event("settled")
                 trace.finish("succeeded")
@@ -459,7 +694,12 @@ class MotionCommandServer(WorkcellVerification):
                     self.compute_checkpoint()
                     if not valid:
                         raise InvalidMotionEndpoint(role, "MoveIt state validity rejected")
-            if strategy == "coordinated":
+            if approved_plan is not None:
+                curves = [Spline(**record) for record in approved_plan["trajectories"]]
+                require(curves, "Reviewed motion has no trajectories")
+                trace.skip("planning", "Execute the exact reviewed trajectories; do not replan after approval")
+                trace.skip("departure_search", "Reviewed departure schedule is immutable")
+            elif strategy == "coordinated":
                 curves = [self.coordinated_path(initial, target, trace)]
                 trace.skip("departure_search", "Coordinated joint-space plan; no departure-only search")
             else:
@@ -496,12 +736,22 @@ class MotionCommandServer(WorkcellVerification):
             with trace.span("state_recheck"):
                 self.quiet()
                 self.confirm_start_unchanged(initial)
+            if plan_only:
+                self.finish_computation(trace)
+                self._issue_review(trace, initial, review_identity)
+                return
+            if approved_plan is not None:
+                # The scene query may spin callbacks. All state, cancellation
+                # and budget gates below still run before the first goal send.
+                self._recheck_approved(approved_plan, live=True)
             self._defer_trace_persist = True
             self.finish_computation(trace)
             # finish_computation may pump a newer state/cancel callback. Check that
             # last received state again, with no intervening spin before dispatch.
             with trace.span("final_state_recheck"):
                 self.confirm_start_unchanged(initial)
+                if approved_plan is not None:
+                    self._recheck_approved(approved_plan, live=False)
             self.motion_start = self.clock_last + 1.0
             trace.data["scheduled_start_simulation_sec"] = self.motion_start
             commands = self.split(to_ros(curves[0]), self.motion_start) if len(curves) == 1 else [(inst, to_ros(curve, self.motion_start)) for inst, curve in zip(self.cell.instances, curves)]
@@ -535,6 +785,8 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data["failure_kind"] = "planner_failed"
             elif isinstance(error, MotionStateChanged):
                 trace.data["failure_kind"] = "state_changed"
+            elif isinstance(error, ReviewRejected):
+                trace.data["failure_kind"] = "review_invalidated"
             else:
                 trace.data["failure_kind"] = "execution_failed" if self.dispatched > before_dispatch else "planning_error"
             if self.dispatched > before_dispatch:

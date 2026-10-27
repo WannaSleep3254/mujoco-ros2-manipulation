@@ -28,9 +28,9 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p class="eyebrow">뷰어 개선 기록 · 2026-10-26</p>
 <h1>WebGL 뷰어 개선과 표시 성능</h1>
 <p class="lead">관절 상태 수신과 카메라 표시를 분리한 로컬 3D 뷰어<br/>JPEG 방식과의 정지 장면 비교, Three.js 유지·확장 이유와 다음 계획</p>
-<div class="meta"><span>대상: FR5·UR5e 공동 장면</span><span>측정 코드: 1a44f19</span><span>문서 v1.1 · 양식 v1.9</span><span>개정: 2026-10-26 · 채택 판단·진행 상태 추가</span></div>
+<div class="meta"><span>대상: FR5·UR5e 공동 장면</span><span>정지 측정 코드: 1a44f19</span><span>문서 v1.2 · 양식 v1.9</span><span>개정: 2026-10-26 · 실행 전 검토와 복구 흐름 보완</span></div>
 </header>
-<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#rationale">채택 이유</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#progress">기존 계획과 진행</a><a href="#roadmap">다음 확장</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
+<div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#rationale">채택 이유</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#review-operations">계획 검토·복구</a><a href="#progress">기존 계획과 진행</a><a href="#roadmap">다음 확장</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
 <main>
 <section id="overview">
 <span class="section-no">Overview</span><h2>상태 갱신과 화면 렌더링의 분리</h2>
@@ -44,10 +44,10 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <ul>
 <li><strong>프로젝트의 조작 흐름을 이어갑니다.</strong> 작업환경 확인, 목표 입력, 계획·실행·취소와 결과 조회를 기존 화면에서 제공합니다. 표시부를 확장하면서 이 흐름과 기존 검사를 함께 유지합니다.</li>
 <li><strong>표시와 계산을 나누어 발전시킵니다.</strong> 브라우저는 형상과 자세를 표시하고, 물리 계산과 로봇 명령은 백엔드가 담당합니다. 카메라는 새 상태가 도착하는 주기와 별개로 움직입니다.</li>
-<li><strong>구성 요소를 교체하려는 목표에 맞춥니다.</strong> 모델 식별자, 좌표계, 단위, 시간과 상태 순번을 공통으로 정리하고 공급원별 연결부를 두는 것이 다음 과제입니다. Three.js가 이미 여러 엔진을 지원한다는 뜻은 아닙니다.</li>
+<li><strong>구성 요소를 교체하려는 목표에 맞춥니다.</strong> 모델 식별자, 좌표계, 단위, 시간과 상태 순번을 공통으로 정리하고 MuJoCo·기록 연결부를 분리했습니다. 실제 공급원과 데이터 종류를 늘리는 것이 다음 과제입니다. Three.js가 이미 여러 엔진을 지원한다는 뜻은 아닙니다.</li>
 <li><strong>현재 확인한 표시 개선을 활용합니다.</strong> 정지 장면에서 약 60 fps 렌더링과 약 4회/s 새 자세 적용을 관측했습니다. 이 둘을 구분하면서 이동 중 부하와 입력 지연을 추가로 측정하고, 실제 요구에 따라 표시 기술을 다시 평가합니다.</li>
 </ul>
-<div class="note"><p><strong>판단의 범위:</strong> 기존 기능과 프로젝트 목표를 바탕으로 한 개발 선택입니다. Qt·Foxglove·Rerun과 같은 조건으로 성능이나 개발 비용을 비교한 결과는 아닙니다. 현재 형상·자세 생성은 MJCF와 MuJoCo 기구학 계산에 의존하며, 다른 시뮬레이터·실물 로봇·센서의 공통 연결은 후속 개발 범위입니다.</p></div>
+<div class="note"><p><strong>판단의 범위:</strong> 기존 기능과 프로젝트 목표를 바탕으로 한 개발 선택입니다. Qt·Foxglove·Rerun과 같은 조건으로 성능이나 개발 비용을 비교한 결과는 아닙니다. MuJoCo 연결부는 MJCF와 MuJoCo 기구학 계산을 사용하고, 별도 기록 연결부는 이미 계산된 형상·자세를 읽습니다. 다른 실제 시뮬레이터·실물 로봇·센서 연결은 후속 개발 범위입니다.</p></div>
 <p class="small">기존 조작·실행 경로와 현재 표시 구조: <a href="#src-current">고정된 구현 근거</a> · 최초 대안 검토: <a href="../viewer-direction-2026-10-22/index.html#alternatives">10/22 뷰어 개발 방향성</a></p>
 </section>
 <section id="implementation">
@@ -86,6 +86,20 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <ul><li>버튼 줌은 현재 바라보는 방향과 중심을 유지하며, 기존 카메라 거리 제한을 따릅니다. 기본 시점은 현재 모델을 다시 맞춥니다.</li><li>감도는 조작·시연 화면에 함께 적용하고 같은 페이지의 모델·장면 전환에서 유지합니다. 새로고침하면 기본 1배로 돌아갑니다.</li><li>서버 이미지 방식에서는 확대·감도를 비활성화합니다. 이 버튼은 브라우저 카메라를 조절하며 로봇 명령을 보내지 않습니다.</li></ul>
 <figure><img src="camera-controls.png" alt="FR10 읽기 전용 미리보기의 확대·축소·기본 시점 버튼과 회전·줌·이동 감도 슬라이더" width="1280" height="720" loading="lazy"><figcaption>그림 1. 카메라 조작 보완. 위 성능 측정 이후 추가한 기능이며 해당 성능 수치로 재평가한 것은 아닙니다.</figcaption></figure>
 <p class="small">읽기 전용 모델에서 확대·축소·복귀, 키보드 감도 조절, 시연 화면 동기화, FR10 모델 전환 후 설정 유지와 이미지 모드 비활성화를 브라우저에서 확인했습니다. 거리 제한과 오류·미준비 차단은 단위 검사로 확인했습니다. 실제 터치 장치와 조작 입력 지연은 별도로 측정하지 않았습니다.</p></section>
+<section id="review-operations">
+<span class="section-no">Execution review &amp; recovery</span><h2>계획을 확인하고 실행까지 이어가는 화면</h2>
+<p>일반 관절 조작은 <strong>계획 생성 → 경로 미리보기 → 승인·실행</strong> 순서로 진행합니다. 미리보기 자체는 로봇에 명령을 보내지 않습니다. 시연은 별도로 선택한 비교 절차를 실행합니다.</p>
+<ul>
+<li><strong>표시 대상 구분:</strong> 실시간 관절 상태, 실행 전 계획, 과거 기록과 모델 보기를 구분합니다. 표시 중인 모델과 실제 실행 대상도 따로 확인합니다.</li>
+<li><strong>검토 정보:</strong> 계획 방식, 예정 궤적 시간(시뮬레이션 초), 양팔 사이 최소 간격과 계획 시작 자세에서 목표까지의 관절 변화량을 한곳에 모읍니다. 느린 재생과 최소 간격 시점 이동으로 경로를 확인합니다. 원본 변화량은 rad로 보존하고 화면에서는 deg로 표시합니다. 경로 길이나 현재 실시간 자세와의 차이를 뜻하지 않습니다.</li>
+<li><strong>재계획:</strong> 만료되거나 목표가 달라진 계획은 실행할 수 없습니다. 실시간 보기로 복귀해 같은 입력으로 새 계획을 요청할 수 있으며, 새 계획에도 다시 검토와 승인이 필요합니다.</li>
+<li><strong>작업 이력:</strong> 계획과 승인 실행을 연결해 목표, 승인, 실행 결과를 따라갑니다. 원본 요청 식별자와 상세 자료는 함께 보존합니다.</li>
+<li><strong>오류 복구:</strong> 상태·자세 조회에 시간 제한을 두고, 3D 표시 오류에는 명시적인 다시 열기와 서버 이미지 전환을 제공합니다. 표시 복구가 실행 명령을 다시 보내지는 않습니다.</li>
+</ul>
+<figure><img src="plan-review.png" alt="실행 전 계획과 실제 관절 상태를 구분하고, 계획 요약과 느린 재생·재계획·승인을 제공하는 화면" loading="lazy"><figcaption id="figure-title-2">그림 2. 실행 전 계획 검토. 새 ROS 세션에서 작은 관절 목표를 계획했으며, 이 화면을 표시하는 동안에는 실행하지 않았습니다.</figcaption></figure>
+<div class="note warn"><p><strong>실행 전 검사:</strong> 승인 시 시작 자세와 모델·환경을 다시 확인합니다. 계획 유효 시간은 60초이며 승인은 한 번만 사용할 수 있습니다. 표시한 최소 간격은 해당 계획의 검사 결과로, 실물 안전 기능이나 모든 환경의 회피 성능을 보증하지 않습니다.</p></div>
+<p class="small">검증: Python 619개, JavaScript 106개 검사와 독립 ROS 승인 검사 10개를 통과했습니다. 실제 브라우저에서 계획 만료·재계획·미리보기·승인 실행·연결 이력을 확인했습니다. 자세한 범위는 <a href="usability-validation.json">검증 기록</a>에서 확인합니다.</p>
+</section>
 <section id="progress">
 <span class="section-no">05 / Progress against the original plan</span><h2>기존 계획과 현재 진행 상황</h2>
 <p><a href="../viewer-direction-2026-10-22/index.html#roadmap">10/22 단계별 계획</a>에 10/26까지의 구현과 측정 결과를 대응시켰습니다. 각 단계의 일부 작업이 진행된 상태이며, 아래 표가 원래 완료 조건의 전부를 충족했다는 뜻은 아닙니다.</p>
@@ -93,10 +107,10 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <table class="progress-table" aria-describedby="progress-note"><caption class="visual-title" id="table-title-2">표 2. 최초 계획 대비 진행 상태</caption>
 <thead><tr><th scope="col">기존 단계</th><th scope="col">구현·확인한 부분</th><th scope="col">남은 작업·검증</th></tr></thead><tbody>
 <tr><th scope="row">P0 · 안정화</th><td>실패 재현과 리포트 경로 정합화, 정지 장면의 예비 측정 자료를 확보했습니다.</td><td>JPEG 페인트 FPS, 입력부터 표시까지의 지연과 GPU 부하는 미측정입니다.</td></tr>
-<tr><th scope="row">P1 · 데이터 계약</th><td>MuJoCo 기반 형상·자세 전달에 모델 해시, 세션·순번과 오래된 상태 표시를 연결했습니다.</td><td>다른 공급원도 교체해 연결할 수 있는 공통 규약과 좌표·시간 검증이 필요합니다.</td></tr>
-<tr><th scope="row">P2 · 시제품 평가</th><td>Three.js 표시와 자유 카메라를 구현하고 JPEG·WebGL의 기본 설정을 정지 장면에서 비교했습니다.</td><td>같은 해상도·카메라 조건의 A/B 평가와 Qt 비교는 실시하지 않았습니다.</td></tr>
+<tr><th scope="row">P1 · 데이터 계약</th><td>형상·자세의 공통 형식을 정리하고 MuJoCo와 ROS 없는 기록 공급원을 같은 Three.js 화면에 연결했습니다. 모델 해시, 세션·순번, 좌표·단위와 오래된 상태를 검사합니다.</td><td>다른 실제 시뮬레이터, 직선 관절과 센서의 데이터 연결은 후속 범위입니다.</td></tr>
+<tr><th scope="row">P2 · 시제품 평가</th><td>정지 장면의 예비 비교 후 같은 해상도·카메라·GPU에서 움직이는 관절 기록을 별도로 비교했습니다.</td><td>Qt·WebGPU 비교, 대규모 설비·점군과 실제 입력부터 화면 출력까지의 지연은 평가하지 않았습니다.</td></tr>
 <tr><th scope="row">P3 · 선정·통합</th><td>조작·시연 화면에 WebGL을 연결하고 JPEG를 대체 표시 방식으로 유지했습니다.</td><td>장시간 안정성, 원격 운영과 실물 연동은 별도로 검증해야 합니다.</td></tr>
-<tr><th scope="row">P4 · 후속 확장</th><td>준비된 모델·작업장면의 읽기 전용 미리보기와 성공 요청의 저장 궤적 재생을 구현했습니다.</td><td>실행 전 새 계획의 검토·승인, Pose/IK·그리퍼·AMR 조작은 후속 범위입니다.</td></tr>
+<tr><th scope="row">P4 · 후속 확장</th><td>준비된 모델·작업장면의 미리보기, 저장 궤적 재생과 실행 전 새 계획의 검토·승인을 구현했습니다.</td><td>가져온 설비를 포함한 실제 회피 실행, Pose/IK·그리퍼·AMR 조작은 후속 범위입니다.</td></tr>
 </tbody></table></div>
 <p class="small" id="progress-note">준비된 모델의 미리보기는 임의 로봇·설계파일을 바로 연결하는 기능과 구분합니다. 저장 궤적의 재생은 새 계획을 실행 전에 승인하는 기능과 구분합니다. 기존 문서의 본문은 10/22 당시의 판단과 계획으로 보존합니다.</p>
 </section>
@@ -104,15 +118,15 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <span class="section-no">06 / Proposed next steps</span><h2>다음 확장과 재검토 조건</h2>
 <p><span class="tag proposed">후속 개발안</span> 공통 연결부를 작은 사례로 검증한 뒤 데이터 종류와 공급원을 늘립니다.</p>
 <ol>
-<li><strong>표시 데이터 규칙 정리:</strong> 형상·링크 자세와 모델·소스 식별자, 좌표계·단위, 시각·순번·최신성 규칙을 정리합니다. 엔진별 모델 생성 정보와 실행·취소 권한은 별도로 다룹니다.</li>
-<li><strong>두 번째 공급원 연결:</strong> MuJoCo·ROS 없이 기록 데이터를 읽는 연결부부터 같은 표시 경로에 적용합니다. 모델 전환, 시간 정지·역행과 연결 단절을 시험해 교체 가능한지 확인합니다.</li>
+<li><strong>공통 형식의 확장:</strong> 구현한 형상·자세 형식에 직선 관절과 새로운 데이터 종류를 단계적으로 추가합니다. 표시부의 확대가 로봇 실행 권한을 추가하지 않도록 구분합니다.</li>
+<li><strong>장면 탐색과 대기 부하:</strong> 화면 맞춤과 개별 대상 탐색을 보완하고, 대기 중 렌더링과 조회를 줄입니다. 표시 프레임 분포와 장면 규모를 계측한 뒤 최적화 여부를 판단합니다.</li>
 <li><strong>센서·점군 확장:</strong> 자세와 별도의 전송 경로에서 데이터 크기와 대기열을 제한하고, 데이터 취득 시각의 좌표 변환과 오래된 데이터 처리 규칙을 검증합니다. 임의 설계파일의 변환·가져오기도 별도 과제로 진행합니다.</li>
 <li><strong>관측·분석 도구 평가:</strong> ROS 센서·TF 관측이 주가 되면 Foxglove를, 시간축 기록 분석이 주가 되면 Rerun을 비교합니다. 원격 배포·라이선스와 실제 자료의 처리 성능을 확인하고, 실행·취소 경로와 구분해 연결합니다.</li>
 </ol>
 <p><strong>재검토 조건:</strong> 실제 이동·센서 자료에서 표시 지연이나 자원 사용이 요구 수준을 넘거나, 전용 표시 기능의 유지 비용이 커지면 다른 뷰어와 같은 조건으로 비교합니다. UI 프레임워크와 전송 방식의 변경도 각각 필요한 기능과 측정 결과를 근거로 결정합니다.</p>
 </section>
 <section id="scope">
-<span class="section-no">Scope &amp; limitations</span><h2>이번 결과로 판단하지 않은 범위</h2>
+<span class="section-no">Scope &amp; limitations</span><h2>정지 장면 예비 비교의 한계</h2><p>아래는 표 1의 원래 정지 장면 비교 범위입니다. 동일 GPU의 움직이는 기록 비교와 이번 기능 검증은 근거 목록에 별도로 연결했습니다.</p>
 <ul><li>브라우저·GPU 부하, GPU 렌더 시간·메모리와 카메라 입력부터 표시까지의 지연은 측정하지 않았습니다.</li><li>로봇 이동·계획 실행 중 부하, 원격 네트워크, 긴 시간의 안정성은 비교하지 않았습니다.</li><li>정지 자세·서로 다른 해상도의 짧은 비교입니다. 모든 장면에서 전송량 감소나 자원 절감을 보장하지 않습니다.</li></ul>
 </section>
 <section id="sources">
@@ -120,12 +134,14 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p class="small">확인일: 2026-10-26 · 측정 대상 코드: <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/1a44f19">1a44f19</a></p>
 <ol class="sources">
 <li><a href="../../2026-10-26-viewer-display/index.html">2026-10-26 표시 성능 측정 리포트</a><span>3개 연속 측정 구간과 조건, 렌더·자세·HTTP·서버 자원 지표와 해석 한계</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/591384ec9dda48e6bfde76d2b674dca3b4086ca1/docs/operator_console.md">계획 검토·복구 사용법과 고정 구현</a> · <a href="usability-validation.json">검증 기록</a><span>기존 정지 장면 측정 이후 추가한 기능입니다. 표시 복구·계획 판단·작업 이력의 기능 검증이며 성능 재측정은 아닙니다.</span></li>
+<li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/549575928c3f262cb8db9eb0479433e3bdc6fdce/docs/reports/2026-10-26-viewer-moving-hardware/results.md">동일 GPU·해상도에서 움직이는 기록의 추가 비교</a><span>고정 로봇 메시와 관절 기록의 표시 시험입니다. 약 60 fps 렌더링과 약 4 Hz 새 자세 적용을 구분하며, 센서·점군·원격 제어 성능을 입증하지 않습니다.</span></li>
 <li><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/34">PR #34</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/35">PR #35</a><span>측정 이전 로컬 3D·읽기 전용 모델/장면 미리보기의 구현 기록</span></li>
 <li><a href="../viewer-direction-2026-10-22/index.html">2026-10-22 뷰어 개발 방향성</a><span>기존 JPEG 구성, 당시 대안 검토와 P0~P4 개발 계획</span></li>
 <li id="src-current"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/e8ac5029915472a39a7d65a0e9ef5a25baf8fb37/docs/operator_console.md">10/26 공개 구현의 구조·지원 범위</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/e8ac5029915472a39a7d65a0e9ef5a25baf8fb37/src/mujoco_ros2_manipulation/operator_console/scene_host.py">MuJoCo 장면 공급원</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/37">PR #37 카메라 조작 보완</a><span>채택 판단과 진행 상태를 확인한 고정 코드입니다. 성능 측정 코드 1a44f19와 구분합니다. 다른 시뮬레이터·센서 연결은 후속 제안입니다.</span></li>
 <li><a href="https://docs.foxglove.dev/docs/getting-started/frameworks/ros2">Foxglove ROS 2 연동</a> · <a href="https://rerun.io/docs/howto/integrations/embed-web">Rerun 웹 임베드</a><span>확인일: 2026-10-26. 관측·분석 도구의 후속 평가 자료이며, 이 프로젝트의 연동 구현이나 도구 간 성능 비교 결과는 아닙니다.</span></li>
 </ol>
 </section>
-<div class="footer"><span>문서 v1.1 · 2026-10-26 채택 판단·진행 상태 추가</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
+<div class="footer"><span>문서 v1.2 · 2026-10-26 실행 전 검토와 복구 흐름 보완</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
 </main><script>document.getElementById("print").addEventListener("click",()=>window.print());</script>
 </body></html>
