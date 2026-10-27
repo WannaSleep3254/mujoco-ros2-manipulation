@@ -56,6 +56,8 @@ class DemoJobs:
 
     def _reason(self):
         app = self.app
+        if getattr(app, "execution_target", None) is not None:
+            return "선택한 설치 환경에서는 기존 고정 환경 시연을 실행할 수 없습니다."
         if app.views.preview:
             return "미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요."
         if self.busy or app.phase in ("starting", "running", "stopping"):

@@ -51,6 +51,7 @@ function requestGuidance(record,data={}){
   planner_failed:['경로 계획 실패','계획기가 이번 요청의 경로를 만들지 못했습니다.','목표와 계획 방식을 확인하세요. 실행을 자동으로 다시 요청하지 않습니다.'],
   state_changed:['시작 자세 변경','계획할 때와 실행 직전의 시작 자세가 달라졌습니다.','최신 상태를 확인한 뒤 새 계획을 생성하고 다시 검토하세요.'],
   review_invalidated:['검토 계획 사용 불가','계획 만료 또는 모델·환경·세션·상태 변경으로 기존 승인을 사용할 수 없습니다.','변경 원인을 확인한 뒤 새 계획을 생성하고 다시 검토하세요.'],
+  execution_environment_changed:['설치 환경 변경','선택한 설치 환경의 파일 또는 실제 연결이 시작할 때와 달라졌습니다. 기존 계획을 실행할 수 없습니다.','환경을 다시 확인하고 같은 타깃으로 시뮬레이션과 명령 서버를 재시작한 뒤 새 계획을 검토하세요.'],
   execution_failed:['실행 실패','궤적 실행을 정상적으로 마치지 못했습니다.','정지 감시와 실행 로그를 확인하세요. 실행 차단 상태이면 재시작이 필요합니다.'],
   environment_clearance:['설비 간격 조건 위반','경로 또는 관측 상태의 설비 간격이 현재 시뮬레이션 정책을 만족하지 않습니다.','설비 배치와 목표, 간격 조건을 확인하고 새 계획을 검토하세요. 자동으로 우회하거나 재실행하지 않습니다.'],
   planning_error:['계획·검사 오류','계획 또는 실행 전 검사에서 오류가 발생했습니다.','실패 단계와 원본 오류를 확인한 뒤 새 계획 여부를 결정하세요.']};
@@ -118,7 +119,7 @@ function value(v,decimals=3,suffix=' s'){return typeof v==='number'&&Number.isFi
 function displayed(v){return unit==='deg'?v*180/Math.PI:v;}
 function radians(v){return unit==='deg'?v*Math.PI/180:v;}
 function badge(el,status,text){el.className='badge'+(status==='succeeded'||status==='passed'||status==='ready'?' good':status==='failed'||status==='blocked'||status==='rejected'?' bad':status==='running'||status==='starting'||status==='cancel_requested'||status==='queued'||status==='submitting'?' busy':'');el.textContent=text||labels[status]||status;}
-function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트'}[view];if(state)updateLiveFrames(state);sceneControls?.mount();}
+function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트',analysis:'센서·상태 분석'}[view];if(state)updateLiveFrames(state);sceneControls?.mount();}
 function fields(){
  const container=$('joint-fields');container.replaceChildren();$('unit-label').textContent=unit;
  config.instances[arm].joints.forEach((name,index)=>{
@@ -142,7 +143,7 @@ function renderContext(){
  const kind=recorded?'기록 재생':mode==='model_preview'?'모델 미리보기':mode==='plan_preview'?(view.review_plan?'실행 전 계획':'저장 궤적'):demo?'실시간 시연':'실제 관절 상태';
  $('display-context').textContent=kind+' · '+label;
  $('display-context').dataset.mode=mode||'live';
- $('control-context').textContent=recorded?'실행 연결 없음':config?.label||'연결 확인 중';
+ $('control-context').textContent=recorded?'실행 연결 없음':(config?.execution_target?config.label+' · '+config.execution_target.environment_id:config?.label)||'연결 확인 중';
  $('context-note').textContent=!readConnected?'상태 조회가 끊겼습니다. 마지막 표시를 유지하며 새 실행을 차단합니다.':recorded?'기록을 표시하는 읽기 전용 화면입니다.':mode==='model_preview'?'표시 모델을 바꿔도 실행 대상은 바뀌지 않습니다.':mode==='plan_preview'?'3D 화면은 계획 자세입니다. 관절표의 현재 값과 감시 상태는 실제 수신 상태입니다.':demo?'시연 중에는 별도 관절 목표를 보낼 수 없습니다.':'시뮬레이션 전용 · 실행은 계획 검토와 승인 후 시작합니다.';
  $('joint-current-label').textContent='실제 현재';
 }
@@ -257,7 +258,7 @@ function renderDetail(group,id){
 }
 async function detail(id){const serial=++detailSerial,group=groupRequests(state?.history||[]).find(item=>item.records.some(record=>record.request_id===id));if(!group)return;renderDetail(group,id);try{await Promise.all([loadRequest(id,{force:true}),...(group.plan&&group.plan.request_id!==id?[loadRequest(group.plan.request_id,{force:true})]:[])]);if(serial===detailSerial)renderDetail(groupRequests(state?.history||[]).find(item=>item.id===group.id)||group,id);}catch(error){if(serial===detailSerial)$('detail-error').textContent='기록을 불러오지 못했습니다. '+error.message;}}
 function render(data){
- state=data;const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
+ state=data;window.dispatchEvent?.(new CustomEvent('console-observation',{detail:data}));const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
  for(const [identifier,pending] of pendingCancels){const record=data.history.find(item=>item.request_id===identifier);if(record&&terminal.has(record.status)||pending.session&&data.server?.session_id&&pending.session!==data.server.session_id)pendingCancels.delete(identifier);}
  const connection=connectionPresentation(data);badge($('connection'),connection.status,connection.text);
  $('sim-time').textContent=value(data.simulation_sec,3,' s');$('state-age').textContent=value(data.state_age_sec*1000,0,' ms');
@@ -270,7 +271,7 @@ function render(data){
  const record=data.history.find(r=>r.request_id===active)||data.history[0];requestProgress(record);
 }
 function disconnected(){
- readConnected=false;badge($('connection'),'blocked','상태 조회 중단');$('execute').disabled=$('review-preview').disabled=$('review-approve').disabled=$('review-discard').disabled=$('review-replan').disabled=true;
+ window.dispatchEvent?.(new CustomEvent('console-observation-lost'));readConnected=false;badge($('connection'),'blocked','상태 조회 중단');$('execute').disabled=$('review-preview').disabled=$('review-approve').disabled=$('review-discard').disabled=$('review-replan').disabled=true;
  for(const id of ['start','stop','attach','use-current','demo-run','demo-stop'])$(id).disabled=true;
  document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=true);
  $('admission').textContent='상태 조회가 끊겼습니다. 명령을 자동으로 재전송하지 않습니다.';

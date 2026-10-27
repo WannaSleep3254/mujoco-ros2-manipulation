@@ -28,6 +28,7 @@ from mujoco_ros2_manipulation.verification.diagnostics import host_info
 from mujoco_ros2_manipulation.verification.reports import atomic_json
 from mujoco_ros2_manipulation.workcells.config import load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import check_workcell
+from mujoco_ros2_manipulation.workcells.execution_target import ExecutionTarget, load_execution_target
 from mujoco_ros2_manipulation.workcells.distance import DistanceEvaluator
 from mujoco_ros2_manipulation.workcells.environment_clearance import (
     EnvironmentClearanceRejected, environment_policy_snapshot, required_environment_distance,
@@ -79,10 +80,14 @@ class MotionStateChanged(RuntimeError):
     pass
 
 
+class MotionEnvironmentChanged(RuntimeError):
+    pass
+
+
 class MotionCommandServer(WorkcellVerification):
     split = InterferenceVerification.split
 
-    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing", trace_root=None):
+    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing", trace_root=None, execution_target=None):
         PlanningBudget(compute_budget_sec)  # Validate before creating a ROS node/output directory.
         if type(max_plan_candidates) is not int or not 1 <= max_plan_candidates <= MAX_PLAN_CANDIDATES:
             raise ValueError(f"Expected 1..{MAX_PLAN_CANDIDATES} plan candidates")
@@ -94,6 +99,12 @@ class MotionCommandServer(WorkcellVerification):
         self.compute_budget = None
         self.goal_tolerance_rad = 0.003
         self.metadata = check_workcell(cell)
+        if execution_target is not None:
+            if not isinstance(execution_target, ExecutionTarget) or execution_target.base is not cell:
+                raise ValueError("Execution target must belong to this exact checked base workcell")
+            execution_target.validate()
+        self.execution_target = execution_target
+        self.execution_runtime_identity = None
         policy_path, self.policy = load_policy(cell, policy_name)
         (self.environment_policy_path, self.environment_policy,
          self.environment_policy_sha256) = environment_policy_snapshot(cell)
@@ -117,7 +128,7 @@ class MotionCommandServer(WorkcellVerification):
         self.first_by_arm = set()
         self.motion_start = None
         super().__init__(cell, progress)
-        self.evaluator = DistanceEvaluator(cell, environment=True)
+        self.evaluator = DistanceEvaluator(execution_target or cell, environment=True)
         self.publisher = self.create_publisher(String, STATUS_TOPIC, status_qos())
         self.command_subscription = self.create_subscription(String, COMMAND_TOPIC, self.receive, 10)
         self.create_subscription(String, PLAN_TOPIC, self.receive_plan, 10)
@@ -131,7 +142,7 @@ class MotionCommandServer(WorkcellVerification):
         self.dispatch_abort = self.check_abort
         implementation_root = Path(__file__).resolve().parents[3]
         code_root = implementation_root if (implementation_root / ".git").exists() else cell.root
-        atomic_json(self.directory / "session.json", dict(schema_version=1, session_id=self.session_id,
+        session = dict(schema_version=1, session_id=self.session_id,
             workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
             policy_name=policy_name, policy_sha256=file_sha256(policy_path),
             environment_policy=self.environment_policy,
@@ -144,8 +155,11 @@ class MotionCommandServer(WorkcellVerification):
             compute_budget_sec=self.compute_budget_sec, max_plan_candidates=self.max_plan_candidates,
             selection_policy="Bounded first valid RRT or two arm-order waypoint candidates; not shortest-path optimization",
             implementation_sha256={name: file_sha256(Path(__file__).with_name(name))
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py", "request_trace.py", "verify.py", "planning_adapter.py", "execution_adapter.py", "operation_contract.py", "environment_clearance.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
-            note="Warm persistent server; simulator startup excluded from request latency. Simulation only."))
+                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py", "request_trace.py", "verify.py", "planning_adapter.py", "execution_adapter.py", "execution_target.py", "operation_contract.py", "environment_clearance.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
+            note="Warm persistent server; simulator startup excluded from request latency. Simulation only.")
+        if execution_target is not None:
+            session["execution_target"] = execution_target.description()
+        atomic_json(self.directory / "session.json", session)
 
     def destroy_node(self):
         try:
@@ -160,9 +174,12 @@ class MotionCommandServer(WorkcellVerification):
 
     def heartbeat(self):
         if self.initialized and self.active is None and self.pending is None:
-            self.publish(dict(schema_version=1, session_id=self.session_id, request_id=None,
+            record = dict(schema_version=1, session_id=self.session_id, request_id=None,
                               status="blocked" if self.blocked else "ready", trace_directory=str(self.directory),
-                              review=self.review_store.summary()))
+                              review=self.review_store.summary())
+            if getattr(self, "execution_target", None) is not None:
+                record["execution_target"] = self.execution_target.description()
+            self.publish(record)
 
     def path(self, trace):
         return self.directory / (trace.data["request_id"] + ".json")
@@ -177,6 +194,8 @@ class MotionCommandServer(WorkcellVerification):
         else:
             trace.save(self.path(trace))
         reply = trace.summary(self.path(trace), self.session_id)
+        if "execution_target" in trace.data:
+            reply["execution_target"] = deepcopy(trace.data["execution_target"])
         if "mode" in trace.data:
             reply["mode"] = trace.data["mode"]
         if trace.data.get("mode") == "approved_plan":
@@ -395,6 +414,8 @@ class MotionCommandServer(WorkcellVerification):
         require(not any(name.endswith(("/inject_test_contact", "/inject_test_clock_stall")) for name, _ in self.get_service_names_and_types()), "Fault injection must not be exposed")
         self.quiet()
         self.commanded = self.state()
+        if self.execution_target is not None:
+            self.execution_runtime_identity = deepcopy(self._recheck_execution_target())
         self.initialized = True
         self.heartbeat()
 
@@ -536,10 +557,19 @@ class MotionCommandServer(WorkcellVerification):
             require(metadata == self.metadata, "Validated workcell changed; restart and replan")
             require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
                     "Environment clearance policy changed; restart and replan")
-            return dict(workcell_sha256=self.cell.fingerprint,
+            identity = dict(workcell_sha256=self.cell.fingerprint,
                         outputs_sha256=metadata["outputs"],
                         policy_sha256=file_sha256(self.policy_path),
                         environment_policy_sha256=self.environment_policy_sha256)
+            target = getattr(self, "execution_target", None)
+            if target is not None:
+                try:
+                    identity["execution_target"] = target.validate()
+                except Exception as error:
+                    self.blocked = True
+                    self.review_store.invalidate("Execution environment changed; restart and replan")
+                    raise MotionEnvironmentChanged("Execution environment changed; restart and replan") from error
+            return identity
         except OSError as error:
             raise ReviewRejected("Model or policy files changed; replan") from error
 
@@ -561,8 +591,9 @@ class MotionCommandServer(WorkcellVerification):
     def _review_runtime_identity(self):
         """Bind review to actual hardware/MoveIt geometry, including scene edits.
 
-        Only review mode needs these additive queries. Legacy command timing and
-        its strict four-field contract retain their original execution path.
+        Reviews and explicit environment targets need these additive queries.
+        Base-model automatic commands retain their existing execution path and
+        strict four-field command contract.
         Header stamps are excluded from scene geometry identity; transforms and
         object poses themselves remain part of the hash.
         """
@@ -577,13 +608,14 @@ class MotionCommandServer(WorkcellVerification):
         hardware = self.result(self.review_hardware_client.call_async(GetParameters.Request(
             names=["robot_description", "use_sim_time"])), 5, "review simulation identity").values
         require(len(hardware) == 2 and hardware[1].bool_value, "Review requires simulation time")
+        output = self.cell.output if getattr(self, "execution_target", None) is None else self.execution_target.output
         root = ET.fromstring(hardware[0].string_value)
         model = root.find("ros2_control/hardware/param[@name='mujoco_model']")
         require(model is not None and model.text is not None
-                and Path(model.text).resolve() == (self.cell.output / "cell.xml").resolve(),
+                and Path(model.text).resolve() == (output / "cell.xml").resolve(),
                 "Live simulator uses a different model/environment; replan")
-        expected_robot = (self.cell.output / "cell.urdf").read_text()
-        expected_semantics = (self.cell.output / "cell.srdf").read_text()
+        expected_robot = (output / "cell.urdf").read_text()
+        expected_semantics = (output / "cell.srdf").read_text()
         require(self._review_robot_sha(hardware[0].string_value) == self._review_robot_sha(expected_robot),
                 "Live simulator robot description differs from the checked model")
         moveit = self.result(self.review_moveit_client.call_async(GetParameters.Request(
@@ -620,6 +652,25 @@ class MotionCommandServer(WorkcellVerification):
         self.fresh()
         return dict(build=build, planning_scene_sha256=hashlib.sha256(encoded).hexdigest(),
                     simulator_description_sha256=self._review_robot_sha(hardware[0].string_value))
+
+    def _recheck_execution_target(self, expected=None):
+        """Opt-in target identity applies to automatic and reviewed execution."""
+        try:
+            current = self._review_runtime_identity()
+            if expected is None:
+                expected = getattr(self, "execution_runtime_identity", None)
+            if expected is not None:
+                require(current == expected, "Execution environment/runtime scene changed while planning")
+            # Runtime queries spin callbacks. Rehash after the final query too.
+            self.execution_target.validate()
+            self.fresh()
+            return current
+        except (CommandCancelled, KeyboardInterrupt):
+            raise
+        except Exception as error:
+            self.blocked = True
+            self.review_store.invalidate("Execution environment changed; restart and replan")
+            raise MotionEnvironmentChanged("Execution environment identity failed; restart and replan") from error
 
     def _issue_review(self, trace, initial, identity):
         current = self._review_runtime_identity()
@@ -660,6 +711,9 @@ class MotionCommandServer(WorkcellVerification):
         approved_plan = getattr(trace, "approved_plan", None)
         plan_only = trace.data.get("mode") == "plan_only"
         try:
+            execution_identity = None
+            if getattr(self, "execution_target", None) is not None:
+                trace.data["execution_target"] = self.execution_target.description()
             self.event("state_snapshot")
             with trace.span("state_snapshot"):
                 self.quiet()
@@ -668,7 +722,11 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data.update(initial_state_rad=initial, joint_state_stamp_simulation_sec=self.state_stamp,
                     state_receive_age_wall_sec=(time.monotonic_ns() - self.state_received_ns) / 1e9,
                     clock_receive_age_wall_sec=(time.monotonic_ns() - self.clock_received_ns) / 1e9)
-            review_identity = self._review_runtime_identity() if plan_only else None
+            if getattr(self, "execution_target", None) is not None:
+                execution_identity = self._recheck_execution_target()
+                trace.data["execution_target_identity"] = deepcopy(execution_identity)
+            review_identity = execution_identity if plan_only and execution_identity is not None else (
+                self._review_runtime_identity() if plan_only else None)
             if approved_plan is not None:
                 self.event("approved_plan_recheck")
                 self._recheck_approved(approved_plan, live=True)
@@ -703,6 +761,9 @@ class MotionCommandServer(WorkcellVerification):
                 self.finish_computation(trace)
                 with trace.span("final_state_recheck"):
                     self.confirm_start_unchanged(initial)
+                    if execution_identity is not None:
+                        self._recheck_execution_target(execution_identity)
+                        self.confirm_start_unchanged(initial)
                 if plan_only:
                     # A no-op has no path to inspect or approve. Preserve its
                     # successful zero-dispatch result without issuing a token.
@@ -787,6 +848,8 @@ class MotionCommandServer(WorkcellVerification):
             # finish_computation may pump a newer state/cancel callback. Check that
             # last received state again, with no intervening spin before dispatch.
             with trace.span("final_state_recheck"):
+                if execution_identity is not None:
+                    self._recheck_execution_target(execution_identity)
                 self.confirm_start_unchanged(initial)
                 require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
                         "Environment clearance policy changed; restart and replan")
@@ -832,6 +895,8 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data["failure_kind"] = "planner_failed"
             elif isinstance(error, MotionStateChanged):
                 trace.data["failure_kind"] = "state_changed"
+            elif isinstance(error, MotionEnvironmentChanged):
+                trace.data["failure_kind"] = "execution_environment_changed"
             elif isinstance(error, ReviewRejected):
                 trace.data["failure_kind"] = "review_invalidated"
             else:
@@ -893,6 +958,8 @@ class MotionCommandServer(WorkcellVerification):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
+    parser.add_argument("--execution-environment", type=Path)
+    parser.add_argument("--execution-manifest-sha256")
     parser.add_argument("--policy", default="dual_arm_timing", help="Named policy under config/planning for the selected workcell")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--compute-budget", type=float, default=30.0, help="Cooperative planning/validation wall seconds, excludes execution")
@@ -900,13 +967,14 @@ def main():
         help="Bounded first-valid spatial plans per coordinated request, 1..12; one shared computation budget")
     args = parser.parse_args()
     cell = load_workcell(args.workcell)
+    execution_target = load_execution_target(cell, args.execution_environment, args.execution_manifest_sha256)
     output = args.output or ROOT / "runtime/commands" / uuid.uuid4().hex
     # Keep ROS alive while cancelling outstanding goals on SIGINT/SIGTERM.
     rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
     node = None
     previous_handlers = {}
     try:
-        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates, policy_name=args.policy)
+        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates, policy_name=args.policy, execution_target=execution_target)
         def stop(signum, frame):
             node.stop_requested = True
         for signum in (signal.SIGINT, signal.SIGTERM):

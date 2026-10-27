@@ -213,6 +213,7 @@ test('failure guidance distinguishes computation budgets, candidate exhaustion, 
  const h=harness(()=>reply({}));
  const cases={budget_exhausted:['계산 시간 초과','계산 시간'],candidate_exhausted:['계획 후보 검사 종료','도달 불가능하다는 판정은 아닙니다'],
   invalid_start:['시작 자세 조건 위반','시작 자세'],invalid_goal:['목표 자세 조건 위반','목표 자세'],
+  execution_environment_changed:['설치 환경 변경','기존 계획'],
   environment_clearance:['설비 간격 조건 위반','시뮬레이션 정책']};
  for(const [failure_kind,[title,description]] of Object.entries(cases)){
   const record={status:'failed',failure_kind,failure_stage:'safety_checks',error:{message:'original diagnostic'}};
@@ -227,6 +228,7 @@ test('state/review changes request a new plan while execution failure preserves 
  const h=harness(()=>reply({}));
  for(const failure_kind of ['state_changed','review_invalidated'])assert.match(h.api.guidanceText({status:'failed',failure_kind}),/새 계획.*검토/);
  assert.match(h.api.guidanceText({status:'failed',failure_kind:'execution_failed'}),/정지 감시.*실행 로그/);
+ assert.match(h.api.guidanceText({status:'failed',failure_kind:'execution_environment_changed'}),/재시작.*새 계획/);
  assert.match(h.api.guidanceText({status:'failed',failure_kind:'unrecognized',error:{message:'<raw>'}}),/원본 오류: <raw>/);
  assert.equal(h.calls.length,0);
 });
