@@ -467,17 +467,19 @@ class MotionCommandServer(WorkcellVerification):
                     trajectory = self.plan("both_arms", target, initial)
             except MotionPlanningFailed as error:
                 return error.error_code, None
-            curve = Spline.from_ros(trajectory)
-            require(set(curve.names) == set(initial), "Planner response must cover the whole workcell")
-            endpoint = dict(zip(curve.names, curve.points[-1]["p"]))
             # Replay adapters declare their original tolerance in the per-plan record.
             # A fresh MoveIt request always records the current requested tolerance.
             plans = trace.data.get("plans", [])
             effective_tolerance = plans[-1].get("goal_tolerance_rad", self.goal_tolerance_rad) if plans else self.goal_tolerance_rad
             selection.setdefault("proposal_goal_tolerances_rad", []).append(effective_tolerance)
+            return MoveItErrorCodes.SUCCESS, trajectory
+
+        def validate_curve(curve):
+            require(set(curve.names) == set(initial), "Planner response must cover the whole workcell")
+            endpoint = dict(zip(curve.names, curve.points[-1]["p"]))
+            effective_tolerance = selection["proposal_goal_tolerances_rad"][-1]
             require(max(abs(endpoint[n] - target[n]) for n in target) <= effective_tolerance + 1e-9,
                     "Planner endpoint differs from its declared goal tolerance")
-            return MoveItErrorCodes.SUCCESS, trajectory
 
         def save(candidates):
             selection["candidates"] = candidates
@@ -492,7 +494,8 @@ class MotionCommandServer(WorkcellVerification):
             try:
                 trajectory = select_clearance_plan(propose, initial, self.cell, self.evaluator, self.policy,
                     moveit_check, save, max_candidates=self.max_plan_candidates,
-                    checkpoint=self.compute_checkpoint, diagnostics=selection)
+                    checkpoint=self.compute_checkpoint, diagnostics=selection,
+                    validate_curve=validate_curve)
             except (CommandCancelled, PlanningBudgetExceeded):
                 # A production checkpoint may also interrupt inside a ROS callback
                 # supplied to the engine-independent selector.
