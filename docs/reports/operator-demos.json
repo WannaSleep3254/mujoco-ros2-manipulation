@@ -21,7 +21,7 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "2026-10-22 당시의 FR5·UR5e 통합 조작과 렌더링 대안·단계별 계획입니다. 현재 구현과 Three.js 유지·확장 이유는 2026-10-26 후속 기록에서 확인합니다.",
-      "manifest_sha256": "0c945d6a3de2954789e797c32640d416a81d0bc78ed20e6a20b9ded04faf33e7"
+      "manifest_sha256": "e1152e1236f468a39142402cf60ce060db308b325b057af99c29530c6cae14d9"
     },
     {
       "id": "motion-planning-direction-2026-10-22",
@@ -29,7 +29,7 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "빈피킹 우선의 작업 계획과 현재 양팔 구현, 지연·최소 우회 진단, 계획 기술 비교와 실물 전환·검증 순서를 정리합니다. 신규 대안의 성능은 미측정입니다.",
-      "manifest_sha256": "8866c3ef129e393e06e693fe12ef4497263e350b9ce309ae3c108915371f45c8"
+      "manifest_sha256": "905d4c06b2fcce9b6a58564fbfa9dcf04c23951bcac72052bb8cef482082412e"
     },
     {
       "id": "project-overview-2026-10-23",
@@ -37,7 +37,7 @@
       "published_date": "2026-10-23",
       "document_type": "project_overview",
       "overview": "로봇 시뮬레이션·동작 검증 개발 환경 구축을 목표로 하는 개인 개발 프로젝트입니다. 현재 MuJoCo·ROS 2 기반으로 모델·작업 환경 설정, 양팔 계획·실행, 충돌 감시와 웹 조작 기능을 개발하고 있습니다.",
-      "manifest_sha256": "2096ad52ce9e4e81105322ae0c43b2764e06a4d83a1965a6d9c7d4e22b1f9d9f"
+      "manifest_sha256": "2585fcc43813f081e97799527940180a7798f635117a76d002f16fdfb09c5e4a"
     },
     {
       "id": "viewer-improvements-2026-10-26",
@@ -45,7 +45,7 @@
       "published_date": "2026-10-26",
       "document_type": "design_review",
       "overview": "Three.js를 유지·확장하는 이유와 현재 구현, JPEG·WebGL 정지 상태 비교를 정리합니다. 기존 개발 계획의 진행 상황과 여러 공급원·센서 연결의 다음 과제를 제시합니다.",
-      "manifest_sha256": "db7d350c350b25387d3ff0f85403ed86e8bf18acb5a33c48bf3547f66d165ed2"
+      "manifest_sha256": "42a20b7c03fc094e5e98fc009fcf8d745491c137b44679d11cf8e9a587a6dd87"
     },
     {
       "id": "viewer-history-2026-10-27",
@@ -54,6 +54,14 @@
       "document_type": "design_review",
       "overview": "서버의 2D 이미지 표시부터 초기·현행 WebGL까지의 확장 과정을 사진과 영상으로 비교합니다. 시점 조작과 모션플랜 검토·승인 기능, 기존 성능 측정과 구형 서버의 보존 기록을 정리합니다.",
       "manifest_sha256": "7049f7e82a1a1f1f0a38de7659a8a9f86f76aecb2ca7c0997a2823ed0db02158"
+    },
+    {
+      "id": "system-direction-2026-10-27",
+      "title": "로봇 시뮬레이션 시스템 개발 방향",
+      "published_date": "2026-10-27",
+      "document_type": "design_review",
+      "overview": "현재 구현과 남은 문제를 정리하고, 모듈 분리와 센서·설치 환경·작업 기능의 개발 순서를 제시합니다. 레퍼런스의 제안을 반영하는 방법과 시스템 변경이 큰 기능의 착수 조건을 설명합니다.",
+      "manifest_sha256": "5930b1587e66655539204b7604dc1059010d69bbc96aa9cf1ca626166054aebc"
     }
   ]
 }

@@ -1,6 +1,6 @@
 # 패키지·빌드·작업 환경 구조
 
-[README](../README.md) · [설치](setup.md) · [검증](verification.md) · [공통 모듈 경계](module_boundaries.md)
+[README](../README.md) · [설치](setup.md) · [검증](verification.md) · [공통 모듈 경계](module_boundaries.md) · [통합 작업리스트](development_worklist.md)
 
 2026-10-19 개편은 단일 로봇 실행을 유지하면서 코드·빌드 정의·작업 환경을 분리합니다.
 기존 루트 명령은 호환 진입점입니다. 구현을 바꿀 때는 `src/`의 정식 모듈을 수정합니다.

@@ -1,6 +1,6 @@
 # 공통 모듈 경계와 데이터 계약
 
-[구조 안내](architecture.md) · [명령·시간 기록](motion_requests.md) · [공동 작업 환경](workcells.md)
+[구조 안내](architecture.md) · [통합 작업리스트](development_worklist.md) · [명령·시간 기록](motion_requests.md) · [공동 작업 환경](workcells.md)
 
 이 프로젝트는 로봇·시뮬레이터·계획기·제어 인터페이스·뷰어를 교체하고 확장할 수 있는 개발 환경을 목표로 합니다.
 현재 실행 경로는 MuJoCo·ROS 2·MoveIt에 연결되어 있습니다. 이번 단계는 이미 분리된 데이터·계산 경계를 명시하고,
