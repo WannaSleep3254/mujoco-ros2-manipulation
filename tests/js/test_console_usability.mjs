@@ -16,19 +16,19 @@ class Element{
  setAttribute(name,value){this[name]=value;}
  removeAttribute(name){delete this[name];}
 }
-function state(overrides={}){return {positions_rad:{left:0,right:0},state_age_sec:0,simulation_sec:1,can_plan:true,can_submit:true,can_approve:false,
+function state(overrides={}){return {positions_rad:{left:0,right:0},state_age_sec:0,clock_age_sec:0,simulation_sec:1,can_plan:true,can_submit:true,can_approve:false,server:{session_id:'session-a',status:'ready'},
  active_request_id:null,history:[],graph:{clock:1,joints:1,status:1,guards:1,commands:1},simulation_verified:true,
  lifecycle:{phase:'running',owned:{simulation:true,commands:true}},guard:{phase:'ready',latched:false},demo:{current:null,history:[],can_start:false},
  view:{enabled:true,mode:'live',source:{id:'workcell:pair',label:'FR5 + UR5e'},config_source_id:'workcell:pair',display_mode:'web3d'},...overrides};}
 function harness(fetcher){
  const elements=new Map(),timers=new Map(),calls=[];let timerID=0;
  const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};element('strategy').value='coordinated';
- const document={getElementById:element,querySelectorAll:()=>[],createElement:tag=>new Element(tag)};
+ const document={getElementById:element,querySelectorAll:selector=>selector==='[data-cancel]'?[element('cancel'),element('cancel-secondary')]:[],createElement:tag=>new Element(tag)};
  const scene={cameraReady:()=>true,pause(){},update(){},isImage:()=>false,mount(){},select(){}};
  const context=vm.createContext({document,fetch:(path,options)=>{calls.push({path,options});return fetcher(path,options);},AbortController,
   setTimeout:(callback,delay)=>{const id=++timerID;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),
   performance:{now:()=>5000},crypto:{randomUUID:()=> 'c'.repeat(32)},window:{}});
- vm.runInContext(source+`\nglobalThis.uiTest={request,poll,readState,replan,groupRequests,summaryOf,renderReview,renderContext,history,detail,renderDetail,loadRequest,requestProgress,
+ vm.runInContext(source+`\nglobalThis.uiTest={request,poll,readState,replan,groupRequests,summaryOf,renderReview,renderContext,history,detail,renderDetail,loadRequest,requestProgress,requestGuidance,guidanceText,guardPresentation,connectionPresentation,observationProblem,cancelCurrentRequest,render,refreshControls,demoStage,demoOutcomeStatus,
  set(data,positions={left:.2,right:.1},connected=true){state=data;targets=positions;config={label:'FR5 + UR5e',domain:160,joint_limits:{left:{lower:-1,upper:1},right:{lower:-1,upper:1}}};readConnected=connected;sceneControls=globalThis.scene;},
  get(){return {polling,readConnected,replanning};},cache(id,data,age=0){requestCache.set(id,{data,at:Date.now()-age});},age(id,age=2000){requestCache.get(id).at=Date.now()-age;},demos(data){demoCatalog=[{id:'contact_comparison',title:'접촉 비교'}];selectedDemo='contact_comparison';renderDemos(data);}};`,context);
  context.scene=scene;
@@ -207,4 +207,98 @@ test('incomplete terminal summary retries are bounded and complete data stops th
  assert.equal(count,3);
  const full={...ready,review_summary:{strategy:'coordinated',duration_sec:2,minimum:{distance_m:.04},max_abs_target_delta_rad:.2}};
  h.api.cache(PLAN,full,2000);await h.api.loadRequest(PLAN,{expected:ready});assert.equal(count,3);
+});
+
+test('failure guidance distinguishes computation budgets, candidate exhaustion, endpoints and environment clearance',()=>{
+ const h=harness(()=>reply({}));
+ const cases={budget_exhausted:['계산 시간 초과','계산 시간'],candidate_exhausted:['계획 후보 검사 종료','도달 불가능하다는 판정은 아닙니다'],
+  invalid_start:['시작 자세 조건 위반','시작 자세'],invalid_goal:['목표 자세 조건 위반','목표 자세'],
+  environment_clearance:['설비 간격 조건 위반','시뮬레이션 정책']};
+ for(const [failure_kind,[title,description]] of Object.entries(cases)){
+  const record={status:'failed',failure_kind,failure_stage:'safety_checks',error:{message:'original diagnostic'}};
+  assert.equal(h.api.requestGuidance(record).title,title);assert.ok(h.api.guidanceText(record).includes(description));
+  assert.match(h.api.guidanceText(record),/실패 단계: 전체 경로 검사/);assert.match(h.api.guidanceText(record),/원본 오류: original diagnostic/);
+ }
+ assert.equal(h.api.requestGuidance({status:'running',failure_kind:'budget_exhausted'}),null);
+ assert.equal(h.calls.length,0,'Presenting failures never submits a retry');
+});
+
+test('state/review changes request a new plan while execution failure preserves stop/log guidance',()=>{
+ const h=harness(()=>reply({}));
+ for(const failure_kind of ['state_changed','review_invalidated'])assert.match(h.api.guidanceText({status:'failed',failure_kind}),/새 계획.*검토/);
+ assert.match(h.api.guidanceText({status:'failed',failure_kind:'execution_failed'}),/정지 감시.*실행 로그/);
+ assert.match(h.api.guidanceText({status:'failed',failure_kind:'unrecognized',error:{message:'<raw>'}}),/원본 오류: <raw>/);
+ assert.equal(h.calls.length,0);
+});
+
+test('guard stop confirmation requires the latch, stopped phase and a known reason',()=>{
+ const h=harness(()=>reply({}));
+ for(const reason of ['contact','clock_stall']){
+  let result=h.api.guardPresentation({latched:true,phase:'stopping',reason});assert.equal(result.confirmed,false);assert.match(result.text,/정지 확인 중/);
+  result=h.api.guardPresentation({latched:true,phase:'stopped',reason});assert.equal(result.confirmed,true);assert.ok(!result.text.includes('확인 중'));
+ }
+ for(const guard of [{latched:true,phase:'stopped',reason:''},{latched:true,phase:'stopped',reason:{}},
+  {latched:false,phase:'stopped',reason:'contact'}])assert.equal(h.api.guardPresentation(guard).confirmed,false);
+});
+
+test('unlatched server block, stale observations and process errors never show ready or enable plan/approval',()=>{
+ const h=harness(()=>reply({}));
+ const plan={request_id:PLAN,mode:'plan_only',status:'succeeded',stage:'plan_ready',command:{strategy:'coordinated',target_rad:{left:.2,right:.1}}};
+ const common={history:[plan],can_approve:true,pending_plan:{plan_request_id:PLAN,state:'awaiting_approval',remaining_sec:50},
+  view:{...state().view,mode:'plan_preview',review_plan:true,binding:{request_id:PLAN}}};
+ h.api.cache(PLAN,{...plan,review_summary:{strategy:'coordinated',duration_sec:1,minimum:{distance_m:.04},max_abs_target_delta_rad:.2}});
+ for(const override of [{server:{session_id:'session-a',status:'blocked'}},{state_age_sec:.6},{clock_age_sec:.6},
+  {state_age_sec:null},{lifecycle:{...state().lifecycle,error:'process exited'}}]){
+  const current=state({...common,...override});h.set(current);const presentation=h.api.connectionPresentation(current);
+  assert.equal(presentation.status,'blocked');assert.ok(!presentation.text.includes('실행 가능'));
+  h.api.refreshControls();assert.equal(h.element('execute').disabled,true);assert.equal(h.element('review-approve').disabled,true);
+ }
+ const blocked=state({server:{session_id:'session-a',status:'blocked'}});
+ assert.match(h.api.connectionPresentation(blocked).text,/재시작 필요/);assert.match(h.api.observationProblem(blocked),/실행 로그.*재시작/);
+ assert.equal(h.api.connectionPresentation(state()).status,'ready');
+});
+
+test('request cancellation and failed cleanup never masquerade as confirmed physical stop',()=>{
+ const h=harness(()=>reply({}));
+ const cancelled=h.api.requestGuidance({status:'cancelled'});assert.equal(cancelled.title,'요청 취소 완료');assert.match(cancelled.text,/물리적 정지 확인과는 구분/);
+ for(const cleanup_clean of [false,undefined]){
+  const job={status:'cancelled',cleanup_clean};assert.equal(h.api.demoOutcomeStatus(job),'unknown');assert.match(h.api.demoStage(job),/정리 결과를 확인/);
+ }
+ const failed={status:'failed',cleanup_clean:false,error:'owned process remains'};assert.equal(h.api.demoOutcomeStatus(failed),'failed');assert.ok(!h.api.demoStage(failed).includes('마쳤습니다'));
+ assert.match(h.api.demoStage({status:'cancel_requested'}),/정리될 때까지/);
+ assert.match(h.api.demoStage({status:'cancelled',cleanup_clean:true}),/소유 실행의 정리를 마쳤습니다/);
+});
+
+test('cancel submission, server acknowledgement and terminal request cancellation stay distinct without duplicate POSTs',async()=>{
+ let releaseCancel,current;
+ const record={request_id:EXECUTION,session_id:'session-a',status:'running',stage:'first_motion',metrics:{}};
+ current=state({active_request_id:EXECUTION,history:[record],can_plan:false,can_submit:false});
+ const h=harness((path,options)=>path==='/api/cancel'?new Promise(resolve=>{releaseCancel=()=>resolve({ok:true,json:()=>Promise.resolve({request_id:EXECUTION,status:'cancel_requested'})});}):reply(path==='/api/state'?current:record));
+ h.set(current);h.api.cache(EXECUTION,record);
+ const pending=h.api.cancelCurrentRequest();await drain();assert.equal(h.element('cancel').disabled,true);assert.match(h.element('request-stage').textContent,/취소 요청 전달 중/);
+ await h.api.cancelCurrentRequest();assert.equal(h.calls.filter(call=>call.path==='/api/cancel').length,1);
+ releaseCancel();await pending;assert.match(h.element('request-stage').textContent,/서버 수신과 요청 종료/);
+ const acknowledged={...record,stage:'cancel_received'};current=state({active_request_id:EXECUTION,history:[acknowledged],can_plan:false,can_submit:false});h.api.render(current);
+ assert.match(h.element('cancel').textContent,/취소 수신.*종료 확인 중/);assert.match(h.element('request-stage').textContent,/서버가 취소를 수신/);
+ const ended={...record,status:'cancelled',stage:'terminal'};current=state({active_request_id:null,history:[ended]});h.api.render(current);
+ assert.equal(h.element('request-badge').textContent,'요청 취소 완료');assert.match(h.element('request-error').textContent,/물리적 정지 확인과는 구분/);
+ assert.deepEqual(h.calls.filter(call=>call.options.method==='POST').map(call=>call.path),['/api/cancel']);
+});
+
+test('a lost cancel response stays unconfirmed and never schedules an automatic retransmission',async()=>{
+ const record={request_id:EXECUTION,session_id:'session-a',status:'running',stage:'first_motion',metrics:{}},current=state({active_request_id:EXECUTION,history:[record],can_plan:false,can_submit:false});
+ const h=harness((path,options)=>path==='/api/cancel'?Promise.reject(new Error('response lost')):reply(path==='/api/state'?current:record));h.set(current);h.api.cache(EXECUTION,record);
+ await h.api.cancelCurrentRequest();assert.equal(h.element('cancel').disabled,true);assert.match(h.element('request-stage').textContent,/전달 결과 미확인/);
+ assert.match(h.element('notice-text').textContent,/자동으로 다시 보내지 않습니다/);
+ await h.api.cancelCurrentRequest();await h.api.poll();
+ assert.equal(h.calls.filter(call=>call.path==='/api/cancel').length,1);assert.ok(!h.calls.some(call=>call.path==='/api/plan'||call.path==='/api/plan/execute'));
+});
+
+test('historical failure detail uses that request and retains raw diagnostic data',()=>{
+ const h=harness(()=>reply({})),record={request_id:EXECUTION,status:'failed',failure_kind:'budget_exhausted',failure_stage:'safety_checks',error:{message:'original budget diagnostic'},metrics:{}};
+ h.set(state({history:[record],guard:{latched:true,phase:'stopped',reason:'contact'}}));
+ h.api.cache(EXECUTION,{...record,events:[]});h.api.renderDetail(h.api.groupRequests([record])[0],EXECUTION);
+ assert.match(h.element('detail-error').textContent,/계산 시간 초과.*전체 경로 검사.*원본 오류: original budget diagnostic/);
+ assert.ok(!h.element('detail-error').textContent.includes('접촉'));
+ assert.match(h.element('detail-content').textContent,/budget_exhausted/);
 });
