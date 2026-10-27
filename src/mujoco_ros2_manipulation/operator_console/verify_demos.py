@@ -70,6 +70,32 @@ def checked_reports(job, variants, root, domain, started_utc):
     return values
 
 
+def archive_console_evidence(session, destination):
+    """Preserve failed jobs before checking whether their cleanup succeeded."""
+    session, destination = Path(session), Path(destination)
+    evidence = dict(path=str(destination), copied=False, audit_valid=False,
+                    captured_utc=utc_now())
+    errors = []
+    try:
+        shutil.copytree(session, destination)
+        evidence["copied"] = True
+    except Exception as error:
+        errors.append("Console evidence copy: " + str(error))
+    # Audit failure must not prevent retention of status, worker logs or stacks.
+    # Check the source even if copying failed, so both errors remain visible.
+    try:
+        events = [json.loads(line) for line in (session / "events.jsonl").read_text().splitlines()]
+        require(all(group_gone(e["pid"]) for e in events if e["action"] == "process_started"),
+                "Owned console child process group remains")
+        require(all(e.get("cleanup_clean") is True for e in events if e["action"] == "demo_finished"),
+                "A demonstration needed forced or incomplete cleanup")
+        require(not any(e.get("cleanup_errors") for e in events), "Owned console needed forced shutdown")
+        evidence.update(audit_valid=True, event_count=len(events))
+    except Exception as error:
+        errors.append(str(error))
+    return evidence, errors
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain", type=int, default=156)
@@ -84,6 +110,7 @@ def main():
     process = session = None
     token = None  # Never print or add this transient HTTP credential to a report.
     failed, cleanup, jobs, frames = False, [], [], {}
+    console_evidence = None
     url = f"http://127.0.0.1:{args.port}"
 
     def api(route, body=None):
@@ -276,20 +303,14 @@ def main():
                 cleanup.append(str(error))
                 stop_process(process)
         if session is not None and session.is_dir():
-            try:
-                events = [json.loads(line) for line in (session / "events.jsonl").read_text().splitlines()]
-                require(all(group_gone(e["pid"]) for e in events if e["action"] == "process_started"),
-                        "Owned console child process group remains")
-                require(all(e.get("cleanup_clean") is True for e in events if e["action"] == "demo_finished"),
-                        "A demonstration needed forced or incomplete cleanup")
-                require(not any(e.get("cleanup_errors") for e in events), "Owned console needed forced shutdown")
-                shutil.copytree(session, report.directory / "console-session")
-            except Exception as error:
-                cleanup.append(str(error))
+            console_evidence, evidence_errors = archive_console_evidence(
+                session, report.directory / "console-session")
+            cleanup.extend(evidence_errors)
         report.update(status="failed" if failed or cleanup else "passed", stage="complete",
                       completed_utc=utc_now(), cleanup_errors=cleanup, shutdown_clean=not cleanup,
                       launch_return_code=None if process is None else process.returncode,
-                      console_session=None if session is None else str(session))
+                      console_session=None if session is None else str(session),
+                      console_evidence=console_evidence)
     print(report.data["status"].upper() + ": " + str(report.path), flush=True)
     if report.data["error"]:
         print(report.data["error"], flush=True)
