@@ -16,12 +16,19 @@ function guardPresentation(guard){
  const confirmed=guard.phase==='stopped'&&['contact','clock_stall'].includes(guard.reason);
  return {text:`${reason} · ${confirmed?'정지 확인':'정지 확인 중'}`,confirmed};
 }
+function telemetryExpected(data,kind){
+ // No first sample is different from losing a sample after connection. The
+ // backend clears these observation fields when explicitly starting a new run.
+ const expected=data.lifecycle?.phase==='running'||data.simulation_verified||Boolean(data.active_request_id)||Boolean(data.server);
+ const observed=kind==='joints'?data.positions_rad!=null||Number.isFinite(data.joint_state_stamp_simulation_sec)||Number.isFinite(data.state_age_sec):Number.isFinite(data.simulation_sec)||Number.isFinite(data.clock_age_sec);
+ return expected||observed;
+}
 function observationProblem(data){
  if(data.guard?.latched)return guardPresentation(data.guard).text+'. 정지 잠금은 해제되지 않습니다. 원인을 확인한 뒤 시뮬레이션을 재시작하세요.';
  if(data.lifecycle?.error)return '실행 프로세스에 오류가 있습니다. 실행 로그를 확인하고 종료 상태를 확인하세요.';
  if(data.server?.status==='blocked')return '명령 서버가 실행을 차단했습니다. 실행 로그와 종료 상태를 확인한 뒤 시뮬레이션을 재시작하세요.';
- if(data.state_age_sec===null||Number.isFinite(data.state_age_sec)&&data.state_age_sec>.5)return '관절 상태 수신이 멈췄습니다. 연결과 최신 상태가 복구된 뒤 새 계획을 생성하세요.';
- if(data.clock_age_sec===null||Number.isFinite(data.clock_age_sec)&&data.clock_age_sec>.5)return '시뮬레이션 시계가 갱신되지 않습니다. 연결과 감시 상태를 확인하세요.';
+ if(data.state_age_sec===null&&telemetryExpected(data,'joints')||Number.isFinite(data.state_age_sec)&&data.state_age_sec>.5)return '관절 상태 수신이 멈췄습니다. 연결과 최신 상태가 복구된 뒤 새 계획을 생성하세요.';
+ if(data.clock_age_sec===null&&telemetryExpected(data,'clock')||Number.isFinite(data.clock_age_sec)&&data.clock_age_sec>.5)return '시뮬레이션 시계가 갱신되지 않습니다. 연결과 감시 상태를 확인하세요.';
  return null;
 }
 function connectionPresentation(data){
@@ -30,7 +37,7 @@ function connectionPresentation(data){
  if(demoActive(data.demo?.current))return {status:'running',text:data.demo.current.status==='cancel_requested'?'시연 중단 · 정리 확인 중':'시연 진행 중'};
  if(data.can_submit&&data.simulation_verified&&data.guard?.phase==='ready'&&data.server?.status==='ready'&&Number.isFinite(data.state_age_sec)&&Number.isFinite(data.clock_age_sec))return {status:'ready',text:'실행 가능'};
  if(data.active_request_id)return {status:'running',text:'요청 처리 중'};
- return {status:'offline',text:data.lifecycle?.phase==='starting'?'시뮬레이터 준비 중':data.simulation_verified?'연결됨 · 준비 확인':'연결 대기'};
+ return {status:data.lifecycle?.phase==='starting'?'starting':'offline',text:data.lifecycle?.phase==='starting'?'시뮬레이터 준비 중 · 관절 상태 대기':data.simulation_verified?'연결됨 · 준비 확인':'시뮬레이션 연결 대기'};
 }
 function failureStageLabel(stage){return ({state_snapshot:'시작 상태 확인',endpoint_clearance:'시작·목표 간격 검사',endpoint_validity:'시작·목표 충돌 검사',planning_both_arms:'양팔 경로 계획',planning_left_arm:'왼팔 경로 계획',planning_right_arm:'오른팔 경로 계획',departure_search:'출발 시점 탐색',safety_checks:'전체 경로 검사',state_recheck:'시작 상태 재확인',final_state_recheck:'실행 직전 상태 확인',dispatch_to_action_results:'궤적 전송·실행 응답',settling:'관절 정착 확인',approved_plan_recheck:'승인 계획 재검사'})[stage]||'원본 기록에서 확인';}
 function requestGuidance(record,data={}){

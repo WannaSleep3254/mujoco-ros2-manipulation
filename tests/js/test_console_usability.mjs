@@ -302,3 +302,34 @@ test('historical failure detail uses that request and retains raw diagnostic dat
  assert.ok(!h.element('detail-error').textContent.includes('접촉'));
  assert.match(h.element('detail-content').textContent,/budget_exhausted/);
 });
+
+test('actual fresh idle snapshot waits for its first telemetry and keeps only start available',()=>{
+ // Observed GET /api/state from isolated port 8913, domain 207, before any engine start.
+ const fresh=state({positions_rad:null,state_age_sec:null,clock_age_sec:null,simulation_sec:null,simulation_verified:false,
+  active_request_id:null,can_submit:false,can_plan:false,can_approve:false,guard:null,server:null,
+  graph:{clock:0,joints:0,status:0,commands:0,guards:0,plans:0,approvals:0},
+  lifecycle:{phase:'idle',error:null,owned:{},generation:0},
+  reason:'공유 시계·관절 상태·명령 노드가 각각 하나씩 연결되어야 합니다.'});
+ const h=harness(()=>reply(fresh));h.set(fresh);h.api.render(fresh);
+ assert.equal(h.api.observationProblem(fresh),null);assert.equal(h.api.connectionPresentation(fresh).status,'offline');
+ assert.equal(h.element('connection').textContent,'시뮬레이션 연결 대기');assert.equal(h.element('start').disabled,false);
+ assert.equal(h.element('execute').disabled,true);assert.equal(h.element('review-card').hidden,true);
+ assert.ok(!h.element('connection').textContent.includes('수신 중단'));assert.equal(h.calls.length,0);
+ const starting={...fresh,lifecycle:{...fresh.lifecycle,phase:'starting',generation:1,owned:{simulation:true,commands:true}},graph:{...fresh.graph,clock:1}};
+ h.set(starting);h.api.render(starting);assert.equal(h.api.observationProblem(starting),null);
+ assert.equal(h.api.connectionPresentation(starting).status,'starting');assert.match(h.element('connection').textContent,/준비 중.*상태 대기/);
+ assert.equal(h.element('start').disabled,true);assert.equal(h.element('execute').disabled,true);
+});
+
+test('missing telemetry after expected or previously observed sources remains blocked, including during startup',()=>{
+ const h=harness(()=>reply({}));
+ const absent=state({positions_rad:null,state_age_sec:null,clock_age_sec:null,simulation_sec:null,simulation_verified:false,
+  can_submit:false,can_plan:false,guard:null,server:null,active_request_id:null,
+  graph:{clock:0,joints:0,status:0,commands:0,guards:0},lifecycle:{phase:'starting',owned:{},error:null}});
+ for(const override of [{lifecycle:{...absent.lifecycle,phase:'running'}},{simulation_verified:true},{active_request_id:EXECUTION},
+  {positions_rad:{left:0,right:0}},{simulation_sec:0},{state_age_sec:.6},{clock_age_sec:.6},
+  {server:{session_id:'session-a',status:'blocked'}},{guard:{latched:true,phase:'stopping',reason:'contact'}},
+  {lifecycle:{...absent.lifecycle,error:'process failed'}}]){
+  const current={...absent,...override};assert.ok(h.api.observationProblem(current));assert.equal(h.api.connectionPresentation(current).status,'blocked');
+ }
+});
