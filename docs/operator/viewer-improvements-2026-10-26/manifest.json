@@ -3,7 +3,7 @@
   "document_type": "design_review",
   "baseline_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "assets": {
-    "index.html": "11dffdf57541e16202afcdf32f51658fab9d336377389593b362005144ee9c50",
+    "index.html": "001253392467ce628f8d97a02fa4d5a7ca6702b21b67b9e7aeeaf43628f43bf5",
     "camera-controls.png": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766",
     "review-notes.json": "d9b7eb66f02478c16654c95a1d2e1c318bffc526b2cfb6df7d1a57ad092f8de3",
     "plan-review.png": "1209f19346f4f98f2415968523a9750c23b550af36d749ff51d55b64276f2281",
@@ -43,5 +43,6 @@
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "15366a9aabb6cbdddebcec0a43555e544625e91daa3e5b4dd02b53fe9edb2b31",
     "src/mujoco_ros2_manipulation/operator_console/static/recording.js": "b9894d6993648a274689e6b4031c386b1bd34566802076d01d50f8588b8c1917",
     "src/mujoco_ros2_manipulation/operator_console/static/recording.html": "7dcd1857db0e0fb530db61b62386586f1b9b90bc30fd85bd680fb55300f6663e"
-  }
+  },
+  "editorial_revision": "2026-10-27 terminology and approved browser comments"
 }

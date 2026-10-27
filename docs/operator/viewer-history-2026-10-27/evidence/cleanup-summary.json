@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "observed_at_kst": "2026-10-27T14:01:36.671968+09:00",
+  "scope": "Static historical local development-server cleanup summary. These port numbers are not public service addresses or a live availability check.",
+  "closed_local_ports": [
+    8765,
+    8890
+  ],
+  "retained_local_ports": [
+    8897,
+    8902,
+    8904
+  ],
+  "old_server_owned_simulations_stopped": true,
+  "code_git_history_and_existing_reports_preserved": true,
+  "local_archive_retained": true,
+  "private_runtime_metadata_omitted": true
+}

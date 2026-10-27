@@ -117,7 +117,7 @@ class ConsoleState:
         if any(self.graph[k] != 1 for k in ("clock", "joints", "status", "guards")) or self.graph["commands"] < 1:
             return "공유 시계·관절 상태·명령 노드가 각각 하나씩 연결되어야 합니다."
         if not self.identity:
-            return "현재 작업장면의 MuJoCo 시뮬레이션 연결을 확인하지 못했습니다."
+            return "현재 작업 환경의 MuJoCo 시뮬레이션 연결을 확인하지 못했습니다."
         if self.positions is None or self.joint_at is None or now - self.joint_at > 0.5:
             return "관절 상태 수신이 멈췄습니다."
         if self.clock_at is None or now - self.clock_at > 0.5 or self.clock_advanced_at is None or now - self.clock_advanced_at > 0.5 or self.clock_backwards:

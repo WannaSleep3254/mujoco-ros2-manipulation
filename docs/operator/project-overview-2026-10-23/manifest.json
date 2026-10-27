@@ -8,10 +8,11 @@
     "evidence.json": "e724adea471486f5b350de41b5bb73439bfbc86e0bcc531f18dddf391711a83c",
     "fr10-home.png": "deacde644e33f8e48b1c09d81e60b778bd23beddf3bf69095abc101bbd4b3e89",
     "fr5-home.png": "2928dce0fb8e73a2ea29be5b540f3f8e54ff5b3295cec714d1883fa4cd0ffc73",
-    "index.html": "bd407ddb241d3d8912f465895cb9b6703926c13b5abe9adf9077e864e2e23c59",
+    "index.html": "77b6f422a5e5dd679f1deb4c619309c0b6a31bcff8decd47b6bd2a497a864424",
     "operation-demo.mp4": "38aa19f75c5b1db88bd9097c36e2faf34ee682905222f7d8308d77259ac69023",
     "operation-poster.png": "e92eb2164419165d4613bf64212e15a846d8b504c724b1a153717e63fde1b9a9",
     "review-notes.json": "dfb7db9403b08e28ed3fa24769065645f99651a5ad9f172558a1a48b4b9ef040",
     "ur5e-home.png": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
-  }
+  },
+  "editorial_revision": "2026-10-27 terminology and approved browser comments"
 }

@@ -17,7 +17,7 @@ python scripts/viewer_display_benchmark.py \
 
 `--hardware-gl`을 추가하면 격리 Chrome에 `--use-gl=angle --use-angle=gl --disable-software-rasterizer`를 적용합니다. 소프트웨어 WebGL이 선택되면 시험을 실패 처리합니다. 사용자 Chrome 프로필이나 OS 설정을 바꾸지 않습니다. 이 장비에서는 해당 옵션으로 NVIDIA RTX 3050 WebGL을 확인했습니다. 다른 장비에서 같은 GPU를 보장하는 옵션은 아니므로 JSON의 실제 renderer를 확인해야 합니다.
 
-모델을 지정하지 않으면 두 관절의 단순 도형으로 만든 시험 장면을 사용합니다. 이를 실제 로봇 결과로 표시하지 않습니다. 준비된 로봇 모델을 사용하려면 다음 두 인자를 함께 전달합니다.
+모델을 지정하지 않으면 두 관절의 단순 도형으로 만든 시험용 3D 모델을 사용합니다. 이를 실제 로봇 결과로 표시하지 않습니다. 준비된 로봇 모델을 사용하려면 다음 두 인자를 함께 전달합니다.
 
 ```bash
   --model /path/to/generated/cell.xml \
@@ -43,7 +43,7 @@ python scripts/viewer_display_benchmark.py \
 | WebGL FPS | CPU에서 제출한 표시 프레임. 같은 자세를 반복해서 그린 횟수 포함 |
 | JPEG 표시 횟수 | 이미지 decode·canvas draw 후 다음 rAF에 도달한 횟수. 물리 화면의 paint 확인 아님 |
 | 새 자세·이미지 | 성공적으로 적용한 서로 다른 조회 응답 |
-| 첫 표시 | 장면 초기화부터 첫 WebGL 제출 또는 첫 JPEG decode·draw/rAF까지 |
+| 첫 표시 | 3D 화면 초기화부터 첫 WebGL 제출 또는 첫 JPEG decode·draw/rAF까지 |
 | navigation→ready | 별도 Chrome에서 탐색 시작부터 시험 준비 확인까지. 자동화 확인 비용 포함 |
 | 반복 본문량 | 측정 구간의 `/pose` 또는 `/frame` 응답 본문. 상태 API·HTTP 헤더·초기 자산 제외 |
 | CPU | 시험 브라우저 또는 시험 서버와 자손 프로세스의 Linux CPU 시간. 코어 하나가 100% |
@@ -86,7 +86,7 @@ python scripts/viewer_display_benchmark.py \
 python scripts/viewer_render_scheduling_fixture.py --label current --port 8910
 ```
 
-표시된 로컬 주소를 브라우저에서 열고 정지 장면과 4 Hz 자세 입력을 각각 측정한 뒤 JSON을 저장합니다.
+표시된 로컬 주소를 브라우저에서 열고 정지 화면과 4 Hz 자세 입력을 각각 측정한 뒤 JSON을 저장합니다.
 `--root /path/to/checkout/src/mujoco_ros2_manipulation/operator_console/static`으로 비교할 소스를 지정할 수 있습니다.
 서버는 시작할 때 소스를 메모리에 고정하고 소스·manifest·측정 JS와 HTML의 SHA를 기록합니다.
 이전 코드와 비교할 때는 같은 브라우저, 실제 GL renderer, 640×480 캔버스, DPR과 카메라를 확인합니다.

@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "verified_at_kst": "2026-10-27T14:15:35.417059+09:00",
+  "revision": "1.1",
+  "correction": "C uses full-page screenshots instead of viewport-only screenshots; the full 3D card is cropped using observed DOM bounds.",
+  "sample_count": 72,
+  "whole_canvas_contained_in_every_crop": true,
+  "common_capture_canvas": {
+    "width": 624,
+    "height": 772,
+    "alignment": "top; centered horizontally",
+    "background": "#f3f5f6"
+  },
+  "stable_pixel_scale": {
+    "same_for_every_frame": true,
+    "nominal_source_to_c_clip": 0.9326424870466321,
+    "nominal_source_to_comparison_panel": 0.46632124352331605,
+    "rounding": "ffmpeg preserves the common capture aspect ratio with integer output pixel rounding; the resulting transform is identical for every C frame"
+  },
+  "crop_dimensions": {
+    "width": {
+      "min": 623,
+      "max": 623
+    },
+    "height": {
+      "min": 668,
+      "max": 772
+    }
+  },
+  "canvas_dimensions": {
+    "width": {
+      "min": 621,
+      "max": 621
+    },
+    "height": {
+      "min": 414,
+      "max": 414
+    }
+  },
+  "output_dimensions": {
+    "c_clip": "1280x720",
+    "comparison": "1920x470"
+  },
+  "a_and_b_videos_unchanged": true,
+  "new_robot_motion_commands_submitted": 0,
+  "steps": [
+    {
+      "step": "overview",
+      "sample_count": 8
+    },
+    {
+      "step": "orbit",
+      "sample_count": 8
+    },
+    {
+      "step": "zoom",
+      "sample_count": 8
+    },
+    {
+      "step": "reset",
+      "sample_count": 8
+    },
+    {
+      "step": "geometry-select",
+      "sample_count": 8
+    },
+    {
+      "step": "fit-selected",
+      "sample_count": 8
+    },
+    {
+      "step": "opacity-half",
+      "sample_count": 8
+    },
+    {
+      "step": "hide-selected",
+      "sample_count": 8
+    },
+    {
+      "step": "restore",
+      "sample_count": 8
+    }
+  ],
+  "scope": "Aggregate from the retained local crop-validation receipt. Raw screenshots, page coordinates and per-frame filesystem paths are not included in the public export."
+}

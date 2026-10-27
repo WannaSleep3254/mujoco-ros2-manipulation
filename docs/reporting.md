@@ -3,7 +3,7 @@
 공통 구현은 [reporting 패키지](../src/mujoco_ros2_manipulation/reporting),
 데이터 계약은 [JSON Schema 2020-12](../src/mujoco_ros2_manipulation/reporting/report.schema.json)입니다.
 ROS·물리 엔진을 실행하거나 import하지 않고 기존 측정 파일에서 HTML·CSV·목록을 생성합니다.
-기존 단일 로봇·공동 장면 검증기의 실행 결과 형식은 유지합니다.
+기존 단일 로봇·공동 작업 환경 검증기의 실행 결과 형식은 유지합니다.
 그 원본을 발행 리포트로 옮길 때 어댑터를 사용합니다.
 
 ## 문서 양식 기준 v1.9
@@ -45,7 +45,7 @@ runtime/report-site-<ID>/     # 새 폴더에만 내보내는 게시용 파일; 
 | 필드 | 필수 정보 |
 |---|---|
 | 식별·판정 | ID, 발행일, 제목, preliminary/validated/superseded, 범위, 결론, 한계 |
-| provenance | 저장소, 실제 평가 코드 40자리 commit, 작업장면, 모델, 시나리오, 입력 종류 |
+| provenance | 저장소, 실제 평가 코드 40자리 commit, 작업 환경, 모델, 시나리오, 입력 종류 |
 | environment | OS·CPU·Python·ROS·native MuJoCo 필수. 모르는 값은 ‘미확인’으로 명시 |
 | sample_groups | 조건별 고유 사례·실행 수, 성공·실패 또는 둘 다 null, seed 정책과 설명 |
 | stages | 지령→계산→안전검사→전송→동작의 측정/부분/추정/미측정 범위와 시계 |

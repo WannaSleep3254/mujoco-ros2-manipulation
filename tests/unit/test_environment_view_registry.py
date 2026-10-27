@@ -35,7 +35,7 @@ class EnvironmentViewRegistryTests(unittest.TestCase):
         for identifier in ('scene:unknown','/private/scene.xml','../fixture'):
             with self.subTest(identifier=identifier),self.assertRaises(ValueError):
                 owner.select(dict(mode='model_preview',source_id=identifier))
-        with self.assertRaisesRegex(ValueError,'현재 작업장면'):
+        with self.assertRaisesRegex(ValueError,'현재 작업 환경'):
             owner.select(dict(mode='live',source_id=source.id))
         self.assertEqual(owner.mode,'live')
         self.assertEqual(owner.catalog,previous)
@@ -80,7 +80,7 @@ class EnvironmentViewRegistryTests(unittest.TestCase):
         token={'manifest_sha256':'d'*64};source=self.source(validate=lambda:deepcopy(token))
         owner=self.create([source]);owner.tick()
         before=owner.host.snapshot();token['manifest_sha256']='e'*64
-        with self.assertRaisesRegex(ValueError,'장면이 바뀌었습니다'):
+        with self.assertRaisesRegex(ValueError,'작업 환경이 바뀌었습니다'):
             owner.select(dict(mode='model_preview',source_id=source.id))
         self.assertEqual(owner.host.snapshot(),before)
         self.assertEqual(owner.mode,'live')

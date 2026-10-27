@@ -22,7 +22,7 @@ from .review_summary import summarize_review
 class ConsoleApplication:
     def __init__(self, cell, state, bridge, directory, *, render=True, view_sources=()):
         if type(view_sources) not in (tuple,list) or len(view_sources)>8 or (view_sources and not render):
-            raise ValueError('장면 표시를 켜고 읽기 전용 장면을 최대 8개까지 명시적으로 등록하세요.')
+            raise ValueError('화면 표시를 켜고 읽기 전용 작업 환경을 최대 8개까지 명시적으로 등록하세요.')
         self.cell, self.state, self.bridge = cell, state, bridge
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=False)
@@ -67,14 +67,14 @@ class ConsoleApplication:
             raise ValueError("실행 옵션이 올바르지 않습니다.")
         with self.lock, self.state.lock:
             if self.views.preview:
-                raise RuntimeError("미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요.")
+                raise RuntimeError("미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "running", "stopping") or any(p.poll() is None for k,p in self.children.items() if k != "renderer"):
                 raise RuntimeError("이 화면에서 시작한 실행이 이미 있습니다.")
             if self.state.clock()-self.state.started < 2:
                 raise RuntimeError("ROS 연결 확인이 끝난 뒤 실행하세요.")
             if attach:
                 if not self.state.identity or not self.state.positions or self.state.graph["status"] != 0:
-                    raise RuntimeError("검증된 MuJoCo 장면에 명령 노드가 없을 때만 연결할 수 있습니다.")
+                    raise RuntimeError("검증된 MuJoCo 시뮬레이션에 명령 노드가 없을 때만 연결할 수 있습니다.")
             elif self.state.graph["clock"] or self.state.graph["joints"] or self.state.graph["status"]:
                 raise RuntimeError("이 ROS 도메인에 기존 실행이 있습니다. 새 실행 대신 기존 상태를 확인하세요.")
             else:
@@ -187,7 +187,7 @@ class ConsoleApplication:
     def _submit(self, payload, kind):
         with self.lock, self.state.lock:
             if self.views.preview:
-                raise RuntimeError("미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요.")
+                raise RuntimeError("미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "stopping") or self.closing.is_set():
                 raise RuntimeError("실행 준비 또는 종료 중입니다.")
             reserve = {"command":self.state.reserve, "plan":self.state.reserve_plan,
@@ -254,10 +254,10 @@ class ConsoleApplication:
 
     def set_display(self, mode):
         if mode not in ("web3d", "image") or not isinstance(mode, str):
-            raise ValueError("지원하는 장면 표시 방식을 선택하세요.")
+            raise ValueError("지원하는 화면 표시 방식을 선택하세요.")
         with self.lock, self.state.lock:
             if not self.render_enabled:
-                raise RuntimeError("이 실행은 장면 표시가 비활성화되어 있습니다.")
+                raise RuntimeError("이 실행은 화면 표시가 비활성화되어 있습니다.")
             if self.demos.busy or self.state.active or self.phase in ("starting", "stopping", "demo") or self.closing.is_set():
                 raise RuntimeError("진행 중인 요청이나 시연이 끝난 뒤 표시 방식을 바꾸세요.")
             if mode == "image" and self.views.preview:
@@ -283,7 +283,7 @@ class ConsoleApplication:
         try:
             self.views.tick()
         except Exception as error:
-            failure = dict(code="view_update_failed", message="장면 상태를 갱신하지 못했습니다. 실시간 보기를 다시 선택하세요.")
+            failure = dict(code="view_update_failed", message="표시 상태를 갱신하지 못했습니다. 실시간 보기를 다시 선택하세요.")
             changed = self.views.error != failure
             self.views.error = failure
             try:
@@ -439,7 +439,7 @@ class ConsoleApplication:
             if self.views.preview:
                 data["can_submit"] = False
                 data["can_plan"] = False
-                data["reason"] = "미리보기를 종료하고 현재 작업장면의 실시간 보기로 돌아오세요."
+                data["reason"] = "미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요."
             review = data.get("pending_plan")
             data["can_approve"] = bool(review and review.get("state") == "awaiting_approval"
                 and self.state.reason() is None and not self.demos.busy

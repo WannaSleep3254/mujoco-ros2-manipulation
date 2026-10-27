@@ -67,7 +67,7 @@ function fields(){
 function updateCurrent(){document.querySelectorAll('[data-current]').forEach(el=>{const v=state?.positions_rad?.[el.dataset.current];el.textContent=typeof v==='number'?displayed(v).toFixed(unit==='deg'?2:4):'—';});}
 function renderContext(){
  const view=state?.view,source=view?.source,mode=view?.mode,recorded=source?.kind==='recording',demo=demoActive(state?.demo?.current);
- const label=source?.label||view?.catalog?.find(item=>item.id===source?.id)?.label||config?.label||'장면 확인 중';
+ const label=source?.label||view?.catalog?.find(item=>item.id===source?.id)?.label||config?.label||'표시 대상 확인 중';
  const kind=recorded?'기록 재생':mode==='model_preview'?'모델 미리보기':mode==='plan_preview'?(view.review_plan?'실행 전 계획':'저장 궤적'):demo?'실시간 시연':'실제 관절 상태';
  $('display-context').textContent=kind+' · '+label;
  $('display-context').dataset.mode=mode||'live';
@@ -250,7 +250,7 @@ function demoStage(job){
  if(stage==='searching_departure_delay')return '같은 공간 경로의 출발 시점을 계산하고 있습니다.';
  if(/compare|comparison/.test(stage))return '두 조건의 결과를 대조하고 있습니다.';
  if(/cleanup|shutdown|stopping/.test(stage))return '현재 실행을 종료하고 다음 단계를 준비하고 있습니다.';
- if(/prepar|planning|freeze|bundle|discover/.test(stage))return job.scenario==='timing_comparison'?'새 경로를 계획하고 비교할 동작을 준비하고 있습니다.':'동일한 동작으로 비교할 장면을 준비하고 있습니다.';
+ if(/prepar|planning|freeze|bundle|discover/.test(stage))return job.scenario==='timing_comparison'?'새 경로를 계획하고 비교할 동작을 준비하고 있습니다.':'동일한 동작을 비교할 작업 환경을 준비하고 있습니다.';
  if(job.variant)return variant+' 조건을 실행하고 있습니다.';
  return '시뮬레이션과 실행 상태를 준비하고 있습니다.';
 }
@@ -300,14 +300,14 @@ function updateLiveFrames(data){
  $('demo-view-dot').classList.toggle('live',hasFrame&&matchesDemo&&!stale&&demoActive(job));$('demo-stale-frame').hidden=!(stale&&matchesDemo);$('demo-stale-frame').textContent=job&&!demoActive(job)?'시연 종료 · 마지막 수신 화면':'화면 갱신 대기 · 마지막 수신 화면';
  $('demo-frame-label').textContent=frame.error?'렌더링 오류':hasFrame&&matchesDemo?(!demoActive(job)?'마지막 실행 화면':stale?'갱신 대기':demoVariant(job.variant).label):demoActive(job)?'현재 조건의 화면 준비 중':'시연 대기';
  $('demo-frame-age').textContent=hasFrame&&matchesDemo?value(frame.age_sec*1000,0,' ms 전 갱신'):'—';$('demo-live-variant').textContent=job?demoTitle(job.scenario)+' · '+demoVariant(job.variant).label:'실제 관절 상태를 반영한 모델 뷰';
- if(frame.error){$('frame-empty').dataset.renderError='true';$('demo-frame-empty').dataset.renderError='true';$('frame-empty').replaceChildren(textNode('p',frame.error));$('demo-frame-empty').replaceChildren(textNode('p',frame.error));}else{if($('frame-empty').dataset.renderError){delete $('frame-empty').dataset.renderError;$('frame-empty').replaceChildren(textNode('div','⬡','scene-symbol'),textNode('h2','작업장면을 준비하세요'),textNode('p','시뮬레이션을 시작하면 현재 자세가 표시됩니다.'));}if($('demo-frame-empty').dataset.renderError){delete $('demo-frame-empty').dataset.renderError;$('demo-frame-empty').replaceChildren(textNode('div','▶','scene-symbol'),textNode('h3','시연을 선택하고 실행하세요'),textNode('p','현재 실행 중인 조건의 장면이 표시됩니다.'));}}
+ if(frame.error){$('frame-empty').dataset.renderError='true';$('demo-frame-empty').dataset.renderError='true';$('frame-empty').replaceChildren(textNode('p',frame.error));$('demo-frame-empty').replaceChildren(textNode('p',frame.error));}else{if($('frame-empty').dataset.renderError){delete $('frame-empty').dataset.renderError;$('frame-empty').replaceChildren(textNode('div','⬡','scene-symbol'),textNode('h2','시뮬레이션을 시작하세요'),textNode('p','시뮬레이션을 시작하면 현재 자세가 표시됩니다.'));}if($('demo-frame-empty').dataset.renderError){delete $('demo-frame-empty').dataset.renderError;$('demo-frame-empty').replaceChildren(textNode('div','▶','scene-symbol'),textNode('h3','시연을 선택하고 실행하세요'),textNode('p','현재 시연의 로봇과 작업 환경이 표시됩니다.'));}}
 }
 
 async function boot(){
  const bootstrap=await request('/api/bootstrap');config=bootstrap.config;token=bootstrap.token;targets={...config.home_rad};demoCatalog=(bootstrap.demos||[]).filter(item=>['contact_comparison','timing_comparison'].includes(item.id));mountDemos();
  $('cell-label').textContent=config.label;$('domain').textContent='ROS DOMAIN '+config.domain;
  fields();
- if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('operate'),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'장면 표시 비활성화';}
+ if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('operate'),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));
  $('dismiss').addEventListener('click',()=>$('notice').hidden=true);
  $('unit').addEventListener('change',()=>{unit=$('unit').value;fields();refreshControls();});
