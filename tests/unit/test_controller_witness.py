@@ -1,5 +1,7 @@
 """Passive evidence preserves clock/delivery limits and survives malformed input."""
 from copy import deepcopy
+from array import array
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -13,7 +15,7 @@ import unittest
 from unittest.mock import patch
 
 from mujoco_ros2_manipulation.workcells.controller_witness import (
-    ControllerWitness, MAX_CAPACITY, MAX_JOINTS, MAX_STATUSES, main, ros_controller, ros_statuses,
+    ControllerWitness, MAX_CAPACITY, MAX_JOINTS, MAX_STATUSES, main, ros_controller, ros_stamp, ros_statuses,
 )
 
 TOPIC = "/left_controller/controller_state"
@@ -219,6 +221,54 @@ assert ControllerWitness(capacity=1).snapshot()['passive_subscribe_only']
         self.assertEqual(ros_statuses(SimpleNamespace(status_list=[goal])), statuses())
         with self.assertRaises(ValueError):
             ros_statuses(SimpleNamespace(status_list=[goal]*(MAX_STATUSES+1)))
+
+    def status_message(self, raw):
+        return SimpleNamespace(status_list=[SimpleNamespace(goal_info=SimpleNamespace(
+            goal_id=SimpleNamespace(uuid=raw), stamp=SimpleNamespace(sec=9, nanosec=0)), status=2)])
+
+    def test_uuid_byte_array_and_integral_boundaries_normalize_without_coercing_bad_scalars(self):
+        for raw in (array('B', [170]*16), bytearray([170]*16), bytes([170]*16), tuple([170]*16)):
+            with self.subTest(container=type(raw).__name__):
+                converted = ros_statuses(self.status_message(raw))
+                self.assertEqual(converted, statuses())
+                self.assertTrue(self.recorder.observe("goal_status", STATUS, converted))
+        for raw in ([170.0]*16, [True]*16, [-1]*16, [256]*16,
+                    [170]*15, [170]*17, array('h', [-1]*16)):
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                ros_statuses(self.status_message(raw))
+
+    @unittest.skipUnless(importlib.util.find_spec("numpy"), "NumPy is optional outside the ROS runtime")
+    def test_numpy_uuid_uint8_is_normalized_but_float_bool_and_out_of_range_are_rejected(self):
+        import numpy as np
+        converted = ros_statuses(self.status_message(np.full(16, 170, dtype=np.uint8)))
+        self.assertEqual(converted, statuses())
+        self.assertTrue(self.recorder.observe("goal_status", STATUS, converted))
+        for raw in (np.full(16, 170., dtype=np.float64), np.ones(16, dtype=np.bool_),
+                    np.full(16, 256, dtype=np.uint16), np.full(16, -1, dtype=np.int8),
+                    np.full((16, 1), 170, dtype=np.uint8)):
+            with self.subTest(dtype=raw.dtype, shape=raw.shape), self.assertRaises(ValueError):
+                ros_statuses(self.status_message(raw))
+
+    @unittest.skipUnless(Path('/opt/ros/humble/local/lib/python3.10/dist-packages/action_msgs').is_dir(),
+                         "Installed Humble message classes are optional")
+    def test_actual_humble_status_uuid_and_builtin_time_convert_without_ros_initialization(self):
+        ros_python = '/opt/ros/humble/local/lib/python3.10/dist-packages'
+        with patch.object(sys, 'path', [ros_python] + sys.path):
+            from action_msgs.msg import GoalStatus, GoalStatusArray
+            from builtin_interfaces.msg import Time
+            from unique_identifier_msgs.msg import UUID
+            import numpy as np
+            status = GoalStatus()
+            status.goal_info.goal_id = UUID(uuid=np.full(16, 170, dtype=np.uint8))
+            status.goal_info.stamp = Time(sec=9, nanosec=123)
+            status.status = 2
+            converted = ros_statuses(GoalStatusArray(status_list=[status]))
+            self.assertEqual(ros_stamp(status.goal_info.stamp), dict(sec=9, nanosec=123))
+            self.assertEqual(converted, dict(status_list=[dict(goal_uuid='a'*32,
+                goal_stamp=dict(sec=9, nanosec=123), status=2)]))
+            self.assertTrue(self.recorder.observe('goal_status', STATUS, converted))
+            self.assertEqual(self.recorder.snapshot()['events'][0]['status_list'][0]['goal_stamp_ns'],
+                             9_000_000_123)
 
     def test_runtime_signal_saves_and_cleans_up_using_subscriptions_only(self):
         handlers, subscriptions, destroyed, shutdown, infrastructure_removed = {}, [], [], [], []

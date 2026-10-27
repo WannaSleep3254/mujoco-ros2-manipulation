@@ -9,6 +9,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import json
 import math
+from numbers import Integral
 import os
 from pathlib import Path
 import re
@@ -271,9 +272,13 @@ def ros_statuses(message):
     statuses = []
     for status in message.status_list:
         raw = status.goal_info.goal_id.uuid
-        _require(len(raw) == 16 and all(type(value) is int and 0 <= value <= 255 for value in raw),
+        # ROS fixed uint8[16] uses numpy.uint8 in Humble; variable arrays may
+        # instead use array('B'). Accept integral byte scalars, then normalize
+        # to Python ints. Converting first would silently accept floats/bools.
+        _require(len(raw) == 16 and all(isinstance(value, Integral) and not isinstance(value, bool)
+                                       and 0 <= value <= 255 for value in raw),
                  "invalid_statuses")
-        statuses.append(dict(goal_uuid=bytes(raw).hex(), goal_stamp=ros_stamp(status.goal_info.stamp),
+        statuses.append(dict(goal_uuid=bytes(int(value) for value in raw).hex(), goal_stamp=ros_stamp(status.goal_info.stamp),
                              status=status.status))
     return dict(status_list=statuses)
 
