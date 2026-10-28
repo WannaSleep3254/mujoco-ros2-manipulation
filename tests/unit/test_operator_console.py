@@ -197,6 +197,15 @@ class ConsoleHTTPTests(unittest.TestCase):
     def post(self,path,body,**headers):
         return urlopen(Request(self.url+path,data=body,headers={'Content-Type':'application/json','Origin':self.url,'X-Operator-Token':'test-token',**headers}),timeout=3)
 
+    def test_workspace_modules_are_served_with_browser_mime_types(self):
+        for name, mime in (('workspace.css', 'text/css'), ('workspace.js', 'text/javascript'),
+                           ('workspace_status.mjs', 'text/javascript')):
+            with self.subTest(name=name), urlopen(self.url+'/'+name, timeout=3) as response:
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.headers.get_content_type(), mime)
+                self.assertTrue(response.read())
+        self.assertEqual(self.called, [])
+
     def publication_fixture(self):
         root=self.app.cell.root
         assets={

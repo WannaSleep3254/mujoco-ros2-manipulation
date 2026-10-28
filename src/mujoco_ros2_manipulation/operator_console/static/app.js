@@ -75,6 +75,10 @@ function guidanceText(record,data={}){
  const guidance=requestGuidance(record,data),raw=record?.error?.message||data.error?.message||'';
  return [...(guidance?[guidance.title+' · '+guidance.text,guidance.stage?'실패 단계: '+guidance.stage:null,guidance.next]:[]),raw?'원본 오류: '+raw:null].filter(Boolean).join(' ');
 }
+function publishCancellation(identifier=state?.active_request_id){
+ const entry=identifier?pendingCancels.get(identifier):null;
+ window.dispatchEvent?.(new CustomEvent('console-cancellation',{detail:entry?{request_id:identifier,phase:entry.phase}:null}));
+}
 function cancellationPhase(record){
  if(!record)return null;
  if(terminal.has(record.status)){pendingCancels.delete(record.request_id);return null;}
@@ -83,13 +87,13 @@ function cancellationPhase(record){
 }
 async function cancelCurrentRequest(){
  const identifier=state?.active_request_id;if(!readConnected||!identifier||demoActive(state.demo?.current)||pendingCancels.has(identifier))return;
- const entry={phase:'submitting',session:state.server?.session_id||null};pendingCancels.set(identifier,entry);refreshControls();requestProgress(state.history.find(item=>item.request_id===identifier));
+ const entry={phase:'submitting',session:state.server?.session_id||null};pendingCancels.set(identifier,entry);publishCancellation(identifier);refreshControls();requestProgress(state.history.find(item=>item.request_id===identifier));
  try{const result=await request('/api/cancel',{request_id:identifier});
   if(result.request_id!==identifier||result.status!=='cancel_requested')throw Error('취소 요청의 처리 결과가 일치하지 않습니다.');
   if(pendingCancels.get(identifier)===entry)entry.phase='submitted';
   notice('취소를 요청했습니다. 서버 수신과 요청 종료, 정지 감시 상태를 확인하세요.');
  }catch(error){if(pendingCancels.get(identifier)===entry)entry.phase='unconfirmed';notice('취소 요청의 전달 결과를 확인하지 못했습니다. 현재 상태와 로그를 확인하세요. 자동으로 다시 보내지 않습니다. '+error.message);}
- finally{await poll();refreshControls();}
+ finally{publishCancellation(identifier);await poll();refreshControls();}
 }
 function notice(text){$('notice-text').textContent=text;$('notice').hidden=false;}
 async function request(path,body){
@@ -166,7 +170,16 @@ function value(v,decimals=3,suffix=' s'){return typeof v==='number'&&Number.isFi
 function displayed(v){return unit==='deg'?v*180/Math.PI:v;}
 function radians(v){return unit==='deg'?v*Math.PI/180:v;}
 function badge(el,status,text){el.className='badge'+(status==='succeeded'||status==='passed'||status==='ready'?' good':status==='failed'||status==='blocked'||status==='rejected'?' bad':status==='running'||status==='starting'||status==='cancel_requested'||status==='queued'||status==='submitting'?' busy':'');el.textContent=text||labels[status]||status;}
-function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트',analysis:'센서·상태 분석'}[view];if(state)updateLiveFrames(state);sceneControls?.mount();}
+function show(view,{focusTask=false}={}){
+ const section=view==='review'?'operate':view;
+ document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==section);
+ document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===view);if(el.dataset.view===view)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
+ if(section==='operate')$('operate').dataset.workspaceMode=view;
+ $('view-title').textContent={operate:'로봇 조작',review:'계획 검토',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트',analysis:'기록 분석'}[view];
+ window.dispatchEvent?.(new CustomEvent('console-navigation',{detail:{view}}));
+ if(state)updateLiveFrames(state);sceneControls?.mount();
+ if(focusTask)$('task-title')?.focus?.({preventScroll:true});
+}
 function fields(){
  const container=$('joint-fields');container.replaceChildren();$('unit-label').textContent=unit;
  config.instances[arm].joints.forEach((name,index)=>{
@@ -313,6 +326,7 @@ async function detail(id){const serial=++detailSerial,group=groupRequests(state?
 function render(data){
  state=data;window.dispatchEvent?.(new CustomEvent('console-observation',{detail:data}));const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
  for(const [identifier,pending] of pendingCancels){const record=data.history.find(item=>item.request_id===identifier);if(record&&terminal.has(record.status)||pending.session&&data.server?.session_id&&pending.session!==data.server.session_id)pendingCancels.delete(identifier);}
+ publishCancellation();
  const connection=connectionPresentation(data);badge($('connection'),connection.status,connection.text);
  $('sim-time').textContent=value(data.simulation_sec,3,' s');$('state-age').textContent=value(data.state_age_sec*1000,0,' ms');
  if(data.state_age_sec===null)$('state-age').textContent='—';
@@ -434,8 +448,9 @@ async function boot(){
  const bootstrap=await request('/api/bootstrap');config=bootstrap.config;token=bootstrap.token;targets={...config.home_rad};demoCatalog=(bootstrap.demos||[]).filter(item=>['contact_comparison','timing_comparison'].includes(item.id));mountDemos();
  $('cell-label').textContent=config.label;$('domain').textContent='ROS DOMAIN '+config.domain;
  fields();
- if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('operate'),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
+ if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('review',{focusTask:true}),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));
+ window.addEventListener('workspace-record',()=>{const record=state?.history.find(row=>row.request_id===state.active_request_id)||state?.history[0];if(record){show('history');detail(record.request_id);}});
  $('dismiss').addEventListener('click',()=>$('notice').hidden=true);
  $('unit').addEventListener('change',()=>{unit=$('unit').value;fields();refreshControls();});
  $('arm-left').addEventListener('click',()=>{arm=0;fields();});$('arm-right').addEventListener('click',()=>{arm=1;fields();});
@@ -454,7 +469,7 @@ async function boot(){
   if(!readConnected||replanning||!canPlanGoal()||!validGoal())return;
   $('execute').disabled=true;
   const payload=goalPayload(crypto.randomUUID().replaceAll('-','')),poseRequest=Boolean(payload.arm_id);
-  const result=await action(poseRequest?'/api/pose/plan':'/api/plan',payload);if(result)latestRequest=null;
+  const result=await action(poseRequest?'/api/pose/plan':'/api/plan',payload);if(result){latestRequest=null;show('review',{focusTask:true});}
  });
  $('review-preview').addEventListener('click',async()=>{const review=state?.pending_plan;if(!readConnected||!review||review.state!=='awaiting_approval')return;await sceneControls?.previewReview(review.plan_request_id);await poll();});
  $('review-replan').addEventListener('click',replan);
