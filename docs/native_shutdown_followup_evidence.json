@@ -1,0 +1,484 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "baseline_main": "082e361d42d30db186e75a8656638fd500bc29b4",
+  "earlier_teardown_race_evidence": "native_shutdown_evidence.json",
+  "distinct_failures": [
+    {
+      "workflow_run": 40658625725,
+      "pr": 60,
+      "cause": "Pending ControllerManager switch callback waits for RT list acknowledgement after the first shutdown fix stopped RT",
+      "native_exit": -9
+    },
+    {
+      "workflow_run": 40658567190,
+      "branch": "main",
+      "run_id": "20261028T085703.728909Z-34e478cf",
+      "cause": "Valid 1703-point trajectory requires 5105 schedule samples, exceeding unchanged 5000 capacity; candidate rejection previously escaped the entire bounded search",
+      "shutdown_clean": true
+    }
+  ],
+  "source_sha256": {
+    "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5",
+    "patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch": "5cd77481de464aa850b73dd4533c088da8138231d64cdacdf24a79a506077fbf",
+    "patches/mujoco_ros2_control-0.1.2-activation-shutdown.patch": "c29d55a74677684d034fe03bb48219c061fb0b2aa99ef138c77f7359f36b1103",
+    "config/build.yaml": "be42e142f6a28475cc5456f0d67945c1901e5db9eeac2f1e2ba1bbfc714b1477",
+    "src/mujoco_ros2_manipulation/build.py": "fa41be01497f22ae2ae04d1112467cd1732ee11693b097929cdd27c1009dd145",
+    "src/mujoco_ros2_manipulation/workcells/path_quality.py": "b7917291a0a7d2c71b2011ff2e0c6b648698af7e1f9d238753a4bf5013d620cc",
+    "src/mujoco_ros2_manipulation/workcells/plan_selection.py": "9346b89f2de50701d5a260584c4a1c4929ac97d9367817784116460fbd65bf72",
+    "src/mujoco_ros2_manipulation/operator_console/verify_views.py": "d69147610fe6a5d4d73ecd8ba4c332036a43a4c936defe7a86a682ebb3c991ed",
+    "tests/integration/verify_native_shutdown_race.py": "a8ae3e5831f1ff997b980231a9020d7cb2bf7c6121c3e0bf17e673850ab1e92b",
+    "tests/integration/verify_native_pending_switch.py": "e9155a4d7ac5d1f8567f0b540a52edc2edf0a2eec9614df7987f40a145ae1189",
+    ".github/workflows/ci.yml": "d51a349290c28396bf4d11483d5294e2d81eecd4ca2d57b7a5fa9fbfae4886f4"
+  },
+  "pending_activation": {
+    "matched_inputs": {
+      "activation_request": true,
+      "actual_prearm_states": true,
+      "generated_launch_sha256": true,
+      "jtc_sha256": true,
+      "model_manifest_sha256": true,
+      "probe_sha256": true,
+      "source_sha256": true
+    },
+    "before": {
+      "status": "expected_liveness_failure",
+      "native_sha256": "5228008939c3f3e4644d09298dbc63fd7b3fa53caccfa7d81c00f0a3e622afff",
+      "pending_switch": {
+        "activate_asap": true,
+        "activate_controllers": [
+          "joint_state_broadcaster"
+        ],
+        "callback_queued_monotonic_ns": 630672072011023,
+        "deactivate_controllers": [],
+        "future_done_after_observation": false,
+        "future_done_before_signal": false,
+        "native_callback_marker": "Requested atomic controller switch from realtime loop",
+        "request_sent_monotonic_ns": 630672051506406,
+        "response_ok": null,
+        "strictness": 2,
+        "timeout_sec": 5
+      },
+      "cleanup": {
+        "child_failure_observed": true,
+        "forced": false,
+        "launch_internal_escalation": true,
+        "launch_return_code": 0,
+        "process_group_gone": true
+      },
+      "error": {
+        "message": "Actual broadcaster activation was pending when SIGINT stopped native; still alive 8s after JTC returned",
+        "type": "ObservedLivenessTimeout"
+      },
+      "model_manifest_sha256": "fe5fadc600a207bf170c7c03aaf9399363d6750f3c051cb6bc2a1eaaeb53cf61"
+    },
+    "after": {
+      "status": "passed",
+      "native_sha256": "79e6b16896e350b6bb87fc3d35277cacc64b1a2d2ba9542fa3edb6482cfea2eb",
+      "pending_switch": {
+        "activate_asap": true,
+        "activate_controllers": [
+          "joint_state_broadcaster"
+        ],
+        "callback_queued_monotonic_ns": 630730631309364,
+        "deactivate_controllers": [],
+        "future_done_after_observation": true,
+        "future_done_before_signal": false,
+        "native_callback_marker": "Requested atomic controller switch from realtime loop",
+        "request_sent_monotonic_ns": 630730610825255,
+        "response_ok": true,
+        "strictness": 2,
+        "timeout_sec": 5
+      },
+      "cleanup": {
+        "child_failure_observed": false,
+        "forced": false,
+        "launch_internal_escalation": false,
+        "launch_return_code": 0,
+        "process_group_gone": true
+      },
+      "native_physics": {
+        "active_contacts": 0,
+        "complete": true,
+        "contact_steps": 0,
+        "contacts": 0,
+        "invalid_values": 0,
+        "steps": 401,
+        "stop_enabled": true,
+        "stop_latched": false
+      },
+      "model_manifest_sha256": "fe5fadc600a207bf170c7c03aaf9399363d6750f3c051cb6bc2a1eaaeb53cf61",
+      "actual_write_calls_measured": false
+    },
+    "scope": "Matched final-B actual pending broadcaster activation/SIGINT regression; one fresh run per runtime"
+  },
+  "clock_signal": {
+    "passed": true,
+    "cases": [
+      {
+        "mode": "missing",
+        "signal": "SIGINT",
+        "passed": true,
+        "domain": 192,
+        "terminal_counts": {},
+        "cleanup": {
+          "actions": [],
+          "returncode": 0,
+          "process_group_gone": true
+        },
+        "markers": {
+          "phases": [
+            "UPDATE_LOOP_JOINED",
+            "CONTEXT_SHUTDOWN_BEGIN",
+            "CONTEXT_SHUTDOWN_DONE"
+          ],
+          "controller_cleanup_present": false
+        }
+      },
+      {
+        "mode": "missing",
+        "signal": "SIGTERM",
+        "passed": true,
+        "domain": 193,
+        "terminal_counts": {},
+        "cleanup": {
+          "actions": [],
+          "returncode": 0,
+          "process_group_gone": true
+        },
+        "markers": {
+          "phases": [
+            "UPDATE_LOOP_JOINED",
+            "CONTEXT_SHUTDOWN_BEGIN",
+            "CONTEXT_SHUTDOWN_DONE"
+          ],
+          "controller_cleanup_present": false
+        }
+      },
+      {
+        "mode": "paused",
+        "signal": "SIGINT",
+        "passed": true,
+        "domain": 194,
+        "terminal_counts": {
+          "read_enter": 58,
+          "read_done": 58,
+          "update_enter": 58,
+          "update_done": 58,
+          "write_enter": 58,
+          "write_done": 58
+        },
+        "cleanup": {
+          "actions": [],
+          "returncode": 0,
+          "process_group_gone": true
+        },
+        "markers": {
+          "phases": [
+            "UPDATE_LOOP_JOINED",
+            "CONTEXT_SHUTDOWN_BEGIN",
+            "CONTEXT_SHUTDOWN_DONE"
+          ],
+          "controller_cleanup_present": false
+        }
+      },
+      {
+        "mode": "paused",
+        "signal": "SIGTERM",
+        "passed": true,
+        "domain": 195,
+        "terminal_counts": {
+          "read_enter": 58,
+          "read_done": 58,
+          "update_enter": 58,
+          "update_done": 58,
+          "write_enter": 58,
+          "write_done": 58
+        },
+        "cleanup": {
+          "actions": [],
+          "returncode": 0,
+          "process_group_gone": true
+        },
+        "markers": {
+          "phases": [
+            "UPDATE_LOOP_JOINED",
+            "CONTEXT_SHUTDOWN_BEGIN",
+            "CONTEXT_SHUTDOWN_DONE"
+          ],
+          "controller_cleanup_present": false
+        }
+      },
+      {
+        "mode": "early",
+        "signal": "SIGTERM",
+        "passed": true,
+        "domain": 196,
+        "terminal_counts": {
+          "early_sigterm_sent": 1,
+          "early_sigterm_returned": 1
+        },
+        "cleanup": {
+          "actions": [],
+          "returncode": 0,
+          "process_group_gone": true
+        },
+        "markers": {
+          "phases": [
+            "UPDATE_LOOP_JOINED",
+            "CONTEXT_SHUTDOWN_BEGIN",
+            "CONTEXT_SHUTDOWN_DONE"
+          ],
+          "controller_cleanup_present": false
+        }
+      }
+    ]
+  },
+  "normal_active_jtc": {
+    "status": "passed",
+    "native_sha256": "79e6b16896e350b6bb87fc3d35277cacc64b1a2d2ba9542fa3edb6482cfea2eb",
+    "startup_readiness": {
+      "joint_state_broadcaster": {
+        "spawner": "spawner-3",
+        "pid": 2258893,
+        "clean_exit": true,
+        "expected_state": "active"
+      },
+      "left_controller": {
+        "spawner": "spawner-4",
+        "pid": 2258895,
+        "clean_exit": true,
+        "expected_state": "active"
+      },
+      "right_controller": {
+        "spawner": "spawner-5",
+        "pid": 2258897,
+        "clean_exit": true,
+        "expected_state": "active"
+      }
+    },
+    "ordering": {
+      "expected_unsafe_overlap_observed": false,
+      "safe_ordering_observed": true,
+      "ordering_assertions_passed": true,
+      "native_root_cause_closed": false
+    },
+    "cleanup": {
+      "forced": false,
+      "launch_return_code": 0,
+      "process_group_gone": true,
+      "launch_internal_escalation": false,
+      "child_failure_observed": false
+    },
+    "physics_checks_passed": true,
+    "all_process_failures": [],
+    "launch_internal_escalations": []
+  },
+  "installed_runtime": {
+    "ros2_control_node": "3b06314c7da160d32212cced67910b423666b6228300ebe3a1083eff02ee988f",
+    "libmujoco_ros2_control.so": "832857bb8650c298fc872a71fe82062e8e5ed206bf94b7306d10d2299b5f9685"
+  },
+  "local_evidence": {
+    "runtime/w01-shutdown-ci-20261028/pending-switch-pair-b-summary.json": "2f69d9a1aff24e126b3e6c54fe72acc9e2aa619cc698d3493c47bdbf5e30a674",
+    "runtime/w01-shutdown-ci-20261028/activation-clock-b/verification.json": "f3f338cd4aab9517fc6c861ae5cbeeb9b8b600361bcda591e34b4d95859cfd0b",
+    "runtime/w01-shutdown-ci-20261028/activation-clock-b/manifest.json": "d1c7154e7cfd0c1a17ab708bb84ee52856c55ed10be5b774c5506290c62647c4",
+    "runtime/w01-shutdown-ci-20261028/activation-held-c/result.json": "8d72613a757f6ff9ee4bec57e8bda0ad5da1e84369c2509b04563ec38762f4fc",
+    "runtime/w01-shutdown-ci-20261028/activation-held-c/physics.json": "8d21c748990df7fcc1a321fb5ce03a61e94b08411cd6459c39cecfff29f6430f",
+    "runtime/w01-shutdown-ci-20261028/activation-held-b-preflight.json": "fb5a9d25263c7cd3ceedc2fd2834967c5af75ad75222de8bcdcd5638bd8209dc",
+    "runtime/w01-shutdown-ci-20261028/activation-model-regeneration/comparison.json": "c8ddd6d0d3dee790b1d104f87fd22220724b61180f8e7ee8e785e5238b33c3b1",
+    "runtime/w01-shutdown-ci-20261028/pr60-attempt1/manifest-sha256.json": "ebbb0d31d8e1af2ea7dd593091a4e52cbf5e59f90b4e12d0c6c6a0d8c75c0d39",
+    "runtime/w01-shutdown-ci-20261028/main082e361-attempt1/manifest-sha256.json": "b180f7dddc23ceeb085103e09e42e952107742eb58d58509f80922e0cb714f08",
+    "runtime/w01-shutdown-ci-20261028/sampling-capacity-replay-20261028-a/result.json": "5e35b45d5065f3d2b59368b5857f75112b964940a8a49667772f5b26f2898e8f",
+    "runtime/validation/runs/20261028T092848.871139Z-04e55347/result.json": "14b3dbe4f47f61fb184592a5bce274936b5f6141c4ed55658537d579120b3fd4",
+    "runtime/w01-shutdown-ci-20261028/sampling-capacity-replay-20261028-b/result.json": "f0b5ded76b3c93dbbed2101f1c93b9aa299d73dcc704f2dd3ccc6cdd320c7792",
+    "runtime/w01-shutdown-ci-20261028/sampling-full-verification-20261028-a/result.json": "ea15466e9004cefac1c1b45e50214c9d9b9cd38309693e38331e6358b5dd1dcb"
+  },
+  "limits": [
+    "Actual native write-call counts were not instrumented. write0 evidence is the no-write helper API/source application and pure regression, not a direct output-call measurement.",
+    "The old run is expected unsafe liveness failure evidence; its driver exit0 is not native success.",
+    "Original beforefix-a hang and afterfix-a integrity-blocked/native-not-started records remain unchanged; model regeneration changed source manifests while root recorded identical XML/URDF bytes.",
+    "The new pending-switch defect and earlier JTC teardown SIGSEGV are distinct diagnosed conditions; historical W01 stall equivalence remains unproven.",
+    "This one-pair controlled regression does not estimate failure frequency or replace CI/publication gates.",
+    "Post-signal write prevention is a helper API/source regression, not a direct native write-call counter or immediate physical stop guarantee.",
+    "Clock tests contain no robot/hardware; actual pending and active JTC tests are separate.",
+    "Existing W08 timings were not remeasured and are not performance measurements of this hotfix.",
+    "The preflight-blocked runs remain failures with native_started=false, not passing shutdown trials.",
+    "No physical robot or actual GUI window-close validation."
+  ],
+  "operator_views": {
+    "run_id": "20261028T092848.871139Z-04e55347",
+    "status": "passed",
+    "motion_checks_passed": true,
+    "physics_checks_passed": true,
+    "shutdown_clean": true,
+    "cleanup_errors": [],
+    "checked_cpu_demo_jobs": [
+      {
+        "scenario": "contact_comparison",
+        "status": "succeeded",
+        "cleanup_clean": true,
+        "results": [
+          {
+            "variant": "contact",
+            "run_id": "20261028T092905.836700Z-ec748130",
+            "report_sha256": "d237d40c792a8faf4580555ad0ddddca2f7145cbb749bfb4bddda77670c98d33"
+          },
+          {
+            "variant": "control",
+            "run_id": "20261028T092917.760281Z-c951ff6f",
+            "report_sha256": "59dba3fba17d8c8c83acf46c26b353b8b72ebe7960bd61a739f8085fa234b793"
+          }
+        ]
+      },
+      {
+        "scenario": "timing_comparison",
+        "status": "succeeded",
+        "cleanup_clean": true,
+        "results": [
+          {
+            "variant": "prepare",
+            "run_id": "20261028T092931.871293Z-961f886a",
+            "report_sha256": "e3672510c3819b53e39fa05b9ea181eae0d4955c41f991ba6eb6ad819924163f"
+          },
+          {
+            "variant": "baseline",
+            "run_id": "20261028T093001.290874Z-9180a9eb",
+            "report_sha256": "843b278a9d2c02ffe91c948d820749fa3425d498fef9db4681e9fd6d658d2bd6"
+          },
+          {
+            "variant": "timing",
+            "run_id": "20261028T093028.318523Z-d17a7b0b",
+            "report_sha256": "9b967394f5ab24669a24c5f4210729340336c1ae024ee36c8f785eaca5801575"
+          }
+        ]
+      }
+    ],
+    "process_group_gone": true
+  },
+  "sampling_preflight": {
+    "schema_version": 1,
+    "status": "passed",
+    "created_utc": "2026-10-28T09:30:37.469238+00:00",
+    "scope": "One final pure frozen-candidate replay; no ROS/native query/physics/dispatch, original a and main-CI artifacts preserved",
+    "source_path": "runtime/w01-shutdown-ci-20261028/main082e361-attempt1/artifact/runtime/validation/runs/20261028T085703.728909Z-34e478cf/trajectories.json",
+    "source_sha256": "c367807692e40bcd6f5ba3d87a86149b72b991488992c982b479bef28d6dc04a",
+    "source_unchanged": true,
+    "points": 1703,
+    "duration_sec": 34.022849689,
+    "original": {
+      "rejected": true,
+      "error": {
+        "type": "ValueError",
+        "message": "Schedule sampling budget exceeded"
+      },
+      "cause_type": null,
+      "diagnostic": null
+    },
+    "current_eager": {
+      "rejected": true,
+      "error": {
+        "type": "ScheduleSamplingBudgetExceeded",
+        "message": "Schedule sampling budget exceeded"
+      },
+      "cause_type": null,
+      "diagnostic": {
+        "required_samples": 5105,
+        "maximum_samples": 5000,
+        "duration_sec": 34.022849689,
+        "sample_dt_sec": 0.01,
+        "uniform_samples": 3404,
+        "trajectory_knots": 1703
+      }
+    },
+    "current_lazy": {
+      "rejected": true,
+      "error": {
+        "type": "ScheduleSamplingBudgetExceeded",
+        "message": "Schedule sampling budget exceeded"
+      },
+      "cause_type": null,
+      "diagnostic": {
+        "required_samples": 5105,
+        "maximum_samples": 5000,
+        "duration_sec": 34.022849689,
+        "sample_dt_sec": 0.01,
+        "uniform_samples": 3404,
+        "trajectory_knots": 1703
+      }
+    },
+    "production_cached_anchor": {
+      "rejected": true,
+      "error": {
+        "type": "MotionPathRejected",
+        "message": "Cached schedule cannot be sampled: Schedule sampling budget exceeded"
+      },
+      "cause_type": "ScheduleSamplingBudgetExceeded",
+      "diagnostic": null
+    },
+    "selector": {
+      "exception": {
+        "type": "PlanCandidatesExhausted",
+        "message": "No plan satisfies native clearance and MoveIt within 1 candidates; no candidate dispatched"
+      },
+      "status": "exhausted",
+      "selected_attempt": null,
+      "counts": {
+        "proposals": 1,
+        "native_queries": 0,
+        "moveit_checks": 0
+      },
+      "candidate": {
+        "attempt": 1,
+        "accepted": false,
+        "status": "rejected",
+        "stage": "native",
+        "elapsed_wall_sec": 0.006860194960609078,
+        "moveit_error_code": 1,
+        "native_progress": {
+          "samples": 0,
+          "minimum": null
+        },
+        "sampling_budget": {
+          "required_samples": 5105,
+          "maximum_samples": 5000,
+          "duration_sec": 34.022849689,
+          "sample_dt_sec": 0.01,
+          "uniform_samples": 3404,
+          "trajectory_knots": 1703
+        },
+        "rejection_kind": "sampling_budget",
+        "rejection": "Schedule sampling budget exceeded"
+      }
+    },
+    "source_files_sha256": {
+      "src/mujoco_ros2_manipulation/workcells/path_quality.py": "b7917291a0a7d2c71b2011ff2e0c6b648698af7e1f9d238753a4bf5013d620cc",
+      "src/mujoco_ros2_manipulation/workcells/plan_selection.py": "9346b89f2de50701d5a260584c4a1c4929ac97d9367817784116460fbd65bf72",
+      "src/mujoco_ros2_manipulation/operator_console/verify_views.py": "d69147610fe6a5d4d73ecd8ba4c332036a43a4c936defe7a86a682ebb3c991ed",
+      "tests/unit/test_path_quality.py": "e4987bb4b4127f56490df7bd01cdf91ba35657e570b59de0ec05725f59e323ca",
+      "tests/unit/test_plan_selection.py": "c253129e8b4e1086dd3d5c551f1b7730dd02de930a254119fb6b8e47e68be41e",
+      "tests/unit/test_motion_cache_server.py": "c9105c5046b788eb66991600804f452ece6887785fa935f19c934199c292e412",
+      "tests/unit/test_verify_views.py": "05b201da179282947f47a943d4b5dc3bf845da85fa9aea31d1ccedd125432644"
+    },
+    "files_sha256": {
+      "candidate.json": "1ebd08dc56a3d3b5c6cf468a0cdfc6984610a828764d380064a740cf5ab2e205",
+      "original_path_quality.py": "ceac6717b07e22522eee61b28b7be070b1c328e85dbb5556c9297c01271758fb"
+    }
+  },
+  "checks": {
+    "unit": 1144,
+    "model": 43,
+    "javascript_suites": 12,
+    "probe_acceptance_contracts": 14,
+    "clock_signal_cases": 5,
+    "actual_pending_activation_pairs": 1,
+    "actual_active_jtc": 1,
+    "actual_cpu_demo_runs": 5,
+    "report_publication_files": 119
+  },
+  "packaging": {
+    "evidence_path": "/tmp/mujoco-native-activation-package-20261028-final-c/verification.json",
+    "evidence_sha256": "b84234f6452376ed2385f33feefa7b59abd4e6ad392fe59adf13c4222cbeef08",
+    "passed": true,
+    "wheel_sha256": "28b0dd6df7f34509aecf191de628afcefc0a901529cfede1eee23147543706f4"
+  }
+}

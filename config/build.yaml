@@ -46,6 +46,7 @@ runtime:
   contact_stop_patch: patches/mujoco_ros2_control-contact-stop.patch
   monitor_patch: patches/mujoco_ros2_control-step-monitor.patch
   control_loop_shutdown_patch: patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch
+  activation_shutdown_patch: patches/mujoco_ros2_control-0.1.2-activation-shutdown.patch
   debs:
   - package: libglfw3-dev
     version: 3.3.6-1

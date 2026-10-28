@@ -6,12 +6,15 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <cstddef>
 #include <thread>
+#include <stdexcept>
 #include <utility>
 
 namespace manipulation::control_loop_shutdown
 {
 
+// This is a shutdown request, not proof that executor callbacks are quiescent.
 // The signal handler only sets this flag. It must never run a ROS callback, take a
 // mutex, log, or wait for the control thread. Static initialization also avoids
 // initialization of a function-local object from within a signal handler.
@@ -31,6 +34,21 @@ inline StopRequest process_stop;
 inline constexpr auto poll_interval = std::chrono::milliseconds(1);
 
 enum class ClockWaitResult { ready, stopped, backwards, clock_error };
+
+// Service groups may appear after robot_description arrives. Absence is not
+// callback completion: the RT owner must still wait for executor spin_finished.
+enum class ManagementGroupState { not_ready, ready };
+inline ManagementGroupState management_group_state(std::size_t matching_services, bool mutually_exclusive)
+{
+  if (matching_services == 0) { return ManagementGroupState::not_ready; }
+  if (matching_services != 1) {
+    throw std::runtime_error("Expected exactly one switch_controller service instance");
+  }
+  if (!mutually_exclusive) {
+    throw std::runtime_error("switch_controller requires a MutuallyExclusive callback group");
+  }
+  return ManagementGroupState::ready;
+}
 
 // now_ns returns signed nanoseconds; pause accepts a nanoseconds duration. The
 // injected operations make missing/paused/backwards clocks testable without ROS.
@@ -94,6 +112,42 @@ bool run_control_cycle(ShouldStop && should_stop, Read && read, Update && update
   if (should_stop()) { return false; }
   write();
   return true;
+}
+
+// cancel() stops future dispatch but cannot interrupt a callback already inside
+// ControllerManager. Such a callback can need another RT list acknowledgement.
+// Keep the owner alive until spin has joined every executor worker. Only an
+// observed in-flight management callback permits housekeeping read/update; this
+// helper has no write operation. No ROS time is invented while the clock is
+// paused. All waits use bounded wall slices, including the active cycle period.
+template<class Finished, class Cancelled, class Busy, class Read, class Update, class Pause>
+std::uint64_t drain_until_executor_finished(
+  Finished && finished, Cancelled && cancellation_observed, Busy && callback_busy,
+  Read && read, Update && update, Pause && pause, std::chrono::nanoseconds cycle_period)
+{
+  if (cycle_period <= std::chrono::nanoseconds::zero()) {
+    throw std::invalid_argument("shutdown drain requires a positive wall period");
+  }
+  const auto wall_slice = std::chrono::duration_cast<std::chrono::nanoseconds>(poll_interval);
+  std::uint64_t cycles = 0;
+  while (!finished()) {
+    if (!cancellation_observed() || !callback_busy()) {
+      pause(wall_slice);
+      continue;
+    }
+    if (finished()) { break; }
+    read();
+    if (finished()) { break; }
+    update();
+    ++cycles;
+    auto remaining = cycle_period;
+    while (remaining > std::chrono::nanoseconds::zero() && !finished()) {
+      const auto interval = remaining < wall_slice ? remaining : wall_slice;
+      pause(interval);
+      remaining -= interval;
+    }
+  }
+  return cycles;
 }
 
 // Context::shutdown runs ControllerManager pre-shutdown callbacks synchronously.
