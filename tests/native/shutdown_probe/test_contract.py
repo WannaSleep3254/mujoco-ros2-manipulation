@@ -14,6 +14,63 @@ spec.loader.exec_module(probe)
 
 
 class ProbeContracts(unittest.TestCase):
+    def startup_log(self):
+        return "\n".join(
+            f"[INFO] [spawner-{number}]: process started with pid [{100+number}]\n"
+            f"[spawner-{number}] [INFO] [spawner_{name}]: Configured and activated {name}\n"
+            f"[INFO] [spawner-{number}]: process has finished cleanly [pid {100+number}]"
+            for number,name in enumerate(("joint_state_broadcaster","left_controller","right_controller"),3))
+
+    def test_ready_requires_broadcaster_and_both_arm_spawners_completed(self):
+        names=["joint_state_broadcaster","left_controller","right_controller"]
+        text=self.startup_log()
+        self.assertEqual(set(probe.startup_readiness(text,names)),set(names))
+        for removed in (
+            "[spawner-3] [INFO] [spawner_joint_state_broadcaster]: Configured and activated joint_state_broadcaster",
+            "[INFO] [spawner-3]: process has finished cleanly [pid 103]",
+            "[INFO] [spawner-4]: process has finished cleanly [pid 104]"):
+            with self.subTest(removed=removed):
+                self.assertIsNone(probe.startup_readiness(text.replace(removed,"pending"),names))
+
+    def test_readiness_rejects_unrelated_or_wrong_pid_spawner_completion(self):
+        text=self.startup_log();names=["joint_state_broadcaster","left_controller","right_controller"]
+        for changed in (text.replace("cleanly [pid 103]","cleanly [pid 999]"),
+                        text.replace("[INFO] [spawner-3]: process has finished", "[INFO] [spawner-9]: process has finished"),
+                        text.replace("[spawner-3] [INFO] [spawner_joint_state_broadcaster]", "[spawner-9] [INFO] [spawner_joint_state_broadcaster]")):
+            with self.subTest(text=changed):
+                self.assertIsNone(probe.startup_readiness(changed,names))
+
+    def test_final_failure_keeps_original_timeout_late_sigkill_and_bound_events(self):
+        record=self.bound_record();record.update(expected="fixed",status="failed",error=dict(type="TimeoutExpired",message="original wait25"),cleanup=dict(forced=False))
+        original=deepcopy(record["error"])
+        log="[ERROR] [ros2_control_node-1]: failed to terminate, escalating to 'SIGKILL'\n[ERROR] [ros2_control_node-1]: process has died [pid 123, exit code -9, cmd 'owned']"
+        probe.final_observations(record,log,record["probe_events"],"held")
+        self.assertEqual(record["error"],original)
+        self.assertEqual(record["native_failures"][0]["exit_code"],-9)
+        self.assertTrue(record["cleanup"]["launch_internal_escalation"])
+        self.assertTrue(record["event_binding"]["bound_to_validated_entry"])
+        self.assertFalse(record["native_clean_exit_observed"])
+        self.assertEqual(record["status"],"failed")
+
+    def test_clean_acceptance_fails_on_late_binding_or_ordering_rejection(self):
+        for kind in ("event_binding_error","ordering_error"):
+            record=dict(status="passed",error=None,event_binding=dict(bound_to_validated_entry=True),
+                ordering=dict(ordering_assertions_passed=True))
+            record[kind]=dict(type="AssertionError",message="late final rejection")
+            probe.enforce_clean_final_proof(record)
+            with self.subTest(kind=kind):
+                self.assertEqual(record["status"],"failed")
+                self.assertEqual(record["error"]["type"],"FinalProofRejected")
+                self.assertIn(kind,record["post_cleanup_proof_errors"])
+
+    def test_clean_final_proof_keeps_original_failure_and_rejects_absent_proof(self):
+        original=dict(type="TimeoutExpired",message="first failure")
+        record=dict(status="passed",error=deepcopy(original),event_binding_error=dict(message="foreign final event"))
+        probe.enforce_clean_final_proof(record)
+        self.assertEqual(record["status"],"failed")
+        self.assertEqual(record["error"],original)
+        self.assertIn("ordering",record["post_cleanup_proof_errors"])
+
     def events(self, returned=True):
         names = ["entered", "released"] + (["returned"] if returned else [])
         return [dict(event=name, run_id="a" * 32, pid=123, tid=124, monotonic_ns=index + 1)

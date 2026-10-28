@@ -45,7 +45,7 @@ class RuntimePatchTests(unittest.TestCase):
         self.assertEqual(self.file.read_text(), "user edit\n")
         self.assertEqual(unrelated.read_text(), "keep")
 
-    def test_new_fifth_patch_accepts_all_old_prefixes_without_rewriting_user_edits(self):
+    def test_sixth_patch_accepts_published_old_fifth_and_all_exact_prefixes(self):
         patches=list(self.patches)
         for index,(before,after) in enumerate((("final","third"),("third","fourth")),2):
             path=self.root/f"{index}.patch"
@@ -54,17 +54,22 @@ class RuntimePatchTests(unittest.TestCase):
         final=self.root/'4.patch'
         final.write_text('--- /dev/null\n+++ b/node.cpp\n@@ -0,0 +1 @@\n+ordered shutdown\n')
         patches.append(final)
+        activation=self.root/'5.patch'
+        activation.write_text('--- a/node.cpp\n+++ b/node.cpp\n@@ -1 +1 @@\n-ordered shutdown\n+ordered shutdown with activation drain\n')
+        patches.append(activation)
         node=self.source/'node.cpp'
         def apply(selected):
             with redirect_stdout(io.StringIO()):
                 apply_patch_series(self.source,selected)
-        for count in range(6):
+        for count in range(7):
             with self.subTest(already_applied=count):
                 self.file.write_text('base\n');node.unlink(missing_ok=True)
                 apply(patches[:count])
+                if count==5:
+                    self.assertEqual(node.read_text(),'ordered shutdown\n')
                 apply(patches)
                 self.assertEqual(self.file.read_text(),'fourth\n')
-                self.assertEqual(node.read_text(),'ordered shutdown\n')
+                self.assertEqual(node.read_text(),'ordered shutdown with activation drain\n')
                 before=(self.file.read_bytes(),node.read_bytes())
                 apply(patches)
                 self.assertEqual((self.file.read_bytes(),node.read_bytes()),before)

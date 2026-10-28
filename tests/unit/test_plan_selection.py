@@ -12,6 +12,10 @@ from mujoco_ros2_manipulation.workcells.plan_selection import (
     invalid_trajectory_diagnostic,
     select_clearance_plan,
 )
+from mujoco_ros2_manipulation.workcells.interference import Spline
+from mujoco_ros2_manipulation.workcells.path_quality import (
+    ScheduleSamplingBudgetExceeded, sample_schedule,
+)
 
 
 def trajectory(positions):
@@ -27,6 +31,16 @@ def trajectory(positions):
             for t, p in enumerate(positions)
         ],
     )
+
+
+def oversized_schedule():
+    """Same 1,703-knot timing layout as the retained main-CI candidate."""
+    stamps = [index * 20_000_000 for index in range(1702)] + [34_022_849_689]
+    return NS(joint_names=["l", "r"], points=[
+        NS(positions=[stamp / stamps[-1]] * 2, velocities=[], accelerations=[],
+           time_from_start=NS(sec=stamp // 1_000_000_000, nanosec=stamp % 1_000_000_000))
+        for stamp in stamps
+    ])
 
 
 class SelectionTests(unittest.TestCase):
@@ -473,3 +487,88 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(candidate["rejection_kind"], "invalid_trajectory")
         self.assertEqual(candidate["trajectory_diagnostic_error"]["type"], "OSError")
         self.assertNotIn("error", candidate)
+
+    def test_oversized_schedule_is_rejected_before_native_then_next_candidate_is_fully_checked(self):
+        oversized = oversized_schedule()
+        propose = Mock(side_effect=[(1, oversized), (1, self.safe)])
+        distance = Mock(wraps=self.evaluator.at)
+        self.evaluator = NS(at=distance)
+        moveit = Mock(return_value=dict(invalid_samples=0))
+        saved, diagnostics = [], {}
+        selected = self.select(propose, moveit=moveit, max_candidates=2, diagnostics=diagnostics,
+                               save=lambda candidates: saved.append(deepcopy(candidates)))
+        self.assertIs(selected, self.safe)
+        first, second = saved[-1]
+        self.assertEqual(first["rejection_kind"], "sampling_budget")
+        self.assertEqual(first["status"], "rejected")
+        self.assertEqual(first["sampling_budget"]["required_samples"], 5105)
+        self.assertEqual(first["sampling_budget"]["maximum_samples"], 5000)
+        self.assertEqual(first["native_progress"], dict(samples=0, minimum=None))
+        self.assertNotIn("native", first)
+        self.assertNotIn("moveit", first)
+        self.assertEqual(len(first["curve"]["points"]), 1703)
+        expected = len(list(sample_schedule([Spline.from_ros(self.safe)], self.initial, .01)))
+        self.assertEqual(distance.call_count, expected)
+        self.assertEqual(second["native"]["samples"], expected)
+        self.assertTrue(second["native"]["complete"])
+        self.assertGreaterEqual(second["native"]["minimum"]["distance_m"], .03)
+        self.assertTrue(second["accepted"])
+        moveit.assert_called_once()
+        self.assertEqual(diagnostics["selected_attempt"], 2)
+
+    def test_all_oversized_candidates_exhaust_without_any_native_query_or_moveit_check(self):
+        propose = Mock(return_value=(1, oversized_schedule()))
+        distance, moveit = Mock(), Mock()
+        self.evaluator = NS(at=distance)
+        saved, diagnostics = [], {}
+        with self.assertRaises(PlanCandidatesExhausted):
+            self.select(propose, moveit=moveit, max_candidates=2, diagnostics=diagnostics,
+                        save=lambda candidates: saved.append(deepcopy(candidates)))
+        self.assertEqual(propose.call_count, 2)
+        self.assertEqual([row["rejection_kind"] for row in saved[-1]], ["sampling_budget"] * 2)
+        self.assertEqual(diagnostics["status"], "exhausted")
+        self.assertIsNone(diagnostics["selected_attempt"])
+        distance.assert_not_called()
+        moveit.assert_not_called()
+
+    def test_cancel_or_wall_budget_after_capacity_rejection_prevents_another_proposal(self):
+        from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudgetExceeded
+        class Cancelled(RuntimeError):
+            pass
+        for error in (Cancelled("cancel after rejected schedule"), PlanningBudgetExceeded("wall budget exhausted")):
+            with self.subTest(error=type(error).__name__):
+                diagnostics, saved = {}, []
+                propose = Mock(side_effect=[(1, oversized_schedule()), (1, self.safe)])
+                def checkpoint():
+                    if diagnostics.get("candidates", [{}])[-1].get("rejection_kind") == "sampling_budget":
+                        raise error
+                with self.assertRaises(type(error)) as caught:
+                    self.select(propose, max_candidates=2, diagnostics=diagnostics, checkpoint=checkpoint,
+                                save=lambda candidates: saved.append(deepcopy(candidates)))
+                self.assertIs(caught.exception, error)
+                propose.assert_called_once()
+                self.assertEqual(diagnostics["status"], "interrupted")
+                self.assertFalse(saved[-1][0]["accepted"])
+
+    def test_capacity_exception_from_native_evaluator_is_not_a_sampling_preflight_rejection(self):
+        error = ScheduleSamplingBudgetExceeded(required_samples=5105, duration_sec=34.022849689,
+            sample_dt_sec=.01, uniform_samples=3404, trajectory_knots=1703)
+        self.evaluator = NS(at=Mock(side_effect=error))
+        propose = Mock(side_effect=[(1, self.safe), (1, self.safe)])
+        diagnostics = {}
+        with self.assertRaises(ScheduleSamplingBudgetExceeded) as caught:
+            self.select(propose, max_candidates=2, diagnostics=diagnostics)
+        self.assertIs(caught.exception, error)
+        propose.assert_called_once()
+        self.assertEqual(diagnostics["status"], "failed")
+        self.assertNotIn("rejection_kind", diagnostics["candidates"][0])
+
+    def test_bad_sampling_configuration_remains_an_ordinary_nonretryable_value_error(self):
+        self.policy["sample_dt_sec"] = .001
+        propose = Mock(side_effect=[(1, self.safe), (1, self.safe)])
+        diagnostics = {}
+        with self.assertRaisesRegex(ValueError, "Schedule must cover"):
+            self.select(propose, max_candidates=2, diagnostics=diagnostics)
+        propose.assert_called_once()
+        self.assertEqual(diagnostics["status"], "failed")
+        self.assertNotIn("rejection_kind", diagnostics["candidates"][0])

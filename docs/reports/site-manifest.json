@@ -217,7 +217,7 @@
     },
     "operator-demos.json": {
       "bytes": 4663,
-      "sha256": "9482dbff26193804ac403e8cdc0514df190c6112af5a9161444d434cd3e06440"
+      "sha256": "3c257feb38a2db5f48b2de2e960873b500546ca48a063b5e284e891999e845c9"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -368,12 +368,12 @@
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 63780,
-      "sha256": "6b4aaa9081af9bf2e5200417fe3cfcd5d0ac5c353c0b8e4b91880ec41ff64489"
+      "bytes": 64167,
+      "sha256": "bcc340236706e181a5ad0cbe68bfdbcfabe66254d4c2aa59b076baceab5c313d"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 703,
-      "sha256": "ea84d874792e130b223818222733a11e3c33865d0578c1e5812f2e890e45a954"
+      "bytes": 885,
+      "sha256": "eeca1332159e3d0bd5cc5a35c893c410fff985afe09f89b4cbd7496700c0dd37"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
       "bytes": 25904,

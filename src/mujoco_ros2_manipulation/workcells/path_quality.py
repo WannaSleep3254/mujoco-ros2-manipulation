@@ -4,7 +4,37 @@ from mujoco_ros2_manipulation.workcells.interference import finite
 from mujoco_ros2_manipulation.workcells.environment_clearance import require_environment_result
 
 
+MAX_SCHEDULE_SAMPLES = 5000
+
+
+class ScheduleSamplingBudgetExceeded(ValueError):
+    """A candidate needs more samples than the unchanged validation capacity.
+
+    This is a deterministic schedule-size rejection, separate from a request's
+    wall-time budget or an error returned by a native evaluator.
+    """
+
+    def __init__(self, *, required_samples, duration_sec, sample_dt_sec,
+                 uniform_samples, trajectory_knots):
+        self.diagnostic = dict(
+            required_samples=required_samples, maximum_samples=MAX_SCHEDULE_SAMPLES,
+            duration_sec=duration_sec, sample_dt_sec=sample_dt_sec,
+            uniform_samples=uniform_samples, trajectory_knots=trajectory_knots,
+        )
+        super().__init__("Schedule sampling budget exceeded")
+
+
 def sample_schedule(curves, initial, dt=0.01):
+    """Preserve the existing lazy iterator, including validation exceptions."""
+    yield from prepare_sample_schedule(curves, initial, dt)
+
+
+def prepare_sample_schedule(curves, initial, dt=0.01):
+    """Validate schedule capacity eagerly, then interpolate states lazily.
+
+    Keeping these boundaries separate lets a planner reject only an oversized
+    candidate without swallowing errors raised later by a native evaluator.
+    """
     names = [n for c in curves for n in c.names]
     if (
         not finite(initial.values())
@@ -22,12 +52,18 @@ def sample_schedule(curves, initial, dt=0.01):
             raise ValueError("Schedule start differs from initial state")
     duration = max(c.duration for c in curves)
     count = math.ceil(duration / dt)
-    times = sorted(
-        {duration * k / count for k in range(count + 1)}
-        | {t for c in curves for t in c.times}
-    )
-    if len(times) > 5000:
-        raise ValueError("Schedule sampling budget exceeded")
+    uniform = {duration * k / count for k in range(count + 1)}
+    knots = {t for c in curves for t in c.times}
+    times = sorted(uniform | knots)
+    if len(times) > MAX_SCHEDULE_SAMPLES:
+        raise ScheduleSamplingBudgetExceeded(
+            required_samples=len(times), duration_sec=duration, sample_dt_sec=dt,
+            uniform_samples=len(uniform), trajectory_knots=len(knots),
+        )
+    return _sample_states(curves, initial, times)
+
+
+def _sample_states(curves, initial, times):
     previous = None
     for t in times:
         state = {}

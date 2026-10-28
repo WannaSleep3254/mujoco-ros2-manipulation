@@ -5,6 +5,7 @@ goals and never targets a pre-existing process. Do not use it with real robots.
 An old unsafe overlap is preserved as expected failure evidence, not a safe run.
 """
 import argparse
+from copy import deepcopy
 import hashlib
 import json
 import os
@@ -77,6 +78,79 @@ def entered_record(path):
     except json.JSONDecodeError:
         # A single regular-file write can become visible before fsync completes.
         return None
+
+
+def startup_readiness(log, controllers, *, inactive=()):
+    """Bind each completed spawner to its controller and its exact clean PID."""
+    active, inactive = tuple(controllers), tuple(inactive)
+    names = active + inactive
+    require(names and len(set(names)) == len(names)
+        and all(type(name) is str and re.fullmatch(r"[a-z][a-z0-9_]*", name) for name in names),
+        "Expected distinct declared controller names")
+    log = ANSI.sub("", log)
+    result = {}
+    for name in names:
+        marker = "Configured and activated " if name in active else "Loaded "
+        pattern = r"^\[(spawner-\d+)\].*\[spawner_" + re.escape(name) + r"\]: " + marker + re.escape(name) + r"\s*$"
+        processes = set(re.findall(pattern, log, re.MULTILINE))
+        if len(processes) != 1:
+            return None
+        process = next(iter(processes))
+        started = set(re.findall(r"^\[INFO\] \[" + re.escape(process) + r"\]: process started with pid \[(\d+)\]\s*$", log, re.MULTILINE))
+        finished = set(re.findall(r"^\[INFO\] \[" + re.escape(process) + r"\]: process has finished cleanly \[pid (\d+)\]\s*$", log, re.MULTILINE))
+        if len(started) != 1 or started != finished:
+            return None
+        pid = int(next(iter(started)))
+        if pid <= 1:
+            return None
+        result[name] = dict(spawner=process, pid=pid, clean_exit=True,
+                            expected_state="active" if name in active else "inactive")
+    if len({item["spawner"] for item in result.values()}) != len(names):
+        return None
+    return result
+
+
+def final_observations(record, final_log, events=None, held_log=None):
+    """Keep late child failures and gate evidence without replacing first error."""
+    from mujoco_ros2_manipulation.verification.process_faults import process_failures
+    failures = process_failures(final_log)
+    record["all_process_failures"] = failures
+    pid = record.get("native_pid")
+    record["native_failures"] = [item for item in failures if item["pid"] == pid]
+    record["native_clean_exit_observed"] = bool(pid and f"process has finished cleanly [pid {pid}]" in final_log)
+    escalation = [line for line in final_log.splitlines() if any(marker in line for marker in (
+        "escalating to 'SIGTERM'", "escalating to 'SIGKILL'", "sending signal 'SIGKILL'"))]
+    record["launch_internal_escalations"] = escalation[:20]
+    if record.get("cleanup") is not None:
+        record["cleanup"]["launch_internal_escalation"] = bool(escalation)
+        record["cleanup"]["child_failure_observed"] = bool(failures)
+    if events is not None:
+        record["probe_events"] = deepcopy(events)
+        try:
+            record["event_binding"] = validate_bound_events(record)
+        except (AssertionError, KeyError, TypeError, ValueError) as error:
+            record["event_binding_error"] = dict(type=type(error).__name__, message=str(error))
+        if held_log is not None:
+            try:
+                record["ordering"] = ordering(held_log, final_log, events, record["expected"])
+            except (AssertionError, KeyError, TypeError, ValueError) as error:
+                record["ordering_error"] = dict(type=type(error).__name__, message=str(error))
+    return record
+
+
+def enforce_clean_final_proof(record):
+    """A late proof rejection cannot leave a clean candidate marked passed."""
+    problems = {key: record[key] for key in ("event_binding_error", "ordering_error") if record.get(key)}
+    if (record.get("event_binding") or {}).get("bound_to_validated_entry") is not True:
+        problems["event_binding"] = "No final bound event proof"
+    if (record.get("ordering") or {}).get("ordering_assertions_passed") is not True:
+        problems["ordering"] = "No final accepted shutdown ordering"
+    if problems:
+        record["status"] = "failed"
+        record["post_cleanup_proof_errors"] = problems
+        if not record.get("error"):
+            record["error"] = dict(type="FinalProofRejected", message="Final event binding or shutdown ordering was rejected")
+    return record
 
 
 def validate_owner(entry, *, run_id, launch_pid, native, expected_sha, shim, jtc, simulation=None):
@@ -193,6 +267,8 @@ def verify(args):
     run_id = uuid.uuid4().hex
     record = dict(schema_version=1, status="running", expected=args.expect, run_id=run_id, domain=args.domain,
         scope="Test-only installed JTC update/SIGINT ordering on owned MuJoCo simulation; no goal dispatch",
+        actual_write_calls_measured=False,
+        post_signal_write0_evidence="Native helper API/source and pure regression; this actual fixture does not count write calls",
         automatic_retry=False, native_root_cause_closed=False, old_w01_stall_resolved=False,
         native_path=str(native), native_sha256=sha(native), simulation_library_path=str(simulation),
         simulation_library_sha256=sha(simulation), probe_sha256=sha(shim), jtc_sha256=sha(jtc),
@@ -218,9 +294,11 @@ def verify(args):
                 stderr=subprocess.STDOUT, start_new_session=True)
         record["launch_pid"] = process.pid
         atomic_json(receipt, record)
-        controllers = [item.controller for item in cell.instances]
-        wait_for(lambda: all("Configured and activated " + name in read_log(log_path) for name in controllers),
-                 60., "both original arm controllers active", process)
+        controllers = ["joint_state_broadcaster"] + [item.controller for item in cell.instances]
+        record["startup_readiness"] = wait_for(
+            lambda: startup_readiness(read_log(log_path), controllers),
+            60., "all original controllers active and every owned spawner exited cleanly", process)
+        atomic_json(receipt, record)
         gate(gates / "arm", run_id)
         entry = wait_for(lambda: entered_record(gates / "entered.json"), 5., "actual held JTC update", process)
         native_pid = validate_owner(entry, run_id=run_id, launch_pid=process.pid, native=native,
@@ -285,6 +363,25 @@ def verify(args):
             except BaseException as error:
                 record["cleanup_error"] = dict(type=type(error).__name__, message=str(error))
                 record["status"] = "failed"
+        # process.wait can fail before the normal acceptance path. Preserve
+        # events and the launch's own SIGTERM/SIGKILL escalation after cleanup,
+        # even when stop_process itself did not need to escalate its parent.
+        try:
+            events_path = gates / "events.jsonl"
+            events = ([json.loads(line) for line in events_path.read_text().splitlines()]
+                      if events_path.exists() else None)
+            held_path = output / "held-before-release.log"
+            final_observations(record, read_log(log_path), events,
+                read_log(held_path) if held_path.exists() else None)
+            if args.expect == "fixed":
+                enforce_clean_final_proof(record)
+            if record["launch_internal_escalations"]:
+                record["status"] = "failed"
+            if args.expect == "fixed" and record["all_process_failures"]:
+                record["status"] = "failed"
+        except BaseException as error:
+            record["final_observation_error"] = dict(type=type(error).__name__, message=str(error))
+            record["status"] = "failed"
         record["source_sha256"] = {str(path.relative_to(ROOT)): sha(path) for path in (
             Path(__file__).resolve(), ROOT / "tests/native/shutdown_probe/update_probe.cpp",
             ROOT / "tests/native/shutdown_probe/probe.launch.py")}
