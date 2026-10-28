@@ -14,6 +14,18 @@ python3 verify_robot.py --robot fr5 --scene pedestal --domain 97
 GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 잠긴 deb의 배포 중단 등으로
 빌드 준비가 실패할 수도 있으며, 이 경우 ROS 검증 성공으로 보고하지 않습니다.
 
+## FR3 이동 중 취소와 신선한 정지 관측
+
+```bash
+source ./manipulation_env.sh
+python3 verify_robot_cancel.py --robot fr3 --domain 162 --output runtime/validation/fr3-cancel-new
+```
+
+출력은 새 runtime 폴더여야 하며 명시한 도메인을 사용 중이면 거부합니다.
+기존 direct·MoveIt·TF·시계 검사 뒤 실제 이동 중 자체 목표만 취소하고, 취소 응답·Action CANCELED·
+전진하는 신선한 관절/시계의 정지 구간·새 홈 Action 성공과 정착·native/정리를 각각 확인합니다.
+[FR3 문서](../../docs/fr3-model.md)에 실험 프로필과 판정 한계를 기록했습니다.
+
 ## TCP Pose 목표
 
 ```bash

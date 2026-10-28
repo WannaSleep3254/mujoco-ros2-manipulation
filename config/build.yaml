@@ -21,6 +21,9 @@ packages:
   fairino_description:
     repository: fairino
     path: fairino_description
+  fairino3_v6_moveit2_config:
+    repository: fairino
+    path: fairino3_v6_moveit2_config
   fairino5_v6_moveit2_config:
     repository: fairino
     path: fairino5_v6_moveit2_config

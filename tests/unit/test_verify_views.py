@@ -23,6 +23,24 @@ def fixture(mode='live'):
 
 
 class VerifyViewsTests(unittest.TestCase):
+    def test_fr3_preview_cannot_change_the_execution_context_or_acquire_live_authority(self):
+        binding=make_binding('a'*32,2,'profile:fr3','model_preview')
+        state=dict(execution_target=None,can_submit=False,can_plan=False,can_pose_plan=False,
+            view=dict(mode='model_preview',preview_active=True,binding=binding,
+                      config_source_id='workcell:fr5_ur5e'))
+        options=dict(source_id='profile:fr3',base_id='workcell:fr5_ur5e',expected_execution_target=None)
+        self.assertIs(verify_views.checked_model_preview_context(state,**options),state)
+        for change in ('base','target','motion','request','command','joint_plan','pose_plan'):
+            with self.subTest(change=change):
+                candidate=deepcopy(state)
+                if change=='base':candidate['view']['config_source_id']='profile:fr3'
+                elif change=='target':candidate['execution_target']=dict(id='fr3')
+                elif change=='motion':candidate['view']['binding']['motion_session_id']='b'*32
+                elif change=='request':candidate['view']['binding']['request_id']='c'*32
+                else:candidate[{'command':'can_submit','joint_plan':'can_plan','pose_plan':'can_pose_plan'}[change]]=True
+                with self.assertRaises(RuntimeError):
+                    verify_views.checked_model_preview_context(candidate,**options)
+
     def test_exact_compiled_identity_binding_and_whole_catalog(self):
         binding,value,manifest=fixture()
         self.assertEqual(verify_views.checked_pose(value,manifest,binding,live=True),value)

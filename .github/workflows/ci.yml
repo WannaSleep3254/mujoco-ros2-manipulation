@@ -108,10 +108,16 @@ jobs:
           if [[ '${{ matrix.robot }}' == 'workcell' ]]; then
             python3 build_workspace.py --download-debs --workcell '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
             PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
-            python3 build_workspace.py --component models --robots fr10
+            python3 build_workspace.py --component models --robots fr10 fr3
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi
+      - name: FR3 direct, MoveIt, moving cancel and fresh stop observation
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_robot_cancel.py --robot fr3 --domain 162 \
+            --output runtime/validation/fr3-cancel-ci
       - name: Model regression checks
         if: matrix.scene == 'default' || matrix.robot == 'workcell'
         run: PYTHONPATH=src .venv/bin/python -m unittest discover -s tests/model -t . -v
