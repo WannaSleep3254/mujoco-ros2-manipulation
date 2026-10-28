@@ -34,6 +34,7 @@ from .demo_jobs import matching_process, process_identity
 from .scene_host import SceneSource, _manifest
 from .view_binding import binding_id, envelope
 from .view_plan import SavedPlan
+from .console_views import READ_ONLY_PROFILE_IDS
 
 
 MAX_JSON = 8*1024*1024
@@ -202,6 +203,22 @@ def ready_view_state(state, source_id, mode, *, live=False):
         motion = (state.get('server') or {}).get('session_id')
         ready = ready and motion is not None and binding.get('motion_session_id') == motion and view.get('pose_ready') is True
     return state if ready else None
+
+
+def checked_model_preview_context(state, *, source_id, base_id, expected_execution_target):
+    """A display profile has no execution/run authority, even if its assets exist."""
+    view = state['view']; binding = view.get('binding') or {}
+    require(source_id in {'profile:'+name for name in READ_ONLY_PROFILE_IDS}
+            and view.get('mode') == 'model_preview' and view.get('preview_active') is True
+            and binding.get('source_id') == source_id and binding.get('mode') == 'model_preview',
+            'Selected display profile did not remain a model preview')
+    require(view.get('config_source_id') == base_id
+            and state.get('execution_target') == expected_execution_target,
+            'Display selection changed the execution workcell/environment')
+    require(all(binding.get(key) is None for key in ('motion_session_id','job_id','run_id','request_id'))
+            and all(state.get(key) is False for key in ('can_submit','can_plan','can_pose_plan')),
+            'Model preview acquired command/plan authority or a live motion binding')
+    return state
 
 
 def main():
@@ -512,7 +529,7 @@ def main():
         cell=load_workcell();metadata=check_workcell(cell);contract=describe_workcell(cell,metadata)
         base='workcell:'+cell.id
         models[base]=SceneSource(base,cell.label,cell.output/'cell.xml',tuple(cell.joints),dict(zip(cell.joints,cell.home)),lambda:check_workcell(cell))
-        for name in ('fr5','fr10','ur5e'):
+        for name in READ_ONLY_PROFILE_IDS:
             profile=load_profile(name);check_generated_model(profile)
             models['profile:'+name]=SceneSource('profile:'+name,profile.label,profile.scene_path,tuple(profile.joints),
                 dict(zip(profile.joints,profile.home)),lambda profile=profile:check_generated_model(profile))
@@ -540,22 +557,31 @@ def main():
         report.update(initial_live_without_ros_checked=True)
 
         report.stage('single_robot_model_previews')
-        for name in ('fr5','fr10','ur5e'):
+        execution_target = deepcopy(initial.get('execution_target'))
+        for name in READ_ONLY_PROFILE_IDS:
             identifier='profile:'+name;api('/api/view/select',dict(mode='model_preview',source_id=identifier))
             selected,manifest,folder=ready_view(identifier,'model_preview')
+            checked_model_preview_context(selected,source_id=identifier,base_id=base,
+                                          expected_execution_target=execution_target)
             pose=pose_for(selected,manifest);input_matches(pose,models[identifier].home)
             atomic_json(folder/'home-pose.json',pose)
             before=api('/api/state');same=before['view']['binding_id'];history=history_ids(before)
             reject('/api/view/select',dict(mode='model_preview',source_id='profile:unknown'),400)
             require(api('/api/state')['view']['binding_id']==same,'Invalid source selection changed the binding')
+            reject('/api/view/select',dict(mode='live',source_id=identifier),400)
+            require(api('/api/bootstrap')['config']==bootstrap['config'],
+                    'Display profile replaced execution robot configuration or command limits')
             for route,body in (('/api/command',command(bootstrap['config']['home_rad'])),
+                ('/api/plan',command(bootstrap['config']['home_rad'])),('/api/pose/plan',{}),
                 ('/api/start',dict(native_gui=False,planning_case='dual_arm_crossing')),('/api/attach',{}),
                 ('/api/demos/start',dict(scenario='contact_comparison',native_gui=False))):
                 reject(route,body,409,preview=True)
             after=api('/api/state');no_image_worker(after)
             require(history_ids(after)==history and not after['lifecycle']['owned'] and not any(after['graph'].values())
                     and after['demo']['current'] is None,'Preview rejection published or started a process')
-        report.update(model_previews_checked=True,preview_admission_checked=True)
+        report.update(model_previews_checked=True,preview_admission_checked=True,
+                      readonly_profile_ids=list(READ_ONLY_PROFILE_IDS),
+                      profile_preview_execution_context_preserved=True)
 
         report.stage('owned_live_simulation_and_cpu_observations')
         api('/api/view/select',dict(mode='live',source_id=base))

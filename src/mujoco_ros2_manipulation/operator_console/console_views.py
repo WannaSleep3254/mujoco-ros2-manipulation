@@ -16,6 +16,10 @@ from .view_plan import SavedPlan, ReviewPlan
 from .demo_jobs import matching_process
 
 
+# Checked display profiles never alter the configured execution workcell.
+READ_ONLY_PROFILE_IDS = ('fr5', 'fr10', 'ur5e', 'fr3')
+
+
 def _extra_view_sources(values, cell, *, enabled):
     """Freeze trusted startup-only preview entries before starting a worker.
 
@@ -82,7 +86,7 @@ class ConsoleViews:
         self.base = self._cell_source()
         self.registry[self.base.id] = self.base
         self.catalog.append(dict(id=self.base.id,label=app.cell.label,available=True))
-        for identifier in ('fr5','fr10','ur5e'):
+        for identifier in READ_ONLY_PROFILE_IDS:
             name = 'profile:'+identifier
             try:
                 profile = load_profile(identifier,root=app.cell.root)
