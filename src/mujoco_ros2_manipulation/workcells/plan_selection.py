@@ -4,7 +4,9 @@ import math
 import time
 
 from mujoco_ros2_manipulation.workcells.interference import Spline
-from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path
+from mujoco_ros2_manipulation.workcells.path_quality import (
+    ScheduleSamplingBudgetExceeded, evaluate_states, prepare_sample_schedule,
+)
 from mujoco_ros2_manipulation.workcells.environment_clearance import required_environment_distance
 
 MAX_PLAN_CANDIDATES = 12
@@ -196,28 +198,36 @@ def select_clearance_plan(
                         # This prefix evidence has no time coordinate; only the complete
                         # native result below represents the fully assessed path.
                         progress = record["native_progress"] = dict(samples=0, minimum=None)
-                        native = record["native"] = evaluate_path(
-                            [curve], initial, cell, _ObservedEvaluator(evaluator, progress),
-                            dt=policy["sample_dt_sec"], reject_below=threshold, checkpoint=check,
-                            **environment_options,
-                        )
-                        check()
-                        if not native["complete"]:
-                            kind = native.get("rejection_kind", "native_clearance")
-                            reject(kind, "Environment clearance below planning minimum" if kind == "environment_clearance"
-                                   else "Native inter-arm clearance below planning minimum")
+                        try:
+                            states = prepare_sample_schedule([curve], initial, policy["sample_dt_sec"])
+                        except ScheduleSamplingBudgetExceeded as error:
+                            record["sampling_budget"] = deepcopy(error.diagnostic)
+                            reject("sampling_budget", str(error))
+                            check()
                         else:
-                            stage("moveit")
+                            # Only the schedule-capacity check above is retryable.
+                            # Native/transport/budget/cancel errors keep their identity.
+                            native = record["native"] = evaluate_states(
+                                states, cell, _ObservedEvaluator(evaluator, progress),
+                                reject_below=threshold, checkpoint=check, **environment_options,
+                            )
                             check()
-                            result = record["moveit"] = moveit_check(curve)
-                            check()
-                            if result["invalid_samples"] != 0:
-                                reject("moveit_invalid", "MoveIt rejected interpolated schedule")
+                            if not native["complete"]:
+                                kind = native.get("rejection_kind", "native_clearance")
+                                reject(kind, "Environment clearance below planning minimum" if kind == "environment_clearance"
+                                       else "Native inter-arm clearance below planning minimum")
                             else:
-                                stage("selection")
+                                stage("moveit")
                                 check()
-                                record.update(accepted=True, status="selected")
-                                diagnostics.update(status="selected", selected_attempt=attempt)
+                                result = record["moveit"] = moveit_check(curve)
+                                check()
+                                if result["invalid_samples"] != 0:
+                                    reject("moveit_invalid", "MoveIt rejected interpolated schedule")
+                                else:
+                                    stage("selection")
+                                    check()
+                                    record.update(accepted=True, status="selected")
+                                    diagnostics.update(status="selected", selected_attempt=attempt)
             if not record["accepted"] and attempt == max_candidates:
                 diagnostics.update(status="exhausted", stage="complete")
         except BaseException as error:

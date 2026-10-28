@@ -1,0 +1,182 @@
+--- a/mujoco_ros2_control/src/mujoco_ros2_control_node.cpp
++++ b/mujoco_ros2_control/src/mujoco_ros2_control_node.cpp
+@@ -48,6 +48,44 @@
+   shutdown_order::process_stop.request();
+ }
+ 
++// Management services can appear after a robot_description topic initializes
++// the ResourceManager. Cache the unique group only once it is ready; absence
++// remains an explicit not_ready state, never proof that executor workers ended.
++struct ManagementCallbackProbe
++{
++  rclcpp::CallbackGroup::SharedPtr cached_group;
++  std::size_t matching_services{0};
++  bool mutually_exclusive{false};
++  shutdown_order::ManagementGroupState state{shutdown_order::ManagementGroupState::not_ready};
++
++  const char * label() const
++  {
++    return state == shutdown_order::ManagementGroupState::ready ? "ready" : "not_ready";
++  }
++
++  bool observe_busy(const std::shared_ptr<controller_manager::ControllerManager> & cm)
++  {
++    if (!cached_group) {
++      matching_services = 0;
++      rclcpp::CallbackGroup::SharedPtr candidate;
++      const std::string service_name = std::string(cm->get_fully_qualified_name()) + "/switch_controller";
++      cm->for_each_callback_group([&](const rclcpp::CallbackGroup::SharedPtr & group) {
++        group->collect_all_ptrs([](const auto &) {}, [&](const auto & service) {
++          if (service_name == service->get_service_name()) {
++            ++matching_services;
++            candidate = group;
++          }
++        }, [](const auto &) {}, [](const auto &) {}, [](const auto &) {});
++      });
++      mutually_exclusive = candidate && candidate->type() == rclcpp::CallbackGroupType::MutuallyExclusive;
++      state = shutdown_order::management_group_state(matching_services, mutually_exclusive);
++      if (state == shutdown_order::ManagementGroupState::not_ready) { return false; }
++      cached_group = candidate;
++    }
++    return !cached_group->can_be_taken_from().load();
++  }
++};
++
+ bool install_ordered_signal_handlers()
+ {
+   struct sigaction action {};
+@@ -123,11 +161,13 @@
+ 
+   std::atomic<bool> control_failed{false};
+   std::atomic<bool> spin_finished{false};
++  std::atomic<bool> cancellation_observed{false};
+   std::thread cm_thread;
+   std::thread stop_watcher;
+   try {
+     cm_thread = std::thread(
+-    [cm, thread_priority, use_sim_time, manage_overruns, &control_failed]()
++    [cm, thread_priority, use_sim_time, manage_overruns, &control_failed,
++     &spin_finished, &cancellation_observed]()
+     {
+       auto should_stop = []() {
+         return shutdown_order::process_stop.requested() || !rclcpp::ok();
+@@ -145,8 +185,6 @@
+         }
+         return false;
+       };
+-      auto run_loop = [&]() {
+-
+       // portable function that gets now from the cm on humble or later appropriately
+       auto get_cm_now = [](const auto& ctrl_mgr) -> rclcpp::Time {
+ #if HARDWARE_INTERFACE_VERSION_MAJOR < 3
+@@ -155,7 +193,10 @@
+         return ctrl_mgr->get_trigger_clock()->now();
+ #endif
+       };
+-
++      const auto period = std::chrono::nanoseconds(1'000'000'000 / cm->get_update_rate());
++      bool clock_started = false;
++      rclcpp::Time last_valid_time(0, 0, RCL_ROS_TIME);
++      auto run_loop = [&]() {
+       rclcpp::Parameter cpu_affinity_param;
+       if (cm->get_parameter("cpu_affinity", cpu_affinity_param))
+       {
+@@ -205,7 +246,8 @@
+           should_stop, pause_wall, minimum);
+       };
+       if (!clock_wait_ok(wait_clock_until(1), "clock_started")) { return; }
+-      auto const period = std::chrono::nanoseconds(1'000'000'000 / cm->get_update_rate());
++      last_valid_time = get_cm_now(cm);
++      clock_started = last_valid_time.nanoseconds() > 0;
+       const auto clock_start = cm->get_clock()->now();
+       if (!clock_wait_ok(wait_clock_until((clock_start + period).nanoseconds(),
+           clock_start.nanoseconds()), "first_clock_period")) { return; }
+@@ -242,6 +284,7 @@
+         }
+         auto const measured_period = current_time - previous_time;
+         previous_time = current_time;
++        last_valid_time = current_time;
+ 
+         // execute update loop
+         if (!shutdown_order::run_control_cycle(should_stop,
+@@ -291,6 +334,72 @@
+         RCLCPP_ERROR(cm->get_logger(), "Control loop failed with an unknown exception");
+       }
+       shutdown_order::process_stop.request();
++      // A switch/load/configure callback may still hold controllers_lock_ while
++      // awaiting the RT list acknowledgement. Do not run Context pre-shutdown,
++      // or leave this thread, until executor.spin() has joined every callback.
++      // Only that management group's in-flight callback permits wall-driven
++      // housekeeping. Physical command application (write) stays forbidden.
++      const auto drain_started = std::chrono::steady_clock::now();
++      auto next_warning = drain_started + std::chrono::seconds(2);
++      std::uint64_t observed_drain_cycles = 0;
++      bool drain_completed = false;
++      ManagementCallbackProbe management;
++      auto drain_pause = [&](std::chrono::nanoseconds duration) {
++        std::this_thread::sleep_for(duration);
++        const auto now = std::chrono::steady_clock::now();
++        if (now >= next_warning) {
++          const bool management_busy = management.observe_busy(cm);
++          RCLCPP_WARN(cm->get_logger(),
++            "CONTROL_LOOP_SHUTDOWN phase=EXECUTOR_DRAIN_WAIT cycles=%llu elapsed_wall_sec=%.3f "
++            "management_group=%s matching_services=%zu mutually_exclusive=%s "
++            "management_callback_busy=%s write_permitted=false patch_sha256=%s",
++            static_cast<unsigned long long>(observed_drain_cycles),
++            std::chrono::duration<double>(now - drain_started).count(),
++            management.label(), management.matching_services, management.mutually_exclusive ? "true" : "false",
++            management_busy ? "true" : "false", MANIPULATION_SHUTDOWN_SHA256);
++          next_warning = now + std::chrono::seconds(2);
++        }
++      };
++      try {
++        management.observe_busy(cm);
++        RCLCPP_INFO(cm->get_logger(),
++          "CONTROL_LOOP_SHUTDOWN phase=EXECUTOR_DRAIN_BEGIN clock_started=%s management_group=%s "
++          "matching_services=%zu mutually_exclusive=%s patch_sha256=%s",
++          clock_started ? "true" : "false", management.label(), management.matching_services,
++          management.mutually_exclusive ? "true" : "false", MANIPULATION_SHUTDOWN_SHA256);
++        const rclcpp::Duration drain_period(period);
++        shutdown_order::drain_until_executor_finished(
++          [&]() { return spin_finished.load(); },
++          [&]() { return cancellation_observed.load(std::memory_order_acquire); },
++          [&]() {
++            const bool busy = management.observe_busy(cm);
++            return clock_started && busy;
++          },
++          [&]() { cm->read(last_valid_time, drain_period); },
++          [&]() { cm->update(last_valid_time, drain_period); ++observed_drain_cycles; },
++          drain_pause, period);
++        drain_completed = spin_finished.load();
++      } catch (const std::exception & error) {
++        control_failed.store(true);
++        RCLCPP_ERROR(cm->get_logger(), "Shutdown callback drain failed: %s", error.what());
++      } catch (...) {
++        control_failed.store(true);
++        RCLCPP_ERROR(cm->get_logger(), "Shutdown callback drain failed with an unknown exception");
++      }
++      if (drain_completed) {
++        RCLCPP_INFO(cm->get_logger(),
++          "CONTROL_LOOP_SHUTDOWN phase=EXECUTOR_DRAIN_DONE cycles=%llu management_group=%s "
++          "matching_services=%zu write_permitted=false patch_sha256=%s",
++          static_cast<unsigned long long>(observed_drain_cycles), management.label(),
++          management.matching_services, MANIPULATION_SHUTDOWN_SHA256);
++      } else {
++        RCLCPP_ERROR(cm->get_logger(),
++          "CONTROL_LOOP_SHUTDOWN phase=EXECUTOR_DRAIN_ABORTED cycles=%llu executor_finished=%s "
++          "management_group=%s matching_services=%zu mutually_exclusive=%s write_permitted=false patch_sha256=%s",
++          static_cast<unsigned long long>(observed_drain_cycles), spin_finished.load() ? "true" : "false",
++          management.label(), management.matching_services, management.mutually_exclusive ? "true" : "false",
++          MANIPULATION_SHUTDOWN_SHA256);
++      }
+     });
+ 
+     // cancel() before spin() can be lost when spin resets its flag. Keep issuing
+@@ -301,6 +410,7 @@
+         if (shutdown_order::process_stop.requested()) {
+           try {
+             executor->cancel();
++            cancellation_observed.store(true, std::memory_order_release);
+           } catch (const std::exception & error) {
+             control_failed.store(true);
+             if (!cancel_error_reported) {

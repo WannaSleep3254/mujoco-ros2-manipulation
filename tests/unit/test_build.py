@@ -13,21 +13,29 @@ from mujoco_ros2_manipulation.profiles import load_profile
 
 
 class BuildTests(unittest.TestCase):
-    def test_ordered_shutdown_patch_is_required_confined_and_last_in_the_runtime_series(self):
+    def test_both_shutdown_patches_are_required_confined_and_ordered_last(self):
         manifest=load_manifest()
         self.assertEqual(RUNTIME_PATCH_KEYS, ('patch','monitor_patch','contact_stop_patch',
-            'clock_watchdog_patch','control_loop_shutdown_patch'))
+            'clock_watchdog_patch','control_loop_shutdown_patch','activation_shutdown_patch'))
         self.assertEqual(manifest['runtime']['control_loop_shutdown_patch'],
             'patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch')
-        self.assertEqual(len(set(manifest['runtime'][key] for key in RUNTIME_PATCH_KEYS)),5)
-        for value in (None,'../outside.patch','/tmp/outside.patch'):
-            with self.subTest(value=value),tempfile.TemporaryDirectory() as temporary:
-                root=Path(temporary);(root/'config').mkdir()
-                changed=deepcopy(manifest)
-                if value is None:del changed['runtime']['control_loop_shutdown_patch']
-                else:changed['runtime']['control_loop_shutdown_patch']=value
-                (root/'config/build.yaml').write_text(yaml.safe_dump(changed))
-                with self.assertRaises(ValueError):load_manifest(root)
+        self.assertEqual(manifest['runtime']['activation_shutdown_patch'],
+            'patches/mujoco_ros2_control-0.1.2-activation-shutdown.patch')
+        self.assertEqual(len(set(manifest['runtime'][key] for key in RUNTIME_PATCH_KEYS)),6)
+        for key in ('control_loop_shutdown_patch','activation_shutdown_patch'):
+            for value in (None,'../outside.patch','/tmp/outside.patch'):
+                with self.subTest(key=key,value=value),tempfile.TemporaryDirectory() as temporary:
+                    root=Path(temporary);(root/'config').mkdir()
+                    changed=deepcopy(manifest)
+                    if value is None:del changed['runtime'][key]
+                    else:changed['runtime'][key]=value
+                    (root/'config/build.yaml').write_text(yaml.safe_dump(changed))
+                    with self.assertRaises(ValueError):load_manifest(root)
+
+    def test_previously_published_ordered_shutdown_patch_is_immutable(self):
+        path=ROOT/'patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch'
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),
+            '5cd77481de464aa850b73dd4533c088da8138231d64cdacdf24a79a506077fbf')
 
     def test_runtime_colcon_binds_both_actual_native_header_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:

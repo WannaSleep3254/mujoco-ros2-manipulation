@@ -14,7 +14,7 @@ from mujoco_ros2_manipulation.paths import ROOT
 
 
 RUNTIME_PATCH_KEYS = ('patch', 'monitor_patch', 'contact_stop_patch', 'clock_watchdog_patch',
-                      'control_loop_shutdown_patch')
+                      'control_loop_shutdown_patch', 'activation_shutdown_patch')
 
 
 def local_path(root, name):

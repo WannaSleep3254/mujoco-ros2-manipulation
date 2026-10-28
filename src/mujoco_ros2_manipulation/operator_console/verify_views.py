@@ -49,6 +49,16 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def cpu_demo_failure(job):
+    """Retain the failing nested run instead of only its outer view assertion."""
+    results=job.get('results')
+    last=results[-1] if type(results) is list and results and type(results[-1]) is dict else {}
+    return dict(job_id=job.get('job_id'),scenario=job.get('scenario'),status=job.get('status'),
+        variant=last.get('variant',job.get('variant')),run_id=last.get('run_id') or job.get('run_id'),
+        failure_stage=last.get('failure_stage') or job.get('stage'),
+        error=deepcopy(job.get('error')),run_error=deepcopy(last.get('error')))
+
+
 def digest(raw):
     return hashlib.sha256(raw).hexdigest()
 
@@ -472,12 +482,15 @@ def main():
         def finished():
             state=observe();job=state['demo']['current']
             if job.get('status')=='failed' and job.get('cleanup_clean') is False:
-                raise RuntimeError('CPU comparison could not clean its owned launches')
+                detail=cpu_demo_failure(job);report.update(failed_cpu_demo=detail)
+                raise RuntimeError('CPU comparison could not clean its owned launches: '+
+                                   json.dumps(detail,ensure_ascii=False)[:4096])
             return completed_job(state,job_id)
 
         job=until(finished,timeout,'CPU comparison and owned cleanup '+scenario)
-        require(job['status']=='succeeded' and job.get('comparison') is not None,
-                'CPU comparison did not succeed')
+        if job['status']!='succeeded' or job.get('comparison') is None:
+            detail=cpu_demo_failure(job);report.update(failed_cpu_demo=detail)
+            raise RuntimeError('CPU comparison did not succeed: '+json.dumps(detail,ensure_ascii=False)[:4096])
         originals=checked_reports(job,variants,ROOT,args.domain,started)
         require(list(row['variant'] for row in runs.values())==list(variants)
                 and set(runs)=={summary['run_id'] for summary in job['results']},

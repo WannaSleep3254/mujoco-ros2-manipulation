@@ -131,6 +131,11 @@ jobs:
             --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
             --probe runtime/validation/native-shutdown-probe-build-ci/update_probe.so \
             --output runtime/validation/native-shutdown-held-update-ci
+          python3 tests/integration/verify_native_pending_switch.py \
+            --expect clean --domain 207 \
+            --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
+            --probe runtime/validation/native-shutdown-probe-build-ci/update_probe.so \
+            --output runtime/validation/native-shutdown-pending-switch-ci
       - name: FR3 direct, MoveIt, moving cancel and fresh stop observation
         if: matrix.robot == 'workcell'
         run: |

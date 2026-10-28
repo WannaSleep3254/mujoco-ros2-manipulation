@@ -74,6 +74,28 @@ class MotionCacheServerTests(unittest.TestCase):
         self.node.coordinated_path.assert_called_once()
         self.node.dispatch.assert_not_called()
 
+    def test_oversized_cached_schedule_keeps_lazy_anchor_rejection_and_fresh_fallback(self):
+        _, cold, _ = self.cold()
+        stamps = [index * 20_000_000 for index in range(1702)] + [34_022_849_689]
+        oversized = Spline(self.node.joint_names, [
+            dict(t=stamp * 1e-9, p=[.1 * stamp / stamps[-1]] * 2, v=[], a=[])
+            for stamp in stamps
+        ])
+        self.node.trajectory_cache.store(cold["trajectory_cache"]["identity"],
+            dict(left=0., right=0.), dict(left=.1, right=.1), [oversized.record()])
+        self.node.coordinated_path.reset_mock()
+        self.node.trajectory_cache.evict = Mock(wraps=self.node.trajectory_cache.evict)
+        _, trace, _ = self.make_review()
+        cache = trace["trajectory_cache"]
+        self.assertTrue(cache["lookup"]["hit"])
+        self.assertEqual(cache["rejected_candidate"]["type"], "MotionPathRejected")
+        self.assertIn("Schedule sampling budget exceeded", cache["rejected_candidate"]["message"])
+        self.assertTrue(cache["fallback"])
+        self.node.trajectory_cache.evict.assert_called_once()
+        self.node.coordinated_path.assert_called_once()
+        self.assertEqual(trace["review_payload"]["trajectories"], [self.curve.record()])
+        self.node.dispatch.assert_not_called()
+
     def test_cancellation_budget_environment_and_transport_failures_never_fallback(self):
         globals_ = review_fixture.Server.validate_motion_path.__globals__
         for error in (globals_["CommandCancelled"]("cancel"), PlanningBudgetExceeded("budget"),

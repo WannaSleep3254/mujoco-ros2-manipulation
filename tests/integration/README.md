@@ -30,6 +30,11 @@ python3 tests/integration/verify_native_shutdown_race.py \
   --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
   --probe runtime/validation/shutdown-probe-new/update_probe.so \
   --output runtime/validation/shutdown-race-new
+python3 tests/integration/verify_native_pending_switch.py \
+  --expect clean --domain 207 \
+  --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
+  --probe runtime/validation/shutdown-probe-new/update_probe.so \
+  --output runtime/validation/shutdown-pending-switch-new
 ```
 
 첫 검사는 로봇·하드웨어 없이 실제 네이티브 노드의 시계 미수신·정지와 초기 SIGTERM을 확인합니다.
@@ -37,6 +42,12 @@ python3 tests/integration/verify_native_shutdown_race.py \
 보냅니다. update 반환 → RT join → Context 종료 → 제어기 정리 순서와 전체 물리 기록·프로세스 정리를
 요구합니다. 기본적으로 어떤 로봇 목표도 전송하지 않습니다. 설치한 CM 2.54.3/JTC 2.54.1 ABI가
 달라지면 검사를 멈추고 interposer를 재검토해야 합니다.
+
+정상 held-update 검사는 broadcaster와 두 팔의 활성화, 세 spawner 정상 종료를 먼저 확인합니다.
+마지막 검사는 broadcaster를 비활성 상태로 준비한 뒤 실제 활성화 요청이 RT 응답을 기다리는
+도중 SIGINT를 보냅니다. 관리 요청 마무리와 native 정상 종료·물리 기록·자체 소유 프로세스
+정리를 확인합니다. `--expect hang`은 첫 수정 런타임의 종료 지연을 보존하는 진단 전용 모드이며
+CI에서는 사용하지 않습니다. 새 write 차단과 즉시 물리 정지는 구분합니다.
 
 `--expect legacy`는 격리된 구형 런타임의 잘못된 종료 순서를 재현하는 진단 모드입니다.
 성공한 안전 실행으로 집계하지 않으며, CI는 `fixed`만 검사합니다.
