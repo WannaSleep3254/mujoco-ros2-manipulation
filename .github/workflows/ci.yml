@@ -118,6 +118,15 @@ jobs:
         if: matrix.robot == 'workcell'
         run: |
           .venv/bin/python verify_environment_overlay.py --native --catalog-output runtime/validation/environment-preview-catalog.json
+      - name: Independent FR5 grasp physics, display identity and owned cancellation
+        if: matrix.robot == 'workcell'
+        run: |
+          PYTHONPATH=src .venv/bin/python -m unittest \
+            tests.unit.test_grasp_contract tests.unit.test_grasp_fixture \
+            tests.unit.test_grasp_fr5_prototype tests.unit.test_grasp_display_export \
+            tests.unit.test_grasp_demo_server -v
+          PYTHONPATH=src .venv/bin/python tests/integration/verify_grasp_demo.py \
+            --output runtime/validation/independent-fr5-grasp-ci
       - name: Read-only allowlisted environment previews and blocked mutations
         if: matrix.robot == 'workcell'
         run: |
@@ -189,6 +198,12 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_operator_console.py --domain 143 --no-render --startup-cycles 2 --startup-hold-seconds 2
+      - name: TCP Pose plan review, completion errors and blocked dispatch
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 -m mujoco_ros2_manipulation.workcells.verify_pose_goal --domain 151 \
+            --output runtime/validation/pose-goal-ci
       - name: Local CPU 3D sources, actual ROS state and read-only saved plans
         if: matrix.robot == 'workcell'
         run: |

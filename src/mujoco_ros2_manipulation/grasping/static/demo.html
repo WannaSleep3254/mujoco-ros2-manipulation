@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>FR5 집기 시연 · 독립 실험</title>
+  <link rel="stylesheet" href="/demo.css">
+  <script type="module" src="/demo.js"></script>
+</head>
+<body>
+  <main class="workspace">
+    <header class="topbar">
+      <div class="identity">
+        <span class="app-mark" aria-hidden="true">F5</span>
+        <div><p class="eyebrow">LOCAL MANIPULATION LAB</p><h1>FR5 집기 시연</h1></div>
+      </div>
+      <div class="connection"><span id="connection-dot" class="connection-dot" data-state="waiting"></span><span id="connection-status" role="status">상태 연결 중</span></div>
+    </header>
+
+    <section class="source-strip" aria-label="실행 대상">
+      <div class="source-name"><span class="field-label">독립 실험 대상</span><strong id="source-label">FR5 · synthetic gripper / block</strong></div>
+      <div><span class="field-label">실행 엔진</span><strong id="source-engine">조회 중</strong></div>
+      <div><span class="field-label">제어 방식</span><strong id="source-method">조회 중</strong></div>
+      <div class="model-identity"><span class="field-label">고정 모델 SHA-256</span><code id="model-sha">대상 정보 조회 중</code></div>
+    </section>
+
+    <div class="scope-note"><span class="scope-tag">실험 범위</span><p>MuJoCo 3.14.0과 로컬 site-Jacobian DLS를 사용하는 독립 시뮬레이션입니다. ROS / native 3.12 연동, MoveIt 계획, 실물 검증은 포함하지 않습니다.</p></div>
+
+    <section class="command-bar" aria-label="시연 명령">
+      <div class="command-copy"><span id="job-status" class="status-badge" data-state="waiting">실행 전</span><p id="command-hint">정해진 집기·이송·놓기 순서를 실행하고 실제 관측을 확인합니다.</p></div>
+      <div class="command-actions"><button id="demo-start" class="button button-primary" type="button" disabled><span aria-hidden="true">▶</span> 정해진 FR5 집기 시연 실행</button><button id="demo-cancel" class="button button-cancel" type="button" disabled><span aria-hidden="true">■</span> 시연 취소 요청</button></div>
+    </section>
+    <div id="command-error" class="notice error-notice" role="alert" hidden></div>
+    <div id="connection-error" class="notice connection-notice" role="status" hidden></div>
+
+    <div class="main-grid">
+      <section class="panel scene-panel" aria-labelledby="scene-title">
+        <div class="panel-heading"><div><p class="eyebrow">LIVE SCENE</p><h2 id="scene-title">3D 관측 화면</h2></div><span id="view-state" class="subtle-badge">관측 대기</span></div>
+        <div class="viewport">
+          <div id="demo-scene" class="local-scene"></div>
+          <div id="scene-placeholder" class="scene-placeholder"><div class="placeholder-frame" aria-hidden="true"><span></span></div><strong id="placeholder-title">시연 실행 전</strong><p id="placeholder-copy">실행한 시뮬레이션의 첫 자세가 도착하면<br>FR5와 그리퍼, 블록을 여기에 표시합니다.</p></div>
+          <div class="scene-corner"><span class="corner-dot"></span> THREE.JS · 관측 전용</div>
+        </div>
+        <div class="scene-footer"><p>드래그 회전 <span>·</span> 휠 확대·축소 <span>·</span> 오른쪽 드래그 이동</p><span id="pose-sequence">자세 # —</span></div>
+        <div class="observation-bar"><div><span class="field-label">관측 상태</span><strong id="observation-state">아직 수신한 관측 없음</strong></div><div><span class="field-label">관측 나이</span><strong id="source-age">—</strong></div><div><span class="field-label">시뮬레이션 시간</span><strong id="simulation-time">—</strong></div><div><span class="field-label">물리 적분 스텝</span><strong id="simulation-steps">—</strong></div></div>
+        <p id="view-error" class="view-error" role="status" hidden></p>
+      </section>
+
+      <aside class="side-panels" aria-label="실제 진행과 증거">
+        <details class="panel detail-panel" open>
+          <summary><span><span class="eyebrow">TASK LIFECYCLE</span><span class="summary-title">실제 작업 단계</span></span><span class="disclosure" aria-hidden="true"></span></summary>
+          <div class="detail-content"><div class="phase-line"><span>현재 관측 구간</span><strong id="job-phase">—</strong></div><ol id="stage-list" class="stage-list"><li data-stage="approaching"><span class="stage-marker"></span><span>접근</span><code>approaching</code></li><li data-stage="closing"><span class="stage-marker"></span><span>그리퍼 닫기</span><code>closing</code></li><li data-stage="extracting"><span class="stage-marker"></span><span>들어 올리기</span><code>extracting</code></li><li data-stage="holding"><span class="stage-marker"></span><span>집기 확인</span><code>holding</code></li><li data-stage="carrying"><span class="stage-marker"></span><span>이송</span><code>carrying</code></li><li data-stage="releasing"><span class="stage-marker"></span><span>놓기</span><code>releasing</code></li><li data-stage="settling"><span class="stage-marker"></span><span>안정화</span><code>settling</code></li><li data-stage="succeeded"><span class="stage-marker"></span><span>배치 완료</span><code>succeeded</code></li></ol><p id="task-stage" class="stage-description">단계 관측 대기</p></div>
+        </details>
+
+        <details class="panel detail-panel" open>
+          <summary><span><span class="eyebrow">PHYSICS EVIDENCE</span><span class="summary-title">집기와 부착 증거</span></span><span class="disclosure" aria-hidden="true"></span></summary>
+          <div class="detail-content">
+            <div class="evidence-state"><span>물리 집기</span><strong id="physical-grasp" data-state="waiting">관측 없음</strong></div>
+            <div class="evidence-state"><span>논리 부착</span><strong id="planning-attachment" data-state="waiting">관측 없음</strong></div>
+            <p class="evidence-note">물리 접촉과 논리 부착을 각각 표시합니다. 논리 부착은 로컬 기록이며 MoveIt 장면을 변경하지 않습니다.</p>
+            <div class="force-grid"><div><span class="field-label">왼쪽 손가락 접촉력</span><strong id="left-force">—</strong><span class="unit">N</span></div><div><span class="field-label">오른쪽 손가락 접촉력</span><strong id="right-force">—</strong><span class="unit">N</span></div></div>
+            <dl class="metrics-list"><div><dt>상대 위치 오차</dt><dd id="relative-position">—</dd></div><div><dt>상대 각도 오차</dt><dd id="relative-angle">—</dd></div><div class="vector-row"><dt>TCP 위치 · m</dt><dd id="tcp-position">—</dd></div><div class="vector-row"><dt>블록 위치 · m</dt><dd id="block-position">—</dd></div></dl>
+          </div>
+        </details>
+      </aside>
+    </div>
+
+    <div class="bottom-grid">
+      <section class="panel events-panel" aria-labelledby="events-title"><div class="panel-heading"><div><p class="eyebrow">OBSERVED EVENTS</p><h2 id="events-title">실제 이벤트</h2></div><span id="event-count" class="subtle-badge">0건</span></div><ol id="event-list" class="event-list"><li class="empty-events">실행 프로세스가 보고한 이벤트가 여기에 쌓입니다.</li></ol></section>
+      <section class="panel execution-panel" aria-labelledby="execution-title"><div class="panel-heading"><div><p class="eyebrow">PROCESS &amp; CANCELLATION</p><h2 id="execution-title">실행·취소 관측</h2></div></div><dl class="execution-list"><div><dt>시뮬레이션 프로세스</dt><dd id="process-state">실행 전</dd></div><div><dt>취소 요청</dt><dd id="cancel-requested">—</dd></div><div><dt>취소 전달</dt><dd id="cancel-delivery">—</dd></div><div><dt>시뮬레이션 물리 정지</dt><dd id="physical-stop">관측 없음</dd></div><div><dt>ROS Action 상태</dt><dd id="action-state">해당 없음 · Action 미사용</dd></div></dl><p class="stop-note">프로세스 종료와 물리 정지 관측은 별개입니다. 취소는 자동 놓기나 작업 재개를 뜻하지 않습니다.</p><details class="run-details"><summary>실행 식별·결과</summary><dl class="execution-list"><div><dt>Job ID</dt><dd id="job-id" class="mono">—</dd></div><div><dt>Generation</dt><dd id="job-generation" class="mono">—</dd></div><div><dt>작업자 결과 수신</dt><dd id="worker-result">—</dd></div><div><dt>프로세스 종료 코드</dt><dd id="process-exit" class="mono">—</dd></div></dl></details><p id="job-error" class="job-error" role="status" hidden></p></section>
+    </div>
+    <footer class="page-footer"><span>FR5 · synthetic parallel gripper · free block</span><span>독립 시뮬레이션의 관측값만 표시</span></footer>
+  </main>
+</body>
+</html>
