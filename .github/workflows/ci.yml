@@ -60,6 +60,7 @@ jobs:
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare-environment --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment-views --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-benchmark-planner-cache --list > /tmp/planner-cache-declarations.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: python-distributions
@@ -204,6 +205,14 @@ jobs:
           source ./manipulation_env.sh
           python3 -m mujoco_ros2_manipulation.workcells.verify_pose_goal --domain 151 \
             --output runtime/validation/pose-goal-ci
+      - name: Opt-in planner and cache identity, fallback and matched timing
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 benchmark_planner_cache.py --mode functional --domain 160 \
+            --output runtime/validation/planner-cache-functional-ci
+          python3 benchmark_planner_cache.py --mode performance --repeats 3 --domain 161 \
+            --output runtime/validation/planner-cache-performance-ci
       - name: Local CPU 3D sources, actual ROS state and read-only saved plans
         if: matrix.robot == 'workcell'
         run: |
