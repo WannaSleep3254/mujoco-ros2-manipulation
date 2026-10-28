@@ -1,5 +1,6 @@
 """Reject grazing RRT candidates before dispatch without hiding execution failures."""
 from copy import deepcopy
+import json
 from types import SimpleNamespace as NS
 import unittest
 from unittest.mock import Mock, patch
@@ -8,6 +9,7 @@ from mujoco_ros2_manipulation.workcells.plan_selection import (
     MAX_PLAN_CANDIDATES,
     PlanCandidateRejected,
     PlanCandidatesExhausted,
+    invalid_trajectory_diagnostic,
     select_clearance_plan,
 )
 
@@ -417,3 +419,57 @@ class SelectionTests(unittest.TestCase):
     def test_explicit_rejection_kind_cannot_inject_unrecognized_classification(self):
         with self.assertRaisesRegex(ValueError, "kind must be invalid_trajectory"):
             PlanCandidateRejected("Rejected", kind="planner_failed")
+
+    def test_curve_contract_failure_is_not_a_retryable_trajectory_rejection(self):
+        error = ValueError("Unexpected joint/endpoint contract")
+        diagnostics = {}
+        propose = Mock(return_value=(1, self.safe))
+        with self.assertRaises(ValueError) as caught:
+            self.select(propose, diagnostics=diagnostics, validate_curve=Mock(side_effect=error))
+        self.assertIs(caught.exception, error)
+        propose.assert_called_once()
+        candidate = diagnostics["candidates"][0]
+        self.assertEqual(candidate["status"], "failed")
+        self.assertEqual(candidate["stage"], "trajectory")
+        self.assertNotIn("rejection_kind", candidate)
+
+    def test_invalid_diagnostic_preserves_exact_time_parts_without_nonfinite_json(self):
+        malformed = trajectory([[0., 0.], [1., 1.]])
+        malformed.points[0].time_from_start.nanosec = 1
+        malformed.points[1].time_from_start = NS(sec=36, nanosec=17)
+        diagnostic = invalid_trajectory_diagnostic(malformed)
+        self.assertEqual(diagnostic["first_time"], dict(sec=0, nanosec=1, seconds=1e-9))
+        self.assertEqual(diagnostic["last_time"]["sec"], 36)
+        self.assertEqual(diagnostic["last_time"]["nanosec"], 17)
+        self.assertEqual(diagnostic["timing_issues"], ["nonzero_start", "end_exceeds_35s"])
+        malformed.points[1].time_from_start.sec = float("nan")
+        malformed.points[1].positions = [float("inf")] * 10000
+        diagnostic = invalid_trajectory_diagnostic(malformed)
+        restored = json.loads(json.dumps(diagnostic, allow_nan=False))
+        self.assertIn("nonfinite_time", restored["timing_issues"])
+        self.assertEqual(restored["last_time"]["sec"], dict(nonfinite="nan"))
+        self.assertEqual(restored["points"][1]["positions_count"], 10000)
+        self.assertNotIn("positions", restored["points"][1])
+
+    def test_invalid_diagnostic_caps_captured_times_and_identifies_truncation(self):
+        malformed = trajectory([[0., 0.]] * 2100)
+        diagnostic = invalid_trajectory_diagnostic(malformed)
+        self.assertEqual(diagnostic["point_count"], 2100)
+        self.assertEqual(diagnostic["captured_point_count"], 2000)
+        self.assertEqual(len(diagnostic["points"]), 2000)
+        self.assertTrue(diagnostic["truncated"])
+        self.assertEqual(diagnostic["last_time"]["sec"], 2099)
+        self.assertIn("point_count_outside_2_2000", diagnostic["timing_issues"])
+
+    def test_diagnostic_failure_does_not_hide_invalid_candidate_or_block_next(self):
+        diagnostics = {}
+        malformed = trajectory([[0., 0.]])
+        propose = Mock(side_effect=[(1, malformed), (1, self.safe)])
+        with patch("mujoco_ros2_manipulation.workcells.plan_selection.invalid_trajectory_diagnostic",
+                   side_effect=OSError("Diagnostic unavailable")):
+            self.assertIs(self.select(propose, diagnostics=diagnostics), self.safe)
+        candidate = diagnostics["candidates"][0]
+        self.assertEqual(candidate["status"], "rejected")
+        self.assertEqual(candidate["rejection_kind"], "invalid_trajectory")
+        self.assertEqual(candidate["trajectory_diagnostic_error"]["type"], "OSError")
+        self.assertNotIn("error", candidate)

@@ -5,6 +5,7 @@ import re
 import signal
 import subprocess
 import time
+from contextlib import contextmanager
 
 from mujoco_ros2_manipulation.profiles import check_generated_model, load_profile
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
@@ -44,6 +45,39 @@ def stop_process(process):
             if group_gone(process.pid):
                 break
     return forced
+
+
+def _save_cleanup_diagnostics(report, diagnostics):
+    """Diagnostics must not prevent cleanup or replace its primary error."""
+    try:
+        report.update(cleanup_diagnostics=diagnostics)
+    except Exception as error:
+        # A later normal report write can preserve this failed write attempt.
+        diagnostics.setdefault('write_errors', []).append(
+            dict(type=type(error).__name__, message=str(error), utc=utc_now()))
+
+
+@contextmanager
+def _cleanup_step(report, diagnostics, name, *, applicable=True):
+    """Persist entry before the call, so a blocked call leaves its last boundary."""
+    step = dict(name=name, status='running' if applicable else 'skipped',
+                started_utc=utc_now(), started_monotonic_ns=time.monotonic_ns(),
+                completed_utc=None, completed_monotonic_ns=None,
+                elapsed_sec=None, error=None)
+    diagnostics['steps'].append(step)
+    _save_cleanup_diagnostics(report, diagnostics)
+    try:
+        yield step
+    except BaseException as error:
+        step.update(status='failed', error=dict(type=type(error).__name__, message=str(error)))
+        raise
+    else:
+        if step['status'] == 'running':
+            step['status'] = 'completed'
+    finally:
+        step.update(completed_utc=utc_now(), completed_monotonic_ns=time.monotonic_ns())
+        step['elapsed_sec'] = (step['completed_monotonic_ns'] - step['started_monotonic_ns']) / 1e9
+        _save_cleanup_diagnostics(report, diagnostics)
 
 
 def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=None,
@@ -136,30 +170,38 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
                       failure_stage=report.data['stage'])
     finally:
         # Cleanup errors must never erase the primary verification failure.
-        if node is not None:
-            try:
-                node.destroy_node()
-            except Exception as error:
-                cleanup.append(f'destroy_node: {error}')
+        diagnostics = dict(schema_version=1, steps=[])
         try:
-            if ros.ok():
-                ros.shutdown()
+            with _cleanup_step(report, diagnostics, 'destroy_node', applicable=node is not None):
+                if node is not None:
+                    node.destroy_node()
+        except Exception as error:
+            cleanup.append(f'destroy_node: {error}')
+        try:
+            with _cleanup_step(report, diagnostics, 'ros_shutdown') as step:
+                if ros.ok():
+                    ros.shutdown()
+                else:
+                    step['status'] = 'skipped'
         except Exception as error:
             cleanup.append(f'ROS shutdown: {error}')
-        if process is not None:
-            try:
-                forced = stop_process(process)
-            except Exception as error:
-                cleanup.append(f'launch cleanup: {error}')
-        if finalize is not None and process is not None:
-            try:
-                finalize(report, profile, args)
-            except Exception as error:
-                report.update(physics_checks_passed=False, diagnostics_error=str(error))
-                if not failed:
-                    failed = True
-                    report.update(error={'type': type(error).__name__, 'message': str(error)},
-                                  failure_stage='physics_diagnostics')
+        try:
+            with _cleanup_step(report, diagnostics, 'launch_stop', applicable=process is not None):
+                if process is not None:
+                    forced = stop_process(process)
+        except Exception as error:
+            cleanup.append(f'launch cleanup: {error}')
+        try:
+            with _cleanup_step(report, diagnostics, 'finalize',
+                               applicable=finalize is not None and process is not None):
+                if finalize is not None and process is not None:
+                    finalize(report, profile, args)
+        except Exception as error:
+            report.update(physics_checks_passed=False, diagnostics_error=str(error))
+            if not failed:
+                failed = True
+                report.update(error={'type': type(error).__name__, 'message': str(error)},
+                              failure_stage='physics_diagnostics')
         log = report.log_path.read_text()
         observed_failures = process_failures(log)
         failures = [entry for entry in observed_failures if entry not in expected_exits]

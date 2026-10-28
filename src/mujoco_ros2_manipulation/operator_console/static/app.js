@@ -3,12 +3,84 @@ const $=id=>document.getElementById(id);
 let sceneControls=null;
 let config,token,state,targets={},arm=0,unit='deg',polling=false,latestRequest=null,detailsAt=0,demoCatalog=[],selectedDemo=null,replanning=false,readConnected=false,detailSerial=0;
 const requestCache=new Map(),requestLoads=new Map();
+const pendingCancels=new Map();
 const READ_TIMEOUT_MS=3000;
 let stateReadSerial=0,lastObservedRead=0;
 let replanReadPending=false;
 let historySignature=null;
-const labels={interrupted:'중단',starting:'준비 중',cancel_requested:'중단 요청 중',passed:'검증 통과',ready:'실행 가능',queued:'접수',submitting:'전송 확인 대기',running:'진행 중',succeeded:'성공',failed:'실패',cancelled:'취소 완료',rejected:'거부',blocked:'재시작 필요',unknown:'결과 미확인'};
+const labels={interrupted:'중단',starting:'준비 중',cancel_requested:'중단 요청 중',passed:'검증 통과',ready:'실행 가능',queued:'접수',submitting:'전송 확인 대기',running:'진행 중',succeeded:'성공',failed:'실패',cancelled:'요청 취소 완료',rejected:'거부',blocked:'재시작 필요',unknown:'결과 미확인'};
 const terminal=new Set(['succeeded','failed','cancelled','rejected','unknown']);
+function guardPresentation(guard){
+ if(!guard?.latched)return {text:guard?.phase==='ready'?'감시 중':'감시 상태 확인 중',confirmed:false};
+ const reason=({contact:'접촉',clock_stall:'시계 정지'})[guard.reason]||'원인 미확인';
+ const confirmed=guard.phase==='stopped'&&['contact','clock_stall'].includes(guard.reason);
+ return {text:`${reason} · ${confirmed?'정지 확인':'정지 확인 중'}`,confirmed};
+}
+function telemetryExpected(data,kind){
+ // No first sample is different from losing a sample after connection. The
+ // backend clears these observation fields when explicitly starting a new run.
+ const expected=data.lifecycle?.phase==='running'||data.simulation_verified||Boolean(data.active_request_id)||Boolean(data.server);
+ const observed=kind==='joints'?data.positions_rad!=null||Number.isFinite(data.joint_state_stamp_simulation_sec)||Number.isFinite(data.state_age_sec):Number.isFinite(data.simulation_sec)||Number.isFinite(data.clock_age_sec);
+ return expected||observed;
+}
+function observationProblem(data){
+ if(data.guard?.latched)return guardPresentation(data.guard).text+'. 정지 잠금은 해제되지 않습니다. 원인을 확인한 뒤 시뮬레이션을 재시작하세요.';
+ if(data.lifecycle?.error)return '실행 프로세스에 오류가 있습니다. 실행 로그를 확인하고 종료 상태를 확인하세요.';
+ if(data.server?.status==='blocked')return '명령 서버가 실행을 차단했습니다. 실행 로그와 종료 상태를 확인한 뒤 시뮬레이션을 재시작하세요.';
+ if(data.state_age_sec===null&&telemetryExpected(data,'joints')||Number.isFinite(data.state_age_sec)&&data.state_age_sec>.5)return '관절 상태 수신이 멈췄습니다. 연결과 최신 상태가 복구된 뒤 새 계획을 생성하세요.';
+ if(data.clock_age_sec===null&&telemetryExpected(data,'clock')||Number.isFinite(data.clock_age_sec)&&data.clock_age_sec>.5)return '시뮬레이션 시계가 갱신되지 않습니다. 연결과 감시 상태를 확인하세요.';
+ return null;
+}
+function connectionPresentation(data){
+ const problem=observationProblem(data);
+ if(problem)return {status:'blocked',text:data.guard?.latched?guardPresentation(data.guard).text:data.server?.status==='blocked'?'실행 차단 · 재시작 필요':data.lifecycle?.error?'실행 오류':data.state_age_sec===null||data.state_age_sec>.5?'관절 상태 수신 중단':'시계 갱신 중단'};
+ if(demoActive(data.demo?.current))return {status:'running',text:data.demo.current.status==='cancel_requested'?'시연 중단 · 정리 확인 중':'시연 진행 중'};
+ if(data.can_submit&&data.simulation_verified&&data.guard?.phase==='ready'&&data.server?.status==='ready'&&Number.isFinite(data.state_age_sec)&&Number.isFinite(data.clock_age_sec))return {status:'ready',text:'실행 가능'};
+ if(data.active_request_id)return {status:'running',text:'요청 처리 중'};
+ return {status:data.lifecycle?.phase==='starting'?'starting':'offline',text:data.lifecycle?.phase==='starting'?'시뮬레이터 준비 중 · 관절 상태 대기':data.simulation_verified?'연결됨 · 준비 확인':'시뮬레이션 연결 대기'};
+}
+function failureStageLabel(stage){return ({state_snapshot:'시작 상태 확인',endpoint_clearance:'시작·목표 간격 검사',endpoint_validity:'시작·목표 충돌 검사',planning_both_arms:'양팔 경로 계획',planning_left_arm:'왼팔 경로 계획',planning_right_arm:'오른팔 경로 계획',departure_search:'출발 시점 탐색',safety_checks:'전체 경로 검사',state_recheck:'시작 상태 재확인',final_state_recheck:'실행 직전 상태 확인',dispatch_to_action_results:'궤적 전송·실행 응답',settling:'관절 정착 확인',approved_plan_recheck:'승인 계획 재검사'})[stage]||'원본 기록에서 확인';}
+function requestGuidance(record,data={}){
+ const kind=record?.failure_kind??data.failure_kind,stage=record?.failure_stage??data.failure_stage;
+ const messages={
+  budget_exhausted:['계산 시간 초과','정해진 계산 시간 안에 계획과 검사를 끝내지 못했습니다.','목표와 경로 생성 방식을 확인한 뒤 새 계획을 직접 요청하세요.'],
+  candidate_exhausted:['계획 후보 검사 종료','검사한 후보 중 조건을 만족하는 경로를 찾지 못했습니다. 도달 불가능하다는 판정은 아닙니다.','목표 자세와 환경 간격을 확인한 뒤 새 계획을 요청하세요.'],
+  departure_exhausted:['출발 시점 탐색 실패','현재 경로에서 조건을 만족하는 출발 시점을 찾지 못했습니다.','목표나 경로 생성 방식을 검토한 뒤 새 계획을 요청하세요.'],
+  invalid_start:['시작 자세 조건 위반','현재 시작 자세가 간격 또는 충돌 검사 조건을 만족하지 않습니다.','시작 자세와 작업 환경을 확인하세요. 같은 목표의 반복 실행으로 해결하지 않습니다.'],
+  invalid_goal:['목표 자세 조건 위반','목표 자세가 간격 또는 충돌 검사 조건을 만족하지 않습니다.','목표 자세를 수정하고 새 계획을 생성하세요.'],
+  planner_failed:['경로 계획 실패','계획기가 이번 요청의 경로를 만들지 못했습니다.','목표와 계획 방식을 확인하세요. 실행을 자동으로 다시 요청하지 않습니다.'],
+  state_changed:['시작 자세 변경','계획할 때와 실행 직전의 시작 자세가 달라졌습니다.','최신 상태를 확인한 뒤 새 계획을 생성하고 다시 검토하세요.'],
+  review_invalidated:['검토 계획 사용 불가','계획 만료 또는 모델·환경·세션·상태 변경으로 기존 승인을 사용할 수 없습니다.','변경 원인을 확인한 뒤 새 계획을 생성하고 다시 검토하세요.'],
+  execution_environment_changed:['설치 환경 변경','선택한 설치 환경의 파일 또는 실제 연결이 시작할 때와 달라졌습니다. 기존 계획을 실행할 수 없습니다.','환경을 다시 확인하고 같은 타깃으로 시뮬레이션과 명령 서버를 재시작한 뒤 새 계획을 검토하세요.'],
+  execution_failed:['실행 실패','궤적 실행을 정상적으로 마치지 못했습니다.','정지 감시와 실행 로그를 확인하세요. 실행 차단 상태이면 재시작이 필요합니다.'],
+  environment_clearance:['설비 간격 조건 위반','경로 또는 관측 상태의 설비 간격이 현재 시뮬레이션 정책을 만족하지 않습니다.','설비 배치와 목표, 간격 조건을 확인하고 새 계획을 검토하세요. 자동으로 우회하거나 재실행하지 않습니다.'],
+  planning_error:['계획·검사 오류','계획 또는 실행 전 검사에서 오류가 발생했습니다.','실패 단계와 원본 오류를 확인한 뒤 새 계획 여부를 결정하세요.']};
+ if(record?.status==='cancelled')return {title:'요청 취소 완료',text:'서버의 요청 처리가 취소로 끝났습니다. 물리적 정지 확인과는 구분합니다.',next:'최신 관절 상태와 접촉·시계 감시를 확인하세요.'};
+ if(record?.status==='unknown')return {title:'종료 결과 미확인',text:'서버 교체나 연결 변경으로 이 요청의 최종 결과를 확인하지 못했습니다.',next:'현재 실행과 로그를 확인하세요. 이전 명령을 자동으로 재전송하지 않습니다.'};
+ if(!['failed','rejected'].includes(record?.status))return null;
+ const [title,text,next]=messages[kind]||['요청 실패','요청이 정상적으로 완료되지 않았습니다.','실패 단계와 원본 오류, 현재 연결 상태를 확인하세요.'];
+ return {title,text,next,stage:stage?failureStageLabel(stage):null};
+}
+function guidanceText(record,data={}){
+ const guidance=requestGuidance(record,data),raw=record?.error?.message||data.error?.message||'';
+ return [...(guidance?[guidance.title+' · '+guidance.text,guidance.stage?'실패 단계: '+guidance.stage:null,guidance.next]:[]),raw?'원본 오류: '+raw:null].filter(Boolean).join(' ');
+}
+function cancellationPhase(record){
+ if(!record)return null;
+ if(terminal.has(record.status)){pendingCancels.delete(record.request_id);return null;}
+ if(record.stage==='cancel_received')return 'acknowledged';
+ return pendingCancels.get(record.request_id)?.phase||null;
+}
+async function cancelCurrentRequest(){
+ const identifier=state?.active_request_id;if(!readConnected||!identifier||demoActive(state.demo?.current)||pendingCancels.has(identifier))return;
+ const entry={phase:'submitting',session:state.server?.session_id||null};pendingCancels.set(identifier,entry);refreshControls();requestProgress(state.history.find(item=>item.request_id===identifier));
+ try{const result=await request('/api/cancel',{request_id:identifier});
+  if(result.request_id!==identifier||result.status!=='cancel_requested')throw Error('취소 요청의 처리 결과가 일치하지 않습니다.');
+  if(pendingCancels.get(identifier)===entry)entry.phase='submitted';
+  notice('취소를 요청했습니다. 서버 수신과 요청 종료, 정지 감시 상태를 확인하세요.');
+ }catch(error){if(pendingCancels.get(identifier)===entry)entry.phase='unconfirmed';notice('취소 요청의 전달 결과를 확인하지 못했습니다. 현재 상태와 로그를 확인하세요. 자동으로 다시 보내지 않습니다. '+error.message);}
+ finally{await poll();refreshControls();}
+}
 function notice(text){$('notice-text').textContent=text;$('notice').hidden=false;}
 async function request(path,body){
  const read=body===undefined,controller=read?new AbortController():null;
@@ -47,7 +119,7 @@ function value(v,decimals=3,suffix=' s'){return typeof v==='number'&&Number.isFi
 function displayed(v){return unit==='deg'?v*180/Math.PI:v;}
 function radians(v){return unit==='deg'?v*Math.PI/180:v;}
 function badge(el,status,text){el.className='badge'+(status==='succeeded'||status==='passed'||status==='ready'?' good':status==='failed'||status==='blocked'||status==='rejected'?' bad':status==='running'||status==='starting'||status==='cancel_requested'||status==='queued'||status==='submitting'?' busy':'');el.textContent=text||labels[status]||status;}
-function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트'}[view];if(state)updateLiveFrames(state);sceneControls?.mount();}
+function show(view){document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view);document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));$('view-title').textContent={operate:'로봇 조작',demos:'동작 시연',history:'실행 기록',reports:'평가 리포트',analysis:'센서·상태 분석'}[view];if(state)updateLiveFrames(state);sceneControls?.mount();}
 function fields(){
  const container=$('joint-fields');container.replaceChildren();$('unit-label').textContent=unit;
  config.instances[arm].joints.forEach((name,index)=>{
@@ -71,7 +143,7 @@ function renderContext(){
  const kind=recorded?'기록 재생':mode==='model_preview'?'모델 미리보기':mode==='plan_preview'?(view.review_plan?'실행 전 계획':'저장 궤적'):demo?'실시간 시연':'실제 관절 상태';
  $('display-context').textContent=kind+' · '+label;
  $('display-context').dataset.mode=mode||'live';
- $('control-context').textContent=recorded?'실행 연결 없음':config?.label||'연결 확인 중';
+ $('control-context').textContent=recorded?'실행 연결 없음':(config?.execution_target?config.label+' · '+config.execution_target.environment_id:config?.label)||'연결 확인 중';
  $('context-note').textContent=!readConnected?'상태 조회가 끊겼습니다. 마지막 표시를 유지하며 새 실행을 차단합니다.':recorded?'기록을 표시하는 읽기 전용 화면입니다.':mode==='model_preview'?'표시 모델을 바꿔도 실행 대상은 바뀌지 않습니다.':mode==='plan_preview'?'3D 화면은 계획 자세입니다. 관절표의 현재 값과 감시 상태는 실제 수신 상태입니다.':demo?'시연 중에는 별도 관절 목표를 보낼 수 없습니다.':'시뮬레이션 전용 · 실행은 계획 검토와 승인 후 시작합니다.';
  $('joint-current-label').textContent='실제 현재';
 }
@@ -82,10 +154,10 @@ function refreshControls(){
  $('start').disabled=!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
  $('stop').disabled=!readConnected||demoBusy||transition||!(owned.simulation||owned.commands);
  $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition;
- $('execute').disabled=replanning||!readConnected||demoBusy||!state.can_plan||!validTargets()||!sceneControls;document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=!readConnected||demoBusy||!state.active_request_id);
+ $('execute').disabled=replanning||!readConnected||demoBusy||Boolean(observationProblem(state))||!state.can_plan||!validTargets()||!sceneControls;const cancelRecord=state.history.find(item=>item.request_id===state.active_request_id),cancelPhase=cancellationPhase(cancelRecord);document.querySelectorAll('[data-cancel]').forEach(el=>{el.disabled=!readConnected||demoBusy||!state.active_request_id||Boolean(cancelPhase);el.textContent=cancelPhase==='acknowledged'?'취소 수신 · 종료 확인 중':cancelPhase==='unconfirmed'?'취소 전달 결과 미확인':cancelPhase?'취소 요청 전달 중':'■ 양팔 동작 취소';});
  $('use-current').disabled=!readConnected||!state.positions_rad||state.state_age_sec>0.5;
  $('planning-case').disabled=demoBusy||transition||owned.simulation||state.graph.clock>0;$('native-gui').disabled=$('planning-case').disabled;
- $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':!validTargets()?'모든 목표를 관절 한계 안의 숫자로 입력하세요.':!sceneControls?'계획 검토에는 로컬 3D 표시가 필요합니다.':state.can_plan?'계획을 생성합니다. 경로를 확인하고 승인해야 로봇이 움직입니다.':state.reason||'계획 검토 명령 노드의 연결을 확인하세요.';
+ $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':!validTargets()?'모든 목표를 관절 한계 안의 숫자로 입력하세요.':!sceneControls?'계획 검토에는 로컬 3D 표시가 필요합니다.':observationProblem(state)||(state.can_plan?'계획을 생성합니다. 경로를 확인하고 승인해야 로봇이 움직입니다.':state.reason||'계획 검토 명령 노드의 연결을 확인하세요.');
  renderReview();
 }
 function reviewMatchesTargets(review){const record=state?.history.find(item=>item.request_id===review?.plan_request_id),original=record?.command;return original&&original.strategy===$('strategy').value&&Object.keys(targets).every(name=>original.target_rad?.[name]===targets[name]);}
@@ -99,7 +171,7 @@ function renderReview(){
  $('review-summary').textContent=waiting?`계획과 검사가 끝났습니다. 실행 승인까지 ${Math.ceil(review.remaining_sec)}초 남았습니다.`:'이 계획은 실행할 수 없습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.';
  $('review-preview').disabled=!readConnected||!waiting||busy||!sceneControls||state.view?.display_mode==='image';
  $('review-discard').disabled=!readConnected||!waiting||busy;
- $('review-approve').disabled=!readConnected||!waiting||!state.can_approve||!visible||!matches||busy;
+ $('review-approve').disabled=!readConnected||Boolean(observationProblem(state))||!waiting||!state.can_approve||!visible||!matches||busy;
  $('review-replan').disabled=!readConnected||busy||!validTargets()||!sceneControls||['starting','stopping'].includes(state.lifecycle?.phase);
  const record=state.history.find(item=>item.request_id===review.plan_request_id),data=requestCache.get(review.plan_request_id)?.data,summary=summaryOf(record,data);
  if(record&&!requestLoads.has(review.plan_request_id)&&shouldLoadRequest(requestCache.get(review.plan_request_id),record))loadRequest(review.plan_request_id,{expected:record}).then(()=>{if(state?.pending_plan?.plan_request_id===review.plan_request_id)renderReview();}).catch(()=>{if(state?.pending_plan?.plan_request_id===review.plan_request_id)$('review-detail').textContent='계획 수치를 불러오지 못했습니다. 계획 상세에서 다시 확인하세요.';});
@@ -107,7 +179,7 @@ function renderReview(){
  $('review-distance').textContent=value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm');
  $('review-delta').textContent=value(Number.isFinite(summary.maximum)?summary.maximum*180/Math.PI:undefined,1,'°');
  $('review-detail').textContent=data&&completePlanSummary(data)?'궤적 시간은 시뮬레이션 초입니다. 관절 변화는 계획 생성 당시의 시작→목표 차이입니다.':(requestCache.get(review.plan_request_id)?.incompleteReads||0)>=3?'계획 수치를 읽지 못했습니다. 계획 상세 보기에서 다시 확인하세요.':'계획 수치를 불러오고 있습니다.';
- $('review-admission').textContent=!waiting?'승인은 한 번만 사용할 수 있습니다.':!matches?'목표나 계획 방식을 바꿨습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.':!preview?'경로 미리보기를 열고 확인하세요.':!visible?'검토할 경로를 로컬 3D 화면에 표시하고 있습니다.':!state.can_approve?'현재 상태에서 실행을 승인할 수 없습니다. 연결과 감시 상태를 확인하세요.':'미리보기 재생은 로봇을 움직이지 않습니다. 실행하려면 승인·실행 버튼을 누르세요.';
+ $('review-admission').textContent=!waiting?'승인은 한 번만 사용할 수 있습니다.':observationProblem(state)||(!matches?'목표나 계획 방식을 바꿨습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.':!preview?'경로 미리보기를 열고 확인하세요.':!visible?'검토할 경로를 로컬 3D 화면에 표시하고 있습니다.':!state.can_approve?'현재 상태에서 실행을 승인할 수 없습니다. 연결과 감시 상태를 확인하세요.':'미리보기 재생은 로봇을 움직이지 않습니다. 실행하려면 승인·실행 버튼을 누르세요.');
 }
 async function replan(){
  if(replanning||!readConnected||!validTargets()||!sceneControls||state?.active_request_id||demoActive(state?.demo?.current))return;
@@ -133,17 +205,18 @@ function requestProgress(record){
  badge($('request-badge'),record.status,record.stage==='plan_not_required'?'이동 불필요':record.mode==='plan_only'&&record.status==='succeeded'?'계획 생성 완료':undefined);$('request-id').textContent=record.request_id.slice(0,12)+'…';
  const stages={submitted:'명령 노드 수신 확인 대기',received:'목표 수신',state_snapshot:'시작 자세 확인',computation_started:'경로 계산 시작',planning_both_arms:'양팔 공동 경로 계획',planning_left_arm:'FR5 경로 계획',planning_right_arm:'UR5e 경로 계획',departure_search:'출발 타이밍 탐색',safety_checks:'거리·충돌 검사',computation_done:'계획·검사 완료',dispatch:'동작 예약·명령 전송',first_motion:'관절 이동 확인',first_motion_left:'FR5 이동 확인',first_motion_right:'UR5e 이동 확인',actions_done:'양팔 Action 완료',settled:'관절 수렴 확인',terminal:labels[record.status],cancel_received:'양팔 취소 요청 수신'};
  $('request-stage').textContent=({plan_ready:'계획·검사 완료 · 실행 승인 대기',plan_not_required:'이미 목표 자세에 있습니다. 실행할 이동이 없습니다.',plan_revoked:'미승인 계획 폐기',approval_validating:'승인 계획 재검사'})[record.stage]||stages[record.stage]||record.stage||labels[record.status];
+ const cancelPhase=cancellationPhase(record);if(cancelPhase)$('request-stage').textContent=cancelPhase==='acknowledged'?'서버가 취소를 수신했습니다. 요청 종료를 확인하고 있습니다.':cancelPhase==='unconfirmed'?'취소 전달 결과 미확인 · 현재 실행 상태를 확인하세요.':'취소 요청 전달 중 · 서버 수신과 요청 종료를 확인하세요.';
  const stage=record.stage||'';let progress=0;
  if(/planning|computation|search|safety/.test(stage))progress=1;
  if(/dispatch|action|motion|settled|cancel/.test(stage))progress=2;
  if(record.status==='succeeded')progress=record.mode==='plan_only'?1:3;
  document.querySelectorAll('[data-step]').forEach(el=>el.classList.toggle('reached',Number(el.dataset.step)<=progress));
- $('request-error').hidden=!record.error;$('request-error').textContent=record.error?.message||'';
+ const detail=requestCache.get(record.request_id)?.data,message=guidanceText(record,detail);$('request-error').hidden=!message;$('request-error').className=['failed','rejected','unknown'].includes(record.status)?'error-text':'help';$('request-error').textContent=message;
  $('first-motion').textContent=value(record.metrics?.received_to_first_motion_wall_sec);
  $('terminal-time').textContent=value(record.metrics?.received_to_terminal_wall_sec);
  if(latestRequest!==record.request_id){latestRequest=record.request_id;detailsAt=0;$('clearance').textContent='—';}
  if(Date.now()-detailsAt>1500){detailsAt=Date.now();loadRequest(record.request_id,{refresh:!terminal.has(record.status),expected:record}).then(data=>{
-  if(latestRequest===data.request_id){$('clearance').textContent=value(data.planned_clearance?.minimum?.distance_m*1000,1,' mm');renderReview();}
+  if(latestRequest===data.request_id){$('clearance').textContent=value(data.planned_clearance?.minimum?.distance_m*1000,1,' mm');const current=state?.history.find(item=>item.request_id===data.request_id)||record;$('request-error').textContent=guidanceText(current,data);$('request-error').hidden=!$('request-error').textContent;renderReview();}
  }).catch(()=>{});}
 }
 function history(records){
@@ -175,7 +248,7 @@ function renderDetail(group,id){
   planData=plan?requestCache.get(plan.request_id)?.data:null,summary=summaryOf(plan||record,planData||data);
  if(terminal.has(data.status)&&!terminal.has(base.status)){record.status=data.status;record.error=data.error;record.metrics=data.metrics;}
  $('history-detail').hidden=false;$('detail-title').textContent=group.executions.length?'계획과 승인 실행':group.plan?'실행 전 계획 기록':'실행 기록';
- $('detail-error').textContent=record.error?.message||'';
+ $('detail-error').textContent=guidanceText(record,data);
  const fields=$('detail-summary');fields.replaceChildren();fields.append(detailField('결과',labels[record.status]||record.status),detailField('계획 방식',strategyLabel(summary.strategy)),detailField('계획 궤적 시간',value(summary.duration,2,' s')),detailField('계획 양팔 간격',value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm')),detailField('시작→목표 최대 변화',value(Number.isFinite(summary.maximum)?summary.maximum*180/Math.PI:undefined,1,'°')),detailField('요청 처리 시간',value(record.metrics?.received_to_terminal_wall_sec)));
  const links=$('detail-links');links.replaceChildren();if(plan||group.executions.length)links.append(textNode('p','계획 ID · '+group.id));for(const execution of group.executions)links.append(textNode('p','승인 실행 ID · '+execution.request_id+' · '+(labels[execution.status]||execution.status)));if(!plan&&group.executions.length)links.append(textNode('small','이 화면에 원래 계획의 이력이 남아 있지 않습니다.'));
  const timeline=$('detail-timeline');timeline.replaceChildren();const names={received:'목표 수신',plan_ready:'계획 검토 준비',approved_plan_recheck:'승인 계획 재검사',dispatch:'실행 요청 전송',first_motion:'관절 이동 확인',actions_done:'양팔 실행 응답 완료',settled:'목표 자세 확인',cancel_received:'취소 요청 수신',terminal:'요청 종료'};
@@ -185,12 +258,12 @@ function renderDetail(group,id){
 }
 async function detail(id){const serial=++detailSerial,group=groupRequests(state?.history||[]).find(item=>item.records.some(record=>record.request_id===id));if(!group)return;renderDetail(group,id);try{await Promise.all([loadRequest(id,{force:true}),...(group.plan&&group.plan.request_id!==id?[loadRequest(group.plan.request_id,{force:true})]:[])]);if(serial===detailSerial)renderDetail(groupRequests(state?.history||[]).find(item=>item.id===group.id)||group,id);}catch(error){if(serial===detailSerial)$('detail-error').textContent='기록을 불러오지 못했습니다. '+error.message;}}
 function render(data){
- state=data;const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
- if(demoActive(data.demo?.current))badge($('connection'),'running',data.demo.current.status==='cancel_requested'?'시연 중단 중':'시연 진행 중');
- else badge($('connection'),latched?'blocked':ready?'ready':active?'running':'offline',latched?'정지 잠금':ready?'실행 가능':active?'요청 처리 중':data.lifecycle.phase==='starting'?'시뮬레이터 준비 중':data.simulation_verified?'연결됨 · 준비 확인':'연결 대기');
+ state=data;window.dispatchEvent?.(new CustomEvent('console-observation',{detail:data}));const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
+ for(const [identifier,pending] of pendingCancels){const record=data.history.find(item=>item.request_id===identifier);if(record&&terminal.has(record.status)||pending.session&&data.server?.session_id&&pending.session!==data.server.session_id)pendingCancels.delete(identifier);}
+ const connection=connectionPresentation(data);badge($('connection'),connection.status,connection.text);
  $('sim-time').textContent=value(data.simulation_sec,3,' s');$('state-age').textContent=value(data.state_age_sec*1000,0,' ms');
  if(data.state_age_sec===null)$('state-age').textContent='—';
- $('guard-state').textContent=latched?'정지 잠금':data.guard?.phase==='ready'?'감시 중':'연결 대기';$('guard-state').className=latched?'bad':data.guard?.phase==='ready'?'good':'';
+ $('guard-state').textContent=guardPresentation(data.guard).text;$('guard-state').className=latched?'bad':data.guard?.phase==='ready'?'good':'';
  $('connection-detail').textContent=JSON.stringify({domain:config.domain,simulation_verified:data.simulation_verified,topic_counts:data.graph,guard:data.guard,lifecycle:data.lifecycle},null,2);
  if(data.lifecycle.error)notice(data.lifecycle.error);
  renderDemos(data.demo);updateLiveFrames(data);renderContext();
@@ -198,7 +271,7 @@ function render(data){
  const record=data.history.find(r=>r.request_id===active)||data.history[0];requestProgress(record);
 }
 function disconnected(){
- readConnected=false;badge($('connection'),'blocked','상태 조회 중단');$('execute').disabled=$('review-preview').disabled=$('review-approve').disabled=$('review-discard').disabled=$('review-replan').disabled=true;
+ window.dispatchEvent?.(new CustomEvent('console-observation-lost'));readConnected=false;badge($('connection'),'blocked','상태 조회 중단');$('execute').disabled=$('review-preview').disabled=$('review-approve').disabled=$('review-discard').disabled=$('review-replan').disabled=true;
  for(const id of ['start','stop','attach','use-current','demo-run','demo-stop'])$(id).disabled=true;
  document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=true);
  $('admission').textContent='상태 조회가 끊겼습니다. 명령을 자동으로 재전송하지 않습니다.';
@@ -223,6 +296,7 @@ async function poll(){
 }
 async function action(path,body){try{const result=await request(path,body);await poll();return result;}catch(error){notice(error.message);return null;}}
 function demoActive(job){return Boolean(job&&['starting','running','cancel_requested'].includes(job.status));}
+function demoOutcomeStatus(job){return job?.status==='cancelled'&&job.cleanup_clean!==true?'unknown':job?.status;}
 function demoDefinition(id){return demoCatalog.find(item=>item.id===id);}
 function demoTitle(id){return demoDefinition(id)?.title||({contact_comparison:'접촉 자동 정지 비교',timing_comparison:'경로와 출발 시점 비교'}[id])||'동작 시연';}
 function demoVariant(value){
@@ -242,7 +316,7 @@ function mountDemos(){
 function demoStage(job){
  if(!job)return '실행 대기';
  if(job.status==='cancel_requested')return '중단 요청을 처리하고 있습니다. 현재 실행이 정리될 때까지 기다리세요.';
- if(job.status==='cancelled')return '시연 중단과 실행 정리를 마쳤습니다.';
+ if(job.status==='cancelled')return job.cleanup_clean===true?'시연 중단과 소유 실행의 정리를 마쳤습니다.':'시연 요청이 종료됐습니다. 실행 정리 결과를 확인해야 합니다.';
  if(job.status==='succeeded')return '두 조건의 실행과 결과 확인을 마쳤습니다.';
  if(job.status==='failed')return '시연을 완료하지 못했습니다. 아래 오류와 조건별 결과를 확인하세요.';
  const stage=String(job.stage||''),variant=demoVariant(job.variant).label;
@@ -274,7 +348,7 @@ function renderDemos(demo){
  const selected=demoDefinition(selectedDemo),display=current&&(busy||current.scenario===selectedDemo)?current:null;
  document.querySelectorAll('[data-demo]').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.demo===selectedDemo));button.disabled=busy;});
  $('demo-current-title').textContent=selected?selected.title:'시연을 선택하세요';$('demo-description').textContent=selected?.description||'두 조건을 순서대로 실행하고 결과를 확인합니다.';
- badge($('demo-status'),display?.status||'idle',display?undefined:'대기');$('demo-stage').textContent=demoStage(display);
+ badge($('demo-status'),demoOutcomeStatus(display)||'idle',display?undefined:'대기');$('demo-stage').textContent=demoStage(display);
  const steps=['준비',...demoVariants(selectedDemo).map(item=>item.label),'결과 확인'];let reached=0;
  if(display){const variant=demoVariants(display.scenario).findIndex(item=>item.id===display.variant);reached=display.status==='succeeded'?4:/compare|comparison/.test(String(display.stage||''))?3:variant>=0?variant+1:0;}
  const stages=$('demo-stages');stages.replaceChildren();steps.forEach((label,index)=>{const item=textNode('li',label);item.classList.toggle('reached',index<reached);item.classList.toggle('current',Boolean(display)&&index===reached);stages.append(item);});
@@ -283,7 +357,7 @@ function renderDemos(demo){
  $('demo-admission').textContent=busy?'현재 시연이 두 조건을 순서대로 실행하고 있습니다.':demo?.can_start?'준비 완료 · 새 시연을 실행할 수 있습니다.':demo?.reason||'시연 실행 상태를 확인하고 있습니다.';
  renderDemoResults(current);
  const history=Array.isArray(demo?.history)?demo.history:[];$('demo-history-empty').hidden=history.length>0;$('demo-history').replaceChildren();
- for(const job of history.slice(0,6)){const row=document.createElement('li'),identity=document.createElement('span');identity.append(textNode('strong',demoTitle(job.scenario)),textNode('code',String(job.job_id||'').slice(0,12)+'…'));const status=document.createElement('span');badge(status,job.status);row.append(identity,status);$('demo-history').append(row);}
+ for(const job of history.slice(0,6)){const row=document.createElement('li'),identity=document.createElement('span');identity.append(textNode('strong',demoTitle(job.scenario)),textNode('code',String(job.job_id||'').slice(0,12)+'…'));const status=document.createElement('span');badge(status,demoOutcomeStatus(job));row.append(identity,status);$('demo-history').append(row);}
 }
 function updateLiveFrames(data){
  if(sceneControls&&!data.view){sceneControls.destroy();sceneControls=null;document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent='ROS 관절 상태 → 서버 이미지';}
@@ -331,7 +405,7 @@ async function boot(){
  $('review-details').addEventListener('click',()=>{const review=state?.pending_plan;if(review){show('history');detail(review.plan_request_id);}});
  $('review-approve').addEventListener('click',async()=>{const review=state?.pending_plan;if($('review-approve').disabled||!review)return;$('review-approve').disabled=true;sceneControls?.pause();const result=await action('/api/plan/execute',{schema_version:1,request_id:crypto.randomUUID().replaceAll('-',''),plan_request_id:review.plan_request_id,plan_sha256:review.plan_sha256,session_id:review.session_id});if(result)latestRequest=null;});
  $('review-discard').addEventListener('click',async()=>{const review=state?.pending_plan;if(!review)return;$('review-discard').disabled=true;const result=await action('/api/plan/discard',{request_id:review.plan_request_id});if(result)await sceneControls?.select('live',state.view?.config_source_id);await poll();});
- document.querySelectorAll('[data-cancel]').forEach(el=>el.addEventListener('click',()=>{if(state?.active_request_id)action('/api/cancel',{request_id:state.active_request_id}).then(r=>{if(r)notice('양팔 취소를 요청했습니다. 취소 완료 상태를 확인하세요.');});}));
+ document.querySelectorAll('[data-cancel]').forEach(el=>el.addEventListener('click',cancelCurrentRequest));
  document.querySelectorAll('[data-camera]').forEach(el=>el.addEventListener('click',async()=>{if(sceneControls&&!sceneControls.isImage()){sceneControls.camera(el.dataset.camera);document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b.dataset.camera===el.dataset.camera));}else if(await action('/api/camera',{view:el.dataset.camera}))document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('selected',b.dataset.camera===el.dataset.camera));}));
  $('import-target').addEventListener('click',()=>$('target-file').click());
  $('target-file').addEventListener('change',async()=>{

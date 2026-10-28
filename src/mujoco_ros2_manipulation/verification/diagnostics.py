@@ -11,11 +11,14 @@ from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 
 
 def diagnostic_environment(report, args):
-    return dict(
+    environment = dict(
         os.environ,
         MANIPULATION_DIAGNOSTICS_PATH=str(report.directory / "physics.json"),
         MANIPULATION_DIAGNOSTICS_RUN_ID=report.run_id,
     )
+    if os.environ.get("MANIPULATION_STEP_WITNESS") == "1":
+        environment["MANIPULATION_STEP_WITNESS_PATH"] = str(report.directory / "step-witness.json")
+    return environment
 
 
 def check_step_coverage(data, *, run_id, source_sha256, timestep):
@@ -138,18 +141,43 @@ def check_clock_stop_physics(data, *, run_id, source_sha256, timestep):
 
 
 def finalize_physics(report, cell, args):
+    """Validate native evidence; an interrupted observation is not a full pass.
+
+    The runner saves the original exception before invoking finalizers, while
+    its terminal status is still ``running``. Explicit cancellation/keyboard
+    interruption therefore uses that error identity. Other failures retain the
+    normal expected-scenario validator and are never treated as cancellation.
+    The return value is additive metadata; the runner ignores finalizer returns.
+    """
     path = report.directory / "physics.json"
     data = json.loads(path.read_text())
-    # Keep contact pairs and timing evidence even when the zero-contact policy fails.
-    report.update(physics=data, physics_report_sha256=file_sha256(path))
+    error = report.data.get("error") or {}
+    interrupted = (report.data.get("status") in ("running", "interrupted")
+                   and error.get("type") in ("DemoCancelled", "KeyboardInterrupt"))
     stop_test = getattr(args, "contact_stop_test", False)
     clock_test = getattr(args, "clock_stop_test", False)
+    # An intentional-contact test can be cancelled before contact. Validate the
+    # actual zero-contact observation in that case, without claiming that its
+    # expected stop happened. A latched observation still needs the strict stop
+    # validator, including complete step coverage and the stationary hold.
+    observed_stop = data.get("stop_latched") is True
+    partial_free = interrupted and (stop_test or clock_test) and not observed_stop
     validator = (
         check_clock_stop_physics
-        if clock_test
-        else (check_stop_physics if stop_test else check_physics)
+        if clock_test and not partial_free
+        else (check_stop_physics if stop_test and not partial_free else check_physics)
     )
-    options = {} if stop_test or clock_test else {"require_interlock": True}
+    observed_condition = ("clock_stop" if validator is check_clock_stop_physics else
+                          "contact_stop" if validator is check_stop_physics else "zero_contact")
+    verification = dict(schema_version=1, interrupted=interrupted, incomplete=interrupted,
+        native_checks_passed=False, observed_condition=observed_condition,
+        scope="Interrupted native observation; full scenario did not complete" if interrupted
+              else "Native checks for the completed verifier scenario")
+    # Keep raw evidence even if validation fails. A prior true flag must not
+    # survive a failed validator or an explicitly incomplete observation.
+    report.update(physics=data, physics_report_sha256=file_sha256(path),
+                  physics_checks_passed=False, physics_verification=verification)
+    options = {"require_interlock": True} if validator is check_physics else {}
     validator(
         data,
         run_id=report.run_id,
@@ -162,7 +190,9 @@ def finalize_physics(report, cell, args):
         if not fixture.is_file():
             raise ValueError("Contact test fixture missing")
         report.update(contact_test_model_sha256=file_sha256(fixture))
-    report.update(physics_checks_passed=True)
+    verification.update(native_checks_passed=True)
+    report.update(physics_checks_passed=not interrupted, physics_verification=verification)
+    return verification
 
 
 def process_sample(group, proc=Path("/proc")):

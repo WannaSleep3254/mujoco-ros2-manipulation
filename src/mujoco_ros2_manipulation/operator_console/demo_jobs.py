@@ -56,6 +56,8 @@ class DemoJobs:
 
     def _reason(self):
         app = self.app
+        if getattr(app, "execution_target", None) is not None:
+            return "선택한 설치 환경에서는 기존 고정 환경 시연을 실행할 수 없습니다."
         if app.views.preview:
             return "미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요."
         if self.busy or app.phase in ("starting", "running", "stopping"):
@@ -299,6 +301,15 @@ class DemoJobs:
         with app.cleanup_lock:
             self._stop_sync()
 
+    def _audit_worker_wait(self, action, process, *, elapsed_sec, return_code=None, timed_out=False):
+        try:
+            self.app.audit(action, job_id=self.current["job_id"], worker_pid=process.pid,
+                           timeout_sec=45, elapsed_sec=elapsed_sec,
+                           return_code=return_code, timed_out=timed_out)
+        except Exception:
+            # Diagnostics must not interrupt cleanup or alter its clean verdict.
+            pass
+
     def _stop_sync(self):
         app = self.app
         with app.lock:
@@ -311,15 +322,24 @@ class DemoJobs:
             if not already_requested and process.poll() is None:
                 process.send_signal(signal.SIGINT)
         forced = False
+        wait_started = time.monotonic()
+        self._audit_worker_wait("demo_worker_wait_started", process, elapsed_sec=0.0)
         try:
-            process.wait(timeout=45)
+            return_code = process.wait(timeout=45)
         except subprocess.TimeoutExpired:
+            self._audit_worker_wait("demo_worker_wait_finished", process,
+                                    elapsed_sec=time.monotonic()-wait_started,
+                                    return_code=process.returncode, timed_out=True)
             forced = True
             # Only a still-identical launch leader authorizes signaling its group.
             with app.lock:
                 self.refresh_for_cleanup()
             self.cleanup_launches()
             stop_process(process)
+        else:
+            self._audit_worker_wait("demo_worker_wait_finished", process,
+                                    elapsed_sec=time.monotonic()-wait_started,
+                                    return_code=return_code)
         with app.lock:
             self.refresh_for_cleanup()
         forced = self.cleanup_launches() or forced

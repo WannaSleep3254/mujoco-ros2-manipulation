@@ -18,6 +18,7 @@ from launch_ros.actions import Node
 from mujoco_ros2_manipulation.ros_launch import stop_when_core_exits
 from mujoco_ros2_manipulation.workcells.config import load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import check_workcell
+from mujoco_ros2_manipulation.workcells.execution_target import load_execution_target
 from mujoco_ros2_manipulation.workcells.contact_demo import (
     contact_demo_model,
     add_demo_urdf,
@@ -31,6 +32,10 @@ from mujoco_ros2_manipulation.workcells.contact_policy import (
 def nodes(context):
     cell = load_workcell(LaunchConfiguration("workcell").perform(context))
     check_workcell(cell)
+    target = load_execution_target(cell,
+        LaunchConfiguration("execution_environment").perform(context) or None,
+        LaunchConfiguration("execution_manifest_sha256").perform(context) or None)
+    output = cell.output if target is None else target.output
     check_contact_runtime(cell.root)
     contact_test = (
         LaunchConfiguration("contact_test").perform(context).lower() == "true"
@@ -48,6 +53,8 @@ def nodes(context):
     clock_test = LaunchConfiguration("clock_test").perform(context)
     if clock_test not in ("off", "missing", "repeated"):
         raise ValueError("clock_test must be off, missing or repeated")
+    if target is not None and (contact_test or contact_demo or clock_test != "off"):
+        raise ValueError("Execution environments cannot be combined with model/fault-injection fixtures")
     if clock_test != "off":
         if contact_test or contact_demo:
             raise ValueError("Clock injection cannot be combined with contact fixtures")
@@ -58,7 +65,7 @@ def nodes(context):
             )
     gui = LaunchConfiguration("gui").perform(context).lower() == "true"
     rviz = LaunchConfiguration("rviz").perform(context).lower() == "true"
-    robot = ET.parse(cell.output / "cell.urdf").getroot()
+    robot = ET.parse(output / "cell.urdf").getroot()
     robot.find("ros2_control/hardware/param[@name='headless']").text = str(
         not gui
     ).lower()
@@ -91,7 +98,7 @@ def nodes(context):
         output="screen",
         parameters=[
             description,
-            str(cell.output / "controllers.yaml"),
+            str(output / "controllers.yaml"),
             {"use_sim_time": True},
         ],
     )
@@ -119,7 +126,7 @@ def nodes(context):
                 output="screen",
             )
         )
-    config = yaml.safe_load((cell.output / "moveit.yaml").read_text())
+    config = yaml.safe_load((output / "moveit.yaml").read_text())
     planning_case = LaunchConfiguration("planning_case").perform(context)
     if planning_case != "none":
         from mujoco_ros2_manipulation.workcells.interference import load_case
@@ -160,11 +167,13 @@ def nodes(context):
             executable="rviz2",
             output="screen",
             additional_env={"LD_PRELOAD": str(guard)},
-            arguments=["-d", str(cell.output / "moveit.rviz")],
+            arguments=["-d", str(output / "moveit.rviz")],
             parameters=[config],
         )
         result.append(window)
         core.append(window)
+    if target is not None:
+        target.validate()
     return [
         RegisterEventHandler(
             OnProcessExit(target_action=node, on_exit=stop_when_core_exits)
@@ -177,6 +186,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             DeclareLaunchArgument("workcell", default_value="fr5_ur5e"),
+            DeclareLaunchArgument("execution_environment", default_value=""),
+            DeclareLaunchArgument("execution_manifest_sha256", default_value=""),
             DeclareLaunchArgument("gui", default_value="true"),
             DeclareLaunchArgument("rviz", default_value="true"),
             DeclareLaunchArgument("contact_test", default_value="false"),

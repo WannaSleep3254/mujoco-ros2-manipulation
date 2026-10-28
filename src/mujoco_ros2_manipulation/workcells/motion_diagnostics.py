@@ -1,14 +1,22 @@
 """ROS/engine-independent diagnostics; measurements never relax execution gates."""
 from copy import deepcopy
 import math
+from .environment_clearance import require_environment_result
 
 
-def measure_endpoints(initial, target, evaluator, threshold_m, *, checkpoint=None):
+def measure_endpoints(initial, target, evaluator, threshold_m, *, checkpoint=None,
+                      environment_threshold_m=None):
     """Use the injected evaluator at both complete named states, including failures."""
     if type(threshold_m) not in (int, float) or not math.isfinite(threshold_m) or threshold_m <= 0:
         raise ValueError("Expected a positive finite clearance threshold")
+    if environment_threshold_m is not None and (type(environment_threshold_m) not in (int, float)
+            or not math.isfinite(environment_threshold_m) or environment_threshold_m <= 0):
+        raise ValueError("Expected a positive finite environment threshold")
     result = dict(threshold_m=threshold_m, endpoints={}, endpoint_violations=[],
                   scope="Sampled cross-arm geometry only; separate from MoveIt validity")
+    if environment_threshold_m is not None:
+        result.update(environment_threshold_m=environment_threshold_m,
+                      scope="Sampled inter-arm and moving-robot/fixed-environment geometry; separate from MoveIt validity")
     for name, state in (("start", initial), ("goal", target)):
         if checkpoint:
             checkpoint()
@@ -16,6 +24,10 @@ def measure_endpoints(initial, target, evaluator, threshold_m, *, checkpoint=Non
         if not math.isfinite(value["distance_m"]):
             raise ValueError("Nonfinite endpoint distance")
         value["below_policy"] = value["distance_m"] < threshold_m
+        if environment_threshold_m is not None:
+            environment = require_environment_result(value.get("environment"))
+            value["environment_below_policy"] = environment["distance_m"] < environment_threshold_m
+            value["below_policy"] |= value["environment_below_policy"]
         result["endpoints"][name] = value
         if value["below_policy"]:
             result["endpoint_violations"].append(name)
@@ -26,15 +38,20 @@ def measure_endpoints(initial, target, evaluator, threshold_m, *, checkpoint=Non
 
 def path_clearance_diagnostic(endpoints, evaluation, duration_sec):
     """Classify the first subthreshold sample, without claiming a full-path minimum."""
-    witness = evaluation["minimum"]
+    witness = (evaluation["environment_minimum"] if evaluation.get("rejection_kind") == "environment_clearance"
+               else evaluation["minimum"])
     location = None
     if not evaluation["complete"]:
         stamp = witness["time_sec"]
         location = "start" if abs(stamp) <= 1e-9 else "goal" if abs(stamp-duration_sec) <= 1e-9 else "intermediate"
-    return dict(endpoint_violations=list(endpoints["endpoint_violations"]),
+    result = dict(endpoint_violations=list(endpoints["endpoint_violations"]),
                 sampled_path_complete=evaluation["complete"], violation_location=location,
                 witness=deepcopy(witness),
                 witness_semantics="Minimum of evaluated samples; sampling stops at first policy violation")
+    if "environment_minimum" in evaluation:
+        result.update(environment_witness=deepcopy(evaluation["environment_minimum"]),
+                      violation_scope=evaluation.get("rejection_kind"))
+    return result
 
 
 def update_candidate_path_diagnostic(trace_data, candidates):

@@ -24,8 +24,10 @@ import uuid
 
 if __package__:
     from .view_binding import binding_id as _binding_id, envelope
+    from .object_hierarchy import normalize_robot_roots, validate_object_hierarchy, MAX_HIERARCHY_BYTES
 else:  # Detached, CPU-free draft tests; package integration uses the branch above.
     from view_binding import binding_id as _binding_id, envelope
+    from object_hierarchy import normalize_robot_roots, validate_object_hierarchy, MAX_HIERARCHY_BYTES
 
 
 MAX_SAFE_INTEGER = 2**53 - 1
@@ -117,6 +119,7 @@ class SceneSource:
     joint_names: tuple
     home: dict
     validate: Callable[[], object]
+    robot_roots: tuple = ()
 
     def __post_init__(self):
         _require(isinstance(self.id, str) and len(self.id) <= 128 and
@@ -134,6 +137,7 @@ class SceneSource:
         object.__setattr__(self, "xml_path", path)
         object.__setattr__(self, "joint_names", names)
         object.__setattr__(self, "home", deepcopy(home))
+        object.__setattr__(self, "robot_roots", normalize_robot_roots(self.robot_roots))
 
 
 def _manifest(raw, source, model_sha256):
@@ -223,6 +227,7 @@ class SceneHost:
         self.binding = self.binding_id = self.source = None
         self.status, self.error = "idle", None
         self._manifest = self._manifest_raw = self._manifest_descriptor = None
+        self._hierarchy_raw = self._hierarchy_descriptor = None
         self._assets = {}
         self._pose = None
         self._samples = OrderedDict()
@@ -236,6 +241,7 @@ class SceneHost:
 
     def _clear(self):
         self._manifest = self._manifest_raw = self._manifest_descriptor = self._pose = None
+        self._hierarchy_raw = self._hierarchy_descriptor = None
         self._assets = {}
         self._samples.clear()
         self._sequence = self._published_sequence = 0
@@ -248,7 +254,8 @@ class SceneHost:
             _require(not self.closed, "Scene host is closed")
             if identifier == self.binding_id and self.source is not None:
                 _require(self.source.id == source.id and self.source.xml_path == source.xml_path
-                         and self.source.joint_names == source.joint_names and self.source.home == source.home,
+                         and self.source.joint_names == source.joint_names and self.source.home == source.home
+                         and self.source.robot_roots == source.robot_roots,
                          "A new source requires a new view generation")
                 return identifier
             self.revision += 1
@@ -322,6 +329,7 @@ class SceneHost:
             return deepcopy(dict(schema_version=1, status=self.status, binding_id=self.binding_id, binding=self.binding,
                 source=None if self.source is None else dict(id=self.source.id, label=self.source.label),
                 manifest_descriptor=self._manifest_descriptor, sequence=self._published_sequence,
+                hierarchy_available=self._hierarchy_raw is not None, hierarchy_descriptor=self._hierarchy_descriptor,
                 pose_ready=self._pose is not None, worker_running=process is not None and process.poll() is None,
                 error=self.error))
 
@@ -332,6 +340,12 @@ class SceneHost:
         with self.lock:
             self._ready(binding_id)
             return self._manifest_raw
+
+    def hierarchy_bytes(self, binding_id):
+        """Return optional frozen hierarchy only for the exact current binding."""
+        with self.lock:
+            self._ready(binding_id)
+            return self._hierarchy_raw
 
     def asset_bytes(self, sha256, binding_id=None):
         _require(isinstance(sha256, str) and SHA256.fullmatch(sha256), "Invalid scene asset digest")
@@ -384,6 +398,8 @@ class SceneHost:
                     "--joint-names-json", _canonical(list(source.joint_names)).decode(),
                     "--home-json", _canonical(source.home).decode(), "--directory", str(folder),
                     "--parent-pid", str(os.getpid())]
+                if source.robot_roots:
+                    argv.extend(("--robot-roots-json", _canonical(source.robot_roots).decode()))
                 process = self.process_factory(argv, cwd=self.cwd, stdin=subprocess.DEVNULL,
                     stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
                 now = self.clock()
@@ -429,6 +445,16 @@ class SceneHost:
             return
         source = epoch["source"]
         data, catalog = _manifest(raw, source, epoch["model_sha256"])
+        try:
+            hierarchy_raw = _regular(epoch["folder"] / "hierarchy.json", MAX_HIERARCHY_BYTES)
+        except FileNotFoundError:
+            hierarchy_raw = None  # Older/fake workers provide no hierarchy claim.
+        hierarchy_descriptor = None
+        if hierarchy_raw is not None:
+            hierarchy = validate_object_hierarchy(_json(hierarchy_raw), data, robot_roots=source.robot_roots)
+            hierarchy_descriptor = dict(sha256=hashlib.sha256(hierarchy_raw).hexdigest(),
+                byte_length=len(hierarchy_raw), scene_sha256=data["scene_sha256"],
+                bodies=hierarchy["counts"]["bodies"], geoms=hierarchy["counts"]["geoms"])
         assets = {}
         asset_directory = epoch["folder"] / "assets"
         _require(not asset_directory.is_symlink() and asset_directory.is_dir(), "Invalid owned asset directory")
@@ -443,6 +469,7 @@ class SceneHost:
             if self.closed or epoch["revision"] != self.revision:
                 return
             self._manifest, self._manifest_raw, self._assets = data, raw, assets
+            self._hierarchy_raw, self._hierarchy_descriptor = hierarchy_raw, hierarchy_descriptor
             self._manifest_descriptor = dict(sha256=hashlib.sha256(raw).hexdigest(), byte_length=len(raw),
                 model_sha256=data["model_sha256"], scene_sha256=data["scene_sha256"], compiled_model_sha256=data["compiled_model_sha256"],
                 geoms=len(data["geoms"]), assets=len(catalog))

@@ -18,8 +18,10 @@ import uuid
 
 if __package__:
     from .scene_view import CompiledScene
+    from .object_hierarchy import compiled_object_hierarchy, normalize_robot_roots
 else:
     from scene_view import CompiledScene
+    from object_hierarchy import compiled_object_hierarchy, normalize_robot_roots
 
 
 MAX_INPUT_BYTES = 256 * 1024
@@ -219,6 +221,7 @@ def main(argv=None):
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--joint-names-json", required=True)
     parser.add_argument("--home-json", required=True)
+    parser.add_argument("--robot-roots-json", default="[]")
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--parent-pid", type=int, required=True)
     args = parser.parse_args(argv)
@@ -234,12 +237,16 @@ def main(argv=None):
     try:
         names = validate_joint_names(_load(args.joint_names_json.encode("utf-8"), MAX_ARGUMENT_BYTES))
         home = _positions(_load(args.home_json.encode("utf-8"), MAX_ARGUMENT_BYTES), names)
+        roots = normalize_robot_roots(_load(args.robot_roots_json.encode("utf-8"), MAX_ARGUMENT_BYTES))
         # A restart cannot present a pose produced by an earlier child.
-        for name in ("pose.json", "error.json", "manifest.json"):
+        for name in ("pose.json", "error.json", "manifest.json", "hierarchy.json"):
             (args.directory/name).unlink(missing_ok=True)
         scene = CompiledScene(args.model, list(names), home)
         if stopped[0] or not parent_present(args.parent_pid):
             return 0
+        # The manifest is the readiness marker. Publish hierarchy from the same
+        # in-memory compiled model first; no second compile or name-prefix guess.
+        _atomic_json(args.directory/"hierarchy.json", compiled_object_hierarchy(scene, roots))
         publish_manifest(scene, args.directory)
         worker = SceneWorker(scene, args.directory, names)
         while not stopped[0] and parent_present(args.parent_pid):
