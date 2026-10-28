@@ -13,6 +13,10 @@ import yaml
 from mujoco_ros2_manipulation.paths import ROOT
 
 
+RUNTIME_PATCH_KEYS = ('patch', 'monitor_patch', 'contact_stop_patch', 'clock_watchdog_patch',
+                      'control_loop_shutdown_patch')
+
+
 def local_path(root, name):
     if not isinstance(name, str) or Path(name).is_absolute():
         raise ValueError(f'Expected workspace-relative path: {name}')
@@ -39,10 +43,8 @@ def load_manifest(root=ROOT):
                 base = local_path(root, data['repositories'][package['repository']]['path'])
             local_path(base, package['path'])
         runtime = data['runtime']
-        local_path(root, runtime['patch'])
-        local_path(root, runtime['monitor_patch'])
-        local_path(root, runtime['contact_stop_patch'])
-        local_path(root, runtime['clock_watchdog_patch'])
+        for key in RUNTIME_PATCH_KEYS:
+            local_path(root, runtime[key])
         if runtime['repository'] not in data['repositories'] or runtime['package'] not in data['packages']:
             raise ValueError('Unknown runtime repository/package')
         seen = set()
@@ -192,7 +194,9 @@ def colcon(root, packages, runtime=False):
     if runtime:
         command += ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                     f'-DMANIPULATION_MONITOR_INCLUDE_DIR={root / "native"}',
-                    '-DMANIPULATION_MONITOR_SHA256=' + hashlib.sha256((root / 'native/step_monitor.hpp').read_bytes()).hexdigest()]
+                    '-DMANIPULATION_MONITOR_SHA256=' + hashlib.sha256((root / 'native/step_monitor.hpp').read_bytes()).hexdigest(),
+                    f'-DMANIPULATION_SHUTDOWN_INCLUDE_DIR={root / "native"}',
+                    '-DMANIPULATION_SHUTDOWN_SHA256=' + hashlib.sha256((root / 'native/control_loop_shutdown.hpp').read_bytes()).hexdigest()]
     run(['bash', '-c', 'source "$1"\nexport CMAKE_PREFIX_PATH="$2/runtime/root/usr:$2/runtime/root/opt/ros/humble:${CMAKE_PREFIX_PATH:-}"\nshift 2\nexec "$@"',
          'manipulation-build', root / 'manipulation_env.sh', root, *command], cwd=root)
 
@@ -242,7 +246,7 @@ def main():
             runtime = manifest['runtime']
             source = local_path(ROOT, manifest['repositories'][runtime['repository']]['path'])
             apply_patch_series(source, [local_path(ROOT, runtime[key])
-                for key in ('patch', 'monitor_patch', 'contact_stop_patch', 'clock_watchdog_patch')])
+                for key in RUNTIME_PATCH_KEYS])
             prepare_debs(ROOT, manifest, args.download_debs)
             native = ROOT / 'runtime/native'
             native.mkdir(parents=True, exist_ok=True)

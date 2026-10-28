@@ -212,6 +212,75 @@ class ConsoleViewsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'model changed'):
             source.validate()
 
+    def test_fr3_display_profile_preserves_execution_workcell_and_has_no_live_binding(self):
+        output=self.cell.root/'fr3-display';output.mkdir()
+        (output/'source.json').write_text('{"robot_profile_sha256":"fr3-checked"}')
+        profile=SimpleNamespace(output=output,label='FAIRINO FR3',scene_path=output/'fr3.xml',
+            joints=['fr3_joint'+str(i) for i in range(1,7)],home=[0.]*6)
+        checked=[]
+        def load(identifier,**kwargs):
+            if identifier!='fr3':raise ValueError('unavailable')
+            return profile
+        owner=console_class(load_profile=load,check_generated_model=lambda p:checked.append(p))(
+            self.app,host_factory=FakeHost)
+        self.assertIn(dict(id='profile:fr3',label='FAIRINO FR3',available=True),owner.catalog)
+        base=owner.base
+        before=dict(cell=self.app.cell,config=deepcopy(self.app.state.config),
+            positions=deepcopy(self.app.state.positions),server=deepcopy(self.app.state.server),
+            suspended=self.app.state.admission_suspended)
+        selected=owner.select(dict(mode='model_preview',source_id='profile:fr3'))
+        self.assertTrue(selected['preview_active'])
+        self.assertEqual(selected['binding']['source_id'],'profile:fr3')
+        self.assertEqual(selected['binding']['mode'],'model_preview')
+        for name in ('motion_session_id','job_id','run_id','request_id'):
+            self.assertIsNone(selected['binding'][name])
+        self.assertIs(owner.base,base)
+        self.assertIs(self.app.cell,before['cell'])
+        self.assertEqual(self.app.state.config,before['config'])
+        self.assertEqual(self.app.state.positions,before['positions'])
+        self.assertEqual(self.app.state.server,before['server'])
+        self.assertEqual(self.app.state.admission_suspended,before['suspended'])
+        self.assertEqual(owner.registry['profile:fr3'].joint_names,tuple(profile.joints))
+        self.assertGreaterEqual(len(checked),2)
+        binding=selected['binding_id']
+        with self.assertRaisesRegex(ValueError,'실시간 제어'):
+            owner.select(dict(mode='live',source_id='profile:fr3'))
+        self.assertEqual(owner.host.snapshot()['binding_id'],binding)
+        owner.tick()
+        self.assertEqual(owner.host.submissions,[],'A static FR3 preview must not consume FR5/UR5e feedback')
+        restored=owner.select(dict(mode='live',source_id=base.id))
+        self.assertEqual(restored['binding']['source_id'],'workcell:fr5_ur5e')
+        self.assertEqual(restored['binding']['motion_session_id'],before['server']['session_id'])
+        self.assertIs(owner.base,base)
+
+    def test_fr3_missing_or_stale_generated_model_stays_unavailable(self):
+        self.assertIn(dict(id='profile:fr3',label='FR3',available=False),self.owner.catalog)
+        self.assertNotIn('profile:fr3',self.owner.registry)
+        def load(identifier,**kwargs):
+            if identifier!='fr3':raise ValueError('unavailable')
+            return SimpleNamespace(id='fr3')
+        def stale(profile):raise ValueError('Stale generated model')
+        owner=console_class(load_profile=load,check_generated_model=stale)(self.app,host_factory=FakeHost)
+        self.assertNotIn('profile:fr3',owner.registry)
+        self.assertIn(dict(id='profile:fr3',label='FR3',available=False),owner.catalog)
+        with self.assertRaisesRegex(ValueError,'준비된 목록'):
+            owner.select(dict(mode='model_preview',source_id='profile:fr3'))
+
+    def test_fr3_metadata_replacement_rejects_selection_without_changing_current_binding(self):
+        output=self.cell.root/'fr3-display';output.mkdir()
+        path=output/'source.json';path.write_text('{"robot_profile_sha256":"original-fr3"}')
+        profile=SimpleNamespace(output=output,label='FR3',scene_path=output/'fr3.xml',joints=['q3'],home=[0.])
+        def load(identifier,**kwargs):
+            if identifier!='fr3':raise ValueError('unavailable')
+            return profile
+        owner=console_class(load_profile=load)(self.app,host_factory=FakeHost)
+        owner.tick();previous=owner.host.snapshot()['binding_id']
+        path.write_text('{"robot_profile_sha256":"changed-fr3"}')
+        with self.assertRaisesRegex(ValueError,'model changed'):
+            owner.select(dict(mode='model_preview',source_id='profile:fr3'))
+        self.assertEqual(owner.host.snapshot()['binding_id'],previous)
+        self.assertEqual(owner.mode,'live')
+
     def test_bad_new_motion_session_cannot_leave_old_binding_current(self):
         self.owner.tick();self.assertTrue(self.owner.host.submissions)
         self.app.state.server={'session_id':'untrusted-invalid-session'}

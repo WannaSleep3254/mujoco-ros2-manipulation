@@ -47,3 +47,13 @@
 @media(max-width:760px){.scene-geometry-fields{gap:10px}.scene-geometry-fields label:first-child{flex-basis:100%}.scene-geometry-fields select{flex:1;max-width:100%}.scene-geometry-fields input[type=range]{width:90px}}
 
 .inspection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}.inspection-card{background:#fff;border:1px solid #d5e0e5;border-radius:8px;padding:20px;min-width:0}.inspection-card h3{margin-top:0}.inspection-card select{width:100%;margin:8px 0 14px;max-width:100%}.inspection-card img{display:block;width:100%;max-height:360px;object-fit:contain;background:#18252c}.inspection-card img[hidden]{display:none}.inspection-card dd{overflow-wrap:anywhere}.inspection-card .detail-timeline{max-height:440px;overflow:auto}.inspection-card .detail-summary{display:block}.inspection-card .detail-field{margin:12px 0}.inspection-card .detail-field dt{color:#536b78;font-size:12px}.inspection-card .detail-field dd{margin:4px 0;font-size:13px}
+
+/* One goal panel; TCP references are distinct from physical gripper tooling. */
+.command-card>.panel-heading>div{flex-direction:column;align-items:flex-start;gap:3px;min-width:0}.command-card #goal-kind{max-width:155px;font-size:11px;padding:7px 8px}.joint-unit{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:12px 18px 0;font-size:10px;color:var(--muted)}.joint-unit select{font-size:11px;padding:5px 8px}
+#joint-goal-panel>#strategy{margin:0 18px;width:calc(100% - 36px);font-size:11px}#pose-goal-panel{padding-top:16px}#pose-arm{display:block;margin:0 18px;width:calc(100% - 36px);font-size:11px}#pose-tool{overflow-wrap:anywhere}.pose-scope{font-size:10px;color:#466c75;background:#edf4f4;padding:10px 12px;margin:10px 18px;line-height:1.7}.pose-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 18px;padding:0;border:0;min-width:0}.pose-fields legend{font-size:10px;color:#617887;margin-bottom:8px}.pose-fields label{font-size:10px;color:#617887;min-width:0}.pose-fields input{display:block;width:100%;min-width:0;margin-top:4px;border:1px solid #dde4e9;border-radius:4px;background:#f8fafb;padding:8px 6px;font-size:12px;font-variant-numeric:tabular-nums}.pose-fields input:invalid{border-color:#d9a3a8;background:#fff8f8}.quaternion-fields{grid-template-columns:repeat(4,minmax(0,1fr))}#pose-support{color:#567581;overflow-wrap:anywhere}
+
+/* Give all five navigation buttons their own wrapping row below the brand. */
+@media(max-width:760px){
+ .sidebar{flex-wrap:wrap;row-gap:10px}
+ .sidebar nav{flex:1 1 100%;min-width:0;flex-wrap:wrap}
+}

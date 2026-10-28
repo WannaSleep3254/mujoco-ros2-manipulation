@@ -60,6 +60,7 @@ jobs:
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare-environment --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment-views --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-benchmark-planner-cache --list > /tmp/planner-cache-declarations.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: python-distributions
@@ -107,10 +108,35 @@ jobs:
           if [[ '${{ matrix.robot }}' == 'workcell' ]]; then
             python3 build_workspace.py --download-debs --workcell '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
             PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
-            python3 build_workspace.py --component models --robots fr10
+            python3 build_workspace.py --component models --robots fr10 fr3
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi
+      - name: Native shutdown ordering with absent/paused clock and held JTC update
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          task_native_binary="$PWD/ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"
+          dpkg-query -W -f='${Package} ${Version}\n' \
+            ros-humble-controller-manager ros-humble-joint-trajectory-controller ros-humble-rclcpp \
+            | tee runtime/validation/native-shutdown-dependencies.txt
+          python3 tests/native/shutdown_probe/test_contract.py
+          python3 tests/integration/verify_native_shutdown_clock.py \
+            --binary "$task_native_binary" --domain 201 \
+            --output runtime/validation/native-shutdown-clock-ci
+          python3 tests/native/shutdown_probe/build_probe.py \
+            --output runtime/validation/native-shutdown-probe-build-ci
+          python3 tests/integration/verify_native_shutdown_race.py \
+            --expect fixed --domain 206 \
+            --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
+            --probe runtime/validation/native-shutdown-probe-build-ci/update_probe.so \
+            --output runtime/validation/native-shutdown-held-update-ci
+      - name: FR3 direct, MoveIt, moving cancel and fresh stop observation
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 verify_robot_cancel.py --robot fr3 --domain 162 \
+            --output runtime/validation/fr3-cancel-ci
       - name: Model regression checks
         if: matrix.scene == 'default' || matrix.robot == 'workcell'
         run: PYTHONPATH=src .venv/bin/python -m unittest discover -s tests/model -t . -v
@@ -118,6 +144,15 @@ jobs:
         if: matrix.robot == 'workcell'
         run: |
           .venv/bin/python verify_environment_overlay.py --native --catalog-output runtime/validation/environment-preview-catalog.json
+      - name: Independent FR5 grasp physics, display identity and owned cancellation
+        if: matrix.robot == 'workcell'
+        run: |
+          PYTHONPATH=src .venv/bin/python -m unittest \
+            tests.unit.test_grasp_contract tests.unit.test_grasp_fixture \
+            tests.unit.test_grasp_fr5_prototype tests.unit.test_grasp_display_export \
+            tests.unit.test_grasp_demo_server -v
+          PYTHONPATH=src .venv/bin/python tests/integration/verify_grasp_demo.py \
+            --output runtime/validation/independent-fr5-grasp-ci
       - name: Read-only allowlisted environment previews and blocked mutations
         if: matrix.robot == 'workcell'
         run: |
@@ -189,6 +224,20 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_operator_console.py --domain 143 --no-render --startup-cycles 2 --startup-hold-seconds 2
+      - name: TCP Pose plan review, completion errors and blocked dispatch
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 -m mujoco_ros2_manipulation.workcells.verify_pose_goal --domain 151 \
+            --output runtime/validation/pose-goal-ci
+      - name: Opt-in planner and cache identity, fallback and matched timing
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 benchmark_planner_cache.py --mode functional --domain 160 \
+            --output runtime/validation/planner-cache-functional-ci
+          python3 benchmark_planner_cache.py --mode performance --repeats 3 --domain 161 \
+            --output runtime/validation/planner-cache-performance-ci
       - name: Local CPU 3D sources, actual ROS state and read-only saved plans
         if: matrix.robot == 'workcell'
         run: |

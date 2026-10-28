@@ -86,13 +86,13 @@ def write_xml(root, path):
 def moveit_parameters(cell, urdf, srdf, limits):
     groups = {
         i.group: {
-            "planner_configs": ["RRTConnectkConfigDefault"],
+            "planner_configs": ["RRTConnectkConfigDefault", "RRTkConfigDefault"],
             "longest_valid_segment_fraction": 0.005,
         }
         for i in cell.instances
     }
     groups["both_arms"] = {
-        "planner_configs": ["RRTConnectkConfigDefault"],
+        "planner_configs": ["RRTConnectkConfigDefault", "RRTkConfigDefault"],
         "longest_valid_segment_fraction": 0.005,
     }
     return {
@@ -126,6 +126,10 @@ def moveit_parameters(cell, urdf, srdf, limits):
             "planner_configs": {
                 "RRTConnectkConfigDefault": {
                     "type": "geometric::RRTConnect",
+                    "range": 0.0,
+                },
+                "RRTkConfigDefault": {
+                    "type": "geometric::RRT",
                     "range": 0.0,
                 }
             },

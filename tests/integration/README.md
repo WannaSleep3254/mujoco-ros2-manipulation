@@ -14,6 +14,81 @@ python3 verify_robot.py --robot fr5 --scene pedestal --domain 97
 GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 잠긴 deb의 배포 중단 등으로
 빌드 준비가 실패할 수도 있으며, 이 경우 ROS 검증 성공으로 보고하지 않습니다.
 
+## 네이티브 종료 순서
+
+새 런타임을 빌드한 뒤, 비어 있는 도메인과 새 출력 폴더를 사용합니다.
+다음 검사는 시험 전용 interposer로 실행 순서를 관측하거나 지연합니다. 성능 표본으로 사용하지 않습니다.
+
+```bash
+source ./manipulation_env.sh
+task_native_binary="$PWD/ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"
+python3 tests/integration/verify_native_shutdown_clock.py \
+  --binary "$task_native_binary" --domain 201 --output runtime/validation/shutdown-clock-new
+python3 tests/native/shutdown_probe/build_probe.py --output runtime/validation/shutdown-probe-new
+python3 tests/integration/verify_native_shutdown_race.py \
+  --expect fixed --domain 206 \
+  --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
+  --probe runtime/validation/shutdown-probe-new/update_probe.so \
+  --output runtime/validation/shutdown-race-new
+```
+
+첫 검사는 로봇·하드웨어 없이 실제 네이티브 노드의 시계 미수신·정지와 초기 SIGTERM을 확인합니다.
+두 번째는 자체 MuJoCo 작업 환경에서 실제 JTC update를 붙잡아 둔 채 자체 native PID에만 SIGINT를
+보냅니다. update 반환 → RT join → Context 종료 → 제어기 정리 순서와 전체 물리 기록·프로세스 정리를
+요구합니다. 기본적으로 어떤 로봇 목표도 전송하지 않습니다. 설치한 CM 2.54.3/JTC 2.54.1 ABI가
+달라지면 검사를 멈추고 interposer를 재검토해야 합니다.
+
+`--expect legacy`는 격리된 구형 런타임의 잘못된 종료 순서를 재현하는 진단 모드입니다.
+성공한 안전 실행으로 집계하지 않으며, CI는 `fixed`만 검사합니다.
+원인·실패 원본과 검증 범위는 [네이티브 종료 기록](../../docs/native_shutdown.md)에 있습니다.
+
+## FR3 이동 중 취소와 신선한 정지 관측
+
+```bash
+source ./manipulation_env.sh
+python3 verify_robot_cancel.py --robot fr3 --domain 162 --output runtime/validation/fr3-cancel-new
+```
+
+출력은 새 runtime 폴더여야 하며 명시한 도메인을 사용 중이면 거부합니다.
+기존 direct·MoveIt·TF·시계 검사 뒤 실제 이동 중 자체 목표만 취소하고, 취소 응답·Action CANCELED·
+전진하는 신선한 관절/시계의 정지 구간·새 홈 Action 성공과 정착·native/정리를 각각 확인합니다.
+[FR3 문서](../../docs/fr3-model.md)에 실험 프로필과 판정 한계를 기록했습니다.
+
+## TCP Pose 목표
+
+```bash
+source ./manipulation_env.sh
+python3 -m mujoco_ros2_manipulation.workcells.verify_pose_goal --domain 151
+```
+
+기존 장면의 플랜지 원점 참조를 사용합니다. 별도의 Pose 계획 요청, IK/FK 확인,
+다른 팔의 전체 spline 유지, 일회 승인한 경로 실행과 관측 TCP 오차를 확인합니다.
+잘못된 공구 SHA·도달 불가·검토 후 환경 변경·대기 중 취소에는 목표 전송 0회를 요구합니다.
+Action 성공과 TCP 완료 조건을 각각 검사하며, 이 검사는 그리퍼가 있는 ROS 장면을 검증하지 않습니다.
+CI의 기존 공동 작업 환경 작업에서 같은 명령을 실행합니다.
+
+FR5·평행 그리퍼·자유 블록의 독립 물리 실행과 실제 3D 화면은
+[기본 집기 실험](../../docs/grasping.md)에서 설명합니다. 이 실행은 Python MuJoCo 3.14.0이며
+기존 ROS native 3.12.0의 검사와 결과를 합산하지 않습니다.
+
+## 계획 캐시·플래너 비교
+
+기존 고정 suite와 별도 실험이며 기본 플래너와 캐시 설정은 바꾸지 않습니다.
+각 명령은 사용하지 않는 도메인과 새 출력 폴더를 지정합니다. 소싱한 ROS의 PYTHONPATH를 덮어쓰지 않습니다.
+
+```bash
+source ./manipulation_env.sh
+python3 benchmark_planner_cache.py --list
+python3 benchmark_planner_cache.py --mode functional --domain 160 --output runtime/validation/cache-functional-new
+python3 benchmark_planner_cache.py --mode performance --domain 161 --output runtime/validation/cache-performance-new
+```
+
+[실험 규약](../../docs/planner_cache.md)에 고정 입력·계산 예산·시도·실패·미실행과 원본 보존 규칙을 명시합니다.
+기능 검사의 실제 입력 5조건과 제어된 주입 5조건을 구분합니다. 성능은 네 조건 각 3회이며,
+p95나 범용 우열을 판정하지 않습니다. 각 실제 실행의 native 물리와 소유 프로세스 정리도 통과해야 합니다.
+
+## 공동 작업 환경
+
 공동 작업 환경 검증은 `python3 verify_scene.py --workcell fr5_ur5e --domain 93`을 실행합니다.
 `build_workspace.py --workcell fr5_ur5e`로 준비하며 CI에서는 두 번 연속 실행합니다.
 

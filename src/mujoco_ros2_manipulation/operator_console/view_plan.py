@@ -62,9 +62,17 @@ class SavedPlan:
                      and _finite(_pending_review.get('remaining_sec')) and _pending_review['remaining_sec'] > 0,
                      'Pending plan identity changed or approval expired')
             payload = trace.get('review_payload')
-            _require(type(payload) is dict and set(payload) == {'schema_version','plan_request_id','session_id',
-                'identity','initial_state_rad','simulation_sec','command','trajectories','no_motion_required'},
+            required = {'schema_version','plan_request_id','session_id',
+                'identity','initial_state_rad','simulation_sec','command','trajectories','no_motion_required'}
+            _require(type(payload) is dict and (set(payload) == required
+                     or set(payload) == required | {'goal_context'}),
                 'Missing exact pending plan payload')
+            if 'goal_context' in payload:
+                from ..workcells.pose_tools import validate_context_identity
+                validate_context_identity(payload['goal_context'], plan_request_id=request_id)
+                _require(payload['goal_context'] == trace.get('goal_context')
+                         and payload['goal_context']['goal'] == trace.get('pose_goal'),
+                         'Displayed TCP goal differs from the reviewed goal')
             digest = hashlib.sha256(json.dumps(payload, sort_keys=True, allow_nan=False,
                 separators=(',', ':')).encode()).hexdigest()
             _require(digest == _pending_review['plan_sha256']

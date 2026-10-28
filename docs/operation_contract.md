@@ -7,7 +7,7 @@
 | 단계 | 현재 원본 단계의 예 | 의미 |
 | --- | --- | --- |
 | `admission` | `received`, `state_snapshot` | 요청 수신과 시작 상태 확인입니다. 실행 허가를 뜻하지 않습니다. |
-| `planning` | `planning_both_arms`, `departure_search`, `safety_checks` | 경로 생성과 검사입니다. 실제 로봇 이동이 아닙니다. |
+| `planning` | `pose_ik`, `planning_both_arms`, `departure_search`, `safety_checks` | IK, 경로 생성과 검사입니다. 실제 로봇 이동이 아닙니다. |
 | `review` | `plan_ready`, `approved_plan_recheck` | 가상 경로 검토 또는 승인한 계획의 재검사입니다. |
 | `dispatch` | `final_state_recheck`, `goal_sent`, `goal_acceptance` | 전송 준비, 전송과 수락 관측입니다. 관절 이동 확인과 구분합니다. |
 | `executing` | `first_motion`, `goal_result`, `actions_done` | 관절 이동 또는 실행 응답 관측입니다. 응답 완료가 정착 완료를 뜻하지 않습니다. |
@@ -19,7 +19,7 @@
 
 `mode`는 기존 `automatic`, `plan_only`, `approved_plan`을 구분합니다. 생략된 옛 기록은 `automatic`으로 표시하되 `mode_origin=legacy_default`를 남깁니다. 새 모드는 원문과 `mode_known=false`를 함께 전달합니다. 계획 요청과 승인 실행 요청은 각각의 ID로 연결합니다. 실행 요청 ID가 있다는 이유만으로 궤적 전송이나 이동을 판정하지 않습니다.
 
-현재 명령 종류는 완전한 이름 기반 관절 목표입니다. `coordinated`와 `departure_timing`은 계획 전략이며 실행 모드와 별개입니다. 향후 장치 명령, 캐시나 Servo를 추가하더라도 이 분류를 혼합하지 않습니다. 이번 관측 규약에 이름을 정의한 것만으로 새 실행 기능이 구현되지는 않습니다.
+기존 v1 실행 명령은 완전한 이름 기반 관절 목표입니다. TCP Pose는 별도 plan-only 요청으로 받아 등록한 기준점과 IK/FK를 확인한 뒤 관절 경로로 계획합니다. 원문·TCP 정의·정확한 궤적을 검토 digest에 묶고, 승인 뒤에는 IK를 다시 계산하지 않습니다. `coordinated`와 `departure_timing`은 계획 전략이며 실행 모드와 별개입니다. 향후 장치 명령, 캐시나 Servo를 추가하더라도 이 분류를 혼합하지 않습니다.
 
 ## 시간과 취소
 

@@ -61,7 +61,15 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "현재 구현과 남은 문제를 정리하고, 모듈 분리와 센서·설치 환경·작업 기능의 개발 순서를 제시합니다. 레퍼런스의 제안을 반영하는 방법과 시스템 변경이 큰 기능의 착수 조건을 설명합니다.",
-      "manifest_sha256": "7d95ff4e110d5c3ec3c1f2d7ce06db320e0979bd8c07e58fbd6fa5279cafbb72"
+      "manifest_sha256": "ea84d874792e130b223818222733a11e3c33865d0578c1e5812f2e890e45a954"
+    },
+    {
+      "id": "planner-cache-2026-10-28",
+      "title": "계획 캐시·플래너 예비 비교",
+      "published_date": "2026-10-28",
+      "document_type": "design_review",
+      "overview": "FR5·UR5e의 같은 입력에서 RRTConnect·RRT와 캐시 cold·warm을 비교합니다. 최종 기능10조건과 성능12표본, 재검증 비용·일회 승인·실패 원본과 표본 한계를 구분합니다.",
+      "manifest_sha256": "64363913d761d665b1e291ef1c501a1cb854a53b9019e57ed7f9dd3468cb6457"
     }
   ]
 }

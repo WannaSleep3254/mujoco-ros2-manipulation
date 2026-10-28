@@ -1,0 +1,1140 @@
+{
+  "schema_version": 1,
+  "kind": "planner-cache-public-evidence-v1",
+  "report_version": "1.0",
+  "report_date": "2026-10-28",
+  "curated_public_safe": true,
+  "source_handling": "Curated measurements and original SHA-256 only; raw logs, host paths, credentials and full runtime records are not distributed.",
+  "primary_latency": {
+    "metric": "received_to_plan_ready_wall_sec",
+    "unit": "wall seconds",
+    "scope": "Request received through plan_ready after final runtime identity check and a new review",
+    "compute_scope": "computation_started_through_final_review_identity",
+    "budget_includes_review": true
+  },
+  "experiment": {
+    "id": "planner-cache-comparison-v1",
+    "case": {
+      "id": "local_small",
+      "initial_rad": {
+        "left_j1": 0.0,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.0,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "target_rad": {
+        "left_j1": 0.12,
+        "left_j2": -1.2,
+        "left_j3": 1.2,
+        "left_j4": -1.5,
+        "left_j5": -1.5,
+        "left_j6": 0.0,
+        "right_shoulder_pan_joint": 0.12,
+        "right_shoulder_lift_joint": -1.5708,
+        "right_elbow_joint": 1.5708,
+        "right_wrist_1_joint": -1.5708,
+        "right_wrist_2_joint": -1.5708,
+        "right_wrist_3_joint": 0.0
+      },
+      "provenance": "Defined nominal workcell home; first joint of each arm +0.12rad; copied scalar inputs only, fixed_motion_v1 unchanged"
+    },
+    "comparison_policy": {
+      "strategy": "coordinated",
+      "max_plan_candidates": 1,
+      "initial_tolerance_rad": 0.0015,
+      "goal_tolerance_rad": 0.003,
+      "cache_start_tolerance_rad": 0.0001,
+      "compute_budget_wall_sec": 5.0,
+      "budget_includes_review": true,
+      "compute_scope": "computation_started_through_final_review_identity",
+      "primary_latency_metric": "received_to_plan_ready_wall_sec",
+      "primary_latency_scope": "Request received through plan_ready, after the final runtime identity check and new review; same endpoint in every condition",
+      "budget_enforcement": "Cooperative checkpoints and RPC remaining allowance; not a forced 5-second process deadline",
+      "cache_default": "off",
+      "planner_default": "RRTConnectkConfigDefault",
+      "selected_planner_response": "GetMotionPlan does not return selected planner identity; requested ID and runtime configuration/log evidence remain separate"
+    },
+    "repeats": 3,
+    "conditions": [
+      {
+        "id": "rrtconnect_off",
+        "planner_id": "RRTConnectkConfigDefault",
+        "cache": false,
+        "expected_cache": "disabled"
+      },
+      {
+        "id": "rrt_off",
+        "planner_id": "RRTkConfigDefault",
+        "cache": false,
+        "expected_cache": "disabled"
+      },
+      {
+        "id": "rrtconnect_cold",
+        "planner_id": "RRTConnectkConfigDefault",
+        "cache": true,
+        "expected_cache": "miss"
+      },
+      {
+        "id": "rrtconnect_warm",
+        "planner_id": "RRTConnectkConfigDefault",
+        "cache": true,
+        "expected_cache": "hit"
+      }
+    ]
+  },
+  "environment": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700",
+    "logical_cpus": 24,
+    "memory_total_bytes": 33404825600,
+    "kernel": "6.8.0-147-generic",
+    "python": "3.10.12",
+    "os": "Ubuntu 22.04.5 LTS",
+    "middleware": "rmw_cyclonedds_cpp",
+    "ros_distribution": "Humble",
+    "native_mujoco_version": "3.12.0"
+  },
+  "totals": {
+    "planned": 12,
+    "measured": 12,
+    "succeeded": 12,
+    "failed": 0,
+    "cache_lookup_hits": 3,
+    "cached_paths_reused": 3,
+    "cache_validation_fallbacks": 0,
+    "aborted": 0,
+    "not_run": 0
+  },
+  "conditions": [
+    {
+      "condition": "rrtconnect_off",
+      "label": "RRTConnect · 캐시 off",
+      "requested_planner_id": "RRTConnectkConfigDefault",
+      "counts": {
+        "planned": 3,
+        "measured": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "cache_lookup_hits": 0,
+        "cached_paths_reused": 0,
+        "cache_validation_fallbacks": 0,
+        "aborted": 0,
+        "not_run": 0
+      },
+      "statistics": {
+        "received_to_plan_ready_wall_sec": {
+          "count": 3,
+          "median": 0.63141347,
+          "maximum": 0.656527037
+        },
+        "computation_wall_sec": {
+          "count": 3,
+          "median": 0.46096894299999996,
+          "maximum": 0.491812945
+        },
+        "planning_rpc_wall_sec": {
+          "count": 3,
+          "median": 0.05031219101510942,
+          "maximum": 0.05479935195762664
+        },
+        "cache_lookup_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        },
+        "cache_source_validation_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        },
+        "cache_full_revalidation_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        },
+        "cache_fallback_planning_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        }
+      },
+      "samples": [
+        {
+          "row_id": "r01-rrtconnect_off",
+          "repeat": 1,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.607243641,
+            "computation_wall_sec": 0.4355105589999999,
+            "planning_rpc_wall_sec": 0.035945402923971415,
+            "cache_lookup_wall_sec": null,
+            "cache_source_validation_wall_sec": null,
+            "cache_full_revalidation_wall_sec": null,
+            "cache_fallback_planning_wall_sec": null
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "disabled",
+            "reanchored": null,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 333,
+            "sample_dt_max_sec": 0.009991591702702918,
+            "planned_duration_sec": 2.218133358,
+            "joint_total_variation_rad": 0.26048441538621886,
+            "sampled_min_inter_arm_distance_m": 0.18622291825081175,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "7486199d45ad9587eff5595c992da03c29b3f733f43d9766a8134218b394a978"
+          ]
+        },
+        {
+          "row_id": "r02-rrtconnect_off",
+          "repeat": 2,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.656527037,
+            "computation_wall_sec": 0.491812945,
+            "planning_rpc_wall_sec": 0.05479935195762664,
+            "cache_lookup_wall_sec": null,
+            "cache_source_validation_wall_sec": null,
+            "cache_full_revalidation_wall_sec": null,
+            "cache_fallback_planning_wall_sec": null
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "disabled",
+            "reanchored": null,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 330,
+            "sample_dt_max_sec": 0.009989631813636546,
+            "planned_duration_sec": 2.197718999,
+            "joint_total_variation_rad": 0.2554145469421384,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "ef01c1bb8f36b0f319a0bb55245dcd618e605cffb0e72ab98ff00837be000bf4"
+          ]
+        },
+        {
+          "row_id": "r03-rrtconnect_off",
+          "repeat": 3,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.63141347,
+            "computation_wall_sec": 0.46096894299999996,
+            "planning_rpc_wall_sec": 0.05031219101510942,
+            "cache_lookup_wall_sec": null,
+            "cache_source_validation_wall_sec": null,
+            "cache_full_revalidation_wall_sec": null,
+            "cache_fallback_planning_wall_sec": null
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "disabled",
+            "reanchored": null,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 333,
+            "sample_dt_max_sec": 0.009984737085585671,
+            "planned_duration_sec": 2.216611633,
+            "joint_total_variation_rad": 0.2604886480651489,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "1cc9957f21f0f3e6a0b440d16489ca53402976e815fe49e3ae55824e54ffc3da"
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "rrt_off",
+      "label": "RRT · 캐시 off",
+      "requested_planner_id": "RRTkConfigDefault",
+      "counts": {
+        "planned": 3,
+        "measured": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "cache_lookup_hits": 0,
+        "cached_paths_reused": 0,
+        "cache_validation_fallbacks": 0,
+        "aborted": 0,
+        "not_run": 0
+      },
+      "statistics": {
+        "received_to_plan_ready_wall_sec": {
+          "count": 3,
+          "median": 0.607595937,
+          "maximum": 0.613705396
+        },
+        "computation_wall_sec": {
+          "count": 3,
+          "median": 0.44090233599999995,
+          "maximum": 0.455354229
+        },
+        "planning_rpc_wall_sec": {
+          "count": 3,
+          "median": 0.04470377799589187,
+          "maximum": 0.047285155043937266
+        },
+        "cache_lookup_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        },
+        "cache_source_validation_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        },
+        "cache_full_revalidation_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        },
+        "cache_fallback_planning_wall_sec": {
+          "count": 0,
+          "median": null,
+          "maximum": null
+        }
+      },
+      "samples": [
+        {
+          "row_id": "r01-rrt_off",
+          "repeat": 1,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.602787756,
+            "computation_wall_sec": 0.432071882,
+            "planning_rpc_wall_sec": 0.042417634977027774,
+            "cache_lookup_wall_sec": null,
+            "cache_source_validation_wall_sec": null,
+            "cache_full_revalidation_wall_sec": null,
+            "cache_fallback_planning_wall_sec": null
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "disabled",
+            "reanchored": null,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 326,
+            "sample_dt_max_sec": 0.009994261986175257,
+            "planned_duration_sec": 2.168754851,
+            "joint_total_variation_rad": 0.2467895262379998,
+            "sampled_min_inter_arm_distance_m": 0.18622291967990134,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "9d056d5bf93eafefad778944c68714ce98dbe3a827638197cddd1995d5f2c158"
+          ]
+        },
+        {
+          "row_id": "r02-rrt_off",
+          "repeat": 2,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.607595937,
+            "computation_wall_sec": 0.44090233599999995,
+            "planning_rpc_wall_sec": 0.047285155043937266,
+            "cache_lookup_wall_sec": null,
+            "cache_source_validation_wall_sec": null,
+            "cache_full_revalidation_wall_sec": null,
+            "cache_fallback_planning_wall_sec": null
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "disabled",
+            "reanchored": null,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 326,
+            "sample_dt_max_sec": 0.009997605142857413,
+            "planned_duration_sec": 2.169480316,
+            "joint_total_variation_rad": 0.24904957538950392,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "00b3a0beba7ceed668e7d1a2c2b31fa8da8628e7b94de2900f71b6d873c5504e"
+          ]
+        },
+        {
+          "row_id": "r03-rrt_off",
+          "repeat": 3,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.613705396,
+            "computation_wall_sec": 0.455354229,
+            "planning_rpc_wall_sec": 0.04470377799589187,
+            "cache_lookup_wall_sec": null,
+            "cache_source_validation_wall_sec": null,
+            "cache_full_revalidation_wall_sec": null,
+            "cache_fallback_planning_wall_sec": null
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "disabled",
+            "reanchored": null,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 327,
+            "sample_dt_max_sec": 0.00999032921100973,
+            "planned_duration_sec": 2.177891768,
+            "joint_total_variation_rad": 0.24610657703957126,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "470c61f8cfbbe6464fbaca1144f879787a59d60f39da47c5269b6f34e6db3b51"
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "rrtconnect_cold",
+      "label": "RRTConnect · cold",
+      "requested_planner_id": "RRTConnectkConfigDefault",
+      "counts": {
+        "planned": 3,
+        "measured": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "cache_lookup_hits": 0,
+        "cached_paths_reused": 0,
+        "cache_validation_fallbacks": 0,
+        "aborted": 0,
+        "not_run": 0
+      },
+      "statistics": {
+        "received_to_plan_ready_wall_sec": {
+          "count": 3,
+          "median": 0.742149826,
+          "maximum": 0.744157126
+        },
+        "computation_wall_sec": {
+          "count": 3,
+          "median": 0.570051047,
+          "maximum": 0.5768838909999999
+        },
+        "planning_rpc_wall_sec": {
+          "count": 3,
+          "median": 0.042166817933321,
+          "maximum": 0.049665542086586356
+        },
+        "cache_lookup_wall_sec": {
+          "count": 3,
+          "median": 5.3396e-05,
+          "maximum": 8.0904e-05
+        },
+        "cache_source_validation_wall_sec": {
+          "count": 3,
+          "median": 0.11478710197843611,
+          "maximum": 0.11830303503666073
+        },
+        "cache_full_revalidation_wall_sec": {
+          "count": 3,
+          "median": 0.0,
+          "maximum": 0.0
+        },
+        "cache_fallback_planning_wall_sec": {
+          "count": 3,
+          "median": 0.0,
+          "maximum": 0.0
+        }
+      },
+      "samples": [
+        {
+          "row_id": "r01-rrtconnect_cold",
+          "repeat": 1,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.744157126,
+            "computation_wall_sec": 0.570051047,
+            "planning_rpc_wall_sec": 0.049665542086586356,
+            "cache_lookup_wall_sec": 5.3396e-05,
+            "cache_source_validation_wall_sec": 0.11478710197843611,
+            "cache_full_revalidation_wall_sec": 0.0,
+            "cache_fallback_planning_wall_sec": 0.0
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "cold",
+            "reanchored": false,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 330,
+            "sample_dt_max_sec": 0.009959838759091122,
+            "planned_duration_sec": 2.191164527,
+            "joint_total_variation_rad": 0.25723494263332425,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.07399999819360979
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "b5223d758eb38bb98af5f749a8029b825757988933c6d3cc7dd170fd32fd6578"
+          ]
+        },
+        {
+          "row_id": "r02-rrtconnect_cold",
+          "repeat": 2,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.742149826,
+            "computation_wall_sec": 0.5768838909999999,
+            "planning_rpc_wall_sec": 0.041861615027301013,
+            "cache_lookup_wall_sec": 5.1944e-05,
+            "cache_source_validation_wall_sec": 0.11830303503666073,
+            "cache_full_revalidation_wall_sec": 0.0,
+            "cache_fallback_planning_wall_sec": 0.0
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "cold",
+            "reanchored": false,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 330,
+            "sample_dt_max_sec": 0.009974484859091248,
+            "planned_duration_sec": 2.194386669,
+            "joint_total_variation_rad": 0.2526650945531492,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.07399999819360978
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "345099293f1ecc9a05a9312d881c3268271d43e3a8baeed9d657bc188397b8c3"
+          ]
+        },
+        {
+          "row_id": "r03-rrtconnect_cold",
+          "repeat": 3,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.729365499,
+            "computation_wall_sec": 0.558654308,
+            "planning_rpc_wall_sec": 0.042166817933321,
+            "cache_lookup_wall_sec": 8.0904e-05,
+            "cache_source_validation_wall_sec": 0.11408051697071642,
+            "cache_full_revalidation_wall_sec": 0.0,
+            "cache_fallback_planning_wall_sec": 0.0
+          },
+          "cache": {
+            "lookup_hit": false,
+            "accepted_reuse": false,
+            "validation_fallback": false,
+            "reason": "cold",
+            "reanchored": false,
+            "start_max_error_rad": null,
+            "source_entry_sha256": null,
+            "candidate_sha256": null
+          },
+          "path_quality": {
+            "samples": 333,
+            "sample_dt_max_sec": 0.009959973797297406,
+            "planned_duration_sec": 2.211114183,
+            "joint_total_variation_rad": 0.25631273554984646,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.07399999819360979
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "ecf38da674cb54f6ea903c9b6a3d861e8035b196770b3717b14f2e976c9a0299"
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "rrtconnect_warm",
+      "label": "RRTConnect · warm",
+      "requested_planner_id": "RRTConnectkConfigDefault",
+      "counts": {
+        "planned": 3,
+        "measured": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "cache_lookup_hits": 3,
+        "cached_paths_reused": 3,
+        "cache_validation_fallbacks": 0,
+        "aborted": 0,
+        "not_run": 0
+      },
+      "statistics": {
+        "received_to_plan_ready_wall_sec": {
+          "count": 3,
+          "median": 0.572078196,
+          "maximum": 0.583809642
+        },
+        "computation_wall_sec": {
+          "count": 3,
+          "median": 0.40406494400000004,
+          "maximum": 0.41553140099999997
+        },
+        "planning_rpc_wall_sec": {
+          "count": 3,
+          "median": 0.0,
+          "maximum": 0.0
+        },
+        "cache_lookup_wall_sec": {
+          "count": 3,
+          "median": 0.005331934,
+          "maximum": 0.005523898
+        },
+        "cache_source_validation_wall_sec": {
+          "count": 3,
+          "median": 0.11583197605796158,
+          "maximum": 0.117153265979141
+        },
+        "cache_full_revalidation_wall_sec": {
+          "count": 3,
+          "median": 0.1289479909464717,
+          "maximum": 0.1311772660119459
+        },
+        "cache_fallback_planning_wall_sec": {
+          "count": 3,
+          "median": 0.0,
+          "maximum": 0.0
+        }
+      },
+      "samples": [
+        {
+          "row_id": "r01-rrtconnect_warm",
+          "repeat": 1,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.568574471,
+            "computation_wall_sec": 0.402196523,
+            "planning_rpc_wall_sec": 0.0,
+            "cache_lookup_wall_sec": 0.005523898,
+            "cache_source_validation_wall_sec": 0.10921159700956196,
+            "cache_full_revalidation_wall_sec": 0.1289479909464717,
+            "cache_fallback_planning_wall_sec": 0.0
+          },
+          "cache": {
+            "lookup_hit": true,
+            "accepted_reuse": true,
+            "validation_fallback": false,
+            "reason": "hit",
+            "reanchored": true,
+            "start_max_error_rad": 4.463863632030163e-19,
+            "source_entry_sha256": "efbef172c5ffde5ecdf627308757e9f7fecc134c5829620433ba2761a77507c3",
+            "candidate_sha256": "0f0e29d6e0af97397bfee871bb30fa1baf24b33e7bd76684fca07442eed2f2f3"
+          },
+          "path_quality": {
+            "samples": 332,
+            "sample_dt_max_sec": 0.009961455013574927,
+            "planned_duration_sec": 2.2014815580000002,
+            "joint_total_variation_rad": 0.25869094863005576,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "af26251ad25cfa5ee60a3cd917bec4295d4491c76e71635731af0f0ec7dd5707"
+          ]
+        },
+        {
+          "row_id": "r02-rrtconnect_warm",
+          "repeat": 2,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.572078196,
+            "computation_wall_sec": 0.40406494400000004,
+            "planning_rpc_wall_sec": 0.0,
+            "cache_lookup_wall_sec": 0.005331934,
+            "cache_source_validation_wall_sec": 0.117153265979141,
+            "cache_full_revalidation_wall_sec": 0.12272990599740297,
+            "cache_fallback_planning_wall_sec": 0.0
+          },
+          "cache": {
+            "lookup_hit": true,
+            "accepted_reuse": true,
+            "validation_fallback": false,
+            "reason": "hit",
+            "reanchored": true,
+            "start_max_error_rad": 2.1091120386632078e-19,
+            "source_entry_sha256": "4fe9e7e11cab13821baa9a1fbb121dd0f116a8b2f28a5495bcfc2f83ea625f26",
+            "candidate_sha256": "4461d38c59358238dacfca9b6cca601238211e1f9d42ca55521f387238cf0692"
+          },
+          "path_quality": {
+            "samples": 330,
+            "sample_dt_max_sec": 0.00997894183636383,
+            "planned_duration_sec": 2.195367204,
+            "joint_total_variation_rad": 0.2536414760968812,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.07399999819360979
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "8b4359847bab42ec3375c4593d515fead9c4e7d41ccc91b19d919f57c53cc453"
+          ]
+        },
+        {
+          "row_id": "r03-rrtconnect_warm",
+          "repeat": 3,
+          "status": "succeeded",
+          "metrics": {
+            "received_to_plan_ready_wall_sec": 0.583809642,
+            "computation_wall_sec": 0.41553140099999997,
+            "planning_rpc_wall_sec": 0.0,
+            "cache_lookup_wall_sec": 0.00533175,
+            "cache_source_validation_wall_sec": 0.11583197605796158,
+            "cache_full_revalidation_wall_sec": 0.1311772660119459,
+            "cache_fallback_planning_wall_sec": 0.0
+          },
+          "cache": {
+            "lookup_hit": true,
+            "accepted_reuse": true,
+            "validation_fallback": false,
+            "reason": "hit",
+            "reanchored": true,
+            "start_max_error_rad": 1.2053278839428694e-18,
+            "source_entry_sha256": "9be800100a92fb9fd3500eeddd7ce4ff712dae0eaee2ad5eeda56c680b429a1d",
+            "candidate_sha256": "5cda6f5974811285239e57b8fce46b1dc9af35d96b32844118a82f986bd019cf"
+          },
+          "path_quality": {
+            "samples": 332,
+            "sample_dt_max_sec": 0.009965431828054427,
+            "planned_duration_sec": 2.202360434,
+            "joint_total_variation_rad": 0.26112389387421386,
+            "sampled_min_inter_arm_distance_m": 0.18622291967991483,
+            "sampled_min_environment_distance_m": 0.0739999981936098
+          },
+          "dispatched_goals": 0,
+          "trace_sha256": [
+            "0d8bb4b34d8ecab82911bebf655c04f6b74034fd09facb17da06df1e9cfaeea0"
+          ]
+        }
+      ]
+    }
+  ],
+  "functional": {
+    "passed": 10,
+    "total": 10,
+    "cases": [
+      {
+        "case": "cold_then_warm_new_review",
+        "status": "completed",
+        "method": "실제 ROS 요청",
+        "description": "cold 저장 뒤 같은 목표를 새 요청으로 검토하며 캐시 적중·전체 재검증·새 검토 토큰을 확인했습니다.",
+        "test_only_flag": false,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "goal_mismatch",
+        "status": "completed",
+        "method": "실제 ROS 요청",
+        "description": "목표를 바꾼 요청에서 캐시 미적중과 새 계획을 확인했습니다.",
+        "test_only_flag": false,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "start_mismatch",
+        "status": "completed",
+        "method": "실제 ROS 이동·피드백",
+        "description": "일반 명령으로 팔을 0.03 rad 이동하고 실제 피드백에서 시작 상태 차이를 확인했습니다. 원천 관절 상태를 덮어쓰지 않았습니다.",
+        "test_only_flag": true,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "expiry",
+        "status": "completed",
+        "method": "시험용 시계 이동",
+        "description": "캐시 시계만 301 s 이동해 만료 항목 제거와 새 계획을 확인했습니다. 실제 대기 시간·장시간 안정성 시험은 아닙니다.",
+        "test_only_flag": true,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "environment_identity_change",
+        "status": "completed",
+        "method": "실제 Planning Scene 변경",
+        "description": "작업 환경 객체를 변경해 환경 신원이 달라지고 이전 캐시를 재사용하지 않는지 확인했습니다.",
+        "test_only_flag": false,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "invalid_cached_path_fresh_fallback",
+        "status": "completed",
+        "method": "시험용 항목 주입",
+        "description": "중간 관절 값 100 rad와 일관된 체크섬을 가진 사설 캐시 항목을 주입했습니다. 후보를 거부하고 새 계획으로 복귀하는지 확인했습니다.",
+        "test_only_flag": true,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "exact_one_use_approval",
+        "status": "completed",
+        "method": "실제 ROS 승인·실행",
+        "description": "검토한 동일 궤적을 승인해 두 팔에 2개 목표를 전송했습니다. 중복 승인의 추가 전송은 0개였습니다.",
+        "test_only_flag": false,
+        "performance_sample": false,
+        "dispatched_goals": 2,
+        "duplicate_dispatched_goals": 0,
+        "exact_trajectories": true
+      },
+      {
+        "case": "cancel_passthrough",
+        "status": "completed",
+        "method": "시험용 취소 예외",
+        "description": "후보 검사 경계에서 CommandCancelled를 주입해 캐시 미적중으로 숨기거나 새 계획을 시도하지 않는지 확인했습니다.",
+        "test_only_flag": true,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "budget_passthrough",
+        "status": "completed",
+        "method": "시험용 예산 예외",
+        "description": "PlanningBudgetExceeded를 주입해 새 계획·전송으로 진행하지 않는지 확인했습니다.",
+        "test_only_flag": true,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      },
+      {
+        "case": "identity_error_passthrough",
+        "status": "completed",
+        "method": "시험용 환경 예외",
+        "description": "MotionEnvironmentChanged를 주입해 새 계획·전송으로 진행하지 않는지 확인했습니다.",
+        "test_only_flag": true,
+        "performance_sample": false,
+        "dispatched_goals": null,
+        "duplicate_dispatched_goals": null,
+        "exact_trajectories": null
+      }
+    ],
+    "flag_note": "Original test_only flags are preserved. start_mismatch has test_only=true but performs an actual ROS motion and observes feedback; methods, not this flag alone, distinguish controlled fault injection."
+  },
+  "planner_evidence": {
+    "requested_ids": [
+      "RRTConnectkConfigDefault",
+      "RRTkConfigDefault"
+    ],
+    "configured_types": {
+      "RRTConnectkConfigDefault": "geometric::RRTConnect",
+      "RRTkConfigDefault": "geometric::RRT"
+    },
+    "performance_launch_log_type_message_counts": {
+      "RRTConnect": 11,
+      "RRT": 3
+    },
+    "selected_planner_id_response": null,
+    "limitation": "GetMotionPlan does not expose selected planner identity; registered configuration and launch log evidence are recorded separately. Log counts also include setup motions, not just 12 scored rows."
+  },
+  "source_snapshot": {
+    "file_count": 106,
+    "total_bytes": 1132807,
+    "files_sha256": {
+      "benchmark_planner_cache.py": "84cd825c2284f4c5c55730b448fa38e76a3e69a2520f944fa72f5aceaca0efed",
+      "config/controller_defaults.yaml": "792894813c211ece0b705d7268d86603de651578e47c5386a6a320f88884aa30",
+      "config/planning/dual_arm_timing.yaml": "0da805b06d76b81832ea5daf02acff206e7402dd4b220f181764204c157c81b6",
+      "config/planning/environment_clearance.yaml": "146b0bed4231bbc0a4718936661aeed8a29c9aa72abf31afc19ede0f6aea04a2",
+      "config/planning/eval_post_timing.yaml": "47b550aad0c86d3ea129c4a6c68b8393f926ed8833640885708f2e8dc12a821f",
+      "config/workcells/fr5_ur5e.yaml": "21b9364152bf05560c7c08e2b862665f4d78ca4303d4ae7ef80652f6f414583f",
+      "models/fr5/fr5.ros2_control.urdf": "6ef8ccebc6a35445d01d413a79aac37718cbd8711b92aa013111f2ac86de088f",
+      "models/fr5/fr5.xml": "62bf211b01ab1c61708a9e3eef6ced0be2b4cec3692d94b6ddc52abaa27d2060",
+      "models/fr5/source.json": "1655547b6ae2fd270b46b67649af0a8e6cca3aa3c018ee5a447e341bfbb99fea",
+      "models/ur5e/source.json": "8e83edf6a801e83e487d9eb2e32d240aa5a4425952c5f96212cb79b482e5bd1b",
+      "models/ur5e/ur5e.ros2_control.urdf": "fcaa00d88587466841b76113e6bd33b6ad1a9ad2da399f034f371b6f5390d3a1",
+      "models/ur5e/ur5e.xml": "30cbaefe8670fe103804172f29d1262ebb480bfaab155e1c1c09ed353b03da7c",
+      "packages/ur5e_moveit_config/config/moveit.rviz": "90e241fc136b307bf37e8d48d25a1da03973a354828cd0409c3ccd96617b8912",
+      "runtime/generated/workcells/fr5_ur5e/cell.srdf": "7a8d9181b2e535d9f96c422f0e49848b2196462ffe6e2ec697cbb5a9fcf6d6af",
+      "runtime/generated/workcells/fr5_ur5e/cell.urdf": "ff0d0673052a9953fb3a555386aabc93f39d8d22389c8cb126fe15e92ce41860",
+      "runtime/generated/workcells/fr5_ur5e/cell.xml": "06ba5063b9e7c0c1b660e8726f9344fed8d175a5c39476948f548cddd6d4a09b",
+      "runtime/generated/workcells/fr5_ur5e/controllers.yaml": "7285476bd1a1e3853e90ac7511c667aca5eff3aed579ebdd5ee488cf147817f7",
+      "runtime/generated/workcells/fr5_ur5e/moveit.rviz": "2666e25f91f94db3dc512ff5313ca88305384d76a5981c74e25d380215b0be3d",
+      "runtime/generated/workcells/fr5_ur5e/moveit.yaml": "85054678a2a7d96ec13a55af9f578652a4f0d4cf5181c8b3203724b4b94e7eb5",
+      "runtime/generated/workcells/fr5_ur5e/source.json": "4282a3e4a7a1f9ee3e2b789a92b3de9cd06ce28356248fff221a76154234c856",
+      "src/mujoco_ros2_manipulation/verification/__init__.py": "0110b3cba1929f7f9b0d48a8cc65b02d26607ad4f7ea2306d7bbd64924e540dc",
+      "src/mujoco_ros2_manipulation/verification/diagnostics.py": "9b906407ebb5569a5a69ff24d44321c1627ac3af654bec8453f01da053335e0e",
+      "src/mujoco_ros2_manipulation/verification/images.py": "8143c98a9e9dd03d9412eb3e63cb93cf1b117c9d42529652f5d505e4f4336b17",
+      "src/mujoco_ros2_manipulation/verification/process_faults.py": "b8425e6abd21b85aed1da7f5f956436898964487bd461b35b98869e058bbafd9",
+      "src/mujoco_ros2_manipulation/verification/reports.py": "6ed996b6c69ec70159b95b072e20a664ef01fa2f6e45e72724f4de0061e116e9",
+      "src/mujoco_ros2_manipulation/verification/ros_checks.py": "1db185e9e86afb22a27874de3fe575c28b221bc10dbd481f1ce33eb2b108e8ce",
+      "src/mujoco_ros2_manipulation/verification/runner.py": "dfe2ae549f32ac30d147d75a4f88b89f30ce2f34ae7fa5c2239504e9a0debf79",
+      "src/mujoco_ros2_manipulation/verification/signals.py": "4038c36597c1dfc0b8d8b5072706b1e4bdfa2c1cdbe8e869bd6d936d2542dcbe",
+      "src/mujoco_ros2_manipulation/workcells/__init__.py": "275b8e9a2319e6b96852c8007c16ab9a9546ff3a2cc176c8a1f1486753cfb36a",
+      "src/mujoco_ros2_manipulation/workcells/benchmark_fixed_motion.py": "09f4f30d0a1e0878e2988b988686d9367a1358ff06cf934b1c443e63e4bd6b21",
+      "src/mujoco_ros2_manipulation/workcells/benchmark_motion.py": "ee00843f3a9da8764cb546f5519cae951adfec7bec6f46ab23ad9a9779763935",
+      "src/mujoco_ros2_manipulation/workcells/benchmark_planner_cache.py": "c58eed8113bcd6988b1e77ab1124bddfa84f0127e7be0b01a8853de42189d90b",
+      "src/mujoco_ros2_manipulation/workcells/cache_dynamics.py": "fd55ed3a1ef7a7623fb8f7205e7b7f42baccd90f93c3f265a1f48ab58ca562a5",
+      "src/mujoco_ros2_manipulation/workcells/config.py": "18ba02dbc47b5ca6620abc008326c891e23eb99438c97b5c65eaf347d4e1f87f",
+      "src/mujoco_ros2_manipulation/workcells/contact_comparison.py": "52b43dc6d05773cf2a7783f4d4ed91dc011eebe3a5ed8bd1eac02abae7d52546",
+      "src/mujoco_ros2_manipulation/workcells/contact_demo.py": "3aac23de2b9b2f7b21277d56a2107e0c176fa5c76ad0711bf77dc60dc74e8aa6",
+      "src/mujoco_ros2_manipulation/workcells/contact_guard.py": "3566c085031d98a8c9ddd120938d80d1c14884a85338f23578096749c2f6b61e",
+      "src/mujoco_ros2_manipulation/workcells/contact_policy.py": "a3701349477f2cfea653e15c828ccb42a943e96dd109e34c76be004baadc10c5",
+      "src/mujoco_ros2_manipulation/workcells/contracts.py": "78fa704bc6af2226baadbb37d90b4d82b0f48412d2abc3380bd2c13902ce1c61",
+      "src/mujoco_ros2_manipulation/workcells/controller_witness.py": "6335e7c39d20975052b5ea50792c0acb88bbd03a30f46333ac8eaf5a3f8e3706",
+      "src/mujoco_ros2_manipulation/workcells/distance.py": "31a6a4c4b804cbb41b307ec12fe720632275e45edc43197241bca3566f292034",
+      "src/mujoco_ros2_manipulation/workcells/environment_assets.py": "500f6668ff0dee0409a9f59536b35d784680dad9d85b88ebb4d14ad183adf7d8",
+      "src/mujoco_ros2_manipulation/workcells/environment_check_worker.py": "5ed9e6c835898a497094587020c26db577affb272f53153515dfae156d5fdcf5",
+      "src/mujoco_ros2_manipulation/workcells/environment_clearance.py": "19cca054759a984d6d8749fdf81ea05f0026029e2a32972f6d89d01f0d1e3a07",
+      "src/mujoco_ros2_manipulation/workcells/environment_cli.py": "40763972a58ea13e399f2e257fb034dc05d5ce0e2fbe4555b12e12e0046af106",
+      "src/mujoco_ros2_manipulation/workcells/environment_native.py": "c17de3797d0bc8be93bfecea2ec0a21f9eaa714b7cd47c5da3eb77b9383c35b2",
+      "src/mujoco_ros2_manipulation/workcells/environment_overlay.py": "edeb4840052a5bb4d9c25f928fe1bfcefd5892d794b9035351ca1f81646d4d26",
+      "src/mujoco_ros2_manipulation/workcells/evidence_export.py": "fe5d0e8faa944d2154f49f93677e5ae4504d83f61630a45d74994c7e0d297151",
+      "src/mujoco_ros2_manipulation/workcells/execution_adapter.py": "c10d7e57b1319be204f83d2bcb984378acb898fdf8cdc4b8311de6de7f19f4c9",
+      "src/mujoco_ros2_manipulation/workcells/execution_target.py": "75b824a178248f8ab7e75c99a6dc6fcf8d8988086403836bfcbd94567709af2e",
+      "src/mujoco_ros2_manipulation/workcells/export_fixed_motion.py": "12004ba0458242e4f3fb539da44a53301fc0dc56cf1446f50416ca9af4ba5083",
+      "src/mujoco_ros2_manipulation/workcells/fixed_execution.py": "ff5dba7f98388b7018ed6d37bc2b6bafbdd121b8151cd8dfb61ed73c37e20b87",
+      "src/mujoco_ros2_manipulation/workcells/fixed_results.py": "1adde0d84499049b2f9506a7a121e63b38acd2fc6e7ecc062b75aeb86b993d29",
+      "src/mujoco_ros2_manipulation/workcells/fixed_suite.py": "bc2cfbd7b36bef89e9771d06c7b294b72f2df476e0d5f93a241a330b9dede4b0",
+      "src/mujoco_ros2_manipulation/workcells/freecad_step_worker.py": "3c830f76a2b899f6647695d1660bf71f769121b2b97c48894c41fe0e0d0ee471",
+      "src/mujoco_ros2_manipulation/workcells/import_step.py": "281730b91cfb9ec75587fd7101a54e93f37c42a59b24e81cc54b3a3f2e8c74c8",
+      "src/mujoco_ros2_manipulation/workcells/integrity.py": "1b0bc61bfb52297630640d1226639c4a63c62109decd828fc35ae2996ca25890",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "src/mujoco_ros2_manipulation/workcells/interference_comparison.py": "6e819f314639654920b1039d1c51e3db6e3ff8d81f82581861fa197c138b9a65",
+      "src/mujoco_ros2_manipulation/workcells/launch.py": "7083f36827e3a57c573d89b449b68d62d042875dffb55228edb71eed807b651d",
+      "src/mujoco_ros2_manipulation/workcells/motion_client.py": "720ae5c57615290f67251a3ebbf4f569a55456b5240c9b8d8472dcf4da148884",
+      "src/mujoco_ros2_manipulation/workcells/motion_diagnostics.py": "4b660030db830d78020793b843b893149e80389f1487aae18469c4bbcded5b56",
+      "src/mujoco_ros2_manipulation/workcells/motion_request.py": "cac49a79debeb964da79638674fe242a730b2ecfc468251accef591aa5b7a919",
+      "src/mujoco_ros2_manipulation/workcells/motion_review.py": "f574556938d8ea6ef8d7a12ffd168748b1ce3d5ad6ca182abc7557fae5d18ba4",
+      "src/mujoco_ros2_manipulation/workcells/motion_server.py": "4058e8fc26318c3fe3cf68792a5d4851f751f38780e674dfb4ba847914ce4287",
+      "src/mujoco_ros2_manipulation/workcells/operation_contract.py": "191320729fee2586eef71d7141e3e99effd5230e501af5beb8608b42b392f342",
+      "src/mujoco_ros2_manipulation/workcells/path_quality.py": "ceac6717b07e22522eee61b28b7be070b1c328e85dbb5556c9297c01271758fb",
+      "src/mujoco_ros2_manipulation/workcells/plan_selection.py": "28ddd206ababd52f678d3a492a3600e682bf721b965b4b405efbc559c768c00d",
+      "src/mujoco_ros2_manipulation/workcells/planner_cache_experiment.py": "321834a58b04f9c8ba5659b8fcd22bf45e2bceb0c672ec4cd120bdabb2884365",
+      "src/mujoco_ros2_manipulation/workcells/planner_cache_results.py": "465be2f185c8eb0cd64dc70e850cccca44b4d427dc5ce880313d92a2eb359fbd",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/planning_budget.py": "3f4edc1a522bbf7a62cc6d23f1b063a10f5380ff1270a815f0ba268aff53ef7f",
+      "src/mujoco_ros2_manipulation/workcells/planning_config.py": "efe32d83eb76cc213e2b1f70bf08e7bb7011e86d556f6123d543053e6f55524d",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5",
+      "src/mujoco_ros2_manipulation/workcells/pose_goal.py": "3448b8ddac9b77d84e5c193cfe22f23f4180d17836206b970b0f3b90eb89f751",
+      "src/mujoco_ros2_manipulation/workcells/pose_planning.py": "7182ffbe221ea25991b5a1ad15af45076999b8d6f6b2dc9d4dc3b0900610d73e",
+      "src/mujoco_ros2_manipulation/workcells/pose_tools.py": "1212a9fcbe6279474d9a1ee67f571c5b67e49fcae6cf54d04500c1fbf9b89e0c",
+      "src/mujoco_ros2_manipulation/workcells/prepare.py": "bddc295d959bc46c387b3e141cfcc714bdf9e428fb40c964b3cc94a92c425e51",
+      "src/mujoco_ros2_manipulation/workcells/random_workload.py": "ee48f215caad01a9a099977abce5c5b9b43fcea5e28a3d0220dadb3ef29b2ac8",
+      "src/mujoco_ros2_manipulation/workcells/record_contact_demo.py": "6b0a598fe590ac9675a8875b8c226c6a53e043b25ec9ff15c26d4214a6330ef9",
+      "src/mujoco_ros2_manipulation/workcells/record_interference.py": "71d19e6f06831d3ffd0458ff3e2731b9995fab0fbbec0b059d61be2ba51f1a09",
+      "src/mujoco_ros2_manipulation/workcells/reproduce_motion.py": "2cba90db6f1ffb2ae4775580342f6df6ab960d4dafd498339c3e17ba8d3a6cd4",
+      "src/mujoco_ros2_manipulation/workcells/reproduction.py": "173acc4652a262314bdde8ff2780e999aeb12b0c3e0dfed270eca47023136fc0",
+      "src/mujoco_ros2_manipulation/workcells/request_trace.py": "e8cf5b97c1fe07fae7f88aec05afa54db7d055699919a5c72ae8e9ed6dbcf577",
+      "src/mujoco_ros2_manipulation/workcells/search_comparison.py": "b911c798d960caec5054d25b55513d1df4d2a6369407e64391acea4272e1570b",
+      "src/mujoco_ros2_manipulation/workcells/spatial_candidates.py": "2344a5a255c061af8bd72a2f48509c2aba9c7d1dd16a6b6d5e0850e8a6a1192b",
+      "src/mujoco_ros2_manipulation/workcells/timing.py": "31712b599d2c8cbd4043d64bb5bf3388766165c8e4f6ae6751c617976adb0a9a",
+      "src/mujoco_ros2_manipulation/workcells/timing_comparison.py": "8658f398527f1898ee88cb7041213b2bb7044d556e2f825354103913516e384e",
+      "src/mujoco_ros2_manipulation/workcells/trajectory.py": "3a4af394bf35ca28cbe8150d5d624fe4a600f93123e02eff094b0138f3caa261",
+      "src/mujoco_ros2_manipulation/workcells/trajectory_cache.py": "5a0308e32eda35e536e1f57fb948a4376a555ed3f70e2349c3ad377d0ce2a616",
+      "src/mujoco_ros2_manipulation/workcells/verify.py": "5e807d95f311e488fa5f9439818dc282bc0c352ebfb6d4323b6818495c20bfd7",
+      "src/mujoco_ros2_manipulation/workcells/verify_clock_stop.py": "107c9a0498dad57e3ac5fe84bfeab4a8613d0aa508283eaf8c666108b402472d",
+      "src/mujoco_ros2_manipulation/workcells/verify_contact_demo.py": "a74412a783c6e8ba86c3675c6201779329fd5ff9995775158df4069c1ecb9b9c",
+      "src/mujoco_ros2_manipulation/workcells/verify_contact_stop.py": "f9ddbab466c20082d0b4a6b29cb6cfe2a355ece5c2432a4f01e8f2378936c669",
+      "src/mujoco_ros2_manipulation/workcells/verify_environment_contact.py": "7928d2ceaee3d83f996c2165f95d9c58e9791915a97773b970172c84dad7438c",
+      "src/mujoco_ros2_manipulation/workcells/verify_environment_execution.py": "8770fcc886b190ad2cc9c7e880efb07be339b27b1b5c3b9d6a396f1307792fca",
+      "src/mujoco_ros2_manipulation/workcells/verify_environment_overlay.py": "c25db226a0def393812cca6367fbd260663abbf5e8ae0564e9dbd554cc546cf3",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "ab6aaeb32cf18de14da8f3f36308bd5309b3032a6c18f196eabde1e6876983b4",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "345257f35d539ffe39179833e747a00b52a2f732b90a7a997eeba6da0ee0948e",
+      "src/mujoco_ros2_manipulation/workcells/verify_motion_commands.py": "1c52039542309eea34ec19a5b97e2cc10bb6476c4f077de988849453b5e3bb51",
+      "src/mujoco_ros2_manipulation/workcells/verify_motion_replanning.py": "da88544eba3829fe71bc3fe9e09dc16ef6f691ee0f13569f9aa7a3acde58fa39",
+      "src/mujoco_ros2_manipulation/workcells/verify_motion_reproduction.py": "ce546b7191297ec754231cbc3689324e697d6e13ed0a3c71d2dd307ec61e914e",
+      "src/mujoco_ros2_manipulation/workcells/verify_motion_review.py": "3a066fc4ee9edb984c163fb468f242afc004378fe3fe53b901756ceaae6f0662",
+      "src/mujoco_ros2_manipulation/workcells/verify_pose_goal.py": "73fb5522b7f29cdf33cdc0c4a71d80586a979473b5c1a58c54cae8c0763b0e26",
+      "src/mujoco_ros2_manipulation/workcells/verify_process_crash.py": "5e89285a10f28de6297b3a04ff90a7476b88f0678e3263eba6ba7ed2e1261115",
+      "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "21be7d0cb638eb593ac8e68974ac3e687e08721d268c7fa5a4a5116ae1aa00f1"
+    },
+    "manifest_sha256": "0d5aee7cee6a0d395bceb3050c3549f1926a0e424ecaeed486e32b7e1198b18e",
+    "functional_and_performance_snapshots_equal": true,
+    "measured_git_commit": "19829989c2fdf03e069bfbcddb39dba65b2e2553",
+    "functional_recorded_git_commit": "d74cb9da27a916fdaf1c5f23930fd6ee3d53ec30",
+    "note": "Functional run recorded an older Git HEAD while using the same 106 pinned source/config/model input bytes as the performance run."
+  },
+  "native_evaluator_provenance": {
+    "opened": {
+      "engine": "MuJoCo 3.12.0",
+      "source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+      "library_sha256": "a1c0b207d92fc708f11f2235efed78156936e9f7813d999ea4a1a2d8bb9c611f",
+      "distance_scope": "All collision-enabled geom pairs belonging to the two robot base subtrees",
+      "tip_frames": [
+        "left_wrist3_link",
+        "right_tool0"
+      ],
+      "tip_definition": "URDF tip frame origin; no physical tool/TCP offset assumed",
+      "geometry": "MuJoCo compiled collision shapes; meshes use convex collision approximation",
+      "environment": {
+        "scope": "moving_robot_vs_fixed_environment",
+        "pair_count": 36,
+        "max_pair_count": 4096,
+        "source_sha256": "e4d1c6acbe8c3604b0f73eed859866c3498148aa5349932203f0c194ea2a80f1",
+        "moving_geom_count_by_arm": [
+          6,
+          6
+        ],
+        "fixed_geom_count": 3,
+        "distance_semantics": "Signed closest moving-arm/fixed-world collision geometry distance; sampled, not continuous-time certified",
+        "filtering": "Native contype/conaffinity and body exclusions; static world-welded robot mounts excluded",
+        "unsupported": "Movable bodies outside robot roots, flex, hfield/SDF collision geometry and explicit contact geom pairs",
+        "fk": "Reuses the same native FK snapshot as the cross-arm result; no second mj_forward"
+      }
+    },
+    "files_sha256": {
+      "native/path_distance.cpp": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+      "native/path_distance_environment.cpp": "e4d1c6acbe8c3604b0f73eed859866c3498148aa5349932203f0c194ea2a80f1",
+      "runtime/native/path_distance.so": "a1c0b207d92fc708f11f2235efed78156936e9f7813d999ea4a1a2d8bb9c611f"
+    },
+    "scope": "Opened evaluator metadata plus current helper binary/source SHA; transitive runtime libraries are not attested"
+  },
+  "original_artifacts": {
+    "performance-c": {
+      "experiment_run_sha256": "a1c0f6cda6ea5fe3f4d78142ad3adcf288a3f3bd1c4b2cacd4e489091d017a56",
+      "experiment_definition_file_sha256": "d3d743cf7c1db5f986a3094a051cc3049c18219917092c245eeaf72e0b3c6fcb",
+      "verification_result_sha256": "2b7cb40993d76ef042927bb2c340d1697bbc65a82911caa930eaba26c3fe7436",
+      "launch_log_sha256": "ec96ac36dd0e0d38c519de2548cd03d1b65c76b0aae5e32414d9413ab1034484",
+      "physics_report_sha256": "a1019ecb18ab66c750c6a5f2b2f29a1c78ab4ef49acdfbc4e555e200c9c5c01b",
+      "verification": {
+        "status": "passed",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "launch_return_code": 0,
+        "process_group_gone": true
+      },
+      "recorded_git_commit": "19829989c2fdf03e069bfbcddb39dba65b2e2553",
+      "completed_utc": "2026-10-28T05:20:39.644895+00:00"
+    },
+    "functional-d": {
+      "experiment_run_sha256": "7ba306bef6f107f8b68af05e95152afa0e853a2f156046b5ee53d13ceaa2d385",
+      "experiment_definition_file_sha256": "d3d743cf7c1db5f986a3094a051cc3049c18219917092c245eeaf72e0b3c6fcb",
+      "verification_result_sha256": "7117a070a571a62f228cc6a9e580c495a7be57bcba4d6ede7b9c0330f9d750c6",
+      "launch_log_sha256": "9ac71c6d57d793e73f6263fbca34810d95b0dfe647ce1c53375cdf9b9ac76143",
+      "physics_report_sha256": "aa7e8a317acf0a727e2b953517fcbb7484f86df55cb268b6139e1aa7f7b17787",
+      "verification": {
+        "status": "passed",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "launch_return_code": 0,
+        "process_group_gone": true
+      },
+      "recorded_git_commit": "d74cb9da27a916fdaf1c5f23930fd6ee3d53ec30",
+      "completed_utc": "2026-10-28T05:18:53.885137+00:00"
+    }
+  },
+  "preliminary_runs": [
+    {
+      "id": "functional-a",
+      "status": "aborted",
+      "original_sha256": "feeba4fbc6ce7460ce532d1ab46465c6b068e2bf94666e7242aa6359f7d9cb3d",
+      "explanation": "캐시 미적중은 정상이나, 미소 시작 차이를 exact 비교한 진단이 goal_mismatch 대신 start_and_goal_mismatch로 분류했습니다. 선언된 시작 허용 오차와 진단을 일치시켰습니다. 재사용 정책은 바꾸지 않았습니다.",
+      "in_final_aggregate": false
+    },
+    {
+      "id": "functional-b",
+      "status": "aborted",
+      "original_sha256": "79e27ffc78eb95462b2a3a6defe7ebb34602ebedacb2eaab24c7fafc6e78b993",
+      "explanation": "거의 일정한 첫 구간의 극값 계산에서 수치 불확실성이 발생해 보수적으로 거부했습니다. Bernstein 다항식 범위로 기존 한계 안임을 증명할 때만 통과하도록 보강했습니다. 제한값을 완화하지 않았습니다.",
+      "in_final_aggregate": false
+    },
+    {
+      "id": "functional-c",
+      "status": "aborted",
+      "original_sha256": "abf83d2c77d745235f14e038a0002350445f11a22e8b4ee82bf7ef649c1be7bb",
+      "explanation": "만료 항목 제거·미적중·새 계획은 정상이나, 새 실제 시작 상태의 미소 차이로 조회 키가 달라 expired 대신 cold로 진단했습니다. 만료 정책을 바꾸지 않고 진단 분류를 정정했습니다.",
+      "in_final_aggregate": false
+    },
+    {
+      "id": "performance-b",
+      "status": "completed",
+      "original_sha256": "a7d51afe7c1c5d5d93c983020451f0418a61f481badc1e4d3c3949dbd71afd9e",
+      "explanation": "검토용 마지막 환경 조회를 포함하는 계산 예산의 종료점과 공통 plan_ready 주 지표를 정렬하기 전의 예비 결과입니다. 최종 performance-c와 합산하지 않습니다.",
+      "in_final_aggregate": false
+    }
+  ],
+  "statistics": {
+    "p95_measured": false,
+    "p95_published": false,
+    "p95_minimum_per_condition": 20,
+    "aggregation": "12 scored performance attempts only; warm-fill preparation and functional cases excluded"
+  },
+  "limitations": [
+    "One small coordinated joint target; 3 repeats per condition; no general success-rate or long-tail claim.",
+    "Plan-only performance rows dispatch zero goals. Planned duration and sampled path quality are not observed execution performance.",
+    "Cache lookup hit is distinct from accepted reuse and validation fallback; hits never renew stored TTL or source anchor.",
+    "Native/MoveIt clearance is sampled, not continuous collision certification. Reanchor dynamics proof covers the first modified segment.",
+    "No gripper in the shared FR5/UR5e ROS MuJoCo 3.12 workcell; separate W07 physical grasp uses MuJoCo 3.14 and DLS.",
+    "No claim of real robot, arbitrary installation, Pose/departure cache, W09 robot support or visual FPS results."
+  ],
+  "implementation_commit": "fbf98b795ac0635c8b56f6795c915a4b7b8e6440",
+  "measured_tracked_inputs_match_commit": {
+    "checked_files": 95,
+    "all_match": true,
+    "scope": "Intersection of the measured 106-file snapshot and tracked files at the implementation commit; generated model inputs remain identified by their original SHA."
+  }
+}

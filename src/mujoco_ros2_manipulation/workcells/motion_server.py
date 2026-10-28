@@ -44,6 +44,10 @@ from mujoco_ros2_manipulation.workcells.motion_request import (
     decode_message, request_id, validate_command, validate_cancel, validate_approval,
 )
 from mujoco_ros2_manipulation.workcells.motion_review import PlanReviewStore, ReviewRejected
+from mujoco_ros2_manipulation.workcells.pose_planning import PosePlanningMixin
+from mujoco_ros2_manipulation.workcells.pose_adapter import PoseAdapterError
+from mujoco_ros2_manipulation.workcells.pose_goal import validate_pose_goal
+from mujoco_ros2_manipulation.workcells.pose_tools import describe_pose_tools, validate_goal_context
 from mujoco_ros2_manipulation.workcells.request_trace import RequestTrace
 from mujoco_ros2_manipulation.workcells.operation_contract import describe_operation
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
@@ -52,6 +56,19 @@ from mujoco_ros2_manipulation.workcells.contracts import describe_workcell
 from mujoco_ros2_manipulation.workcells.spatial_candidates import compose_serial_paths
 from mujoco_ros2_manipulation.workcells.motion_diagnostics import (
     measure_endpoints, path_clearance_diagnostic, update_candidate_path_diagnostic)
+from mujoco_ros2_manipulation.workcells.planning_config import (
+    PLANNER_TYPES, planning_configuration, canonical_sha256, trajectory_cache_identity)
+from mujoco_ros2_manipulation.workcells.trajectory_cache import TrajectoryCache
+from mujoco_ros2_manipulation.workcells.cache_dynamics import validate_reanchored_dynamics, CacheDynamicsRejected
+
+
+PLANNING_SOURCE_FILES = ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py",
+    "request_trace.py", "verify.py", "planning_adapter.py", "execution_adapter.py", "execution_target.py",
+    "operation_contract.py", "environment_clearance.py", "timing.py", "path_quality.py", "planning_budget.py",
+    "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py", "pose_goal.py",
+    "pose_adapter.py", "pose_tools.py", "pose_planning.py", "planning_config.py", "trajectory_cache.py",
+    "cache_dynamics.py", "prepare.py", "interference.py", "distance.py", "verify_interference.py",
+    "verify_interference_comparison.py", "config.py", "integrity.py")
 
 
 def status_qos():
@@ -84,11 +101,17 @@ class MotionEnvironmentChanged(RuntimeError):
     pass
 
 
-class MotionCommandServer(WorkcellVerification):
+class MotionPathRejected(RuntimeError):
+    """A completed path check rejected a candidate; transport errors stay distinct."""
+
+
+class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
     split = InterferenceVerification.split
 
-    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing", trace_root=None, execution_target=None):
+    def __init__(self, cell, output, progress=None, *, compute_budget_sec=30.0, max_plan_candidates=MAX_PLAN_CANDIDATES, policy_name="dual_arm_timing", trace_root=None, execution_target=None, planner_id="RRTConnectkConfigDefault", trajectory_cache=False, cache_start_tolerance_rad=0.0, review_in_compute_budget=False):
         PlanningBudget(compute_budget_sec)  # Validate before creating a ROS node/output directory.
+        self.review_in_compute_budget = review_in_compute_budget
+        planning_configuration(planner_id, trajectory_cache, cache_start_tolerance_rad)
         if type(max_plan_candidates) is not int or not 1 <= max_plan_candidates <= MAX_PLAN_CANDIDATES:
             raise ValueError(f"Expected 1..{MAX_PLAN_CANDIDATES} plan candidates")
         self.max_plan_candidates = max_plan_candidates
@@ -128,6 +151,9 @@ class MotionCommandServer(WorkcellVerification):
         self.first_by_arm = set()
         self.motion_start = None
         super().__init__(cell, progress)
+        self.configure_planning(planner_id=planner_id, trajectory_cache=trajectory_cache,
+                                cache_start_tolerance_rad=cache_start_tolerance_rad)
+        self.planning_source_sha256 = self._planning_source_sha256()
         self.evaluator = DistanceEvaluator(execution_target or cell, environment=True)
         self.publisher = self.create_publisher(String, STATUS_TOPIC, status_qos())
         self.command_subscription = self.create_subscription(String, COMMAND_TOPIC, self.receive, 10)
@@ -137,6 +163,8 @@ class MotionCommandServer(WorkcellVerification):
         self.review_scene_client = self.create_client(GetPlanningScene, "/get_planning_scene")
         self.review_hardware_client = self.create_client(GetParameters, "/mujoco_ros2_control_node/get_parameters")
         self.review_moveit_client = self.create_client(GetParameters, "/move_group/get_parameters")
+        self.configure_pose_planning(passthrough_exceptions=(CommandCancelled,
+            PlanningBudgetExceeded, MotionStateChanged, MotionEnvironmentChanged))
         self.create_timer(1.0, self.heartbeat)
         self.dispatch_observer = self.action_event
         self.dispatch_abort = self.check_abort
@@ -153,13 +181,162 @@ class MotionCommandServer(WorkcellVerification):
             code_commit=subprocess.check_output(["git", "-C", str(code_root), "rev-parse", "HEAD"], text=True).strip(),
             code_worktree_dirty=bool(subprocess.check_output(["git", "-C", str(code_root), "status", "--porcelain"], text=True).strip()),
             compute_budget_sec=self.compute_budget_sec, max_plan_candidates=self.max_plan_candidates,
+            planning_configuration=deepcopy(self.planning_configuration),
             selection_policy="Bounded first valid RRT or two arm-order waypoint candidates; not shortest-path optimization",
             implementation_sha256={name: file_sha256(Path(__file__).with_name(name))
-                for name in ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py", "request_trace.py", "verify.py", "planning_adapter.py", "execution_adapter.py", "execution_target.py", "operation_contract.py", "environment_clearance.py", "timing.py", "path_quality.py", "planning_budget.py", "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py")},
+                for name in PLANNING_SOURCE_FILES},
             note="Warm persistent server; simulator startup excluded from request latency. Simulation only.")
         if execution_target is not None:
             session["execution_target"] = execution_target.description()
         atomic_json(self.directory / "session.json", session)
+
+    def configure_planning(self, *, planner_id="RRTConnectkConfigDefault", trajectory_cache=False,
+                           cache_start_tolerance_rad=0.0):
+        """Internal experiment setup only; every change starts a cold cache."""
+        if getattr(self, "active", None) is not None or getattr(self, "pending", None) is not None:
+            raise RuntimeError("Planning configuration can change only while the owner is idle")
+        configuration = planning_configuration(planner_id, trajectory_cache, cache_start_tolerance_rad)
+        self.planner_id = planner_id
+        self.planning_configuration = configuration
+        self.trajectory_cache = (TrajectoryCache(self.joint_names,
+            goal_tolerance_rad=self.goal_tolerance_rad,
+            start_tolerance_rad=configuration["cache_start_tolerance_rad"])
+            if trajectory_cache else None)
+
+    @property
+    def review_in_compute_budget(self):
+        return getattr(self, "_review_in_compute_budget", False)
+
+    @review_in_compute_budget.setter
+    def review_in_compute_budget(self, enabled):
+        if type(enabled) is not bool:
+            raise ValueError("Review computation scope requires an explicit boolean")
+        if getattr(self, "active", None) is not None or getattr(self, "pending", None) is not None:
+            raise RuntimeError("Review computation scope can change only while the owner is idle")
+        self._review_in_compute_budget = enabled
+
+    def _planning_source_sha256(self):
+        return canonical_sha256({name: file_sha256(Path(__file__).with_name(name))
+                                 for name in PLANNING_SOURCE_FILES})
+
+    def _planner_configuration_evidence(self):
+        """Observe registered OMPL config; GetMotionPlan cannot report selected ID."""
+        configuration = getattr(self, "planning_configuration", planning_configuration())
+        planner = configuration["planner_id"]
+        require(getattr(self, "planner_id", planner) == planner,
+                "Planner configuration changed without the idle configuration gate")
+        self.check_abort()
+        self.until(self.review_moveit_client.service_is_ready, 5, "planner configuration service")
+        names = ["ompl.planner_configs." + planner + suffix for suffix in (".type", ".range")]
+        values = self.result(self.review_moveit_client.call_async(GetParameters.Request(names=names)),
+                             5, "registered planner configuration").values
+        require(len(values) == 2 and values[0].string_value == PLANNER_TYPES[planner]
+                and values[1].type == 3 and values[1].double_value == 0.0,
+                "Live MoveIt planner configuration differs from the explicit requested OMPL config")
+        self.check_abort()
+        return dict(requested_planner_id=planner, expected_type=PLANNER_TYPES[planner],
+                    observed_type=values[0].string_value, observed_range=values[1].double_value,
+                    evidence="live MoveIt registered parameters", selected_planner_id=None,
+                    selection_evidence="GetMotionPlan has no selected planner field; inspect MoveIt logs separately")
+
+    def _native_cache_provenance(self):
+        opened = self.evaluator.metadata()
+        files = {name: file_sha256(self.cell.root / name) for name in (
+            "native/path_distance.cpp", "native/path_distance_environment.cpp", "runtime/native/path_distance.so")}
+        if (opened.get("source_sha256") != files["native/path_distance.cpp"]
+                or opened.get("library_sha256") != files["runtime/native/path_distance.so"]
+                or opened.get("environment", {}).get("source_sha256") != files["native/path_distance_environment.cpp"]
+                or opened.get("engine") != "MuJoCo 3.12.0"):
+            raise ReviewRejected("Native evaluator files/engine differ from the opened implementation; restart")
+        return dict(opened=opened, files_sha256=files,
+            scope="Opened evaluator metadata plus current helper binary/source SHA; transitive runtime libraries are not attested")
+
+    def _cache_runtime_context(self, trace):
+        started = time.monotonic()
+        try:
+            self.compute_checkpoint()
+            current_source = self._planning_source_sha256()
+            if current_source != self.planning_source_sha256:
+                raise ReviewRejected("Planning implementation changed; restart before cache reuse")
+            native_provenance = self._native_cache_provenance()
+            planner_evidence = self._planner_configuration_evidence()
+            runtime = self._review_runtime_identity()
+            self.compute_checkpoint()
+            configuration = self.planning_configuration
+            identity = trajectory_cache_identity(runtime,
+                source_sha256=canonical_sha256(dict(implementation=current_source, native=native_provenance)),
+                policy=dict(timing=self.policy, environment=self.environment_policy,
+                    goal_tolerance_rad=self.goal_tolerance_rad, joint_limits=self.metadata["joint_limits"],
+                    max_plan_candidates=self.max_plan_candidates,
+                    cache_start_tolerance_rad=configuration["cache_start_tolerance_rad"]),
+                planner=dict(configuration=configuration, runtime=planner_evidence))
+            trace.data["planner_configuration_evidence"] = deepcopy(planner_evidence)
+            trace.data["trajectory_cache"]["native_evaluator_provenance"] = deepcopy(native_provenance)
+            return dict(identity=identity, runtime_identity=runtime)
+        finally:
+            record = trace.data["trajectory_cache"]
+            record["source_validation_wall_sec"] += time.monotonic() - started
+
+    def _recheck_cache_context(self, context, trace):
+        current = self._cache_runtime_context(trace)
+        if any(current[key] != context[key] for key in ("identity", "runtime_identity")):
+            raise ReviewRejected("Cached planning source/model/environment/policy/planner identity changed; replan")
+        self.confirm_start_unchanged(trace.data["initial_state_rad"])
+
+    def _lookup_cached_path(self, initial, target, trace):
+        context = self._cache_runtime_context(trace)
+        record = trace.data["trajectory_cache"]
+        record.update(identity=deepcopy(context["identity"]),
+                      source_runtime_identity=deepcopy(context["runtime_identity"]))
+        self.compute_checkpoint()
+        lookup = self.trajectory_cache.lookup(context["identity"], initial, target)
+        self.compute_checkpoint()
+        record["lookup"] = {key: deepcopy(value) for key, value in lookup.items() if key != "trajectories"}
+        record.update(hit=lookup["hit"], reason=lookup["reason"])
+        context["lookup"] = lookup
+        return ([Spline(**item) for item in lookup["trajectories"]] if lookup["hit"] else None), context
+
+    def _validate_cached_anchor(self, curves, initial, target):
+        if (len(curves) != 1 or curves[0].names != tuple(self.joint_names)
+                or curves[0].points[0]["p"] != [initial[name] for name in self.joint_names]
+                or max(abs(curves[0].points[-1]["p"][index] - target[name])
+                       for index, name in enumerate(self.joint_names)) > self.goal_tolerance_rad + 1e-9):
+            raise MotionPathRejected("Cached whole-workcell anchor/order/endpoint differs from the current request")
+        samples = iter(sample_schedule(curves, initial, self.policy["sample_dt_sec"]))
+        while True:
+            self.compute_checkpoint()
+            try:
+                _, state = next(samples)
+            except StopIteration:
+                break
+            except ValueError as error:
+                # Only the pure generator is in this catch. ROS callback and
+                # checkpoint errors above are never candidate cache misses.
+                raise MotionPathRejected("Cached schedule cannot be sampled: " + str(error)) from error
+            if any(not self.metadata["joint_limits"][name]["lower"] <= state[name]
+                   <= self.metadata["joint_limits"][name]["upper"] for name in self.joint_names):
+                raise MotionPathRejected("Cached schedule exceeds a configured joint position limit")
+
+    def validate_motion_path(self, curves, initial, trace):
+        """The same complete native and MoveIt gates for fresh and cached paths."""
+        threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
+        planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"],
+            reject_below=threshold, checkpoint=self.compute_checkpoint,
+            environment_reject_below=self.environment_threshold_m)
+        trace.data["planned_clearance"] = planned
+        trace.data["clearance_diagnostic"] = path_clearance_diagnostic(trace.data["clearance_endpoints"],
+            planned, max(c.duration for c in curves))
+        if not planned["complete"]:
+            if planned.get("rejection_kind") == "environment_clearance":
+                raise EnvironmentClearanceRejected("Planned fixed-environment clearance below policy")
+            raise MotionPathRejected("Planned inter-arm clearance below policy")
+        samples = 0
+        for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
+            self.compute_checkpoint()
+            if not self.validity_of(state).valid:
+                raise MotionPathRejected("MoveIt rejected interpolated schedule")
+            samples += 1
+        trace.data["moveit_safety_samples"] = samples
 
     def destroy_node(self):
         try:
@@ -177,6 +354,7 @@ class MotionCommandServer(WorkcellVerification):
             record = dict(schema_version=1, session_id=self.session_id, request_id=None,
                               status="blocked" if self.blocked else "ready", trace_directory=str(self.directory),
                               review=self.review_store.summary())
+            record["pose_tools"] = describe_pose_tools(self.cell)
             if getattr(self, "execution_target", None) is not None:
                 record["execution_target"] = self.execution_target.description()
             self.publish(record)
@@ -198,6 +376,17 @@ class MotionCommandServer(WorkcellVerification):
             reply["execution_target"] = deepcopy(trace.data["execution_target"])
         if "mode" in trace.data:
             reply["mode"] = trace.data["mode"]
+        if "pose_goal" in trace.data:
+            try:
+                reply["pose_goal"] = validate_pose_goal(trace.data["pose_goal"])
+            except (ValueError, TypeError):
+                # Keep the rejected raw request in its bounded trace, never
+                # propagate arbitrary fields into every live status snapshot.
+                pass
+        if "pose_kinematics" in trace.data:
+            reply["pose_kinematics"] = deepcopy(trace.data["pose_kinematics"])
+        if "pose_completion" in trace.data:
+            reply["pose_completion"] = deepcopy(trace.data["pose_completion"])
         if trace.data.get("mode") == "approved_plan":
             approval = trace.data.get("approval")
             try:
@@ -316,6 +505,10 @@ class MotionCommandServer(WorkcellVerification):
             payload, review = self.review_store.claim(data, identity=self.review_identity,
                 state_rad=self.state(), simulation_sec=self.clock_last)
             trace.approved_plan = payload
+            if "goal_context" in payload:
+                validate_goal_context(self.cell, payload["goal_context"])
+                trace.data["goal_context"] = deepcopy(payload["goal_context"])
+                trace.data["pose_goal"] = deepcopy(payload["goal_context"]["goal"])
             trace.data.update(status="queued", review=review,
                 command=dict(payload["command"], request_id=identifier))
             self.pending = trace
@@ -416,6 +609,8 @@ class MotionCommandServer(WorkcellVerification):
         self.commanded = self.state()
         if self.execution_target is not None:
             self.execution_runtime_identity = deepcopy(self._recheck_execution_target())
+        if self.planner_id != "RRTConnectkConfigDefault" or self.trajectory_cache is not None:
+            self._planner_configuration_evidence()
         self.initialized = True
         self.heartbeat()
 
@@ -432,17 +627,27 @@ class MotionCommandServer(WorkcellVerification):
             if self.compute_budget:
                 self.compute_budget.check()
 
-    def finish_computation(self, trace):
-        self.compute_checkpoint()
+    def finish_computation(self, trace, *, pump=True):
+        if pump:
+            self.compute_checkpoint()
+        else:
+            self.check_abort()
+            self.compute_budget.check()
         trace.data["compute_budget"] = self.compute_budget.finish()
         self.event("computation_done")
 
-    def plan(self, group, target, start_state=None):
+    def plan(self, group, target, start_state=None, *, goal_tolerance_rad=None):
         self.compute_checkpoint()
+        planner_id = getattr(self, "planner_id", "RRTConnectkConfigDefault")
+        if planner_id != "RRTConnectkConfigDefault" and "planner_configuration_evidence" not in self.active.data:
+            self.active.data["planner_configuration_evidence"] = self._planner_configuration_evidence()
+            self.compute_checkpoint()
         self.event("planning_" + group)
         with self.active.span("planning:" + group):
-            answer = super().plan(group, target, start_state, planner_id="RRTConnectkConfigDefault",
-                                  allowed_planning_sec=min(5.0, self.compute_budget.remaining()), goal_tolerance_rad=self.goal_tolerance_rad)
+            answer = super().plan(group, target, start_state, planner_id=planner_id,
+                                  allowed_planning_sec=min(5.0, self.compute_budget.remaining()),
+                                  goal_tolerance_rad=(self.goal_tolerance_rad if goal_tolerance_rad is None
+                                                      else goal_tolerance_rad))
         self.active.data.setdefault("plans", []).append(deepcopy(self.planning_timings[-1]))
         self.compute_checkpoint()
         if answer.error_code.val != MoveItErrorCodes.SUCCESS:
@@ -672,21 +877,26 @@ class MotionCommandServer(WorkcellVerification):
             self.review_store.invalidate("Execution environment changed; restart and replan")
             raise MotionEnvironmentChanged("Execution environment identity failed; restart and replan") from error
 
-    def _issue_review(self, trace, initial, identity):
+    def _issue_review(self, trace, initial, identity, *, finish_budget=False):
         current = self._review_runtime_identity()
         require(current == identity, "Model/environment changed while planning; create a new plan")
         self.confirm_start_unchanged(initial)
+        if finish_budget:
+            self.finish_computation(trace, pump=False)
         self.review_identity = current
         trace.data["review"] = self.review_store.issue(trace.data["request_id"], identity=current,
             initial_state_rad=initial, simulation_sec=self.clock_last,
             command=trace.data["command"], trajectories=trace.data.get("trajectories", []),
-            no_motion_required=trace.data.get("no_motion_required", False))
+            no_motion_required=trace.data.get("no_motion_required", False),
+            goal_context=trace.data.get("goal_context"))
         trace.data["review_payload"] = self.review_store.payload_for(
             trace.data["request_id"], trace.data["review"]["plan_sha256"])
         trace.event("plan_ready", simulation_sec=self.clock_last)
         trace.finish("succeeded")
 
     def _recheck_approved(self, payload, *, live):
+        if "goal_context" in payload:
+            validate_goal_context(self.cell, payload["goal_context"])
         identity = self._review_runtime_identity() if live else self.review_identity
         require(identity is not None, "Plan identity is no longer available; replan")
         self.review_store.recheck_claim(payload, identity=identity,
@@ -711,6 +921,25 @@ class MotionCommandServer(WorkcellVerification):
         approved_plan = getattr(trace, "approved_plan", None)
         plan_only = trace.data.get("mode") == "plan_only"
         try:
+            cache_context = None
+            cache_hit = False
+            trace.data.setdefault("plans", [])
+            configuration = getattr(self, "planning_configuration", planning_configuration())
+            budget_includes_review = self.review_in_compute_budget or configuration["trajectory_cache"]
+            trace.data["planning_configuration"] = dict(configuration,
+                requested_planner_id=configuration["planner_id"],
+                trajectory_cache_enabled=configuration["trajectory_cache"],
+                max_plan_candidates=getattr(self, "max_plan_candidates", MAX_PLAN_CANDIDATES),
+                compute_budget_wall_sec=self.compute_budget_sec,
+                goal_tolerance_rad=getattr(self, "goal_tolerance_rad", .003),
+                budget_includes_review=budget_includes_review,
+                compute_scope=("computation_started_through_final_review_identity" if budget_includes_review
+                               else "computation_started_before_final_review_identity"))
+            cache_record = trace.data["trajectory_cache"] = dict(
+                enabled=configuration["trajectory_cache"], eligible=False, hit=False,
+                reason="disabled" if not configuration["trajectory_cache"] else "ineligible",
+                lookup=None, source_validation_wall_sec=0., full_revalidation_wall_sec=0.,
+                fallback_planning_wall_sec=0., store=None)
             execution_identity = None
             if getattr(self, "execution_target", None) is not None:
                 trace.data["execution_target"] = self.execution_target.description()
@@ -741,17 +970,31 @@ class MotionCommandServer(WorkcellVerification):
             require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
                     "Environment clearance policy changed; restart and replan")
             self.event("computation_started")
+            if "pose_goal" in trace.data and approved_plan is None:
+                self.resolve_pending_pose(trace, initial)
             target = trace.data["command"]["target_rad"]
             strategy = trace.data["command"]["strategy"]
+            if cache_record["enabled"]:
+                if approved_plan is not None:
+                    cache_record["reason"] = "approved_execution_excluded"
+                elif "goal_context" in trace.data:
+                    cache_record["reason"] = "pose_excluded"
+                elif strategy != "coordinated":
+                    cache_record["reason"] = "departure_excluded"
             threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
             self.event("endpoint_clearance")
             with trace.span("endpoint_clearance"):
                 trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold,
                     checkpoint=self.compute_checkpoint, environment_threshold_m=self.environment_threshold_m)
-            if ((approved_plan is None and max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001)
+            at_goal = (trace.data["pose_kinematics"]["already_at_goal"] if "goal_context" in trace.data
+                       and approved_plan is None else max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001)
+            if ((approved_plan is None and at_goal)
                     or (approved_plan is not None and approved_plan["no_motion_required"])):
                 trace.data["no_motion_required"] = True
-                trace.skip("planning", "Target already within the 0.001rad movement threshold")
+                if cache_record["enabled"]:
+                    cache_record["reason"] = "no_motion_excluded"
+                trace.skip("planning", "Observed TCP already within the Cartesian no-op condition"
+                           if "goal_context" in trace.data else "Target already within the 0.001rad movement threshold")
                 trace.skip("departure_search", "No motion required")
                 with trace.span("safety_checks"):
                     require(self.validity_of(initial).valid, "Current state is colliding")
@@ -764,6 +1007,8 @@ class MotionCommandServer(WorkcellVerification):
                     if execution_identity is not None:
                         self._recheck_execution_target(execution_identity)
                         self.confirm_start_unchanged(initial)
+                if "goal_context" in trace.data:
+                    self.confirm_pose_completion(trace)
                 if plan_only:
                     # A no-op has no path to inspect or approve. Preserve its
                     # successful zero-dispatch result without issuing a token.
@@ -793,8 +1038,18 @@ class MotionCommandServer(WorkcellVerification):
                 require(curves, "Reviewed motion has no trajectories")
                 trace.skip("planning", "Execute the exact reviewed trajectories; do not replan after approval")
                 trace.skip("departure_search", "Reviewed departure schedule is immutable")
+            elif "goal_context" in trace.data:
+                curves = [self.pose_path(initial, target, trace)]
+                trace.skip("departure_search", "Selected arm plan with all other joints held")
             elif strategy == "coordinated":
-                curves = [self.coordinated_path(initial, target, trace)]
+                if getattr(self, "trajectory_cache", None) is not None:
+                    cache_record["eligible"] = True
+                    curves, cache_context = self._lookup_cached_path(initial, target, trace)
+                    cache_hit = curves is not None
+                else:
+                    curves = None
+                if curves is None:
+                    curves = [self.coordinated_path(initial, target, trace)]
                 trace.skip("departure_search", "Coordinated joint-space plan; no departure-only search")
             else:
                 independent = [(i, self.plan(i.group, {n: target[n] for n in i.joints}, initial)) for i in self.cell.instances]
@@ -812,22 +1067,43 @@ class MotionCommandServer(WorkcellVerification):
             self.check_abort()
             self.event("safety_checks")
             with trace.span("safety_checks"):
-                threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
-                planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"],
-                    reject_below=threshold, checkpoint=self.compute_checkpoint,
-                    environment_reject_below=self.environment_threshold_m)
-                trace.data["planned_clearance"] = planned
-                trace.data["clearance_diagnostic"] = path_clearance_diagnostic(trace.data["clearance_endpoints"], planned, max(c.duration for c in curves))
-                if not planned["complete"]:
-                    if planned.get("rejection_kind") == "environment_clearance":
-                        raise EnvironmentClearanceRejected("Planned fixed-environment clearance below policy")
-                    raise RuntimeError("Planned inter-arm clearance below policy")
-                samples = 0
-                for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
-                    self.compute_checkpoint()
-                    require(self.validity_of(state).valid, "MoveIt rejected interpolated schedule")
-                    samples += 1
-                trace.data["moveit_safety_samples"] = samples
+                validation_started = time.monotonic()
+                try:
+                    if cache_hit:
+                        self._validate_cached_anchor(curves, initial, target)
+                        cache_record["dynamics"] = validate_reanchored_dynamics(
+                            [curve.record() for curve in curves], self.metadata["joint_limits"],
+                            max_acceleration=1.0)
+                    self.validate_motion_path(curves, initial, trace)
+                except (MotionPathRejected, EnvironmentClearanceRejected, CacheDynamicsRejected) as error:
+                    if not cache_hit:
+                        raise
+                    cache_record["full_revalidation_wall_sec"] = time.monotonic() - validation_started
+                    cache_record["rejected_candidate"] = dict(type=type(error).__name__, message=str(error),
+                        planned_clearance=deepcopy(trace.data.get("planned_clearance")),
+                        dynamics=deepcopy(getattr(error, "diagnostic", None)))
+                    # Identity, cancellation, budget and transport failures here
+                    # escape. They cannot evict a path or authorize a retry.
+                    self._recheck_cache_context(cache_context, trace)
+                    cache_record["eviction"] = self.trajectory_cache.evict(
+                        cache_context["lookup"]["key_sha256"], "validation_rejected")
+                    cache_record.update(reason="validation_rejected_fallback", fallback=True)
+                    fallback_started = time.monotonic()
+                    try:
+                        self.compute_checkpoint()
+                        curves = [self.coordinated_path(initial, target, trace)]
+                    finally:
+                        cache_record["fallback_planning_wall_sec"] = time.monotonic() - fallback_started
+                    trace.data["planned_trajectories"] = [curve.record() for curve in curves]
+                    self.validate_motion_path(curves, initial, trace)
+                    cache_hit = False
+                else:
+                    if cache_hit:
+                        cache_record["full_revalidation_wall_sec"] = time.monotonic() - validation_started
+                finally:
+                    if (cache_context is not None and cache_context["lookup"]["hit"]
+                            and cache_record["full_revalidation_wall_sec"] == 0):
+                        cache_record["full_revalidation_wall_sec"] = time.monotonic() - validation_started
             trace.data["trajectories"] = [c.record() for c in curves]
             # Persist the full validated path before refreshing state and choosing
             # an execution start time. Later execution updates remain compact.
@@ -835,19 +1111,29 @@ class MotionCommandServer(WorkcellVerification):
             with trace.span("state_recheck"):
                 self.quiet()
                 self.confirm_start_unchanged(initial)
+            if cache_context is not None:
+                self._recheck_cache_context(cache_context, trace)
+                self.compute_checkpoint()
+                if not cache_hit:
+                    cache_record["store"] = self.trajectory_cache.store(cache_context["identity"],
+                        initial, target, [curve.record() for curve in curves])
             if plan_only:
-                self.finish_computation(trace)
-                self._issue_review(trace, initial, review_identity)
+                if not budget_includes_review:
+                    self.finish_computation(trace)
+                self._issue_review(trace, initial, review_identity, finish_budget=budget_includes_review)
                 return
             if approved_plan is not None:
                 # The scene query may spin callbacks. All state, cancellation
                 # and budget gates below still run before the first goal send.
                 self._recheck_approved(approved_plan, live=True)
             self._defer_trace_persist = True
-            self.finish_computation(trace)
+            if cache_context is None:
+                self.finish_computation(trace)
             # finish_computation may pump a newer state/cancel callback. Check that
             # last received state again, with no intervening spin before dispatch.
             with trace.span("final_state_recheck"):
+                if cache_context is not None:
+                    self._recheck_cache_context(cache_context, trace)
                 if execution_identity is not None:
                     self._recheck_execution_target(execution_identity)
                 self.confirm_start_unchanged(initial)
@@ -855,6 +1141,9 @@ class MotionCommandServer(WorkcellVerification):
                         "Environment clearance policy changed; restart and replan")
                 if approved_plan is not None:
                     self._recheck_approved(approved_plan, live=False)
+            if cache_context is not None:
+                self.finish_computation(trace, pump=False)
+                self.confirm_start_unchanged(initial)
             self.motion_start = self.clock_last + 1.0
             trace.data["scheduled_start_simulation_sec"] = self.motion_start
             commands = self.split(to_ros(curves[0]), self.motion_start) if len(curves) == 1 else [(inst, to_ros(curve, self.motion_start)) for inst, curve in zip(self.cell.instances, curves)]
@@ -875,6 +1164,8 @@ class MotionCommandServer(WorkcellVerification):
                     require(observed["minimum"]["distance_m"] >= self.policy["min_inter_arm_distance_m"], "Observed clearance below 20mm policy")
                     if observed["environment_minimum"]["distance_m"] < self.environment_policy["min_environment_distance_m"]:
                         raise EnvironmentClearanceRejected("Observed fixed-environment clearance below policy")
+            if "goal_context" in trace.data:
+                self.confirm_pose_completion(trace)
             trace.finish("succeeded")
         except BaseException as error:
             ledger = self.execution_ledger
@@ -893,6 +1184,8 @@ class MotionCommandServer(WorkcellVerification):
                 trace.data["failure_kind"] = "environment_clearance"
             elif isinstance(error, MotionPlanningFailed):
                 trace.data["failure_kind"] = "planner_failed"
+            elif isinstance(error, PoseAdapterError):
+                trace.data["failure_kind"] = error.kind
             elif isinstance(error, MotionStateChanged):
                 trace.data["failure_kind"] = "state_changed"
             elif isinstance(error, MotionEnvironmentChanged):
@@ -965,6 +1258,12 @@ def main():
     parser.add_argument("--compute-budget", type=float, default=30.0, help="Cooperative planning/validation wall seconds, excludes execution")
     parser.add_argument("--max-plan-candidates", type=int, default=MAX_PLAN_CANDIDATES,
         help="Bounded first-valid spatial plans per coordinated request, 1..12; one shared computation budget")
+    parser.add_argument("--planner-id", choices=tuple(PLANNER_TYPES), default="RRTConnectkConfigDefault",
+        help="Explicit registered OMPL planner; selected planner still requires separate MoveIt log evidence")
+    parser.add_argument("--trajectory-cache", action="store_true",
+        help="Opt-in bounded coordinated joint-path candidate reuse; all current validators remain mandatory")
+    parser.add_argument("--cache-start-tolerance", type=float, default=0.0,
+        help="Internal cache experiment only: exact start by default, at most 0.001rad with full revalidation")
     args = parser.parse_args()
     cell = load_workcell(args.workcell)
     execution_target = load_execution_target(cell, args.execution_environment, args.execution_manifest_sha256)
@@ -974,7 +1273,9 @@ def main():
     node = None
     previous_handlers = {}
     try:
-        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates, policy_name=args.policy, execution_target=execution_target)
+        node = MotionCommandServer(cell, output, compute_budget_sec=args.compute_budget, max_plan_candidates=args.max_plan_candidates, policy_name=args.policy, execution_target=execution_target,
+            planner_id=args.planner_id, trajectory_cache=args.trajectory_cache,
+            cache_start_tolerance_rad=args.cache_start_tolerance)
         def stop(signum, frame):
             node.stop_requested = True
         for signum in (signal.SIGINT, signal.SIGTERM):

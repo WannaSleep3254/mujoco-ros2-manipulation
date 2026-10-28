@@ -17,6 +17,7 @@ reports = ["jsonschema>=4.18,<5"]
 manipulation-report = "mujoco_ros2_manipulation.reporting.__main__:main"
 manipulation-prepare = "mujoco_ros2_manipulation.model_build.prepare:main"
 manipulation-verify = "mujoco_ros2_manipulation.verification.ros_checks:main"
+manipulation-verify-cancel = "mujoco_ros2_manipulation.verification.verify_robot_cancel:main"
 manipulation-images = "mujoco_ros2_manipulation.verification.images:main"
 manipulation-build = "mujoco_ros2_manipulation.build:main"
 
@@ -37,6 +38,7 @@ manipulation-benchmark-fixed = "mujoco_ros2_manipulation.workcells.benchmark_fix
 manipulation-export-fixed-motion = "mujoco_ros2_manipulation.workcells.export_fixed_motion:main"
 manipulation-import-fixed-report = "mujoco_ros2_manipulation.reporting.fixed_motion:main"
 manipulation-benchmark-motion = "mujoco_ros2_manipulation.workcells.benchmark_motion:main"
+manipulation-benchmark-planner-cache = "mujoco_ros2_manipulation.workcells.benchmark_planner_cache:main"
 manipulation-operator = "mujoco_ros2_manipulation.operator_console.__main__:main"
 manipulation-verify-operator = "mujoco_ros2_manipulation.operator_console.verify:main"
 manipulation-verify-views = "mujoco_ros2_manipulation.operator_console.verify_views:main"
@@ -45,6 +47,8 @@ manipulation-import-step = "mujoco_ros2_manipulation.workcells.import_step:main"
 manipulation-prepare-environment = "mujoco_ros2_manipulation.workcells.environment_cli:main"
 manipulation-verify-environment = "mujoco_ros2_manipulation.workcells.verify_environment_overlay:main"
 manipulation-verify-environment-views = "mujoco_ros2_manipulation.operator_console.verify_environment_views:main"
+manipulation-grasp-demo = "mujoco_ros2_manipulation.grasping.demo_server:main"
+manipulation-grasp-export = "mujoco_ros2_manipulation.grasping.display_export:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -56,3 +60,4 @@ where = ["src"]
 "mujoco_ros2_manipulation.reporting" = ["report.schema.json", "operator-demos.schema.json", "templates/*.html", "templates/*.css"]
 
 "mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js", "static/*.mjs", "static/vendor/*.js", "static/vendor/*.json", "static/vendor/LICENSE"]
+"mujoco_ros2_manipulation.grasping" = ["static/*.html", "static/*.css", "static/*.js"]

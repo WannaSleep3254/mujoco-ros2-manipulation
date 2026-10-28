@@ -16,6 +16,7 @@ STAGE_PHASES = {
     "computation_started": "planning", "endpoint_clearance": "planning",
     "endpoint_validity": "planning", "planning_both_arms": "planning",
     "planning_left_arm": "planning", "planning_right_arm": "planning",
+    "pose_ik": "planning",
     "spatial_candidate_search": "planning", "departure_search": "planning",
     "safety_checks": "planning", "computation_done": "planning", "state_recheck": "planning",
     "plan_ready": "review", "plan_revoked": "review", "approval_validating": "review",

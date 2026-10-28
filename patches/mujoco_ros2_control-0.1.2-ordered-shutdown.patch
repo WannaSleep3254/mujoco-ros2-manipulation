@@ -1,0 +1,460 @@
+--- a/mujoco_ros2_control/src/mujoco_ros2_control_node.cpp
++++ b/mujoco_ros2_control/src/mujoco_ros2_control_node.cpp
+@@ -13,6 +13,10 @@
+ // limitations under the License.
+ 
+ #include <errno.h>
++#include <signal.h>
++#include <atomic>
++#include <cstdio>
++#include <exception>
+ #include <chrono>
+ #include <memory>
+ #include <string>
+@@ -22,6 +26,12 @@
+ #include <controller_manager/controller_manager.hpp>
+ #include <rclcpp/executors.hpp>
+ #include <realtime_tools/realtime_helpers.hpp>
++
++#include "control_loop_shutdown.hpp"
++
++#ifndef MANIPULATION_SHUTDOWN_SHA256
++#error "Ordered shutdown header provenance is required"
++#endif
+ 
+ using namespace std::chrono_literals;
+ 
+@@ -31,12 +41,43 @@
+ // This value is used when configuring the main loop to use SCHED_FIFO scheduling
+ // We use a midpoint RT priority to allow maximum flexibility to users
+ int const kSchedPriority = 50;
++namespace shutdown_order = manipulation::control_loop_shutdown;
++
++extern "C" void request_ordered_shutdown(int)
++{
++  shutdown_order::process_stop.request();
++}
++
++bool install_ordered_signal_handlers()
++{
++  struct sigaction action {};
++  action.sa_handler = request_ordered_shutdown;
++  sigemptyset(&action.sa_mask);
++  action.sa_flags = SA_RESTART;
++  struct sigaction previous_int {};
++  if (sigaction(SIGINT, &action, &previous_int) != 0) {
++    return false;
++  }
++  if (sigaction(SIGTERM, &action, nullptr) != 0) {
++    const int error = errno;
++    sigaction(SIGINT, &previous_int, nullptr);
++    errno = error;
++    return false;
++  }
++  return true;
++}
+ 
+ }  // namespace
+ 
+ int main(int argc, char ** argv)
+ {
+-  rclcpp::init(argc, argv);
++  // No ROS shutdown callback may run until the RT update owner has joined.
++  // Install before constructing hardware, whose render thread may request exit.
++  if (!install_ordered_signal_handlers()) {
++    std::perror("Cannot install ordered shutdown signal handlers");
++    return 1;
++  }
++  rclcpp::init(argc, argv, rclcpp::InitOptions(), rclcpp::SignalHandlerOptions::None);
+ 
+   std::shared_ptr<rclcpp::Executor> executor =
+     std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+@@ -80,9 +121,32 @@
+     cm->get_logger(), "Spawning %s RT thread with scheduler priority: %d", cm->get_name(),
+     thread_priority);
+ 
+-  std::thread cm_thread(
+-    [cm, thread_priority, use_sim_time, manage_overruns]()
++  std::atomic<bool> control_failed{false};
++  std::atomic<bool> spin_finished{false};
++  std::thread cm_thread;
++  std::thread stop_watcher;
++  try {
++    cm_thread = std::thread(
++    [cm, thread_priority, use_sim_time, manage_overruns, &control_failed]()
+     {
++      auto should_stop = []() {
++        return shutdown_order::process_stop.requested() || !rclcpp::ok();
++      };
++      auto pause_wall = [](std::chrono::nanoseconds duration) {
++        std::this_thread::sleep_for(duration);
++      };
++      auto clock_wait_ok = [&](shutdown_order::ClockWaitResult result, const char * phase) {
++        if (result == shutdown_order::ClockWaitResult::ready) { return true; }
++        if (result != shutdown_order::ClockWaitResult::stopped) {
++          RCLCPP_ERROR(cm->get_logger(), "Control clock failed in %s (reason=%s)", phase,
++            result == shutdown_order::ClockWaitResult::backwards ? "backwards" : "clock_error");
++          control_failed.store(true);
++          shutdown_order::process_stop.request();
++        }
++        return false;
++      };
++      auto run_loop = [&]() {
++
+       // portable function that gets now from the cm on humble or later appropriately
+       auto get_cm_now = [](const auto& ctrl_mgr) -> rclcpp::Time {
+ #if HARDWARE_INTERFACE_VERSION_MAJOR < 3
+@@ -132,52 +196,66 @@
+           thread_priority);
+       }
+ 
+-      // CHANGED FROM UPSTREAM
+-      // We must wait for the clock to be running, which requires the simulation to have started so that the
+-      // physics loop will publish to the clock topic. To account for that, we must spin the executor
+-      // and the controller manager node to ensure the MuJoCo hardware interface is constructed and launched.
+-      // So instead, we just wait in the control loop so that the hardware interface can still start and run.
+-      //
+-      // TODO: Potentially remove this node depending on what comes out of the upstream PR:
+-      // https://github.com/ros-controls/ros2_control/pull/2654
+-      cm->get_clock()->wait_until_started();
+-      cm->get_clock()->sleep_for(rclcpp::Duration::from_seconds(1.0 / cm->get_update_rate()));
+-
+-      // for calculating sleep time
++      // Stop-aware wall polling permits a clean join even before /clock exists,
++      // or when simulation time is paused. ROS sleep_until is not interruptible
++      // until Context on_shutdown, which is too late for ordered pre-shutdown.
++      auto wait_clock_until = [&](std::int64_t target, std::int64_t minimum = 0) {
++        return shutdown_order::wait_for_ros_time(
++          [&]() { return cm->get_clock()->now().nanoseconds(); }, target,
++          should_stop, pause_wall, minimum);
++      };
++      if (!clock_wait_ok(wait_clock_until(1), "clock_started")) { return; }
+       auto const period = std::chrono::nanoseconds(1'000'000'000 / cm->get_update_rate());
+-
+-      // for calculating the measured period of the loop
++      const auto clock_start = cm->get_clock()->now();
++      if (!clock_wait_ok(wait_clock_until((clock_start + period).nanoseconds(),
++          clock_start.nanoseconds()), "first_clock_period")) { return; }
+       rclcpp::Time previous_time = get_cm_now(cm);
+-      std::this_thread::sleep_for(period);
++      auto wait_wall_until = [&](std::chrono::steady_clock::time_point target) {
++        return shutdown_order::wait_for_ros_time(
++          []() { return std::chrono::duration_cast<std::chrono::nanoseconds>(
++            std::chrono::steady_clock::now().time_since_epoch()).count(); },
++          std::chrono::duration_cast<std::chrono::nanoseconds>(target.time_since_epoch()).count(),
++          should_stop, pause_wall);
++      };
++      if (!clock_wait_ok(wait_wall_until(std::chrono::steady_clock::now() + period),
++          "first_wall_period")) { return; }
+ 
+       std::chrono::steady_clock::time_point next_iteration_time{std::chrono::steady_clock::now()};
+ 
+-      while (rclcpp::ok())
++      while (!should_stop())
+       {
+         // calculate measured period
+-        auto const current_time = get_cm_now(cm);
++        auto current_time = get_cm_now(cm);
++        if (current_time < previous_time) {
++          clock_wait_ok(shutdown_order::ClockWaitResult::backwards, "control_period");
++          return;
++        }
++        if (use_sim_time && current_time == previous_time) {
++          if (!clock_wait_ok(wait_clock_until((previous_time + period).nanoseconds(),
++              previous_time.nanoseconds()), "paused_clock")) { return; }
++          current_time = get_cm_now(cm);
++          if (current_time < previous_time) {
++            clock_wait_ok(shutdown_order::ClockWaitResult::backwards, "paused_clock_resume");
++            return;
++          }
++          if (current_time == previous_time) { continue; }
++        }
+         auto const measured_period = current_time - previous_time;
+         previous_time = current_time;
+ 
+         // execute update loop
+-        cm->read(get_cm_now(cm), measured_period);
+-        cm->update(get_cm_now(cm), measured_period);
+-        cm->write(get_cm_now(cm), measured_period);
++        if (!shutdown_order::run_control_cycle(should_stop,
++            [&]() { cm->read(get_cm_now(cm), measured_period); },
++            [&]() { cm->update(get_cm_now(cm), measured_period); },
++            [&]() { cm->write(get_cm_now(cm), measured_period); })) {
++          return;
++        }
+ 
+         // wait until we hit the end of the period
+         if (use_sim_time)
+         {
+-          try
+-          {
+-            // `sleep_until` may throw if sim time stops (e.g., simulation shutdown).
+-            cm->get_clock()->sleep_until(current_time + period);
+-          }
+-          catch (const std::runtime_error & e)
+-          {
+-            RCLCPP_ERROR(cm->get_logger(),
+-            "Sleep_until failed with error: %s. Exiting control loop and aborting....", e.what());
+-            break;
+-          }
++          if (!clock_wait_ok(wait_clock_until((current_time + period).nanoseconds(),
++              current_time.nanoseconds()), "control_period")) { return; }
+         }
+         else
+         {
+@@ -199,14 +277,69 @@
+               cm->get_update_rate(), time_diff + cm_period, overrun_count + 1);
+             next_iteration_time += (overrun_count * period);
+           }
+-          std::this_thread::sleep_until(next_iteration_time);
+-        }
+-      }
++          if (!clock_wait_ok(wait_wall_until(next_iteration_time), "wall_period")) { return; }
++        }
++      }
++      };
++      try {
++        run_loop();
++      } catch (const std::exception & error) {
++        control_failed.store(true);
++        RCLCPP_ERROR(cm->get_logger(), "Control loop failed: %s", error.what());
++      } catch (...) {
++        control_failed.store(true);
++        RCLCPP_ERROR(cm->get_logger(), "Control loop failed with an unknown exception");
++      }
++      shutdown_order::process_stop.request();
+     });
+ 
+-  executor->add_node(cm);
+-  executor->spin();
+-  cm_thread.join();
+-  rclcpp::shutdown();
+-  return 0;
++    // cancel() before spin() can be lost when spin resets its flag. Keep issuing
++    // the idempotent cancellation until the owner confirms spin has finished.
++    stop_watcher = std::thread([&]() {
++      bool cancel_error_reported = false;
++      while (!spin_finished.load()) {
++        if (shutdown_order::process_stop.requested()) {
++          try {
++            executor->cancel();
++          } catch (const std::exception & error) {
++            control_failed.store(true);
++            if (!cancel_error_reported) {
++              RCLCPP_ERROR(cm->get_logger(), "Executor cancellation failed: %s", error.what());
++              cancel_error_reported = true;
++            }
++          }
++        }
++        std::this_thread::sleep_for(shutdown_order::poll_interval);
++      }
++    });
++    executor->add_node(cm);
++    if (!shutdown_order::process_stop.requested()) {
++      executor->spin();
++    }
++  } catch (const std::exception & error) {
++    control_failed.store(true);
++    RCLCPP_ERROR(cm->get_logger(), "Control executor failed: %s", error.what());
++  } catch (...) {
++    control_failed.store(true);
++    RCLCPP_ERROR(cm->get_logger(), "Control executor failed with an unknown exception");
++  }
++  shutdown_order::process_stop.request();
++  spin_finished.store(true);
++  if (stop_watcher.joinable()) { stop_watcher.join(); }
++  shutdown_order::join_then_shutdown(cm_thread,
++    [&]() {
++      RCLCPP_INFO(cm->get_logger(),
++        "CONTROL_LOOP_SHUTDOWN phase=UPDATE_LOOP_JOINED patch_sha256=%s",
++        MANIPULATION_SHUTDOWN_SHA256);
++    },
++    [&]() {
++      RCLCPP_INFO(cm->get_logger(),
++        "CONTROL_LOOP_SHUTDOWN phase=CONTEXT_SHUTDOWN_BEGIN patch_sha256=%s",
++        MANIPULATION_SHUTDOWN_SHA256);
++      rclcpp::shutdown();
++      RCLCPP_INFO(cm->get_logger(),
++        "CONTROL_LOOP_SHUTDOWN phase=CONTEXT_SHUTDOWN_DONE patch_sha256=%s",
++        MANIPULATION_SHUTDOWN_SHA256);
++    });
++  return control_failed.load() ? 1 : 0;
+ }
+--- a/mujoco_ros2_control/CMakeLists.txt
++++ b/mujoco_ros2_control/CMakeLists.txt
+@@ -243,6 +243,15 @@
+ 
+ # Install the ROS 2 control node
+ add_executable(ros2_control_node src/mujoco_ros2_control_node.cpp)
++if(NOT MANIPULATION_SHUTDOWN_INCLUDE_DIR OR NOT MANIPULATION_SHUTDOWN_SHA256)
++  message(FATAL_ERROR "Ordered shutdown requires its include directory and header SHA256")
++endif()
++if(NOT EXISTS "${MANIPULATION_SHUTDOWN_INCLUDE_DIR}/control_loop_shutdown.hpp")
++  message(FATAL_ERROR "Ordered shutdown header is missing")
++endif()
++target_include_directories(ros2_control_node PRIVATE "${MANIPULATION_SHUTDOWN_INCLUDE_DIR}")
++target_compile_definitions(ros2_control_node PRIVATE
++  MANIPULATION_SHUTDOWN_SHA256="${MANIPULATION_SHUTDOWN_SHA256}")
+ target_link_libraries(ros2_control_node PUBLIC
+   controller_manager::controller_manager
+ )
+--- a/mujoco_ros2_control/src/render_loop_exit.hpp
++++ b/mujoco_ros2_control/src/render_loop_exit.hpp
+@@ -18,6 +18,7 @@
+ #define MUJOCO_ROS2_CONTROL__RENDER_LOOP_EXIT_HPP_
+ 
+ #include <atomic>
++#include <csignal>
+ #include <memory>
+ 
+ #include <rclcpp/context.hpp>
+@@ -37,7 +38,10 @@
+     return false;
+   }
+ 
+-  return context && context->shutdown("MuJoCo rendering window closed");
++  // Keep the Context alive until the control-loop owner has joined its RT thread.
++  // SIGTERM only sets the executable's lock-free stop flag; its owner will then
++  // cancel the executor, join, and run Context pre-shutdown callbacks in order.
++  return context && context->is_valid() && std::raise(SIGTERM) == 0;
+ }
+ 
+ }  // namespace mujoco_ros2_control::detail
+--- a/mujoco_ros2_control/src/mujoco_simulation.cpp
++++ b/mujoco_ros2_control/src/mujoco_simulation.cpp
+@@ -630,7 +630,7 @@
+       if (detail::handle_render_loop_exit(sim_->exitrequest, explicit_shutdown_requested_,
+                                           node_->get_node_base_interface()->get_context()))
+       {
+-        RCLCPP_INFO(get_logger(), "MuJoCo rendering window closed; shut down its ROS context.");
++        RCLCPP_INFO(get_logger(), "MuJoCo rendering window closed; requested ordered node shutdown.");
+       }
+ 
+       // The GLFW adapter owns the OpenGL context created by this thread. Free
+--- a/mujoco_ros2_control/tests/test_mujoco_simulation.cpp
++++ b/mujoco_ros2_control/tests/test_mujoco_simulation.cpp
+@@ -22,6 +22,7 @@
+ #include <atomic>
+ #include <chrono>
+ #include <cmath>
++#include <csignal>
+ #include <filesystem>
+ #include <fstream>
+ #include <thread>
+@@ -86,36 +87,106 @@
+   file.close();
+ }
+ 
++// A GUI close requests the process owner to stop; it must not invalidate the
++// Context while that owner's controller update thread can still be running.
++volatile std::sig_atomic_t render_exit_sigterm_count = 0;
++extern "C" void capture_render_exit_sigterm(int)
++{
++  ++render_exit_sigterm_count;
++}
++
++class ScopedRenderExitSignalCapture
++{
++public:
++  ScopedRenderExitSignalCapture()
++  {
++    render_exit_sigterm_count = 0;
++    struct sigaction action {};
++    action.sa_handler = capture_render_exit_sigterm;
++    sigemptyset(&action.sa_mask);
++    installed_ = sigaction(SIGTERM, &action, &previous_) == 0;
++  }
++  ~ScopedRenderExitSignalCapture()
++  {
++    if (installed_) { sigaction(SIGTERM, &previous_, nullptr); }
++  }
++  bool installed() const { return installed_; }
++  ScopedRenderExitSignalCapture(const ScopedRenderExitSignalCapture&) = delete;
++  ScopedRenderExitSignalCapture& operator=(const ScopedRenderExitSignalCapture&) = delete;
++
++private:
++  struct sigaction previous_ {};
++  bool installed_{ false };
++};
++
+ constexpr double TEST_TOLERANCE = 1e-9;
+ }  // namespace
+ 
+-TEST(RenderLoopExitHandler, RequestsSimulationExitAndShutsOwningContext)
+-{
++TEST(RenderLoopExitHandler, RequestsOrderedStopAndKeepsOwningContextValid)
++{
++  ScopedRenderExitSignalCapture signals;
++  ASSERT_TRUE(signals.installed());
+   auto context = std::make_shared<rclcpp::Context>();
+   context->init(0, nullptr);
+-  std::atomic<int> exit_request{ 1 };
++  std::atomic<int> exit_request{ 0 };
+   std::atomic<bool> explicit_shutdown_requested{ false };
+ 
+   ASSERT_TRUE(rclcpp::ok(context));
+   EXPECT_TRUE(mujoco_ros2_control::detail::handle_render_loop_exit(exit_request, explicit_shutdown_requested, context));
+ 
+   EXPECT_EQ(exit_request.load(), 1);
+-  EXPECT_FALSE(rclcpp::ok(context));
+-}
+-
+-TEST(RenderLoopExitHandler, PreservesContextAfterExplicitShutdown)
+-{
++  EXPECT_EQ(render_exit_sigterm_count, 1);
++  EXPECT_TRUE(rclcpp::ok(context));
++  context->shutdown("test owner cleanup after joining would complete");
++}
++
++TEST(RenderLoopExitHandler, ExplicitShutdownDoesNotRequestAnotherProcessStop)
++{
++  ScopedRenderExitSignalCapture signals;
++  ASSERT_TRUE(signals.installed());
+   auto context = std::make_shared<rclcpp::Context>();
+   context->init(0, nullptr);
+-  std::atomic<int> exit_request{ 1 };
++  std::atomic<int> exit_request{ 0 };
+   std::atomic<bool> explicit_shutdown_requested{ true };
+ 
+-  ASSERT_TRUE(rclcpp::ok(context));
+   EXPECT_FALSE(mujoco_ros2_control::detail::handle_render_loop_exit(exit_request, explicit_shutdown_requested, context));
+ 
+   EXPECT_EQ(exit_request.load(), 1);
++  EXPECT_EQ(render_exit_sigterm_count, 0);
+   EXPECT_TRUE(rclcpp::ok(context));
+   context->shutdown("test cleanup");
++}
++
++TEST(RenderLoopExitHandler, MissingOrInvalidContextDoesNotSignalTheProcess)
++{
++  ScopedRenderExitSignalCapture signals;
++  ASSERT_TRUE(signals.installed());
++  std::atomic<int> exit_request{ 0 };
++  std::atomic<bool> explicit_shutdown_requested{ false };
++  std::shared_ptr<rclcpp::Context> missing;
++  auto invalid = std::make_shared<rclcpp::Context>();
++
++  EXPECT_FALSE(mujoco_ros2_control::detail::handle_render_loop_exit(exit_request, explicit_shutdown_requested, missing));
++  EXPECT_FALSE(mujoco_ros2_control::detail::handle_render_loop_exit(exit_request, explicit_shutdown_requested, invalid));
++  EXPECT_EQ(exit_request.load(), 1);
++  EXPECT_EQ(render_exit_sigterm_count, 0);
++}
++
++TEST(RenderLoopExitHandler, RepeatedCloseRequestsNeverShutdownTheContext)
++{
++  ScopedRenderExitSignalCapture signals;
++  ASSERT_TRUE(signals.installed());
++  auto context = std::make_shared<rclcpp::Context>();
++  context->init(0, nullptr);
++  std::atomic<int> exit_request{ 0 };
++  std::atomic<bool> explicit_shutdown_requested{ false };
++
++  EXPECT_TRUE(mujoco_ros2_control::detail::handle_render_loop_exit(exit_request, explicit_shutdown_requested, context));
++  EXPECT_TRUE(mujoco_ros2_control::detail::handle_render_loop_exit(exit_request, explicit_shutdown_requested, context));
++  EXPECT_EQ(exit_request.load(), 1);
++  EXPECT_EQ(render_exit_sigterm_count, 2);
++  EXPECT_TRUE(rclcpp::ok(context));
++  context->shutdown("test owner cleanup after joining would complete");
+ }
+ 
+ class MujocoSimulationTest : public ::testing::Test

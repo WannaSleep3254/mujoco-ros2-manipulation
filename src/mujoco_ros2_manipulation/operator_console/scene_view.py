@@ -64,6 +64,48 @@ def _vector(value, count, label, *, maximum=1e9):
     return [_finite(item, label, maximum=maximum) for item in value]
 
 
+def compiled_mesh_assets(model, np, limits):
+    """Pack checked compiled mesh buffers without choosing a state contract.
+
+    Scalar-only ``CompiledScene`` and explicit observed-qpos recording exporters
+    can share byte-for-byte geometry packing. This helper neither creates a
+    model nor admits unobserved joints or assigns live-state freshness.
+    """
+    descriptors, mesh_assets, assets = {}, {}, {}
+    total_bytes = 0
+    for mesh_id in range(int(model.nmesh)):
+        vertex_start, vertex_count = int(model.mesh_vertadr[mesh_id]), int(model.mesh_vertnum[mesh_id])
+        face_start, face_count = int(model.mesh_faceadr[mesh_id]), int(model.mesh_facenum[mesh_id])
+        if vertex_count < 1 or face_count < 1:
+            raise ValueError("Mesh has no triangle geometry")
+        vertices = np.asarray(model.mesh_vert[vertex_start:vertex_start+vertex_count], dtype="<f4")
+        faces = np.asarray(model.mesh_face[face_start:face_start+face_count])
+        if (vertices.shape != (vertex_count, 3) or faces.shape != (face_count, 3)
+                or not np.isfinite(vertices).all() or np.any(np.abs(vertices) > 1e9)
+                or np.any(faces < 0) or np.any(faces >= vertex_count)):
+            raise ValueError("Mesh geometry is malformed")
+        positions = vertices.tobytes(order="C")
+        indices = np.asarray(faces, dtype="<u4").tobytes(order="C")
+        blob = positions + indices
+        asset_sha = hashlib.sha256(blob).hexdigest()
+        descriptor = dict(sha256=asset_sha, byte_length=len(blob),
+            media_type="application/octet-stream", layout=dict(
+                positions=dict(byte_offset=0, byte_length=len(positions), count=vertex_count,
+                               item_size=3, component_type="float32"),
+                indices=dict(byte_offset=len(positions), byte_length=len(indices), count=face_count*3,
+                             item_size=1, component_type="uint32")))
+        if asset_sha not in assets:
+            total_bytes += len(blob)
+            if total_bytes > limits.max_total_asset_bytes:
+                raise ValueError("Mesh assets exceed scene resource limits")
+            assets[asset_sha] = blob
+            descriptors[asset_sha] = descriptor
+        elif descriptors[asset_sha] != descriptor:
+            raise ValueError("Mesh asset identity has inconsistent layouts")
+        mesh_assets[mesh_id] = asset_sha
+    return [descriptors[key] for key in sorted(descriptors)], mesh_assets, assets
+
+
 class CompiledScene:
     """An immutable compiled model and explicitly named scalar-joint contract.
 
@@ -220,40 +262,9 @@ class CompiledScene:
         return data
 
     def _mesh_assets(self):
-        model, np = self._model, self._np
-        descriptors, mesh_assets = {}, {}
-        total_bytes = 0
-        for mesh_id in range(int(model.nmesh)):
-            vertex_start, vertex_count = int(model.mesh_vertadr[mesh_id]), int(model.mesh_vertnum[mesh_id])
-            face_start, face_count = int(model.mesh_faceadr[mesh_id]), int(model.mesh_facenum[mesh_id])
-            if vertex_count < 1 or face_count < 1:
-                raise ValueError("Mesh has no triangle geometry")
-            vertices = np.asarray(model.mesh_vert[vertex_start:vertex_start+vertex_count], dtype="<f4")
-            faces = np.asarray(model.mesh_face[face_start:face_start+face_count])
-            if (vertices.shape != (vertex_count, 3) or faces.shape != (face_count, 3)
-                    or not np.isfinite(vertices).all() or np.any(np.abs(vertices) > 1e9)
-                    or np.any(faces < 0) or np.any(faces >= vertex_count)):
-                raise ValueError("Mesh geometry is malformed")
-            positions = vertices.tobytes(order="C")
-            indices = np.asarray(faces, dtype="<u4").tobytes(order="C")
-            blob = positions + indices
-            asset_sha = hashlib.sha256(blob).hexdigest()
-            descriptor = dict(sha256=asset_sha, byte_length=len(blob),
-                media_type="application/octet-stream", layout=dict(
-                    positions=dict(byte_offset=0, byte_length=len(positions), count=vertex_count,
-                                   item_size=3, component_type="float32"),
-                    indices=dict(byte_offset=len(positions), byte_length=len(indices), count=face_count*3,
-                                 item_size=1, component_type="uint32")))
-            if asset_sha not in self._assets:
-                total_bytes += len(blob)
-                if total_bytes > self._limits.max_total_asset_bytes:
-                    raise ValueError("Mesh assets exceed scene resource limits")
-                self._assets[asset_sha] = blob
-                descriptors[asset_sha] = descriptor
-            elif descriptors[asset_sha] != descriptor:
-                raise ValueError("Mesh asset identity has inconsistent layouts")
-            mesh_assets[mesh_id] = asset_sha
-        return [descriptors[key] for key in sorted(descriptors)], mesh_assets
+        descriptors, mesh_assets, self._assets = compiled_mesh_assets(
+            self._model, self._np, self._limits)
+        return descriptors, mesh_assets
 
     def manifest(self):
         """Return a detached, finite JSON manifest without filesystem paths."""
