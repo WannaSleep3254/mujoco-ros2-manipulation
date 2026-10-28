@@ -87,6 +87,75 @@ int main(int argc,char** argv) {
     std::thread empty;bool joined=false,cleanup=false;
     gate::join_then_shutdown(empty,[&]{joined=true;},[&]{require(joined,"cleanup preceded join boundary");cleanup=true;});
     require(cleanup,"empty startup path did not finish cleanup");
+  } else if(mode=="drain_pending_management") {
+    std::atomic<bool> cancelled{true}, busy{true}, finished{false};
+    std::atomic<int> stage{0}, reads{0}, updates{0};
+    std::thread callback([&] {
+      while(stage.load()<1) {std::this_thread::yield();}
+      // A management callback publishes another controller list after its first ack.
+      stage.store(2);
+      while(stage.load()<3) {std::this_thread::yield();}
+      busy.store(false); finished.store(true);
+    });
+    const auto cycles=gate::drain_until_executor_finished([&]{return finished.load();},
+      [&]{return cancelled.load();},[&]{return busy.load();},[&]{++reads;},[&]{
+        ++updates;int expected=0;
+        if(!stage.compare_exchange_strong(expected,1) && stage.load()==2)stage.store(3);
+      },[](auto delay){std::this_thread::sleep_for(delay);},2ms);
+    callback.join();
+    require(cycles>=2 && reads.load()==updates.load(),"pending management callback lost its RT acknowledgements");
+    require(!busy.load() && finished.load(),"drain ended before the executor callback finished");
+  } else if(mode=="drain_late_callback") {
+    bool finished=false,busy=false;int pauses=0,reads=0,updates=0;
+    const auto cycles=gate::drain_until_executor_finished([&]{return finished;},[]{return true;},
+      [&]{return busy;},[&]{++reads;},[&]{++updates;busy=false;},[&](auto delay){
+        require(delay>0ns && delay<=1ms,"drain wall slice was unbounded");
+        ++pauses;if(pauses==3)busy=true;if(pauses==7)finished=true;
+      },2ms);
+    require(pauses==7 && cycles==1 && reads==1 && updates==1,
+      "idle callback group ended the RT owner before late admitted work/spin completion");
+  } else if(mode=="drain_cancel_ack") {
+    bool finished=false,cancelled=false;int pauses=0,reads=0;
+    const auto cycles=gate::drain_until_executor_finished([&]{return finished;},[&]{return cancelled;},
+      []{return true;},[&]{require(cancelled,"read preceded executor cancellation");++reads;},
+      [&]{finished=true;},[&](auto){if(++pauses==3)cancelled=true;},2ms);
+    require(pauses==3 && cycles==1 && reads==1,"drain did not require cancellation acknowledgement");
+  } else if(mode=="drain_missing_clock") {
+    bool finished=false;int pauses=0,operations=0;const bool clock_started=false;
+    const auto cycles=gate::drain_until_executor_finished([&]{return finished;},[]{return true;},
+      [&]{return clock_started;},[&]{++operations;},[&]{++operations;},
+      [&](auto){if(++pauses==4)finished=true;},2ms);
+    require(cycles==0 && operations==0 && pauses==4,"never-started clock acquired a fabricated control cycle");
+  } else if(mode=="drain_finished_during_read") {
+    bool finished=false;int reads=0,updates=0;
+    const auto cycles=gate::drain_until_executor_finished([&]{return finished;},[]{return true;},
+      []{return true;},[&]{++reads;finished=true;},[&]{++updates;},[](auto){},2ms);
+    require(reads==1 && updates==0 && cycles==0,"drain update crossed final executor completion");
+  } else if(mode=="drain_before_cleanup") {
+    std::atomic<bool> finished{false},busy{true},joined{false};
+    std::atomic<int> updates{0};
+    std::thread rt([&]{gate::drain_until_executor_finished([&]{return finished.load();},
+      []{return true;},[&]{return busy.load();},[]{},[&]{++updates;busy.store(false);},
+      [&](auto delay){if(!busy.load())finished.store(true);std::this_thread::sleep_for(delay);},2ms);});
+    gate::join_then_shutdown(rt,[&]{joined.store(true);},[&]{
+      require(joined.load() && finished.load() && !busy.load(),"Context cleanup raced an executor callback/drain");});
+    require(updates.load()==1,"metadata drain failed before teardown");
+  } else if(mode=="management_group_validation") {
+    require(gate::management_group_state(0,false)==gate::ManagementGroupState::not_ready,
+      "missing service group was confused with validated readiness");
+    require(gate::management_group_state(1,true)==gate::ManagementGroupState::ready,
+      "unique mutually-exclusive service group was rejected");
+    for(int bad=0;bad<2;++bad) {
+      bool threw=false;
+      try {gate::management_group_state(bad==0?2:1,bad==0);}
+      catch(const std::runtime_error&){threw=true;}
+      require(threw,"duplicate or non-mutually-exclusive service group was silently treated as idle");
+    }
+  } else if(mode=="drain_invalid_period") {
+    bool threw=false;
+    try {gate::drain_until_executor_finished([]{return true;},[]{return true;},[]{return false;},
+      []{},[]{},[](auto){},0ns);}catch(const std::invalid_argument&){threw=true;}
+    require(threw,"invalid shutdown drain cadence was accepted");
   } else throw std::runtime_error("unknown declared test case");
   std::cout << "PASS " << mode << '\n';return 0;
  } catch(const std::exception& e) {std::cerr << e.what() << '\n';return 1;}

@@ -130,6 +130,29 @@ class DemoCPUViewTests(unittest.TestCase):
         self.context=dict(operator_session_id='a'*32,source_id='workcell:manual',job_id=self.job,
             run_id=self.run,model_sha256='d'*64)
 
+    def test_failed_comparison_diagnostic_keeps_nested_run_stage_and_original_error(self):
+        job=dict(job_id=self.job,scenario='timing_comparison',status='failed',stage='failed',
+            variant='prepare',run_id=self.run,error=dict(type='RuntimeError',message='Schedule sampling budget exceeded'),
+            results=[dict(variant='prepare',run_id=self.run,failure_stage='coordinated_avoidance_plan',
+                          error=dict(type='ScheduleSamplingBudgetExceeded',message='Schedule sampling budget exceeded'))],
+            raw_token='must not be copied')
+        detail=verify_views.cpu_demo_failure(job)
+        self.assertEqual(detail['run_id'],self.run)
+        self.assertEqual(detail['failure_stage'],'coordinated_avoidance_plan')
+        self.assertEqual(detail['run_error']['type'],'ScheduleSamplingBudgetExceeded')
+        self.assertEqual(detail['error'],job['error'])
+        self.assertNotIn('raw_token',detail)
+        job['results'][-1]['error']['message']='changed caller record'
+        self.assertEqual(detail['run_error']['message'],'Schedule sampling budget exceeded')
+
+    def test_prelaunch_comparison_failure_still_keeps_its_own_stage_and_error(self):
+        detail=verify_views.cpu_demo_failure(dict(job_id=self.job,scenario='timing_comparison',
+            status='failed',stage='preflight',run_id=None,error='Failed before a nested report existed'))
+        self.assertIsNone(detail['run_id'])
+        self.assertIsNone(detail['run_error'])
+        self.assertEqual(detail['failure_stage'],'preflight')
+        self.assertEqual(detail['error'],'Failed before a nested report existed')
+
     def test_each_demo_pose_requires_the_exact_current_owned_run_binding_and_model(self):
         self.assertEqual(verify_views.checked_demo_binding(self.view,**self.context),self.binding)
         for change in (dict(job_id='b'*32),dict(run_id='older-run'),dict(operator_session_id='c'*32),
