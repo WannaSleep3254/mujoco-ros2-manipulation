@@ -112,6 +112,25 @@ jobs:
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi
+      - name: Native shutdown ordering with absent/paused clock and held JTC update
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          task_native_binary="$PWD/ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"
+          dpkg-query -W -f='${Package} ${Version}\n' \
+            ros-humble-controller-manager ros-humble-joint-trajectory-controller ros-humble-rclcpp \
+            | tee runtime/validation/native-shutdown-dependencies.txt
+          python3 tests/native/shutdown_probe/test_contract.py
+          python3 tests/integration/verify_native_shutdown_clock.py \
+            --binary "$task_native_binary" --domain 201 \
+            --output runtime/validation/native-shutdown-clock-ci
+          python3 tests/native/shutdown_probe/build_probe.py \
+            --output runtime/validation/native-shutdown-probe-build-ci
+          python3 tests/integration/verify_native_shutdown_race.py \
+            --expect fixed --domain 206 \
+            --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
+            --probe runtime/validation/native-shutdown-probe-build-ci/update_probe.so \
+            --output runtime/validation/native-shutdown-held-update-ci
       - name: FR3 direct, MoveIt, moving cancel and fresh stop observation
         if: matrix.robot == 'workcell'
         run: |

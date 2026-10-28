@@ -1,0 +1,351 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "baseline_devel": "2d54f5c9cb289c1f3518c28829b16591e5ee7c2d",
+  "failed_ci": {
+    "run": 40644539205,
+    "run_id": "20261028T064051.774229Z-70b01253",
+    "case": "environment_post/single",
+    "native_return_code": -11,
+    "physics_final_missing": true
+  },
+  "source_sha256": {
+    "native/control_loop_shutdown.hpp": "c32c0998209aa23d4ffbb4cdfbf4d488790b9a5e11986f342e908f604000362a",
+    "patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch": "5cd77481de464aa850b73dd4533c088da8138231d64cdacdf24a79a506077fbf",
+    "src/mujoco_ros2_manipulation/build.py": "86fc0bc87462aa7e69f96fb00c9712a5225a50d404bffc3b980d5464722d9466",
+    "tests/integration/verify_native_shutdown_race.py": "9b3ea4dcb92ab078b8f1a63a31350e8b77ee11aa30c31fba84352b0c32a0c3fd",
+    "tests/native/shutdown_probe/update_probe.cpp": "f9988daed0164f99587a128dc4bd04d68b15c5964abcf674088e6817b513682b",
+    "tests/integration/verify_native_shutdown_clock.py": "0681aba4ae2ad2519c4dd11a502eef7ebbcb34f1318dfdfb393548f89b1c82ab"
+  },
+  "runtime": {
+    "status": "completed",
+    "cases": [
+      {
+        "row_id": "r01-environment_post-single",
+        "outcome": "motion_succeeded",
+        "run_id": "20261028T071742.750694Z-95e31da2",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "ordered_shutdown": true,
+        "result_sha256": "6fc6f26205b20ed1cb75463cee7a463fc189eaaba0c3a986a222dbb4dfd386bb",
+        "provenance_sha256": "5a2c123050fb7cf2c5e4ecc4b93ae30fdf3ab86c09e373d6c12bbbaec3b63b3b"
+      },
+      {
+        "row_id": "r01-environment_post-bounded",
+        "outcome": "motion_succeeded",
+        "run_id": "20261028T071821.928470Z-4483dee4",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "ordered_shutdown": true,
+        "result_sha256": "b0857b93ca67ef09b5218d8d76063f845963cbfbeb54b9de4e9a25ed0e3ec9a1",
+        "provenance_sha256": "61bf704298ebd596e62ac42c6f787907ee1dfda493e1e255c909bfb9975061e2"
+      },
+      {
+        "row_id": "r02-environment_post-bounded",
+        "outcome": "motion_succeeded",
+        "run_id": "20261028T071902.542332Z-14111141",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "ordered_shutdown": true,
+        "result_sha256": "b0e6fbdfc7fcb4ff3523049ef7ec7d8b8e8620601a0986d78e5e62bce0c36db7",
+        "provenance_sha256": "e65c29f041aa7dfd7f45ee252f94d845620697d1945119bc0291be305910b1bd"
+      },
+      {
+        "row_id": "r02-environment_post-single",
+        "outcome": "motion_succeeded",
+        "run_id": "20261028T071942.883875Z-755c48ba",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "ordered_shutdown": true,
+        "result_sha256": "d0cabf48fb51529a76cc7fae26f579a2d64da7e2e3c5d9a86717bda2c840d3ca",
+        "provenance_sha256": "ee5a19adf76c0acead47fbd4ad6eff43330ead4ccf96ced95c4f816a57beada6"
+      },
+      {
+        "row_id": "r03-environment_post-single",
+        "outcome": "motion_succeeded",
+        "run_id": "20261028T072030.228297Z-b989c4b4",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "ordered_shutdown": true,
+        "result_sha256": "791df46cea336266669516d7aef45953d85134bf6828be7481ead41a0fe62df2",
+        "provenance_sha256": "ab20adc6c9039a711b38172f53aaf7b43728d76b04b57aebf44742e90048a592"
+      },
+      {
+        "row_id": "r03-environment_post-bounded",
+        "outcome": "motion_succeeded",
+        "run_id": "20261028T072114.796268Z-6038f5ac",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "ordered_shutdown": true,
+        "result_sha256": "14c70950a3ec0d61f825889b545ddbf6bf21b4014a5d863ab71deefa9aa0390f",
+        "provenance_sha256": "e3c6b1a4d194ebdf71e891da1a374e19dc429e7f8e4c3ed69f501ed84822b6db"
+      }
+    ],
+    "native_binary_sha256": "f5cd03f9b45f695dfac0cd05aa7bd4a254981961ff267ba066564d905c4df040",
+    "native_library_sha256": "16884bb0ada3c3dc3c74819becc48f48c888e9f5f478e0d38d55ef89a7d2f0c4",
+    "header_sha256": "c32c0998209aa23d4ffbb4cdfbf4d488790b9a5e11986f342e908f604000362a",
+    "diagnostic_wrapper_sha256": "d6016591afa99ccf6b60a9a90067a3a5cfecf84a7f691a0e7e7b96322595bcf9",
+    "failed_sandbox_preflight": "local-after-fix-3paired/fixed-benchmark.json"
+  },
+  "local_evidence": {
+    "runtime/w01-shutdown-ci-20261028/manifest.json": "5707fd0111fe9a36521c84ce06ae923dcae17839882601a38c5ef1b9c6a4db6b",
+    "runtime/w01-shutdown-ci-20261028/comparison-summary.json": "617030884eb70d84dff70e89ea91b7f724cb8698bc129efe920be7a8895017fa",
+    "runtime/w01-shutdown-ci-20261028/local-before-fix-summary.json": "2892a9c199a9450a4a91a4fedad7ca8a7368e30416f3e0abc5085bb9d4f7ed56",
+    "runtime/w01-shutdown-ci-20261028/local-after-fix-summary.json": "6bc9a21b706ee971503e6fb244646792c4c2f290631eaf1f42fd3046b460eea1",
+    "runtime/w01-shutdown-ci-20261028/clock-probe-actual-a/verification.json": "d445486a6e8530e656da8b9db05da33ead787abdd072c7c83eab47903b9b8b73",
+    "runtime/w01-shutdown-ci-20261028/clock-probe-actual-a/manifest.json": "6ef5a3f224effc97f0b5c3076c82017f1725963d6a44e0cd5e0cff3c45cad720",
+    "runtime/w01-shutdown-ci-20261028/race-legacy-a/result.json": "807c1edeba00e9afee469ec32cf9a61915f1df66199159a97eb359191d20e32f",
+    "runtime/w01-shutdown-ci-20261028/race-fixed-a/result.json": "ba5bd29cfc6d7b2513cdd59488f9b1c18373fe1ae4cb588dc5cb34e2c22c2809",
+    "runtime/w01-shutdown-ci-20261028/gui-helper-tests/result.xml": "51ab2143f886a594ea6fea146ffe6d18dcc72bc91bb002940a34dbfe7dd6c7b4",
+    "runtime/w01-shutdown-ci-20261028/unit-tests-with-local-sockets.log": "2c736a7c6756e5e1b9a452d69019bba831c860eaaf3e18654b7a10488a9bdcbe",
+    "runtime/w01-shutdown-ci-20261028/model-tests.log": "f3dd734348340587a30dfbf03f0ab16a49a945c181412af8030a4f97787ef135",
+    "runtime/w01-shutdown-ci-20261028/race-legacy-b/result.json": "e4d05f405aafee03b7aebb8ff7e55ad4a6784901b9817d2c337e5b674ccb45fc",
+    "runtime/w01-shutdown-ci-20261028/race-fixed-b/result.json": "1c247c09df47488c6f5cb95ca589cd962a3b2778e8223300c610b05b203d8bf1",
+    "runtime/w01-shutdown-ci-20261028/race-event-binding-review.json": "8bb015b818c7f30933796e21d80dc836f6144b788b4d23c97112434b20989585",
+    "runtime/w01-shutdown-ci-20261028/race-legacy-b/launch.log": "b7a6433ebebec881c0f6c2a52e2092e5ad0423df3143ab50eab0bfdbd2f4c2ed",
+    "runtime/w01-shutdown-ci-20261028/race-fixed-b/launch.log": "f19bbac247ea8d53b200d6fa16ebbff79d9139eb6ce0f0795fe7ab682c37a809"
+  },
+  "checks": {
+    "unit": 1123,
+    "model": 43,
+    "javascript_suites": 12,
+    "gui_helper_gtests": 4,
+    "clock_signal_cases": 5,
+    "fixed_environment_rows": 6,
+    "probe_acceptance_contracts": 9
+  },
+  "limits": [
+    "Original CI SIGSEGV retained; final legacy-b reproduced SIGSEGV(-11) at JTC update, while fixed-b passed under the same bound gate protocol.",
+    "Instrumentation is test-only and excluded from performance samples.",
+    "No-hardware clock tests and actual JTC/MuJoCo tests are separate.",
+    "Historical W01 intermittent cleanup stall remains unclosed.",
+    "Actual GUI window closure and physical robot safety are not verified.",
+    "Test-only GUI hunk added after initial binary build does not change runtime node/header; final patch applied to the isolated source.",
+    "Initial a probe records fail the stricter entered-event publication protocol; originals and post-hoc review are preserved and excluded from final accepted pair."
+  ],
+  "final_held_update_comparison": {
+    "legacy": {
+      "schema_version": 1,
+      "status": "expected_unsafe_overlap",
+      "expected": "legacy",
+      "run_id": "224ced85baf9490ca343fe576db19c9d",
+      "domain": 220,
+      "scope": "Test-only installed JTC update/SIGINT ordering on owned MuJoCo simulation; no goal dispatch",
+      "automatic_retry": false,
+      "native_root_cause_closed": false,
+      "old_w01_stall_resolved": false,
+      "native_path": "/tmp/mujoco-reliability-20261027/ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node",
+      "native_sha256": "faa6f7952226ea3a8c79b45337c14929a708a7b1e5238b89960e2d24fb5177ed",
+      "simulation_library_path": "/tmp/mujoco-reliability-20261027/ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so",
+      "simulation_library_sha256": "128b3432f33cdd80bf7e600430f4a1fbc5e8c8a14f957cb8ea2233e57e0985b8",
+      "probe_sha256": "b035342ae47b30181428ea62f2869e0efea5b8dadd0699bd0124dcccfe7e6cb4",
+      "jtc_sha256": "8f878a85e21e65e5d7837a390e3c1334697bd40b9337ff9cd5d1f2a84af61ffe",
+      "workcell": "fr5_ur5e_eval_post",
+      "model_manifest_sha256": "e690d995e26231a2c4b214e4cbab7e7f2299d03cb34d8f5f6b5cc99837b007cc",
+      "overlay": "/tmp/mujoco-reliability-20261027/ros_ws/install",
+      "native_pid": 2189353,
+      "signal": {
+        "pid": 2189353,
+        "signal": "SIGINT",
+        "before_monotonic_ns": 624639046684561,
+        "after_monotonic_ns": 624639046866196
+      },
+      "ordering": {
+        "expected_unsafe_overlap_observed": true,
+        "safe_ordering_observed": false,
+        "ordering_assertions_passed": true,
+        "native_root_cause_closed": false
+      },
+      "error": null,
+      "physics_checks_passed": false,
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-c",
+        "set -e\nsource \"$1/manipulation_env.sh\"\nif [[ -n \"$2\" ]]; then source \"$2/local_setup.bash\"; fi\nexec ros2 launch \"$3\" \"workcell:=$4\" gui:=false rviz:=false",
+        "owned-shutdown-probe",
+        "/tmp/mujoco-reliability-20261027",
+        "",
+        "/tmp/mujoco-reliability-20261027/tests/native/shutdown_probe/probe.launch.py",
+        "fr5_ur5e_eval_post"
+      ],
+      "launch_pid": 2189336,
+      "entered": {
+        "event": "entered",
+        "run_id": "224ced85baf9490ca343fe576db19c9d",
+        "pid": 2189353,
+        "tid": 2189440,
+        "monotonic_ns": 624639041333563
+      },
+      "held_snapshot_monotonic_ns": 624640053816426,
+      "release_created_monotonic_ns": 624640053816854,
+      "probe_events": [
+        {
+          "event": "entered",
+          "run_id": "224ced85baf9490ca343fe576db19c9d",
+          "pid": 2189353,
+          "tid": 2189440,
+          "monotonic_ns": 624639041333563
+        },
+        {
+          "event": "released",
+          "run_id": "224ced85baf9490ca343fe576db19c9d",
+          "pid": 2189353,
+          "tid": 2189440,
+          "monotonic_ns": 624640057792988
+        }
+      ],
+      "event_binding": {
+        "bound_to_validated_entry": true,
+        "pid": 2189353,
+        "tid": 2189440,
+        "run_id": "224ced85baf9490ca343fe576db19c9d",
+        "event_count": 2,
+        "strictly_advancing_watermarks": true
+      },
+      "all_process_failures": [
+        {
+          "node": "ros2_control_node-1",
+          "pid": 2189353,
+          "exit_code": -11
+        }
+      ],
+      "native_failures": [
+        {
+          "node": "ros2_control_node-1",
+          "pid": 2189353,
+          "exit_code": -11
+        }
+      ],
+      "native_clean_exit_observed": false,
+      "native_sigsegv_observed": true,
+      "cleanup": {
+        "forced": false,
+        "launch_return_code": 0,
+        "process_group_gone": true
+      },
+      "source_sha256": {
+        "tests/integration/verify_native_shutdown_race.py": "9b3ea4dcb92ab078b8f1a63a31350e8b77ee11aa30c31fba84352b0c32a0c3fd",
+        "tests/native/shutdown_probe/update_probe.cpp": "f9988daed0164f99587a128dc4bd04d68b15c5964abcf674088e6817b513682b",
+        "tests/native/shutdown_probe/probe.launch.py": "0b62f35bef5cfc8df472656a74ecdd703adb048288469ee0ff62ec6b7e98cb98"
+      },
+      "launch_log_sha256": "b7a6433ebebec881c0f6c2a52e2092e5ad0423df3143ab50eab0bfdbd2f4c2ed"
+    },
+    "fixed": {
+      "schema_version": 1,
+      "status": "passed",
+      "expected": "fixed",
+      "run_id": "4f422aafc3c2493bb1bc328780629f1a",
+      "domain": 221,
+      "scope": "Test-only installed JTC update/SIGINT ordering on owned MuJoCo simulation; no goal dispatch",
+      "automatic_retry": false,
+      "native_root_cause_closed": false,
+      "old_w01_stall_resolved": false,
+      "native_path": "/tmp/mujoco-native-shutdown-20261028/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node",
+      "native_sha256": "f5cd03f9b45f695dfac0cd05aa7bd4a254981961ff267ba066564d905c4df040",
+      "simulation_library_path": "/tmp/mujoco-native-shutdown-20261028/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so",
+      "simulation_library_sha256": "16884bb0ada3c3dc3c74819becc48f48c888e9f5f478e0d38d55ef89a7d2f0c4",
+      "probe_sha256": "b035342ae47b30181428ea62f2869e0efea5b8dadd0699bd0124dcccfe7e6cb4",
+      "jtc_sha256": "8f878a85e21e65e5d7837a390e3c1334697bd40b9337ff9cd5d1f2a84af61ffe",
+      "workcell": "fr5_ur5e_eval_post",
+      "model_manifest_sha256": "e690d995e26231a2c4b214e4cbab7e7f2299d03cb34d8f5f6b5cc99837b007cc",
+      "overlay": "/tmp/mujoco-native-shutdown-20261028/install",
+      "native_pid": 2189700,
+      "signal": {
+        "pid": 2189700,
+        "signal": "SIGINT",
+        "before_monotonic_ns": 624663181983373,
+        "after_monotonic_ns": 624663182166704
+      },
+      "ordering": {
+        "expected_unsafe_overlap_observed": false,
+        "safe_ordering_observed": true,
+        "ordering_assertions_passed": true,
+        "native_root_cause_closed": false
+      },
+      "error": null,
+      "physics_checks_passed": true,
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-c",
+        "set -e\nsource \"$1/manipulation_env.sh\"\nif [[ -n \"$2\" ]]; then source \"$2/local_setup.bash\"; fi\nexec ros2 launch \"$3\" \"workcell:=$4\" gui:=false rviz:=false",
+        "owned-shutdown-probe",
+        "/tmp/mujoco-reliability-20261027",
+        "/tmp/mujoco-native-shutdown-20261028/install",
+        "/tmp/mujoco-reliability-20261027/tests/native/shutdown_probe/probe.launch.py",
+        "fr5_ur5e_eval_post"
+      ],
+      "launch_pid": 2189676,
+      "entered": {
+        "event": "entered",
+        "run_id": "4f422aafc3c2493bb1bc328780629f1a",
+        "pid": 2189700,
+        "tid": 2189783,
+        "monotonic_ns": 624663167239361
+      },
+      "held_snapshot_monotonic_ns": 624664189884916,
+      "release_created_monotonic_ns": 624664189885303,
+      "probe_events": [
+        {
+          "event": "entered",
+          "run_id": "4f422aafc3c2493bb1bc328780629f1a",
+          "pid": 2189700,
+          "tid": 2189783,
+          "monotonic_ns": 624663167239361
+        },
+        {
+          "event": "released",
+          "run_id": "4f422aafc3c2493bb1bc328780629f1a",
+          "pid": 2189700,
+          "tid": 2189783,
+          "monotonic_ns": 624664196470068
+        },
+        {
+          "event": "returned",
+          "run_id": "4f422aafc3c2493bb1bc328780629f1a",
+          "pid": 2189700,
+          "tid": 2189783,
+          "monotonic_ns": 624664198302021
+        }
+      ],
+      "event_binding": {
+        "bound_to_validated_entry": true,
+        "pid": 2189700,
+        "tid": 2189783,
+        "run_id": "4f422aafc3c2493bb1bc328780629f1a",
+        "event_count": 3,
+        "strictly_advancing_watermarks": true
+      },
+      "all_process_failures": [],
+      "native_failures": [],
+      "native_clean_exit_observed": true,
+      "physics_sha256": "1a526a68ce16a475a38732677bf2d6ff8543f16f3681ce32b4c4959f600f81ec",
+      "cleanup": {
+        "forced": false,
+        "launch_return_code": 0,
+        "process_group_gone": true
+      },
+      "source_sha256": {
+        "tests/integration/verify_native_shutdown_race.py": "9b3ea4dcb92ab078b8f1a63a31350e8b77ee11aa30c31fba84352b0c32a0c3fd",
+        "tests/native/shutdown_probe/update_probe.cpp": "f9988daed0164f99587a128dc4bd04d68b15c5964abcf674088e6817b513682b",
+        "tests/native/shutdown_probe/probe.launch.py": "0b62f35bef5cfc8df472656a74ecdd703adb048288469ee0ff62ec6b7e98cb98"
+      },
+      "launch_log_sha256": "f19bbac247ea8d53b200d6fa16ebbff79d9139eb6ce0f0795fe7ab682c37a809"
+    }
+  }
+}

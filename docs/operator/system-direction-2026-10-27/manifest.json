@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.2",
+  "document_version": "1.3",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "Original design baseline preserved; W07 independent grasp, W08 final fixed-input comparison and W09 representative local FR3 validation. Remote CI/merge/deployment tracked separately.",
+  "scope": "Original design baseline preserved; W07 independent grasp, W08 final fixed-input comparison and W09 representative local FR3 validation. Remote CI/merge/deployment tracked separately. Native shutdown teardown/update race diagnosis and local ordered-shutdown validation; historical W01 stall remains separate.",
   "assets": {
-    "index.html": "1ff681f81d0e113d0a986dd0f7c150cf84e1d71121e985909250c08f274c68be",
+    "index.html": "6b4aaa9081af9bf2e5200417fe3cfcd5d0ac5c353c0b8e4b91880ec41ff64489",
     "review-data.json": "97e05e9e44178316745b72902f17333532661fd2a7d452478799665a52ee7af7"
   }
 }
