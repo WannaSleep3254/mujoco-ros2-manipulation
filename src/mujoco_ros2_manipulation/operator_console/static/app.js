@@ -39,10 +39,20 @@ function connectionPresentation(data){
  if(data.active_request_id)return {status:'running',text:'요청 처리 중'};
  return {status:data.lifecycle?.phase==='starting'?'starting':'offline',text:data.lifecycle?.phase==='starting'?'시뮬레이터 준비 중 · 관절 상태 대기':data.simulation_verified?'연결됨 · 준비 확인':'시뮬레이션 연결 대기'};
 }
-function failureStageLabel(stage){return ({state_snapshot:'시작 상태 확인',endpoint_clearance:'시작·목표 간격 검사',endpoint_validity:'시작·목표 충돌 검사',planning_both_arms:'양팔 경로 계획',planning_left_arm:'왼팔 경로 계획',planning_right_arm:'오른팔 경로 계획',departure_search:'출발 시점 탐색',safety_checks:'전체 경로 검사',state_recheck:'시작 상태 재확인',final_state_recheck:'실행 직전 상태 확인',dispatch_to_action_results:'궤적 전송·실행 응답',settling:'관절 정착 확인',approved_plan_recheck:'승인 계획 재검사'})[stage]||'원본 기록에서 확인';}
+function failureStageLabel(stage){return ({pose_ik:'TCP 목표 IK 계산',pose_fk_check:'IK 해의 TCP 확인',pose_planned_endpoint_fk:'계획 종점 TCP 확인',pose_execution_fk:'관측 TCP 완료 확인',state_snapshot:'시작 상태 확인',endpoint_clearance:'시작·목표 간격 검사',endpoint_validity:'시작·목표 충돌 검사',planning_both_arms:'양팔 경로 계획',planning_left_arm:'왼팔 경로 계획',planning_right_arm:'오른팔 경로 계획',departure_search:'출발 시점 탐색',safety_checks:'전체 경로 검사',state_recheck:'시작 상태 재확인',final_state_recheck:'실행 직전 상태 확인',dispatch_to_action_results:'궤적 전송·실행 응답',settling:'관절 정착 확인',approved_plan_recheck:'승인 계획 재검사'})[stage]||'원본 기록에서 확인';}
 function requestGuidance(record,data={}){
  const kind=record?.failure_kind??data.failure_kind,stage=record?.failure_stage??data.failure_stage;
  const messages={
+  ik_no_solution:['IK 해 없음','이번 TCP 목표를 만족하는 관절 해를 찾지 못했습니다.','선택한 팔, world 위치와 방향을 확인하고 목표를 수정하세요.'],
+  ik_timeout:['IK 계산·응답 시간 초과','제한 시간 안에 IK 결과를 확인하지 못했습니다.','현재 연결과 목표를 확인한 뒤 새 계획을 직접 요청하세요.'],
+  ik_transport:['IK 연결 오류','MoveIt IK 서비스의 응답을 받지 못했습니다.','명령 노드와 IK 서비스 연결을 확인하세요. 자동으로 재전송하지 않습니다.'],
+  ik_response_invalid:['IK 응답 거부','IK 응답의 관절 이름·한계·수치가 검증 조건과 다릅니다.','원본 오류와 모델 등록 정보를 확인하세요.'],
+  ik_failed:['IK 계산 실패','MoveIt가 이번 TCP 목표의 IK 계산을 완료하지 못했습니다.','목표와 기준 링크, 원본 오류를 확인하세요.'],
+  fk_goal_error:['TCP 목표 오차','IK 해를 FK로 다시 계산한 TCP가 목표 오차 조건을 만족하지 않습니다.','world 목표와 등록한 TCP 기준점을 확인하고 새 계획을 생성하세요.'],
+  pose_execution_tolerance:['TCP 도착 오차','관절 동작은 끝났지만 관측한 TCP가 위치 5 mm·방향 0.03 rad의 완료 조건을 만족하지 않았습니다.','실제 자세와 실행 기록을 확인하세요. 완료로 간주해 다음 작업을 시작하지 마세요.'],
+  fk_timeout:['FK 응답 시간 초과','제한 시간 안에 FK 검증을 마치지 못했습니다.','FK 서비스와 연결 상태를 확인하세요.'],
+  fk_transport:['FK 연결 오류','IK 해의 FK 재검증 응답을 받지 못했습니다.','연결을 확인한 뒤 새 계획을 요청하세요.'],
+  fk_response_invalid:['FK 응답 거부','기준 링크나 world 좌표의 FK 응답을 확인하지 못했습니다.','모델·기준 링크와 원본 오류를 확인하세요.'],
   budget_exhausted:['계산 시간 초과','정해진 계산 시간 안에 계획과 검사를 끝내지 못했습니다.','목표와 경로 생성 방식을 확인한 뒤 새 계획을 직접 요청하세요.'],
   candidate_exhausted:['계획 후보 검사 종료','검사한 후보 중 조건을 만족하는 경로를 찾지 못했습니다. 도달 불가능하다는 판정은 아닙니다.','목표 자세와 환경 간격을 확인한 뒤 새 계획을 요청하세요.'],
   departure_exhausted:['출발 시점 탐색 실패','현재 경로에서 조건을 만족하는 출발 시점을 찾지 못했습니다.','목표나 경로 생성 방식을 검토한 뒤 새 계획을 요청하세요.'],
@@ -91,12 +101,49 @@ async function request(path,body){
  }catch(error){if(controller?.signal.aborted){const timeout=Error('상태 조회가 지연되었습니다. 연결을 다시 확인하고 있습니다.');timeout.code='read_timeout';throw timeout;}throw error;}
  finally{if(timer!==null)clearTimeout(timer);}
 }
-function strategyLabel(strategy){return ({coordinated:'양팔 공동 계획',departure_timing:'팔별 경로와 출발 시점 조정'})[strategy]||'계획 방식 확인 중';}
+function goalKind(){return $('goal-kind')?.value==='pose'?'pose':'joint';}
+function poseToolRow(){return config?.pose_tools?.find(row=>row.arm_id===$('pose-arm')?.value)||null;}
+function poseGoalPayload(identifier){
+ const row=poseToolRow();if(!row?.tool?.sha256)throw Error('팔과 등록한 TCP 기준점을 선택하세요.');
+ const number=id=>{const raw=$(id)?.value;if(raw===undefined||raw.trim()===''||!Number.isFinite(Number(raw)))throw Error('TCP 위치와 방향을 모두 유한한 숫자로 입력하세요.');return Number(raw);};
+ const position=['pose-x','pose-y','pose-z'].map(number),q=['pose-qx','pose-qy','pose-qz','pose-qw'].map(number),norm=Math.hypot(...q);
+ if(!Number.isFinite(norm)||Math.abs(norm-1)>1e-6)throw Error('방향 quaternion xyzw의 길이는 1이어야 합니다. 도·rad 각도를 직접 입력하지 마세요.');
+ return {schema_version:1,request_id:identifier,arm_id:row.arm_id,tool_id:row.tool.id,tool_sha256:row.tool.sha256,frame_id:'world',position_m:position,quaternion_xyzw:q.map(v=>v===0?0:v/norm)};
+}
+function goalPayload(identifier){return goalKind()==='pose'?poseGoalPayload(identifier):{schema_version:1,request_id:identifier,strategy:$('strategy').value,target_rad:{...targets}};}
+function goalValidationReason(){
+ if(goalKind()==='joint')return validTargets()?null:'모든 목표를 관절 한계 안의 숫자로 입력하세요.';
+ try{poseGoalPayload('0'.repeat(32));return null;}catch(error){return error.message;}
+}
+function validGoal(){return goalValidationReason()===null;}
+function canPlanGoal(data=state){return goalKind()==='pose'?data?.can_pose_plan:data?.can_plan;}
+function poseSignature(payload){return JSON.stringify({arm_id:payload.arm_id,tool_id:payload.tool_id,tool_sha256:payload.tool_sha256,frame_id:payload.frame_id,position_m:payload.position_m,quaternion_xyzw:payload.quaternion_xyzw});}
+function goalMatchesPayload(payload){
+ if(payload?.arm_id){if(goalKind()!=='pose')return false;try{return poseSignature(payload)===poseSignature(poseGoalPayload(payload.request_id));}catch{return false;}}
+ return goalKind()==='joint'&&payload&&payload.strategy===$('strategy').value&&Object.keys(targets).every(name=>payload.target_rad?.[name]===targets[name]);
+}
+function renderPoseMetadata(){
+ const row=poseToolRow(),node=$('pose-tool');if(node){node.textContent=row?`${row.tool.id} · 기준 링크 ${row.tool.parent_tip} · SHA ${row.tool.sha256.slice(0,12)}…`:'이 실행 대상에는 등록한 TCP 기준점이 없습니다.';node.title=row?.tool?.sha256||'';}
+ if($('pose-support'))$('pose-support').textContent=state?.can_pose_plan?'Pose 계획 지원과 TCP 등록 정보가 일치합니다.':state?.pose_reason||state?.reason||'명령 노드의 Pose 계획 지원과 등록 정보를 확인하고 있습니다.';
+}
+function configurePoseInputs(){
+ const select=$('pose-arm');if(!select)return;select.replaceChildren();
+ for(const row of config.pose_tools||[]){const option=textNode('option',`${row.label||row.arm_id} · ${row.tool.id}`);option.value=row.arm_id;select.append(option);}
+ if(!select.options.length){const option=textNode('option','등록된 TCP 기준점 없음');option.value='';select.append(option);}
+ renderPoseMetadata();
+}
+function setGoalKind(){
+ if($('joint-goal-panel'))$('joint-goal-panel').hidden=goalKind()!=='joint';
+ if($('pose-goal-panel'))$('pose-goal-panel').hidden=goalKind()!=='pose';
+ if($('execute'))$('execute').textContent=goalKind()==='pose'?'① IK 확인·계획 생성':'① 계획 생성';
+ renderPoseMetadata();refreshControls();
+}
+function strategyLabel(strategy){return ({coordinated:'양팔 공동 계획',departure_timing:'팔별 경로와 출발 시점 조정',tcp_pose:'TCP Pose · 선택 팔 계획'})[strategy]||'계획 방식 확인 중';}
 function summaryOf(record,data){
  const summary=data?.review_summary||record?.review_summary||{},command=data?.command||record?.command,initial=data?.initial_state_rad;
  let maximum=summary.max_abs_target_delta_rad;
  if(!Number.isFinite(maximum)&&initial&&command?.target_rad){const changes=Object.keys(command.target_rad).map(name=>Number.isFinite(initial[name])?Math.abs(command.target_rad[name]-initial[name]):NaN);if(changes.length&&changes.every(Number.isFinite))maximum=Math.max(...changes);}
- return {strategy:summary.strategy||command?.strategy,duration:summary.duration_sec??data?.planned_clearance?.duration_sec,
+ return {strategy:(data?.pose_goal||record?.pose_goal)?'tcp_pose':summary.strategy||command?.strategy,duration:summary.duration_sec??data?.planned_clearance?.duration_sec,
   minimum:summary.minimum||data?.planned_clearance?.minimum,maximum};
 }
 function needsPlanSummary(record){return record?.mode==='plan_only'&&record.status==='succeeded'&&record.stage!=='plan_not_required';}
@@ -154,13 +201,14 @@ function refreshControls(){
  $('start').disabled=!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
  $('stop').disabled=!readConnected||demoBusy||transition||!(owned.simulation||owned.commands);
  $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition;
- $('execute').disabled=replanning||!readConnected||demoBusy||Boolean(observationProblem(state))||!state.can_plan||!validTargets()||!sceneControls;const cancelRecord=state.history.find(item=>item.request_id===state.active_request_id),cancelPhase=cancellationPhase(cancelRecord);document.querySelectorAll('[data-cancel]').forEach(el=>{el.disabled=!readConnected||demoBusy||!state.active_request_id||Boolean(cancelPhase);el.textContent=cancelPhase==='acknowledged'?'취소 수신 · 종료 확인 중':cancelPhase==='unconfirmed'?'취소 전달 결과 미확인':cancelPhase?'취소 요청 전달 중':'■ 양팔 동작 취소';});
+ $('execute').disabled=replanning||!readConnected||demoBusy||Boolean(observationProblem(state))||!canPlanGoal()||!validGoal()||!sceneControls;const cancelRecord=state.history.find(item=>item.request_id===state.active_request_id),cancelPhase=cancellationPhase(cancelRecord);document.querySelectorAll('[data-cancel]').forEach(el=>{el.disabled=!readConnected||demoBusy||!state.active_request_id||Boolean(cancelPhase);el.textContent=cancelPhase==='acknowledged'?'취소 수신 · 종료 확인 중':cancelPhase==='unconfirmed'?'취소 전달 결과 미확인':cancelPhase?'취소 요청 전달 중':'■ 양팔 동작 취소';});
  $('use-current').disabled=!readConnected||!state.positions_rad||state.state_age_sec>0.5;
  $('planning-case').disabled=demoBusy||transition||owned.simulation||state.graph.clock>0;$('native-gui').disabled=$('planning-case').disabled;
- $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':!validTargets()?'모든 목표를 관절 한계 안의 숫자로 입력하세요.':!sceneControls?'계획 검토에는 로컬 3D 표시가 필요합니다.':observationProblem(state)||(state.can_plan?'계획을 생성합니다. 경로를 확인하고 승인해야 로봇이 움직입니다.':state.reason||'계획 검토 명령 노드의 연결을 확인하세요.');
+ $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':goalValidationReason()||(!sceneControls?'계획 검토에는 로컬 3D 표시가 필요합니다.':observationProblem(state)||(canPlanGoal()?'계획을 생성합니다. 경로를 확인하고 승인해야 로봇이 움직입니다.':(goalKind()==='pose'?state.pose_reason||state.reason:state.reason)||'계획 검토 명령 노드의 연결을 확인하세요.'));
+ renderPoseMetadata();
  renderReview();
 }
-function reviewMatchesTargets(review){const record=state?.history.find(item=>item.request_id===review?.plan_request_id),original=record?.command;return original&&original.strategy===$('strategy').value&&Object.keys(targets).every(name=>original.target_rad?.[name]===targets[name]);}
+function reviewMatchesTargets(review){const record=state?.history.find(item=>item.request_id===review?.plan_request_id),original=record?.pose_goal||record?.command;return goalMatchesPayload(original);}
 function renderReview(){
  const review=state?.pending_plan;$('review-card').hidden=!review;if(!review)return;
  const waiting=review.state==='awaiting_approval'&&review.remaining_sec>0,busy=replanning||Boolean(state.active_request_id)||demoActive(state.demo?.current),matches=reviewMatchesTargets(review);
@@ -172,9 +220,10 @@ function renderReview(){
  $('review-preview').disabled=!readConnected||!waiting||busy||!sceneControls||state.view?.display_mode==='image';
  $('review-discard').disabled=!readConnected||!waiting||busy;
  $('review-approve').disabled=!readConnected||Boolean(observationProblem(state))||!waiting||!state.can_approve||!visible||!matches||busy;
- $('review-replan').disabled=!readConnected||busy||!validTargets()||!sceneControls||['starting','stopping'].includes(state.lifecycle?.phase);
+ $('review-replan').disabled=!readConnected||busy||!validGoal()||!sceneControls||['starting','stopping'].includes(state.lifecycle?.phase);
  const record=state.history.find(item=>item.request_id===review.plan_request_id),data=requestCache.get(review.plan_request_id)?.data,summary=summaryOf(record,data);
  if(record&&!requestLoads.has(review.plan_request_id)&&shouldLoadRequest(requestCache.get(review.plan_request_id),record))loadRequest(review.plan_request_id,{expected:record}).then(()=>{if(state?.pending_plan?.plan_request_id===review.plan_request_id)renderReview();}).catch(()=>{if(state?.pending_plan?.plan_request_id===review.plan_request_id)$('review-detail').textContent='계획 수치를 불러오지 못했습니다. 계획 상세에서 다시 확인하세요.';});
+ const pose=data?.pose_goal||record?.pose_goal,poseContext=$('review-pose-context');if(poseContext){poseContext.hidden=!pose;poseContext.textContent=pose?`TCP 목표: ${pose.arm_id} · ${pose.tool_id} · world · 위치 ${pose.position_m.map(v=>Number(v).toPrecision(5)).join(', ')} m · quaternion xyzw ${pose.quaternion_xyzw.map(v=>Number(v).toPrecision(5)).join(', ')}. IK 결과를 포함한 검토 경로만 승인합니다.`:'';}
  $('review-strategy').textContent=strategyLabel(summary.strategy);$('review-duration').textContent=value(summary.duration,2,' s');
  $('review-distance').textContent=value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm');
  $('review-delta').textContent=value(Number.isFinite(summary.maximum)?summary.maximum*180/Math.PI:undefined,1,'°');
@@ -182,9 +231,9 @@ function renderReview(){
  $('review-admission').textContent=!waiting?'승인은 한 번만 사용할 수 있습니다.':observationProblem(state)||(!matches?'목표나 계획 방식을 바꿨습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.':!preview?'경로 미리보기를 열고 확인하세요.':!visible?'검토할 경로를 로컬 3D 화면에 표시하고 있습니다.':!state.can_approve?'현재 상태에서 실행을 승인할 수 없습니다. 연결과 감시 상태를 확인하세요.':'미리보기 재생은 로봇을 움직이지 않습니다. 실행하려면 승인·실행 버튼을 누르세요.');
 }
 async function replan(){
- if(replanning||!readConnected||!validTargets()||!sceneControls||state?.active_request_id||demoActive(state?.demo?.current))return;
+ if(replanning||!readConnected||!validGoal()||!sceneControls||state?.active_request_id||demoActive(state?.demo?.current))return;
  replanning=true;refreshControls();
- const payload={schema_version:1,request_id:crypto.randomUUID().replaceAll('-',''),strategy:$('strategy').value,target_rad:{...targets}};
+ const payload=goalPayload(crypto.randomUUID().replaceAll('-','')),poseRequest=Boolean(payload.arm_id);
  try{
   sceneControls.pause();
   await request('/api/view/select',{mode:'live',source_id:state.view.config_source_id});
@@ -192,18 +241,18 @@ async function replan(){
   let current;
   replanReadPending=true;
   try{current=await readState();}finally{replanReadPending=false;}
-  if(!current.can_plan)throw Error(current.reason||'현재 상태에서 새 계획을 생성할 수 없습니다.');
-  if(payload.strategy!==$('strategy').value||Object.keys(payload.target_rad).some(name=>payload.target_rad[name]!==targets[name]))throw Error('목표를 바꿨습니다. 새 목표로 계획 생성을 다시 눌러주세요.');
-  if(!readConnected||expectedRead!==stateReadSerial||expectedRead!==lastObservedRead||current!==state||!state.can_plan||state.active_request_id||demoActive(state.demo?.current))throw Error('상태 확인이 바뀌었습니다. 최신 연결과 실행 상태를 확인한 뒤 다시 계획하세요.');
+  if(!(poseRequest?current.can_pose_plan:current.can_plan))throw Error((poseRequest?current.pose_reason||current.reason:current.reason)||'현재 상태에서 새 계획을 생성할 수 없습니다.');
+  if(!goalMatchesPayload(payload))throw Error('목표 종류나 값을 바꿨습니다. 새 목표로 계획 생성을 다시 눌러주세요.');
+  if(!readConnected||expectedRead!==stateReadSerial||expectedRead!==lastObservedRead||current!==state||!(poseRequest?state.can_pose_plan:state.can_plan)||state.active_request_id||demoActive(state.demo?.current))throw Error('상태 확인이 바뀌었습니다. 최신 연결과 실행 상태를 확인한 뒤 다시 계획하세요.');
   // The explicit click creates a new plan only. Approval is a separate action.
-  await request('/api/plan',payload);latestRequest=null;await poll();
+  await request(poseRequest?'/api/pose/plan':'/api/plan',payload);latestRequest=null;await poll();
  }catch(error){notice(error.message);await poll();}
  finally{replanning=false;refreshControls();}
 }
 function requestProgress(record){
  if(!record)return;
  badge($('request-badge'),record.status,record.stage==='plan_not_required'?'이동 불필요':record.mode==='plan_only'&&record.status==='succeeded'?'계획 생성 완료':undefined);$('request-id').textContent=record.request_id.slice(0,12)+'…';
- const stages={submitted:'명령 노드 수신 확인 대기',received:'목표 수신',state_snapshot:'시작 자세 확인',computation_started:'경로 계산 시작',planning_both_arms:'양팔 공동 경로 계획',planning_left_arm:'FR5 경로 계획',planning_right_arm:'UR5e 경로 계획',departure_search:'출발 타이밍 탐색',safety_checks:'거리·충돌 검사',computation_done:'계획·검사 완료',dispatch:'동작 예약·명령 전송',first_motion:'관절 이동 확인',first_motion_left:'FR5 이동 확인',first_motion_right:'UR5e 이동 확인',actions_done:'양팔 Action 완료',settled:'관절 수렴 확인',terminal:labels[record.status],cancel_received:'양팔 취소 요청 수신'};
+ const stages={submitted:'명령 노드 수신 확인 대기',received:'목표 수신',state_snapshot:'시작 자세 확인',computation_started:'경로 계산 시작',pose_ik:'TCP 목표 IK 계산',planning_both_arms:'양팔 공동 경로 계획',planning_left_arm:'FR5 경로 계획',planning_right_arm:'UR5e 경로 계획',departure_search:'출발 타이밍 탐색',safety_checks:'거리·충돌 검사',computation_done:'계획·검사 완료',dispatch:'동작 예약·명령 전송',first_motion:'관절 이동 확인',first_motion_left:'FR5 이동 확인',first_motion_right:'UR5e 이동 확인',actions_done:'양팔 Action 완료',settled:'관절 수렴 확인',terminal:labels[record.status],cancel_received:'양팔 취소 요청 수신'};
  $('request-stage').textContent=({plan_ready:'계획·검사 완료 · 실행 승인 대기',plan_not_required:'이미 목표 자세에 있습니다. 실행할 이동이 없습니다.',plan_revoked:'미승인 계획 폐기',approval_validating:'승인 계획 재검사'})[record.stage]||stages[record.stage]||record.stage||labels[record.status];
  const cancelPhase=cancellationPhase(record);if(cancelPhase)$('request-stage').textContent=cancelPhase==='acknowledged'?'서버가 취소를 수신했습니다. 요청 종료를 확인하고 있습니다.':cancelPhase==='unconfirmed'?'취소 전달 결과 미확인 · 현재 실행 상태를 확인하세요.':'취소 요청 전달 중 · 서버 수신과 요청 종료를 확인하세요.';
  const stage=record.stage||'';let progress=0;
@@ -250,6 +299,10 @@ function renderDetail(group,id){
  $('history-detail').hidden=false;$('detail-title').textContent=group.executions.length?'계획과 승인 실행':group.plan?'실행 전 계획 기록':'실행 기록';
  $('detail-error').textContent=guidanceText(record,data);
  const fields=$('detail-summary');fields.replaceChildren();fields.append(detailField('결과',labels[record.status]||record.status),detailField('계획 방식',strategyLabel(summary.strategy)),detailField('계획 궤적 시간',value(summary.duration,2,' s')),detailField('계획 양팔 간격',value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm')),detailField('시작→목표 최대 변화',value(Number.isFinite(summary.maximum)?summary.maximum*180/Math.PI:undefined,1,'°')),detailField('요청 처리 시간',value(record.metrics?.received_to_terminal_wall_sec)));
+ const completion=data?.pose_completion||record?.pose_completion;
+ if(completion?.errors){fields.append(detailField('관측 TCP 위치 오차',value(completion.errors.position_error_m*1000,3,' mm')),detailField('관측 TCP 방향 오차',value(completion.errors.orientation_error_rad,5,' rad')),detailField('TCP 완료 기준',`${value(completion.position_tolerance_m*1000,1,' mm')} / ${value(completion.orientation_tolerance_rad,3,' rad')}`));}
+ const planned=(planData||data)?.pose_kinematics?.planned_endpoint_errors;
+ if(planned){fields.append(detailField('계획 TCP 위치 오차',value(planned.position_error_m*1000,3,' mm')),detailField('계획 TCP 방향 오차',value(planned.orientation_error_rad,5,' rad')));}
  const links=$('detail-links');links.replaceChildren();if(plan||group.executions.length)links.append(textNode('p','계획 ID · '+group.id));for(const execution of group.executions)links.append(textNode('p','승인 실행 ID · '+execution.request_id+' · '+(labels[execution.status]||execution.status)));if(!plan&&group.executions.length)links.append(textNode('small','이 화면에 원래 계획의 이력이 남아 있지 않습니다.'));
  const timeline=$('detail-timeline');timeline.replaceChildren();const names={received:'목표 수신',plan_ready:'계획 검토 준비',approved_plan_recheck:'승인 계획 재검사',dispatch:'실행 요청 전송',first_motion:'관절 이동 확인',actions_done:'양팔 실행 응답 완료',settled:'목표 자세 확인',cancel_received:'취소 요청 수신',terminal:'요청 종료'};
  for(const event of (data.events||[]).filter(item=>names[item.name]).slice(-12))timeline.append(textNode('li',`${value(event.wall_sec,3,' s')} · ${names[event.name]}`));
@@ -389,16 +442,19 @@ async function boot(){
  $('use-home').addEventListener('click',()=>{targets={...config.home_rad};fields();refreshControls();});
  $('use-sample').addEventListener('click',()=>{targets={...config.targets.sample};fields();refreshControls();});
  $('use-current').addEventListener('click',()=>{if(state?.positions_rad){targets={...state.positions_rad};fields();refreshControls();}});
+ configurePoseInputs();setGoalKind();
+ $('goal-kind').addEventListener('change',setGoalKind);$('pose-arm').addEventListener('change',()=>{renderPoseMetadata();refreshControls();});
+ for(const id of ['pose-x','pose-y','pose-z','pose-qx','pose-qy','pose-qz','pose-qw'])$(id).addEventListener('input',refreshControls);
  $('strategy').addEventListener('change',()=>{$('strategy-help').textContent=$('strategy').value==='coordinated'?'양팔을 함께 고려해 관절 공간 경로를 계획합니다.':'팔별 경로는 유지하고, 양팔의 출발 간격을 탐색합니다.';refreshControls();});
  $('demo-run').addEventListener('click',async()=>{if(!readConnected||!selectedDemo||!state?.demo?.can_start)return;$('demo-run').disabled=true;await action('/api/demos/start',{scenario:selectedDemo,native_gui:false});});
  $('demo-stop').addEventListener('click',async()=>{const job=state?.demo?.current;if(!readConnected||!job||!demoActive(job))return;$('demo-stop').disabled=true;await action('/api/demos/stop',{job_id:job.job_id});});
  $('start').addEventListener('click',()=>action('/api/start',{native_gui:$('native-gui').checked,planning_case:$('planning-case').value}));
  $('attach').addEventListener('click',()=>action('/api/attach',{}));$('stop').addEventListener('click',()=>action('/api/stop',{}));
  $('execute').addEventListener('click',async()=>{
-  if(!readConnected||replanning||!state?.can_plan||!validTargets())return;
+  if(!readConnected||replanning||!canPlanGoal()||!validGoal())return;
   $('execute').disabled=true;
-  const payload={schema_version:1,request_id:crypto.randomUUID().replaceAll('-',''),strategy:$('strategy').value,target_rad:{...targets}};
-  const result=await action('/api/plan',payload);if(result)latestRequest=null;
+  const payload=goalPayload(crypto.randomUUID().replaceAll('-','')),poseRequest=Boolean(payload.arm_id);
+  const result=await action(poseRequest?'/api/pose/plan':'/api/plan',payload);if(result)latestRequest=null;
  });
  $('review-preview').addEventListener('click',async()=>{const review=state?.pending_plan;if(!readConnected||!review||review.state!=='awaiting_approval')return;await sceneControls?.previewReview(review.plan_request_id);await poll();});
  $('review-replan').addEventListener('click',replan);

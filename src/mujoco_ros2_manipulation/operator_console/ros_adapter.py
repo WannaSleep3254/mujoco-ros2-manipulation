@@ -11,7 +11,7 @@ from sensor_msgs.msg import JointState
 from rosgraph_msgs.msg import Clock
 from std_msgs.msg import String
 
-from ..workcells.motion_request import COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, PLAN_TOPIC, APPROVE_TOPIC, decode_message
+from ..workcells.motion_request import COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC, PLAN_TOPIC, APPROVE_TOPIC, POSE_PLAN_TOPIC, decode_message
 
 
 class ConsoleBridge(Node):
@@ -25,6 +25,7 @@ class ConsoleBridge(Node):
         self.last_identity = 0
         self.commands = self.create_publisher(String, COMMAND_TOPIC, 10)
         self.plans = self.create_publisher(String, PLAN_TOPIC, 10)
+        self.pose_plans = self.create_publisher(String, POSE_PLAN_TOPIC, 10)
         self.approvals = self.create_publisher(String, APPROVE_TOPIC, 10)
         self.cancels = self.create_publisher(String, CANCEL_TOPIC, 10)
         reliable = QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL)
@@ -81,6 +82,7 @@ class ConsoleBridge(Node):
             self.state.graph = dict(clock=self.count_publishers("/clock"), joints=self.count_publishers("/joint_states"),
                 status=self.count_publishers(STATUS_TOPIC), commands=self.commands.get_subscription_count(),
                 guards=self.count_publishers("/workcell/contact_stop"), plans=self.plans.get_subscription_count(),
+                pose_plans=(self.pose_plans.get_subscription_count() if getattr(self, "pose_plans", None) is not None else 0),
                 approvals=self.approvals.get_subscription_count())
             unique = self.state.graph["clock"] == 1 and self.state.graph["joints"] == 1 and self.parameters.service_is_ready()
             def clear_identity():
@@ -137,7 +139,7 @@ class ConsoleBridge(Node):
             kind, payload = self.outbox.get_nowait()
         except queue.Empty:
             return
-        if kind in ("command", "plan", "approve"):
+        if kind in ("command", "plan", "pose_plan", "approve"):
             with self.state.lock:
                 identifier = payload["request_id"]
                 record = self.state.history.get(identifier)
@@ -153,17 +155,22 @@ class ConsoleBridge(Node):
                 reason = self.state.reason(ignore_request=identifier)
                 if not reason and kind == "plan" and self.state.graph.get("plans", 0) < 1:
                     reason = "계획 검토 명령 노드의 연결이 끊겼습니다."
+                if not reason and kind == "pose_plan":
+                    reason = self.state.pose_reason(payload, ignore_request=identifier)
                 if not reason and kind == "approve":
                     # The backend owns the final one-use token and model/state
                     # validation. Recheck the server identity before publication.
                     if (self.state.graph.get("approvals", 0) < 1
                             or (self.state.server or {}).get("session_id") != payload["session_id"]):
                         reason = "계획을 생성한 명령 노드의 연결이 바뀌었습니다."
+                    else:
+                        reason = self.state.pose_review_reason(self.state.review_snapshot(), ignore_request=identifier)
                 if reason:
                     self.state.status(dict(session_id=(self.state.server or {}).get("session_id", "console"),
                         request_id=identifier, status="rejected", stage="pre_dispatch", error=dict(message=reason), metrics={}))
                     return
-                publisher = self.commands if kind == "command" else self.plans if kind == "plan" else self.approvals
+                publisher = (self.commands if kind == "command" else self.plans if kind == "plan"
+                             else self.pose_plans if kind == "pose_plan" else self.approvals)
                 publisher.publish(String(data=json.dumps(payload, allow_nan=False)))
         elif kind == "cancel":
             self.cancels.publish(String(data=json.dumps(payload)))
