@@ -39,7 +39,12 @@ class DemoWaitDiagnosticsTests(unittest.TestCase):
         manager.folder = Path(directory)
         manager.current = dict(job_id="a" * 32, status="cancel_requested", comparison=None)
         manager.cancel_requested = True
-        manager.refresh_for_cleanup = Mock(side_effect=lambda: order.append("refresh"))
+        def refresh():
+            order.append("refresh")
+            if process.returncode == 130:
+                manager.current.update(status="cancelled",
+                    error=dict(type="Cancelled", message="The user stopped this simulation comparison"))
+        manager.refresh_for_cleanup = Mock(side_effect=refresh)
         manager.cleanup_launches = Mock(side_effect=lambda: order.append("cleanup_groups") or False)
         return manager, process, order, events
 

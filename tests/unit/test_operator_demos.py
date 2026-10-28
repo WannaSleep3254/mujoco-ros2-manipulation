@@ -148,7 +148,8 @@ class DemoApplicationTests(unittest.TestCase):
             self.start_job()
         self.process.poll.return_value = 0
         self.process.returncode = 0
-        self.app.demos.current['comparison'] = {'must_not_be_presented_as_complete':True}
+        self.app.demos.current.update(status='succeeded',
+            comparison={'must_not_be_presented_as_complete':True})
         with patch.object(self.app.demos, 'read_status'), patch(JOBS+'.group_gone', return_value=True):
             self.app.demos._stop_sync()
         self.assertFalse(self.app.demos.busy)
@@ -325,6 +326,59 @@ class DemoApplicationTests(unittest.TestCase):
         self.assertTrue(self.app.demos.current['cleanup_clean'])
         self.assertFalse(self.app.demos.busy)
 
+    def test_cancel_request_does_not_hide_worker_failure_after_clean_cleanup(self):
+        for code, worker_status in ((1, 'failed'), (130, 'failed'), (130, 'cancelled')):
+            with self.subTest(code=code, worker_status=worker_status):
+                self.process.poll.return_value = None
+                self.start_job()
+                manager = self.app.demos
+                manager.cancel_requested = True
+                error = dict(type='RuntimeError', message='genuine decoder failure')
+                self.status(status=worker_status, error=error, comparison={'invalid':True})
+                manager.read_status()
+                self.assertEqual(manager.current['status'], worker_status)
+                self.assertEqual(manager.snapshot()['current']['status'], 'cancel_requested')
+                self.assertTrue(manager.busy)
+                self.process.poll.return_value = code
+                with patch(JOBS+'.group_gone', return_value=True):
+                    manager.finish()
+                self.assertEqual(manager.current['status'], 'failed')
+                self.assertEqual(manager.current['error'], error)
+                self.assertEqual(manager.history[0]['error'], error)
+                self.assertIsNone(manager.current['comparison'])
+                self.assertTrue(manager.current['cleanup_clean'])
+                self.assertFalse(manager.busy)
+
+    def test_confirmed_worker_cancellation_waits_for_cleanup_before_completion(self):
+        self.start_job()
+        manager = self.app.demos
+        manager.cancel_requested = True
+        self.status(status='cancelled', error=dict(type='Cancelled', message='user request'))
+        manager.read_status()
+        self.assertEqual(manager.snapshot()['current']['status'], 'cancel_requested')
+        self.assertEqual(manager.snapshot()['current']['stage'], 'cleanup')
+        self.assertTrue(manager.busy)
+        self.process.poll.return_value = 130
+        with patch(JOBS+'.group_gone', return_value=True):
+            manager.finish()
+        self.assertEqual(manager.snapshot()['current']['status'], 'cancelled')
+        self.assertIsNone(manager.current['error'])
+        self.assertTrue(manager.current['cleanup_clean'])
+        self.assertFalse(manager.busy)
+
+    def test_cancellation_without_worker_confirmation_stays_failed(self):
+        self.start_job()
+        manager = self.app.demos
+        manager.cancel_requested = True
+        self.status(status='cancelled', error=None)
+        manager.read_status()
+        self.process.poll.return_value = 130
+        with patch(JOBS+'.group_gone', return_value=True):
+            manager.finish()
+        self.assertEqual(manager.current['status'], 'failed')
+        self.assertIn('exit=130', manager.current['error'])
+        self.assertFalse(manager.busy)
+
     def test_worker_terminal_status_is_hidden_until_owned_cleanup_finishes(self):
         self.start_job()
         self.status(status='succeeded', stage='complete', comparison={'complete_pair':True})
@@ -435,8 +489,17 @@ class DemoWorkerTests(unittest.TestCase):
         contact.VisibleContactDemo=object;contact.finalize_demo=Mock()
         modules={'rclpy':ros,'rclpy.signals':signals,'std_srvs':ModuleType('std_srvs'),
                  'std_srvs.srv':service,'mujoco_ros2_manipulation.workcells.verify_contact_demo':contact}
+        def interrupted(*args, **kwargs):
+            directory = job.root/'runtime/validation/runs/cancelled-run'
+            directory.mkdir(parents=True)
+            path = directory/'result.json'
+            atomic_json(path, dict(run_id='cancelled-run', status='interrupted',
+                error=dict(type='DemoCancelled', message='user request'),
+                shutdown_clean=True, process_group_gone=True))
+            job.active_report = NS(path=path)
+            return 130
         with patch.dict('sys.modules',modules), \
-             patch('mujoco_ros2_manipulation.verification.runner.run_verification',return_value=130) as run, \
+             patch('mujoco_ros2_manipulation.verification.runner.run_verification',side_effect=interrupted) as run, \
              patch('mujoco_ros2_manipulation.workcells.contact_comparison.compare_runs') as compare:
             with self.assertRaises(DemoCancelled):
                 job._contact_pair(NS(id='fr5_ur5e'))

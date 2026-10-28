@@ -70,12 +70,28 @@ class Verification(Node):
     def tf(self, message):
         self.transforms.update(transform.child_frame_id for transform in message.transforms)
 
+    def check_cancel(self):
+        callback = getattr(self, 'cancel_check', None)
+        if callback is not None:
+            callback()
+
+    def spin_once(self, *, timeout_sec=0.1):
+        self.check_cancel()
+        rclpy.spin_once(self, timeout_sec=timeout_sec)
+        # Do not use finally: a real callback/decoder failure takes precedence
+        # over a cancellation that arrived during that same call.
+        self.check_cancel()
+
     def until(self, predicate, seconds, description):
+        self.check_cancel()
         deadline = time.monotonic() + seconds
         while rclpy.ok() and time.monotonic() < deadline:
-            rclpy.spin_once(self, timeout_sec=0.1)
-            if predicate():
+            self.spin_once(timeout_sec=0.1)
+            satisfied = predicate()
+            self.check_cancel()
+            if satisfied:
                 return
+        self.check_cancel()
         raise RuntimeError(f'Timeout: {description}')
 
     def result(self, future, seconds, description):
@@ -125,7 +141,7 @@ class Verification(Node):
             if all(active.get(name) == 'active' for name in
                    [self.profile.ros['state_controller'], self.profile.ros['trajectory_controller']]):
                 break
-            rclpy.spin_once(self, timeout_sec=0.2)
+            self.spin_once(timeout_sec=0.2)
         else:
             raise RuntimeError(f'Controllers did not activate: {active}')
         print(f'PASS: {len(self.joint_names)} joint states, clock and both active controllers', flush=True)
