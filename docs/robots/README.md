@@ -4,14 +4,17 @@
 
 FR5 → FR10 → UR5e 순서로 모델 변환과 ROS 2 제어 연동을 확장했습니다.
 각 모델 페이지에 실행 명령, 프로필·관절 순서, 끝단 좌표계, 검증 결과와 스크린샷을 모았습니다.
+FAIRINO FR3 V6는 실험 프로필로 추가했습니다. 모델 생성·표시와 대표
+실제 실행·취소·관측 정지·홈 복귀·종료를 로컬 확인했습니다. 기존 세 모델의 검증 범위와 구분합니다.
 
 | 모델 | 문서 | 계획 그룹 | 계획 끝단 | 자료 |
 |---|---|---|---|---|
 | FAIRINO FR5 V6 | [FR5 안내](fr5/README.md) | `fairino5_v6_group` | `wrist3_link` | [이미지 목록](fr5/assets.json) · [검증](../fr5_shutdown_validation.json) |
 | FAIRINO FR10 V6 | [FR10 안내](fr10/README.md) | `fairino10_v6_group` | `wrist3_link` | [이미지 목록](fr10/assets.json) · [검증](../fr10_validation.json) |
 | Universal Robots UR5e | [UR5e 안내](ur5e/README.md) | `ur5e_manipulator` | `tool0` | [이미지 목록](ur5e/assets.json) · [검증](../ur5e_validation.json) |
+| FAIRINO FR3 V6 · 실험 | [FR3 모델 정리](../fr3-model.md) | `fairino3_v6_group` | `wrist3_link` | [프로필](../../config/robots/fr3.yaml) · 대표 실행·취소·복귀 확인 |
 
-## 초기 자세 미리보기
+## 기존 세 모델의 초기 자세 미리보기
 
 | FR5 | FR10 | UR5e |
 |---|---|---|
@@ -68,7 +71,8 @@ docs/robots/
 |---|---|
 | MuJoCo·MoveIt의 바닥·장애물 배치 일치 | 바닥·받침대의 공통 작업 환경 생성 구현. [작업 환경 구성](../architecture.md) |
 | 고정 베이스·FR5/UR5e 공동 작업 환경·공동 충돌 회피 | 공동 물리·공동 계획·출발 조정·최종 검사 구현. [현재 상태](../simulator_status.md)와 [명령 규약](../motion_requests.md) |
-| 그리퍼와 도구 TCP, 집기·이동·놓기 | 미구현 |
+| 도구 TCP와 Pose 목표 | 명시한 TCP·목표 좌표계의 Pose/IK 계획·검토·승인 경로 구현. [사용법과 범위](../verification.md) |
+| 그리퍼와 집기·이동·놓기 | FR5·검증용 평행 그리퍼·블록의 독립 물리 시연 구현. Python MuJoCo 3.14·로컬 DLS로 실행하며, 기존 ROS native 3.12의 그리퍼·MoveIt 부착 연결은 후속 작업. [집기 실험](../grasping.md) |
 | 공통 작업 목표의 모델별 비교 표·영상 | 후속 검증 필요 |
 | 접촉 조립·힘/순응 제어 | 미구현 |
 | 실제 로봇 연결 | 미검증 |
