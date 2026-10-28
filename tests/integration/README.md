@@ -31,6 +31,22 @@ FR5·평행 그리퍼·자유 블록의 독립 물리 실행과 실제 3D 화면
 [기본 집기 실험](../../docs/grasping.md)에서 설명합니다. 이 실행은 Python MuJoCo 3.14.0이며
 기존 ROS native 3.12.0의 검사와 결과를 합산하지 않습니다.
 
+## 계획 캐시·플래너 비교
+
+기존 고정 suite와 별도 실험이며 기본 플래너와 캐시 설정은 바꾸지 않습니다.
+각 명령은 사용하지 않는 도메인과 새 출력 폴더를 지정합니다. 소싱한 ROS의 PYTHONPATH를 덮어쓰지 않습니다.
+
+```bash
+source ./manipulation_env.sh
+python3 benchmark_planner_cache.py --list
+python3 benchmark_planner_cache.py --mode functional --domain 160 --output runtime/validation/cache-functional-new
+python3 benchmark_planner_cache.py --mode performance --domain 161 --output runtime/validation/cache-performance-new
+```
+
+[실험 규약](../../docs/planner_cache.md)에 고정 입력·계산 예산·시도·실패·미실행과 원본 보존 규칙을 명시합니다.
+기능 검사의 실제 입력 5조건과 제어된 주입 5조건을 구분합니다. 성능은 네 조건 각 3회이며,
+p95나 범용 우열을 판정하지 않습니다. 각 실제 실행의 native 물리와 소유 프로세스 정리도 통과해야 합니다.
+
 ## 공동 작업 환경
 
 공동 작업 환경 검증은 `python3 verify_scene.py --workcell fr5_ur5e --domain 93`을 실행합니다.

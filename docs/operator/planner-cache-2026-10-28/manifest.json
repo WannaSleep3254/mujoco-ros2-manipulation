@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "document_type": "design_review",
+  "document_version": "1.0",
+  "layout_baseline": "1.9",
+  "baseline_commit": "19829989c2fdf03e069bfbcddb39dba65b2e2553",
+  "scope": "Fixed-input development experiment with matched plan-ready endpoints; source snapshots and limited samples, separate from frozen fixed-motion publications.",
+  "assets": {
+    "index.html": "f320a25f73ba412112c2bcbf8ed9f01d759eddded04ec76b62351c3cfd32c665",
+    "evidence.json": "52bd8a64cb54905a91bbfcdd2448c8b267b8a2c62fe917eb7dcebd8afcc16736"
+  },
+  "implementation_commit": "fbf98b795ac0635c8b56f6795c915a4b7b8e6440"
+}

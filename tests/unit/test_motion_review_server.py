@@ -30,6 +30,10 @@ from mujoco_ros2_manipulation.workcells.pose_planning import PosePlanningMixin
 from mujoco_ros2_manipulation.workcells.pose_adapter import PoseAdapterError
 from mujoco_ros2_manipulation.workcells.pose_goal import validate_pose_goal
 from mujoco_ros2_manipulation.workcells.pose_tools import validate_goal_context, describe_pose_tools
+from mujoco_ros2_manipulation.workcells.planning_config import (
+    PLANNER_TYPES, planning_configuration, canonical_sha256, trajectory_cache_identity)
+from mujoco_ros2_manipulation.workcells.trajectory_cache import TrajectoryCache
+from mujoco_ros2_manipulation.workcells.cache_dynamics import validate_reanchored_dynamics, CacheDynamicsRejected
 
 
 def require(condition, message):
@@ -44,6 +48,10 @@ def load_server():
     namespace = dict(WorkcellVerification=object,InterferenceVerification=SimpleNamespace(split=lambda *a:None),
         PosePlanningMixin=PosePlanningMixin,PoseAdapterError=PoseAdapterError,
         validate_pose_goal=validate_pose_goal,
+        PLANNER_TYPES=PLANNER_TYPES, planning_configuration=planning_configuration,
+        canonical_sha256=canonical_sha256,trajectory_cache_identity=trajectory_cache_identity,
+        TrajectoryCache=TrajectoryCache,validate_reanchored_dynamics=validate_reanchored_dynamics,
+        CacheDynamicsRejected=CacheDynamicsRejected,
         validate_goal_context=validate_goal_context,describe_pose_tools=describe_pose_tools,
         deepcopy=deepcopy,Path=Path,json=json,time=time,uuid=uuid,RequestTrace=RequestTrace,
         PlanReviewStore=PlanReviewStore,ReviewRejected=ReviewRejected,request_id=request_id,
