@@ -5,6 +5,7 @@ through run_verification. Status identifies every nested launch before ROS init,
 so the console can clean up that exact process group after a worker failure.
 """
 import argparse
+import faulthandler
 import json
 import math
 import os
@@ -23,6 +24,49 @@ from .catalog import describe_scenarios
 
 class DemoCancelled(KeyboardInterrupt):
     """User interruption must stop the pair without starting another launch."""
+
+
+class _CancelStackCapture:
+    """One best-effort dump if this dedicated worker stalls while cancelling.
+
+    faulthandler's watchdog is process-global. Only arm it in the owned demo
+    worker, and keep its file open until this reservation has been cancelled.
+    A single dump bounds output even if the worker outlives its parent's wait.
+    """
+    def __init__(self, directory, *, delay=10.0):
+        self.path = Path(directory) / "cancel-stacks.log"
+        self.delay = delay
+        self._attempted = False
+        self._armed = False
+        self._stream = None
+
+    def start(self):
+        if self._attempted:
+            return
+        self._attempted = True
+        try:
+            self._stream = self.path.open("ab")
+            faulthandler.dump_traceback_later(self.delay, file=self._stream, exit=False)
+            self._armed = True
+        except Exception:
+            # A full/unavailable diagnostics folder must not replace SIGINT's
+            # DemoCancelled exception or prevent the existing cleanup path.
+            self.close()
+
+    def close(self):
+        if self._armed:
+            try:
+                faulthandler.cancel_dump_traceback_later()
+            except Exception:
+                # Do not recycle a descriptor the watchdog may still use.
+                return
+            self._armed = False
+        if self._stream is not None:
+            try:
+                self._stream.close()
+            except Exception:
+                pass
+            self._stream = None
 
 
 def read_process_start_ticks(pid, *, proc=Path("/proc")):
@@ -97,6 +141,7 @@ class DemoJob:
                 raise ValueError("Only this job's unstarted console status may be initialized")
         self.domain, self.render, self.native_gui = domain, render, native_gui
         self.cancel_requested = False
+        self._cancel_stacks = _CancelStackCapture(self.directory)
         self.active_report = None
         self.data = dict(schema_version=1, job_id=self.directory.name, scenario=scenario,
                          status="running", stage="preparing", variant=None, run_id=None,
@@ -118,6 +163,7 @@ class DemoJob:
     def interrupt(self, *_):
         if not self.cancel_requested:
             self.cancel_requested = True
+            self._cancel_stacks.start()
             raise DemoCancelled("The user stopped this simulation comparison")
 
     def _on_launch(self, report, cell, args, process):
@@ -324,6 +370,7 @@ class DemoJob:
             self.save()
             return 1
         finally:
+            self._cancel_stacks.close()
             signal.signal(signal.SIGINT, previous)
 
 

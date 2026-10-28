@@ -7,13 +7,13 @@ import re
 
 
 SESSION_FIELDS = ("schema_version", "workcell", "code_commit", "model_manifest", "policy", "evaluator", "workcell_contract", "implementation_sha256",
-                  "compute_budget_sec", "max_plan_candidates", "selection_policy")
+                  "compute_budget_sec", "max_plan_candidates", "selection_policy", "environment_policy", "environment_policy_sha256")
 MODEL_FIELDS = ("schema_version", "workcell_sha256", "inputs", "outputs", "joints", "home_rad", "joint_limits")
 TRACE_FIELDS = ("schema_version", "request_id", "status", "command", "initial_state_rad", "joint_state_stamp_simulation_sec",
                 "state_receive_age_wall_sec", "clock_receive_age_wall_sec", "plans", "events", "spans", "metrics",
                 "planned_clearance", "clearance_endpoints", "clearance_diagnostic", "trajectories", "planned_trajectories",
                 "source_trajectories", "departure_search", "compute_budget", "dispatched_goals", "action_results", "failure_stage", "failure_kind", "error",
-                "plan_selection", "endpoint_moveit_validity", "planned_candidate_attempt")
+                "plan_selection", "endpoint_moveit_validity", "planned_candidate_attempt", "environment_policy", "environment_policy_sha256")
 SETUP_FIELDS = ("schema_version", "request_id", "status", "command", "initial_state_rad", "trajectories")
 RESULT_FIELDS = ("schema_version", "robot_id", "status", "stage", "motion_checks_passed", "shutdown_clean", "error", "scene_id",
                  "robot", "robot_profile_sha256", "model_manifest_sha256", "gui", "stop_mode", "historical_witness_reproduced",
@@ -45,8 +45,11 @@ CANDIDATE_FIELDS = ("attempt", "accepted", "status", "stage", "elapsed_wall_sec"
                     "native", "native_progress", "moveit", "rejection_kind", "rejection", "error", "evaluation_error", "save_error",
                     "proposal_kind", "arm_order", "waypoint_state_rad", "segment_trajectories")
 NATIVE_FIELDS = ("complete", "samples", "sample_dt_max_sec", "duration_sec", "joint_total_variation_rad", "joint_travel_rad",
-                 "arm_joint_path_rad", "tip_frame_path_m", "minimum", "distance_semantics")
-DISTANCE_FIELDS = ("time_sec", "state_rad", "distance_m", "bodies", "nearest_points_m", "tips_m")
+                 "arm_joint_path_rad", "tip_frame_path_m", "minimum", "distance_semantics", "environment_minimum", "rejection_kind")
+DISTANCE_FIELDS = ("time_sec", "state_rad", "distance_m", "bodies", "nearest_points_m", "tips_m", "environment")
+ENVIRONMENT_POLICY_FIELDS = ("schema_version", "min_environment_distance_m", "tracking_reserve_m")
+ENVIRONMENT_DISTANCE_FIELDS = ("distance_m", "bodies", "nearest_points_m", "pair_count", "scope")
+ENVIRONMENT_MINIMUM_FIELDS = ("time_sec", "state_rad", *ENVIRONMENT_DISTANCE_FIELDS)
 MOVEIT_FIELDS = ("complete", "samples", "invalid_samples", "inter_arm_collision_samples", "witness", "first_collision")
 MOVEIT_WITNESS_FIELDS = ("time_from_start_sec", "state_rad", "contacts", "inter_arm")
 COMPUTE_BUDGET_FIELDS = ("limit_wall_sec", "elapsed_wall_sec", "exceeded", "enforcement")
@@ -145,12 +148,115 @@ def _curve(data):
     return result
 
 
+def _finite_number(value):
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except OverflowError:
+        return False
+
+
+def _environment_policy(data):
+    result = _select(data, ENVIRONMENT_POLICY_FIELDS)
+    if (set(result) != set(ENVIRONMENT_POLICY_FIELDS) or type(result["schema_version"]) is not int
+            or result["schema_version"] != 1):
+        raise ValueError("Expected public environment-policy schema 1")
+    for name, lower, upper in (("min_environment_distance_m", .001, .1), ("tracking_reserve_m", 0., .05)):
+        value = result[name]
+        if not _finite_number(value) or not lower <= value <= upper:
+            raise ValueError("Expected bounded numeric environment-policy values")
+    return result
+
+
+def _environment_distance(data, *, minimum=False):
+    """Retain only bounded public witness fields, never arbitrary nested data."""
+    result = _select(data, ENVIRONMENT_MINIMUM_FIELDS if minimum else ENVIRONMENT_DISTANCE_FIELDS)
+    if not set(ENVIRONMENT_DISTANCE_FIELDS) <= set(result):
+        raise ValueError("Expected complete public environment-distance fields")
+    distance, count, bodies, points = (result[name] for name in ("distance_m", "pair_count", "bodies", "nearest_points_m"))
+    if (not _finite_number(distance)
+            or type(count) is not int or not 1 <= count <= 4096
+            or result["scope"] != "moving_robot_vs_fixed_environment"):
+        raise ValueError("Expected finite environment distance and bounded pair count/scope")
+    if (type(bodies) is not list or len(bodies) != 2
+            or any(type(name) is not str or not name.strip() or len(name) > 256 for name in bodies)
+            or bodies[0] == bodies[1]):
+        raise ValueError("Expected two bounded public environment body names")
+    if (type(points) is not list or len(points) != 2
+            or any(type(point) is not list or len(point) != 3
+                   or any(not _finite_number(value) for value in point)
+                   for point in points)):
+        raise ValueError("Expected two finite public environment witness points")
+    if "time_sec" in result:
+        stamp = result["time_sec"]
+        if not _finite_number(stamp) or not 0 <= stamp <= 1e9:
+            raise ValueError("Expected bounded public environment witness time")
+    if "state_rad" in result:
+        state = result["state_rad"]
+        if (not isinstance(state, dict) or not 1 <= len(state) <= 32
+                or any(not isinstance(name, str) or len(name) > 128 for name in state)):
+            raise ValueError("Expected bounded named environment witness state")
+        if any(not _finite_number(value) for value in state.values()):
+            raise ValueError("Expected named finite numeric environment witness state")
+        result["state_rad"] = _numeric_mapping(state)
+    return result
+
+
+def _environment_rejection(value):
+    if value not in ("native_clearance", "environment_clearance"):
+        raise ValueError("Unexpected public native rejection kind")
+    return value
+
+
+def _environment_additions(data):
+    """Project additive environment witnesses while leaving legacy fields intact."""
+    result = deepcopy(data)
+    if not isinstance(result, dict):
+        return result
+    if result.get("environment_minimum") is not None:
+        result["environment_minimum"] = _environment_distance(result["environment_minimum"], minimum=True)
+    minimum = result.get("minimum")
+    if isinstance(minimum, dict) and minimum.get("environment") is not None:
+        minimum["environment"] = _environment_distance(minimum["environment"])
+    if "environment_minimum" in result and "rejection_kind" in result:
+        result["rejection_kind"] = _environment_rejection(result["rejection_kind"])
+    return result
+
+
+def _environment_trace_additions(result):
+    if "planned_clearance" in result:
+        result["planned_clearance"] = _environment_additions(result["planned_clearance"])
+    diagnostic = result.get("clearance_diagnostic")
+    if isinstance(diagnostic, dict):
+        if diagnostic.get("environment_witness") is not None:
+            diagnostic["environment_witness"] = _environment_distance(diagnostic["environment_witness"], minimum=True)
+            if diagnostic.get("violation_scope") is not None:
+                diagnostic["violation_scope"] = _environment_rejection(diagnostic["violation_scope"])
+        witness = diagnostic.get("witness")
+        if isinstance(witness, dict):
+            if witness.get("scope") == "moving_robot_vs_fixed_environment":
+                diagnostic["witness"] = _environment_distance(witness, minimum=True)
+            elif witness.get("environment") is not None:
+                witness["environment"] = _environment_distance(witness["environment"])
+    clearance_endpoints = result.get("clearance_endpoints")
+    endpoints = clearance_endpoints.get("endpoints", {}) if isinstance(clearance_endpoints, dict) else {}
+    if isinstance(endpoints, dict):
+        for endpoint in (endpoints.get("start"), endpoints.get("goal")):
+            if isinstance(endpoint, dict) and endpoint.get("environment") is not None:
+                endpoint["environment"] = _environment_distance(endpoint["environment"])
+
+
 def _native(data, *, progress=False):
-    result = _select(data, ("samples", "minimum") if progress else NATIVE_FIELDS)
+    result = _select(data, ("samples", "minimum", "environment_minimum", "rejection_kind") if progress else NATIVE_FIELDS)
     if result.get("minimum") is not None:
         minimum = result["minimum"] = _select(result["minimum"], DISTANCE_FIELDS)
         if "state_rad" in minimum:
             minimum["state_rad"] = _numeric_mapping(minimum["state_rad"])
+        if minimum.get("environment") is not None:
+            minimum["environment"] = _environment_distance(minimum["environment"])
+    if result.get("environment_minimum") is not None:
+        result["environment_minimum"] = _environment_distance(result["environment_minimum"], minimum=True)
+    if "rejection_kind" in result:
+        result["rejection_kind"] = _environment_rejection(result["rejection_kind"])
     for key in ("joint_travel_rad", "arm_joint_path_rad", "tip_frame_path_m"):
         if key in result:
             result[key] = _numeric_mapping(result[key])
@@ -244,6 +350,7 @@ def export_evidence(raw, kind, *, forbidden_tokens=()):
     if kind in ("trace", "setup"):
         result["command"] = _command(result["command"])
     if kind == "trace":
+        _environment_trace_additions(result)
         if "plan_selection" in result:
             result["plan_selection"] = _plan_selection(result["plan_selection"])
         if "compute_budget" in result:
@@ -252,6 +359,13 @@ def export_evidence(raw, kind, *, forbidden_tokens=()):
             result["endpoint_moveit_validity"] = _select(result["endpoint_moveit_validity"], ("start", "goal"))
     if kind == "session" and "model_manifest" in result:
         result["model_manifest"] = _select(result["model_manifest"], MODEL_FIELDS)
+    if kind in ("session", "trace"):
+        if "environment_policy" in result:
+            result["environment_policy"] = _environment_policy(result["environment_policy"])
+        if "environment_policy_sha256" in result:
+            digest = result["environment_policy_sha256"]
+            if not isinstance(digest, str) or not re.fullmatch("[0-9a-f]{64}", digest):
+                raise ValueError("Expected public environment-policy SHA256")
     if kind == "result":
         for original, public in (("fixture_sha256", "measured_fixture_sha256"), ("physics_report_sha256", "physics_raw_source_sha256"),
                                  ("reproduction_sha256", "reproduction_raw_source_sha256")):

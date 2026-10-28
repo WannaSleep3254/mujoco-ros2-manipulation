@@ -94,7 +94,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends build-essential git python3-pip python3-venv \
-            python3-colcon-common-extensions libglfw3-dev libfmt-dev libeigen3-dev libtinyxml2-dev \
+            python3-colcon-common-extensions python3-pil libglfw3-dev libfmt-dev libeigen3-dev libtinyxml2-dev \
             ros-humble-moveit ros-humble-ros2-control ros-humble-ros2-controllers \
             ros-humble-control-toolbox ros-humble-backward-ros ros-humble-xacro \
             ros-humble-rmw-cyclonedds-cpp ros-humble-ros2-control-cmake
@@ -123,6 +123,27 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 verify_environment_views.py --catalog runtime/validation/environment-preview-catalog.json --domain 148 --port 8895
+      - name: Explicit environment execution and fail-closed identity
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 - <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          catalog = json.loads(Path("runtime/validation/environment-preview-catalog.json").read_text())
+          entry = catalog["overlays"][0]
+          for domain, case in enumerate(("normal", "bad_sha", "changed_after_review", "mismatched_runtime"), start=218):
+              subprocess.run([sys.executable, "-m", "mujoco_ros2_manipulation.workcells.verify_environment_execution",
+                  "--domain", str(domain), "--execution-environment", entry["directory"],
+                  "--execution-manifest-sha256", entry["manifest_sha256"], "--case", case,
+                  "--output", "runtime/validation/environment-execution-ci-"+case], check=True)
+          PY
+      - name: Opt-in ROS RGB8 observations and read-only HTTP analysis
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          python3 -m mujoco_ros2_manipulation.operator_console.verify_image_transport \
+            --domain 222 --port 8915 --output runtime/validation/image-transport-ci
       - name: Actual ROS / MoveIt headless verification
         run: |
           source ./manipulation_env.sh

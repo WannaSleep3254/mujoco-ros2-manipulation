@@ -41,16 +41,16 @@ def _extra_view_sources(values, cell, *, enabled):
         # Source validators may return a token or None; SceneHost independently
         # checks model bytes. A JSON token must be finite and detached here.
         token_json=json.dumps(token,sort_keys=True,separators=(',',':'),allow_nan=False)
-        contract=(source.id,source.label,source.xml_path,source.joint_names,deepcopy(source.home))
+        contract=(source.id,source.label,source.xml_path,source.joint_names,deepcopy(source.home),source.robot_roots)
         def validate(source=source,expected=deepcopy(token),token_json=token_json,contract=contract):
-            current=(source.id,source.label,source.xml_path,source.joint_names,source.home)
+            current=(source.id,source.label,source.xml_path,source.joint_names,source.home,source.robot_roots)
             if current!=contract or type(source.home) is not dict or any(type(value) not in (int,float) or not math.isfinite(value) for value in source.home.values()):
                 raise ValueError('등록한 읽기 전용 작업 환경의 모델 계약이 바뀌었습니다.')
             current_token=source.validate()
             if json.dumps(current_token,sort_keys=True,separators=(',',':'),allow_nan=False)!=token_json:
                 raise ValueError('등록한 읽기 전용 작업 환경이 바뀌었습니다. 시작 시 다시 검증하세요.')
             return deepcopy(expected)
-        result.append(SceneSource(source.id,source.label,source.xml_path,source.joint_names,deepcopy(source.home),validate))
+        result.append(SceneSource(source.id,source.label,source.xml_path,source.joint_names,deepcopy(source.home),validate,robot_roots=source.robot_roots))
     return tuple(result)
 
 
@@ -120,13 +120,20 @@ class ConsoleViews:
         return self.mode != 'live'
 
     def _cell_source(self):
+        target = getattr(self.app, "execution_target", None)
+        if target is not None:
+            target.validate()
+            cell = self.app.cell
+            return SceneSource("scene:"+target.id, cell.label+" · "+target.id,
+                target.model_path, tuple(cell.joints), dict(zip(cell.joints,cell.home)),
+                target.validate, robot_roots=tuple((i.id, i.prefix+i.profile.ros["base_frame"]) for i in getattr(cell,"instances",())))
         def validate():
             current = check_workcell(self.app.cell)
             if current != self.metadata:
                 raise ValueError('Selected workcell model changed')
             return current
         cell = self.app.cell
-        return SceneSource('workcell:'+cell.id,cell.label,cell.output/'cell.xml',tuple(cell.joints),dict(zip(cell.joints,cell.home)),validate)
+        return SceneSource('workcell:'+cell.id,cell.label,cell.output/'cell.xml',tuple(cell.joints),dict(zip(cell.joints,cell.home)),validate,robot_roots=tuple((i.id,i.prefix+i.profile.ros['base_frame']) for i in getattr(cell,"instances",())))
 
     def _activate(self, key, source, *, job_id=None, run_id=None, motion_session_id=None, request_id=None):
         self.revision += 1

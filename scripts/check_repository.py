@@ -42,7 +42,11 @@ def main():
         case = yaml.safe_load(path.read_text())
         load_case(load_workcell(case['workcell']), path.stem)
     from mujoco_ros2_manipulation.workcells.timing import load_policy
+    from mujoco_ros2_manipulation.workcells.environment_clearance import load_environment_policy
     for path in (ROOT / "config/planning").glob("*.yaml"):
+        if path.stem == "environment_clearance":
+            load_environment_policy(load_workcell())
+            continue
         policy = yaml.safe_load(path.read_text())
         load_policy(load_workcell(policy["workcell"]), path.stem)
     profiles = list_profiles()

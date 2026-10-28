@@ -6,6 +6,7 @@ from pathlib import Path
 import signal
 import subprocess
 import tempfile
+import threading
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
@@ -57,11 +58,11 @@ class LifecycleTests(unittest.TestCase):
         self.process = Mock(pid=12345678, returncode=0)
         self.process.poll.return_value = None
 
-    def run_case(self, *, preflight=None, spawn=None, finalize=None, expected_crash=None):
+    def run_case(self, *, preflight=None, spawn=None, finalize=None, expected_crash=None, stop=None):
         with patch('mujoco_ros2_manipulation.verification.runner.load_profile', return_value=self.profile), \
              patch('mujoco_ros2_manipulation.verification.runner.check_generated_model', side_effect=preflight), \
              patch('mujoco_ros2_manipulation.verification.runner.subprocess.Popen', side_effect=spawn, return_value=self.process), \
-             patch('mujoco_ros2_manipulation.verification.runner.stop_process', return_value=False), \
+             patch('mujoco_ros2_manipulation.verification.runner.stop_process', side_effect=stop, return_value=False), \
              patch('mujoco_ros2_manipulation.verification.runner.group_gone', return_value=True), \
              patch.dict(os.environ), patch('builtins.print'):
             code = run_verification(self.args, self.root, self.ros,
@@ -183,6 +184,137 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(report['motion_checks_passed'])
         self.assertEqual(report['status'], 'failed')
         self.assertEqual(report['error']['type'], 'ShutdownError')
+
+    def test_cleanup_boundaries_preserve_call_order_and_completed_timings(self):
+        observed = []
+        self.ros.ok.return_value = True
+
+        def observe(name):
+            report = json.loads((self.root / 'runtime/validation/fr5_headless.json').read_text())
+            steps = report['cleanup_diagnostics']['steps']
+            self.assertEqual(steps[-1]['name'], name)
+            self.assertEqual(steps[-1]['status'], 'running')
+            self.assertIsNone(steps[-1]['completed_utc'])
+            self.assertIsNone(steps[-1]['elapsed_sec'])
+            observed.append(name)
+
+        self.node.destroy_node.side_effect = lambda: observe('destroy_node')
+        self.ros.shutdown.side_effect = lambda: observe('ros_shutdown')
+        code, report = self.run_case(stop=lambda _: observe('launch_stop'),
+                                     finalize=lambda *_: observe('finalize'))
+        names = ['destroy_node', 'ros_shutdown', 'launch_stop', 'finalize']
+        self.assertEqual(code, 0)
+        self.assertEqual(observed, names)
+        self.assertEqual(report['cleanup_diagnostics']['schema_version'], 1)
+        self.assertEqual([step['name'] for step in report['cleanup_diagnostics']['steps']], names)
+        for step in report['cleanup_diagnostics']['steps']:
+            self.assertEqual(step['status'], 'completed')
+            self.assertIsNone(step['error'])
+            self.assertIsInstance(step['started_utc'], str)
+            self.assertIsInstance(step['completed_utc'], str)
+            self.assertIsInstance(step['started_monotonic_ns'], int)
+            self.assertIsInstance(step['completed_monotonic_ns'], int)
+            self.assertGreaterEqual(step['elapsed_sec'], 0)
+            self.assertEqual(step['elapsed_sec'],
+                (step['completed_monotonic_ns'] - step['started_monotonic_ns']) / 1e9)
+
+    def test_blocked_destroy_leaves_running_boundary_and_primary_failure_on_disk(self):
+        entered, release = threading.Event(), threading.Event()
+        result, errors = [], []
+        self.node.run.side_effect = RuntimeError('primary motion failure')
+
+        def blocked_destroy():
+            entered.set()
+            if not release.wait(5):
+                raise RuntimeError('Test did not release destroy_node')
+
+        def run():
+            try:
+                result.append(self.run_case())
+            except BaseException as error:
+                errors.append(error)
+
+        self.node.destroy_node.side_effect = blocked_destroy
+        worker = threading.Thread(target=run)
+        worker.start()
+        try:
+            self.assertTrue(entered.wait(3))
+            report = json.loads((self.root / 'runtime/validation/fr5_headless.json').read_text())
+            self.assertEqual(report['error']['message'], 'primary motion failure')
+            self.assertEqual(report['failure_stage'], 'motion')
+            self.assertIsNone(report['completed_utc'])
+            steps = report['cleanup_diagnostics']['steps']
+            self.assertEqual(len(steps), 1)
+            self.assertEqual(steps[0]['name'], 'destroy_node')
+            self.assertEqual(steps[0]['status'], 'running')
+            self.assertIsNone(steps[0]['completed_monotonic_ns'])
+        finally:
+            release.set()
+            worker.join(5)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(errors, [])
+        self.assertEqual(result[0][0], 1)
+        self.assertEqual(result[0][1]['error']['message'], 'primary motion failure')
+
+    def test_cleanup_errors_are_separate_from_original_failure(self):
+        self.node.run.side_effect = RuntimeError('original motion failure')
+        self.node.destroy_node.side_effect = OSError('node cleanup failed')
+        self.ros.ok.return_value = True
+        self.ros.shutdown.side_effect = RuntimeError('ROS cleanup failed')
+        code, report = self.run_case(stop=Mock(side_effect=OSError('launch cleanup failed')),
+            finalize=Mock(side_effect=ValueError('physics unavailable')))
+        self.assertEqual(code, 1)
+        self.assertEqual(report['failure_stage'], 'motion')
+        self.assertEqual(report['error'], dict(type='RuntimeError', message='original motion failure'))
+        self.assertFalse(report['shutdown_clean'])
+        self.assertEqual(len(report['cleanup_errors']), 3)
+        self.assertEqual(report['diagnostics_error'], 'physics unavailable')
+        steps = report['cleanup_diagnostics']['steps']
+        self.assertEqual([step['status'] for step in steps], ['failed'] * 4)
+        self.assertEqual([step['error']['type'] for step in steps],
+                         ['OSError', 'RuntimeError', 'OSError', 'ValueError'])
+        self.assertTrue(all(step['completed_utc'] is not None for step in steps))
+
+    def test_cleanup_diagnostics_preserve_interruption_and_skipped_steps(self):
+        self.node.run.side_effect = KeyboardInterrupt('user cancellation')
+        code, report = self.run_case()
+        self.assertEqual(code, 130)
+        self.assertEqual(report['status'], 'interrupted')
+        self.assertEqual(report['failure_stage'], 'motion')
+        self.assertEqual(report['error']['message'], 'user cancellation')
+        self.assertEqual([step['status'] for step in report['cleanup_diagnostics']['steps']],
+                         ['completed', 'skipped', 'completed', 'skipped'])
+        self.assertTrue(report['shutdown_clean'])
+        self.ros.shutdown.assert_not_called()
+        self.node.destroy_node.reset_mock()
+        code, report = self.run_case(preflight=ValueError('bad model'))
+        self.assertEqual(code, 1)
+        self.assertEqual(report['failure_stage'], 'preflight')
+        self.assertEqual([step['status'] for step in report['cleanup_diagnostics']['steps']],
+                         ['skipped'] * 4)
+        self.node.destroy_node.assert_not_called()
+
+    def test_diagnostic_write_failure_does_not_skip_cleanup_or_replace_primary_error(self):
+        self.node.run.side_effect = RuntimeError('original motion failure')
+        original_update = VerificationReport.update
+        rejected = []
+
+        def update(report, **fields):
+            if 'cleanup_diagnostics' in fields and not rejected:
+                rejected.append(True)
+                raise OSError('diagnostic write unavailable')
+            return original_update(report, **fields)
+
+        with patch.object(VerificationReport, 'update', new=update):
+            code, report = self.run_case()
+        self.assertEqual(code, 1)
+        self.assertEqual(report['failure_stage'], 'motion')
+        self.assertEqual(report['error']['message'], 'original motion failure')
+        self.node.destroy_node.assert_called_once()
+        self.assertTrue(report['shutdown_clean'])
+        self.assertEqual(report['cleanup_errors'], [])
+        self.assertEqual(report['cleanup_diagnostics']['write_errors'][0]['message'],
+                         'diagnostic write unavailable')
 
     def test_missing_physics_report_prevents_success_after_motion(self):
         code, report = self.run_case(finalize=Mock(side_effect=FileNotFoundError('physics.json missing')))

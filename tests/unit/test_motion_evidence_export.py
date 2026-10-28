@@ -4,7 +4,7 @@ import hashlib
 import json
 import unittest
 
-from mujoco_ros2_manipulation.workcells.evidence_export import audit_public_evidence, export_evidence
+from mujoco_ros2_manipulation.workcells.evidence_export import audit_public_evidence, encoded_evidence, export_evidence
 
 
 class EvidenceExportTests(unittest.TestCase):
@@ -287,6 +287,109 @@ class EvidenceExportTests(unittest.TestCase):
         candidate["segment_trajectories"].append(deepcopy(candidate["curve"]))
         with self.assertRaisesRegex(ValueError, "at most two"):
             export_evidence(self.raw(trace), "trace")
+
+    def environment_trace(self):
+        trace = self.selection_trace()
+        policy = dict(schema_version=1, min_environment_distance_m=.005, tracking_reserve_m=.01)
+        minimum = dict(time_sec=.5, state_rad=deepcopy(trace["initial_state_rad"]), distance_m=.001748617,
+            bodies=["left_wrist3_link", "workcell_post"], nearest_points_m=[[.2, .3, .4], [.2, .301748617, .4]],
+            pair_count=126, scope="moving_robot_vs_fixed_environment")
+        observation = {key: deepcopy(value) for key, value in minimum.items() if key not in ("time_sec", "state_rad")}
+        native = trace["plan_selection"]["candidates"][0]["native"]
+        native.update(complete=False, rejection_kind="environment_clearance", environment_minimum=deepcopy(minimum))
+        native["minimum"]["environment"] = deepcopy(observation)
+        progress = trace["plan_selection"]["candidates"][0]["native_progress"]
+        progress["environment_minimum"] = {key: deepcopy(value) for key, value in minimum.items() if key != "time_sec"}
+        progress["minimum"]["environment"] = deepcopy(observation)
+        trace.update(environment_policy=policy, environment_policy_sha256="d"*64, planned_clearance=deepcopy(native),
+            clearance_diagnostic=dict(witness=deepcopy(minimum), environment_witness=deepcopy(minimum),
+                                      violation_scope="environment_clearance"),
+            clearance_endpoints=dict(endpoints=dict(start=dict(environment=deepcopy(observation)),
+                                                     goal=dict(environment=deepcopy(observation)))))
+        return trace
+
+    def test_environment_policy_identity_and_exact_witness_measurements_are_retained(self):
+        trace = self.environment_trace()
+        public = export_evidence(self.raw(trace), "trace")
+        for field in ("environment_policy", "environment_policy_sha256", "plan_selection", "planned_clearance",
+                      "clearance_diagnostic", "clearance_endpoints"):
+            self.assertEqual(public[field], trace[field])
+        self.assertEqual(public["plan_selection"]["candidates"][0]["native"]["environment_minimum"]["distance_m"], .001748617)
+        self.assertEqual(public["plan_selection"]["candidates"][0]["native"]["rejection_kind"], "environment_clearance")
+        session = dict(schema_version=1, workcell="fr5_ur5e", environment_policy=trace["environment_policy"],
+                       environment_policy_sha256=trace["environment_policy_sha256"])
+        public_session = export_evidence(self.raw(session), "session")
+        for field in ("environment_policy", "environment_policy_sha256"):
+            self.assertEqual(public_session[field], session[field])
+            self.assertIn(field, public_session["evidence_export"]["retained_fields"])
+        self.assertTrue(audit_public_evidence(public)["passed"])
+
+    def test_unknown_nested_private_environment_metadata_is_projected_out_at_each_known_location(self):
+        trace = self.environment_trace()
+        native = trace["plan_selection"]["candidates"][0]["native"]
+        progress = trace["plan_selection"]["candidates"][0]["native_progress"]
+        private = dict(host="private-machine", log_path="/home/private/collision.log", raw_dump=dict(password="private"))
+        for target in (trace["environment_policy"], native["environment_minimum"], native["minimum"]["environment"],
+                       progress["environment_minimum"], progress["minimum"]["environment"],
+                       trace["planned_clearance"]["environment_minimum"], trace["planned_clearance"]["minimum"]["environment"],
+                       trace["clearance_diagnostic"]["witness"], trace["clearance_diagnostic"]["environment_witness"],
+                       trace["clearance_endpoints"]["endpoints"]["start"]["environment"],
+                       trace["clearance_endpoints"]["endpoints"]["goal"]["environment"]):
+            target.update(deepcopy(private))
+        before = deepcopy(trace)
+        public = export_evidence(self.raw(trace), "trace")
+        self.assertEqual(trace, before)
+        encoded = json.dumps(public)
+        for value in ("private-machine", "collision.log", "raw_dump", "password"):
+            self.assertNotIn(value, encoded)
+        self.assertEqual(set(public["environment_policy"]), {"schema_version", "min_environment_distance_m", "tracking_reserve_m"})
+        self.assertEqual(public["planned_clearance"]["environment_minimum"]["pair_count"], 126)
+
+    def test_forbidden_strings_in_retained_environment_witness_fields_still_fail_public_audit(self):
+        for location in ("candidate", "top", "diagnostic", "endpoint"):
+            for message in ("/home/private/model.xml", "private@example.invalid", "access_token=private", "private-machine"):
+                trace = self.environment_trace()
+                target = {"candidate": trace["plan_selection"]["candidates"][0]["native"]["environment_minimum"],
+                          "top": trace["planned_clearance"]["environment_minimum"],
+                          "diagnostic": trace["clearance_diagnostic"]["environment_witness"],
+                          "endpoint": trace["clearance_endpoints"]["endpoints"]["start"]["environment"]}[location]
+                target["bodies"][1] = message
+                with self.subTest(location=location, message=message), self.assertRaisesRegex(ValueError, "Private path|Local identity token"):
+                    export_evidence(self.raw(trace), "trace", forbidden_tokens=("private-machine",))
+
+    def test_environment_projection_rejects_unbounded_shapes_non_numeric_state_and_invalid_policy_or_hash(self):
+        mutations = [
+            lambda trace: trace["environment_policy"].update(min_environment_distance_m=True),
+            lambda trace: trace["environment_policy"].update(tracking_reserve_m=.051),
+            lambda trace: trace["environment_policy"].update(schema_version=2),
+            lambda trace: trace.update(environment_policy_sha256="not-a-hash"),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(pair_count=4097),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(scope="unknown"),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(time_sec=-1),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(distance_m=float("nan")),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(bodies=["body"]*3),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(nearest_points_m=[[0, 0, 0], [0, 0]]),
+            lambda trace: trace["planned_clearance"]["environment_minimum"]["state_rad"].update(joint_0="private-machine"),
+            lambda trace: trace["planned_clearance"]["environment_minimum"]["state_rad"].update(joint_0=True),
+            lambda trace: trace["planned_clearance"]["environment_minimum"]["state_rad"].update(joint_0=float("inf")),
+            lambda trace: trace["planned_clearance"]["environment_minimum"].update(state_rad={f"joint_{i}":0. for i in range(33)}),
+            lambda trace: trace["plan_selection"]["candidates"][0]["native"].update(rejection_kind="unknown"),
+        ]
+        for index, mutate in enumerate(mutations):
+            trace = self.environment_trace(); mutate(trace)
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                export_evidence(self.raw(trace), "trace")
+
+    def test_legacy_exports_without_environment_additions_keep_exact_encoded_bytes_and_retained_fields(self):
+        # Digests captured before the additive environment projection change.
+        cases = ((self.trace(), "260f285f96141c6a3563940b462fbfdf8392b6ae4e1e4ff41b4c751fbc8c02a6"),
+                 (self.selection_trace(), "663c943419966aa63b1a58200a2a53da5c5dde9e6835eb75164e25396d34fa76"))
+        for trace, expected in cases:
+            public = export_evidence(self.raw(trace), "trace")
+            self.assertEqual(hashlib.sha256(encoded_evidence(public)).hexdigest(), expected)
+            for field in ("environment_policy", "environment_policy_sha256"):
+                self.assertNotIn(field, public)
+                self.assertNotIn(field, public["evidence_export"]["retained_fields"])
 
 
 if __name__ == "__main__":

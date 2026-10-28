@@ -15,8 +15,9 @@ from ..workcells.motion_request import COMMAND_TOPIC, CANCEL_TOPIC, STATUS_TOPIC
 
 
 class ConsoleBridge(Node):
-    def __init__(self, state, cell):
+    def __init__(self, state, cell, *, execution_target=None, image_topic=None, image_clock_domain="unknown"):
         super().__init__("workcell_operator_console")
+        self.execution_target = execution_target
         self.state, self.cell = state, cell
         self.outbox = queue.Queue(maxsize=8)
         self.identity_future = None
@@ -35,6 +36,25 @@ class ConsoleBridge(Node):
         self.parameters = self.create_client(GetParameters, "/mujoco_ros2_control_node/get_parameters")
         self.create_timer(0.05, self.send)
         self.create_timer(0.5, self.discover)
+        self.image_source = self.image_observer = None
+        if image_topic is not None:
+            from .image_source import ImageSource
+            from .sensor_ros import attach
+            self.image_source = ImageSource(source_id="camera0", topic=image_topic, clock_domain=image_clock_domain)
+            self.image_observer = attach(self, self.image_source)
+            self.create_timer(0.25, self.image_observer.discover)
+
+    def destroy_node(self):
+        observer = getattr(self, "image_observer", None)
+        clean = True
+        try:
+            if observer is not None:
+                clean = observer.close()
+        finally:
+            result = super().destroy_node()
+        if not clean:
+            raise RuntimeError("Image observer cleanup did not complete")
+        return result
 
     def joints(self, message):
         self.state.joints(list(message.name), list(message.position), list(message.velocity),
@@ -88,7 +108,11 @@ class ConsoleBridge(Node):
                             # hardware/joints. The view owner checks their path;
                             # command admission still requires the base model.
                             self.state.observed_model_path = model
-                            self.state.identity = model == str(self.cell.output / "cell.xml")
+                            target = getattr(self, "execution_target", None)
+                            if target is not None:
+                                target.validate()
+                            expected = target.model_path if target is not None else self.cell.output / "cell.xml"
+                            self.state.identity = model == str(expected)
                             self.state.identity_requested_at = self.identity_requested_at
                             self.state.identity_checked_at = time.monotonic()
                         else:

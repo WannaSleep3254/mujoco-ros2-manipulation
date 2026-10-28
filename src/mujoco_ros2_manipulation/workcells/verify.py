@@ -3,6 +3,7 @@
 import argparse
 from copy import deepcopy
 import json
+from itertools import islice
 import math
 import random
 import statistics
@@ -35,6 +36,9 @@ from mujoco_ros2_manipulation.verification.runner import run_verification
 from mujoco_ros2_manipulation.workcells.config import identifier, load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import check_workcell
 from mujoco_ros2_manipulation.workcells.trajectory import sampled_states, partitions
+from mujoco_ros2_manipulation.workcells.planning_adapter import MoveItPlanningAdapter
+from mujoco_ros2_manipulation.workcells.execution_adapter import (
+    ExecutionLedger, TrajectoryExecutionAdapter, MAX_EXECUTION_GOALS)
 
 
 def require(condition, message):
@@ -139,49 +143,13 @@ class WorkcellVerification(Verification):
         )
 
     def plan(self, group, target, start_state=None, *, planner_id="", allowed_planning_sec=5.0, goal_tolerance_rad=0.003):
-        started = time.monotonic()
-        request = GetMotionPlan.Request()
-        motion = request.motion_plan_request
-        motion.group_name = group
-        motion.pipeline_id = "ompl"
-        motion.planner_id = planner_id
-        motion.num_planning_attempts = 3
-        motion.allowed_planning_time = float(allowed_planning_sec)
-        motion.max_velocity_scaling_factor = 0.1
-        motion.max_acceleration_scaling_factor = 0.1
-        motion.start_state.is_diff = True
-        motion.start_state.joint_state.name = list(self.joint_names)
-        motion.start_state.joint_state.position = (
-            [start_state[name] for name in self.joint_names]
-            if start_state is not None
-            else list(self.positions)
-        )
-        constraint = Constraints()
-        for name, value in target.items():
-            joint = JointConstraint()
-            joint.joint_name = name
-            joint.position = float(value)
-            joint.tolerance_above = joint.tolerance_below = float(goal_tolerance_rad)
-            joint.weight = 1.0
-            constraint.joint_constraints.append(joint)
-        motion.goal_constraints = [constraint]
-        answer = self.result(
-            self.planner.call_async(request), 25, "shared motion plan"
-        ).motion_plan_response
-        self.planning_timings.append(
-            dict(
-                group=group,
-                wall_sec=time.monotonic() - started,
-                server_planning_sec=answer.planning_time,
-                requested_pipeline_id=motion.pipeline_id,
-                requested_planner_id=motion.planner_id,
-                selected_planner_id=None,  # GetMotionPlan does not expose this field.
-                attempts=motion.num_planning_attempts,
-                allowed_planning_sec=motion.allowed_planning_time,
-                goal_tolerance_rad=goal_tolerance_rad,
-                error_code=answer.error_code.val,
-            )
-        )
+        adapter = MoveItPlanningAdapter(self.planner, self.result,
+            GetMotionPlan.Request, Constraints, JointConstraint, self.joint_names)
+        answer, timing = adapter.plan_joint_target(group, target,
+            self.state() if start_state is None else start_state,
+            planner_id=planner_id, allowed_planning_sec=allowed_planning_sec,
+            goal_tolerance_rad=goal_tolerance_rad)
+        self.planning_timings.append(timing)
         return answer
 
     def anchored(self, trajectory, *, initial=None):
@@ -204,11 +172,36 @@ class WorkcellVerification(Verification):
             require(result.valid, "Refusing to dispatch a colliding shared trajectory")
         return len(samples)
 
+    def _trajectory_executor(self):
+        def goal_for(trajectory):
+            goal = FollowJointTrajectory.Goal()
+            goal.trajectory = trajectory
+            return goal
+
+        def abort():
+            hook = getattr(self, "dispatch_abort", None)
+            if hook is not None:
+                hook()
+
+        def sent(ledger):
+            # Replanning observers inspect this counter while result() spins.
+            self.dispatched = ledger.total_dispatched
+
+        return TrajectoryExecutionAdapter(self.arm_clients, goal_for, self.result,
+            self.until, lambda: self.clock_last, event=self.dispatch_event,
+            abort=abort, on_sent=sent)
+
     def cancel_peers(self):
-        for handle, result in self.handles:
-            if not result.done():
-                self.result(handle.cancel_goal_async(), 5, "peer cancellation")
-                self.result(result, 5, "peer cancellation result")
+        ledger = getattr(self, "execution_ledger", None)
+        if ledger is None or ledger.handles is not self.handles:
+            ledger = ExecutionLedger(total_dispatched=self.dispatched,
+                                     handles=self.handles)
+            self.execution_ledger = ledger
+            self.execution_adapter = self._trajectory_executor()
+        try:
+            self.execution_adapter.cancel_actions(ledger)
+        finally:
+            self.execution_transport = ledger.snapshot()
 
     def dispatch_event(self, name, arm, **details):
         observer = getattr(self, "dispatch_observer", None)
@@ -216,92 +209,23 @@ class WorkcellVerification(Verification):
             observer(name, arm, **details)
 
     def dispatch(self, trajectories, *, inject_cancel_at=None, scheduled_start=None):
+        # Bound generators before materializing; preserve the exact supplied
+        # trajectories for transport and commanded endpoints.
+        items = list(islice(iter(trajectories), MAX_EXECUTION_GOALS + 1))
         self.handles = []
-        pending = []
+        ledger = self.execution_ledger = ExecutionLedger(
+            total_dispatched=self.dispatched, handles=self.handles)
+        adapter = self.execution_adapter = self._trajectory_executor()
         try:
-            for inst, trajectory in trajectories:
-                goal = FollowJointTrajectory.Goal()
-                goal.trajectory = trajectory
-                self.dispatch_event("goal_sent", inst.id)
-                abort = getattr(self, "dispatch_abort", None)
-                if abort is not None:
-                    abort()
-                pending.append((inst, self.arm_clients[inst.id].send_goal_async(goal)))
-                self.dispatched += 1
-            rejected = []
-            for inst, future in pending:
-                handle = self.result(future, 5, "arm goal acceptance")
-                self.dispatch_event("goal_acceptance", inst.id, accepted=handle.accepted)
-                if handle.accepted:
-                    self.handles.append((handle, handle.get_result_async()))
-                else:
-                    rejected.append(inst.id)
-            require(not rejected, f"Arm goal rejected: {rejected}")
-            if scheduled_start is not None:
-                margin = scheduled_start - self.clock_last
-                require(
-                    margin > 0.1,
-                    "Both goals must be accepted at least 0.1s before their start",
-                )
-                self.acceptance_margins.append(margin)
-            injected = [False]
-
-            reported_results = set()
-
-            def finished():
-                abort = getattr(self, "dispatch_abort", None)
-                if abort is not None:
-                    abort()
-                if (
-                    inject_cancel_at is not None
-                    and not injected[0]
-                    and self.clock_last >= inject_cancel_at
-                ):
-                    self.handles[0][0].cancel_goal_async()
-                    injected[0] = True
-                for index, (_, future) in enumerate(self.handles):
-                    if future.done():
-                        answer = future.result()
-                        if index not in reported_results:
-                            reported_results.add(index)
-                            self.dispatch_event("goal_result", trajectories[index][0].id, status=answer.status, error_code=answer.result.error_code)
-                        require(
-                            answer.status == GoalStatus.STATUS_SUCCEEDED
-                            and answer.result.error_code
-                            == FollowJointTrajectory.Result.SUCCESSFUL,
-                            "An arm failed; cancelling peers",
-                        )
-                return all(f.done() for _, f in self.handles)
-
-            self.until(finished, 45, "all arm results")
-            for _, trajectory in trajectories:
+            adapter.dispatch(items, ledger, inject_cancel_at=inject_cancel_at,
+                             scheduled_start=scheduled_start)
+            for _, trajectory in items:
                 self.commanded.update(
-                    zip(trajectory.joint_names, trajectory.points[-1].positions)
-                )
-        except BaseException as primary:
-            cleanup = []
-            try:
-                self.cancel_peers()
-            except Exception as error:
-                cleanup.append(str(error))
-            for _, future in pending:
-                try:
-                    handle = self.result(future, 5, "pending peer acceptance")
-                    if handle.accepted and all(
-                        existing is not handle for existing, _ in self.handles
-                    ):
-                        self.handles.append((handle, handle.get_result_async()))
-                except Exception as error:
-                    cleanup.append(str(error))
-            try:
-                self.cancel_peers()
-            except Exception as error:
-                cleanup.append(str(error))
-            if cleanup:
-                raise RuntimeError(
-                    f"{primary}; peer cleanup errors: {cleanup}"
-                ) from primary
-            raise
+                    zip(trajectory.joint_names, trajectory.points[-1].positions))
+        finally:
+            self.dispatched = ledger.total_dispatched
+            self.acceptance_margins.extend(ledger.acceptance_margins)
+            self.execution_transport = ledger.snapshot()
 
     def trajectory(self, inst, target):
         trajectory = JointTrajectory()

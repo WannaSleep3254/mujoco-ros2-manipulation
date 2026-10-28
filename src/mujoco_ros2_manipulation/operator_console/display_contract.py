@@ -14,6 +14,7 @@ from types import SimpleNamespace
 
 from .scene_host import _manifest, _canonical, _require, _json
 from .view_binding import envelope, _checked_pose
+from .object_hierarchy import from_compiled_hierarchy
 
 
 VERSION = "display-scene-v1"
@@ -120,6 +121,7 @@ class DisplayHostAdapter:
     def __init__(self, host):
         self.host = host
         self._key = self._manifest = self._raw = None
+        self._hierarchy_key = self._hierarchy_raw = None
 
     def __getattr__(self, name):
         return getattr(self.host, name)
@@ -130,6 +132,7 @@ class DisplayHostAdapter:
         if key != self._key:
             value = from_compiled_manifest(_json(raw))
             self._manifest, self._raw, self._key = value, _canonical(value) + b"\n", key
+            self._hierarchy_key = self._hierarchy_raw = None
         return self._manifest, self._raw
 
     def snapshot(self):
@@ -141,6 +144,12 @@ class DisplayHostAdapter:
                     model_sha256=manifest["model_sha256"], scene_sha256=manifest["scene_sha256"],
                     compiled_model_sha256=manifest["provenance"]["engine"]["compiled_sha256"],
                     geoms=len(manifest["geoms"]), assets=len(manifest["assets"]))
+                if state.get("hierarchy_available"):
+                    hierarchy_raw = self.hierarchy_bytes(state["binding_id"])
+                    hierarchy = _json(hierarchy_raw)
+                    state["hierarchy_descriptor"] = dict(sha256=hashlib.sha256(hierarchy_raw).hexdigest(),
+                        byte_length=len(hierarchy_raw), scene_sha256=manifest["scene_sha256"],
+                        bodies=hierarchy["counts"]["bodies"], geoms=hierarchy["counts"]["geoms"])
             return state
 
     def manifest_bytes(self, identifier):
@@ -155,3 +164,17 @@ class DisplayHostAdapter:
             manifest, _ = self._current(identifier)
             value["pose"] = from_compiled_pose(value["pose"], manifest)
             return value
+
+    def hierarchy_bytes(self, identifier):
+        """Map exact geometry/body IDs to the adapted current display digest."""
+        with self.host.lock:
+            manifest, _ = self._current(identifier)  # Also rejects an old binding.
+            read = getattr(self.host, "hierarchy_bytes", None)
+            raw = None if read is None else read(identifier)
+            if raw is None:
+                return None
+            key = (self._key, raw)
+            if key != self._hierarchy_key:
+                hierarchy = from_compiled_hierarchy(_json(raw), manifest)
+                self._hierarchy_raw, self._hierarchy_key = _canonical(hierarchy) + b"\n", key
+            return self._hierarchy_raw

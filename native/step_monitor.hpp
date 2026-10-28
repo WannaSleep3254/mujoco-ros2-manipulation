@@ -10,7 +10,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
+#include <filesystem>
 #include <iomanip>
 #include <map>
 #include <sstream>
@@ -63,6 +65,308 @@ class ClockWatchdog {
     }
     return steady_now - last_progress_ >=
            (progressed_ ? timeout : startup_timeout);
+  }
+};
+
+// Optional native-state witness. All storage is allocated on the first observed
+// model, then reused. The physics thread only copies bounded data; JSON and file
+// I/O happen at destruction, after physics_loop has finished. This observer must
+// never prevent stepping, latching or shutdown when its own setup/storage fails.
+class StepWitness {
+  using Clock = std::chrono::steady_clock;
+  static constexpr size_t capacity = 512, max_scalars = 1024,
+                          contact_capacity = 32;
+  struct Frame {
+    uint64_t step = 0;
+    int64_t pre_steady_ns = 0, post_steady_ns = 0;
+    double pre_time = 0, post_time = 0;
+    int contacts = 0;
+  };
+  struct Contact {
+    int geom1 = -1, geom2 = -1, constraint = -1;
+    double distance = 0;
+  };
+  std::string path_, run_id_, model_metadata_;
+  const mjModel *model_ = nullptr;
+  bool enabled_ = false, frozen_ = false, complete_ = false,
+       post_latch_present_ = false;
+  const char *error_ = nullptr;
+  std::array<Frame, capacity> frames_{};
+  std::array<Contact, contact_capacity> contacts_{};
+  std::array<char, 128> trigger_reason_{}, latch_reason_{};
+  std::vector<mjtNum> states_, post_latch_;
+  size_t nq_ = 0, nv_ = 0, nu_ = 0, scalars_ = 0;
+  size_t next_ = 0, count_ = 0, pending_ = capacity, contact_count_ = 0;
+  uint64_t captured_ = 0, trigger_step_ = 0, latch_step_ = 0;
+  uint64_t engine_steps_ = 0;
+  double trigger_time_ = 0, latch_time_ = 0;
+  double timestep_ = 0;
+  int integrator_ = -1;
+  int64_t latch_steady_ns_ = 0;
+
+  static int64_t steady_ns() noexcept {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+               Clock::now().time_since_epoch()).count();
+  }
+  void disable(const char *reason) noexcept {
+    enabled_ = false;
+    pending_ = capacity;
+    error_ = reason;
+  }
+  bool prepare(const mjModel *m) noexcept {
+    if (!enabled_) return false;
+    if (model_ && (m != model_ || nq_ != static_cast<size_t>(m->nq) ||
+                   nv_ != static_cast<size_t>(m->nv) ||
+                   nu_ != static_cast<size_t>(m->nu))) {
+      // Do not dereference a previous model which a UI reload may have freed.
+      model_ = nullptr;
+      disable("model_changed");
+      return false;
+    }
+    if (model_) return true;
+    try {
+      nq_ = static_cast<size_t>(m->nq);
+      nv_ = static_cast<size_t>(m->nv);
+      nu_ = static_cast<size_t>(m->nu);
+      scalars_ = nq_ + nv_ + nu_;
+      timestep_ = m->opt.timestep;
+      integrator_ = m->opt.integrator;
+      if (scalars_ > max_scalars) {
+        disable("state_dimensions_exceed_limit");
+        return false;
+      }
+      // A zero-DOF model still needs a valid base pointer for empty arrays.
+      states_.resize(capacity * 2 * std::max<size_t>(1, scalars_));
+      post_latch_.resize(std::max<size_t>(1, scalars_));
+      std::ostringstream metadata;
+      metadata << "\"joints\":[";
+      for (int j = 0; j < m->njnt; ++j) {
+        if (j) metadata << ',';
+        metadata << "{\"name\":" << json_string(bounded_name(m, mjOBJ_JOINT, j))
+                 << ",\"type\":" << m->jnt_type[j]
+                 << ",\"qpos_address\":" << m->jnt_qposadr[j]
+                 << ",\"dof_address\":" << m->jnt_dofadr[j] << '}';
+      }
+      metadata << "],\"actuators\":[";
+      for (int j = 0; j < m->nu; ++j) {
+        if (j) metadata << ',';
+        metadata << "{\"name\":" << json_string(bounded_name(m, mjOBJ_ACTUATOR, j))
+                 << ",\"transmission_type\":" << m->actuator_trntype[j]
+                 << ",\"transmission_ids\":[" << m->actuator_trnid[2 * j]
+                 << ',' << m->actuator_trnid[2 * j + 1] << "]}";
+      }
+      metadata << ']';
+      model_metadata_ = metadata.str();
+      model_ = m;
+      return true;
+    } catch (...) {
+      disable("state_allocation_failed");
+      return false;
+    }
+  }
+  void copy_state(mjtNum *destination, const mjData *d) const noexcept {
+    std::copy_n(d->qpos, nq_, destination);
+    std::copy_n(d->qvel, nv_, destination + nq_);
+    std::copy_n(d->ctrl, nu_, destination + nq_ + nv_);
+  }
+  static void number(std::ostream &out, double value) {
+    if (std::isfinite(value)) out << value;
+    else out << "null";
+  }
+  void state(std::ostream &out, const mjtNum *values, double simulation_time,
+             int64_t wall_time) const {
+    out << "{\"simulation_sec\":";
+    number(out, simulation_time);
+    out << ",\"steady_ns\":" << wall_time;
+    const std::array<const char *, 3> names{{"qpos", "qvel", "ctrl"}};
+    const std::array<size_t, 3> sizes{{nq_, nv_, nu_}};
+    size_t offset = 0;
+    for (size_t k = 0; k < sizes.size(); ++k) {
+      out << ",\"" << names[k] << "\":[";
+      for (size_t j = 0; j < sizes[k]; ++j) {
+        if (j) out << ',';
+        number(out, values[offset + j]);
+      }
+      offset += sizes[k];
+      out << ']';
+    }
+    out << '}';
+  }
+  static std::string bounded_name(const mjModel *m, int type, int id) {
+    const char *name = mj_id2name(m, type, id);
+    return name ? std::string(name, ::strnlen(name, 256))
+                : std::string("<unnamed>");
+  }
+  void write() const noexcept {
+    if (path_.empty()) return;
+    try {
+      const std::string temporary = path_ + ".tmp." + std::to_string(getpid());
+      std::ofstream out(temporary);
+      if (!out) {
+        std::fprintf(stderr, "Cannot write native step witness: %s\n", path_.c_str());
+        return;
+      }
+      out << std::setprecision(17)
+          << "{\"schema_version\":1,\"run_id\":" << json_string(run_id_)
+          << ",\"monitor_source_sha256\":" << json_string(MANIPULATION_MONITOR_SHA256)
+          << ",\"mujoco_version\":" << json_string(mj_versionString())
+          << ",\"pid\":" << getpid()
+          << ",\"complete\":" << (complete_ ? "true" : "false")
+          << ",\"error\":" << (error_ ? json_string(error_) : "null")
+          << ",\"frame_capacity\":" << capacity
+          << ",\"max_state_scalars\":" << max_scalars
+          << ",\"contact_capacity\":" << contact_capacity
+          << ",\"captured_steps\":" << captured_
+          << ",\"overwritten_steps\":" << (captured_ - count_)
+          << ",\"engine_steps\":" << engine_steps_
+          << ",\"timestep_sec\":" << timestep_
+          << ",\"integrator\":" << integrator_
+          << ",\"dimensions\":{\"nq\":" << nq_ << ",\"nv\":" << nv_
+          << ",\"nu\":" << nu_ << '}'
+          << ",\"clock\":{\"simulation\":\"native mjData.time; pre and post integration are distinct\","
+             "\"steady\":\"std::chrono::steady_clock nanoseconds in this native process\","
+             "\"step_id\":\"one-based StepMonitor physics step, excludes clock-only holds\"}"
+          << ",\"semantics\":{\"ctrl\":\"exact held actuator input at each native step; units depend on actuator\","
+             "\"contact_evaluation\":\"pre-integration state for the configured implicitfast integrator; other integrators may evaluate internal stages\","
+             "\"post\":\"immediately after mj_step, before any latch resets velocity or control\","
+             "\"jt_controller\":\"standard ROS controller messages are sampled observations without a native step ID; no exact association asserted\","
+             "\"storage\":\"rolling last 512 physics steps; frozen at first contact or latched stop; no per-step file I/O\"}"
+          << ',' << (model_metadata_.empty() ? "\"joints\":[],\"actuators\":[]" : model_metadata_)
+          << ",\"trigger\":";
+      if (frozen_)
+        out << "{\"reason\":" << json_string(trigger_reason_.data())
+            << ",\"step_id\":" << trigger_step_
+            << ",\"contact_evaluation_time_sec\":" << trigger_time_ << '}';
+      else out << "null";
+      out << ",\"trigger_contacts\":[";
+      for (size_t j = 0; j < contact_count_; ++j) {
+        if (j) out << ',';
+        const auto &contact = contacts_[j];
+        out << "{\"geom_ids\":[" << contact.geom1 << ',' << contact.geom2
+            << "],\"constraint_address\":" << contact.constraint
+            << ",\"distance_m\":";
+        number(out, contact.distance);
+        out << '}';
+      }
+      out << "],\"frames\":[";
+      for (size_t j = 0; j < count_; ++j) {
+        if (j) out << ',';
+        const size_t index = (next_ + capacity - count_ + j) % capacity;
+        const auto &frame = frames_[index];
+        const auto *values = states_.data() + index * 2 * scalars_;
+        out << "{\"step_id\":" << frame.step
+            << ",\"contact_count\":" << frame.contacts << ",\"pre\":";
+        state(out, values, frame.pre_time, frame.pre_steady_ns);
+        out << ",\"post\":";
+        state(out, values + scalars_, frame.post_time, frame.post_steady_ns);
+        out << '}';
+      }
+      out << "],\"post_latch\":";
+      if (post_latch_present_) {
+        out << "{\"phase\":\"post_latch_no_integration\",\"reason\":"
+            << json_string(latch_reason_.data()) << ",\"step_id\":" << latch_step_
+            << ",\"state\":";
+        state(out, post_latch_.data(), latch_time_, latch_steady_ns_);
+        out << '}';
+      } else out << "null";
+      out << "}\n";
+      out.close();
+      if (!out || std::rename(temporary.c_str(), path_.c_str())) {
+        std::remove(temporary.c_str());
+        std::fprintf(stderr, "Cannot publish native step witness: %s\n", path_.c_str());
+      }
+    } catch (...) {
+      std::fprintf(stderr, "Cannot serialize native step witness\n");
+    }
+  }
+
+ public:
+  StepWitness() noexcept {
+    try {
+      const char *path = std::getenv("MANIPULATION_STEP_WITNESS_PATH");
+      if (!path || !*path) return;
+      path_ = path;
+      const char *aggregate = std::getenv("MANIPULATION_DIAGNOSTICS_PATH");
+      if (aggregate && *aggregate &&
+          std::filesystem::weakly_canonical(path_) ==
+              std::filesystem::weakly_canonical(aggregate)) {
+        // Never overwrite the aggregate diagnostics with a different schema.
+        path_.clear();
+        disable("output_matches_aggregate_path");
+        std::fprintf(stderr, "Native step witness path must differ from aggregate diagnostics\n");
+        return;
+      }
+      const char *id = std::getenv("MANIPULATION_DIAGNOSTICS_RUN_ID");
+      if (!id || !*id) {
+        disable("missing_run_id");
+        return;
+      }
+      run_id_ = id;
+      enabled_ = true;
+    } catch (...) {
+      disable("configuration_failed");
+      path_.clear();
+      std::fprintf(stderr, "Cannot configure native step witness\n");
+    }
+  }
+  ~StepWitness() noexcept { write(); }
+  bool enabled() const noexcept { return enabled_; }
+  double before_step(const mjModel *m, const mjData *d, uint64_t step) noexcept {
+    if (!enabled_ || frozen_) return 0;
+    const auto started = steady_ns();
+    if (!prepare(m)) return 0;
+    auto &frame = frames_[next_];
+    frame.step = step;
+    frame.pre_time = d->time;
+    frame.pre_steady_ns = started;
+    copy_state(states_.data() + next_ * 2 * scalars_, d);
+    pending_ = next_;
+    return static_cast<double>(steady_ns() - started) / 1e9;
+  }
+  void after_step(const mjModel *m, const mjData *d) noexcept {
+    if (!enabled_ || pending_ == capacity) return;
+    auto &frame = frames_[pending_];
+    frame.post_time = d->time;
+    frame.post_steady_ns = steady_ns();
+    frame.contacts = d->ncon;
+    copy_state(states_.data() + (pending_ * 2 + 1) * scalars_, d);
+    ++captured_;
+    count_ = std::min(count_ + 1, capacity);
+    next_ = (next_ + 1) % capacity;
+    pending_ = capacity;
+    if (d->ncon > 0) {
+      frozen_ = true;
+      trigger_step_ = frame.step;
+      trigger_time_ = frame.pre_time;
+      std::strcpy(trigger_reason_.data(), "contact");
+      contact_count_ = std::min(contact_capacity, static_cast<size_t>(d->ncon));
+      for (size_t j = 0; j < contact_count_; ++j) {
+        const auto &contact = d->contact[j];
+        contacts_[j] = {contact.geom[0], contact.geom[1], contact.efc_address,
+                        double(contact.dist)};
+      }
+    }
+    (void)m;  // State dimensions were checked before this mj_step.
+  }
+  void latched(const mjModel *m, const mjData *d, uint64_t step,
+               const std::string &reason) noexcept {
+    if (!prepare(m) || post_latch_present_) return;
+    if (!frozen_) {
+      frozen_ = true;
+      trigger_step_ = step;
+      trigger_time_ = d->time;
+      std::strncpy(trigger_reason_.data(), reason.c_str(), trigger_reason_.size() - 1);
+    }
+    std::strncpy(latch_reason_.data(), reason.c_str(), latch_reason_.size() - 1);
+    latch_step_ = step;
+    latch_time_ = d->time;
+    latch_steady_ns_ = steady_ns();
+    copy_state(post_latch_.data(), d);
+    post_latch_present_ = true;
+  }
+  void finish(uint64_t engine_steps) noexcept {
+    complete_ = true;
+    engine_steps_ = engine_steps;
   }
 };
 
@@ -139,6 +443,7 @@ class StepMonitor {
   }
   std::map<std::pair<int, int>, Pair> pairs_;
   Timing physics_, monitor_;
+  StepWitness witness_;
   static double seconds(Clock::duration value) {
     return std::chrono::duration<double>(value).count();
   }
@@ -307,6 +612,7 @@ class StepMonitor {
     freeze(m, d);
     mj_forward(m, d);
     freeze(m, d);
+    witness_.latched(m, d, stop_step_, reason);
     return true;
   }
   // Also called before the viewer reset/paused paths: UI edits cannot release
@@ -321,14 +627,16 @@ class StepMonitor {
       ++hold_ticks_;
       return false;  // Clock-only tick; no physics integration after contact.
     }
-    if (path_.empty() && !stop_enabled_) {
+    if (path_.empty() && !stop_enabled_ && !witness_.enabled()) {
       mj_step(m, d);
       return true;
     }
+    const double witness_pre_sec = witness_.before_step(m, d, steps_ + 1);
     const auto before = Clock::now();
     const double start = d->time;
     mj_step(m, d);
     const auto after = Clock::now();
+    witness_.after_step(m, d);
     // Contacts describe the dynamics evaluation before integration, not
     // qpos(t+dt).
     inspect(m, d, start, d->time);
@@ -336,13 +644,14 @@ class StepMonitor {
     if (steps_ == 1) first_wall_ = before;
     last_wall_ = inspected;
     physics_.add(seconds(after - before));
-    monitor_.add(seconds(inspected - after));
+    monitor_.add(witness_pre_sec + seconds(inspected - after));
     if (stop_enabled_ && d->ncon > 0) latch(m, d, "contact");
     return true;
   }
   void finish(uint64_t engine_steps) {
     engine_steps_ = engine_steps;
     finished_ = true;
+    witness_.finish(engine_steps);
   }
 };
 }  // namespace manipulation

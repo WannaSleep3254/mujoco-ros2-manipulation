@@ -20,9 +20,10 @@ from .review_summary import summarize_review
 
 
 class ConsoleApplication:
-    def __init__(self, cell, state, bridge, directory, *, render=True, view_sources=()):
+    def __init__(self, cell, state, bridge, directory, *, render=True, view_sources=(), execution_target=None):
         if type(view_sources) not in (tuple,list) or len(view_sources)>8 or (view_sources and not render):
             raise ValueError('화면 표시를 켜고 읽기 전용 작업 환경을 최대 8개까지 명시적으로 등록하세요.')
+        self.execution_target = execution_target
         self.cell, self.state, self.bridge = cell, state, bridge
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=False)
@@ -80,6 +81,8 @@ class ConsoleApplication:
             else:
                 self.reset_observation()
                 self.clear_frames()
+            if self.execution_target is not None:
+                self.execution_target.validate()
             self.phase, self.error = "starting", None
             self.state.admission_suspended = False
             self.render_suspended = False
@@ -123,12 +126,20 @@ class ConsoleApplication:
                     return
                 if not attach:
                     native = str(options["native_gui"]).lower()
+                    target = getattr(self, "execution_target", None)
+                    launch_target = ([] if target is None else [
+                        "execution_environment:="+str(target.output),
+                        "execution_manifest_sha256:="+target.manifest_sha256])
                     self.spawn("simulation", ["bash", str(self.cell.root / "run_scene.sh"), f"workcell:={self.cell.id}",
-                        f"gui:={native}", f"rviz:={native}", "planning_case:="+options["planning_case"]], folder,
+                        f"gui:={native}", f"rviz:={native}", "planning_case:="+options["planning_case"]]+launch_target, folder,
                         MANIPULATION_DIAGNOSTICS_PATH=str(folder/"physics.json"),
                         MANIPULATION_DIAGNOSTICS_RUN_ID=self.session_id+f"-{generation}")
+                target = getattr(self, "execution_target", None)
+                command_target = ([] if target is None else [
+                    "--execution-environment", str(target.output),
+                    "--execution-manifest-sha256", target.manifest_sha256])
                 self.spawn("commands", ["/usr/bin/python3", "-m", "mujoco_ros2_manipulation.workcells.motion_server",
-                    "--workcell", self.cell.id, "--output", str(folder/"commands")], folder)
+                    "--workcell", self.cell.id, "--output", str(folder/"commands")]+command_target, folder)
             deadline = time.monotonic()+55
             while time.monotonic() < deadline and not self.closing.is_set():
                 with self.lock:
@@ -186,6 +197,9 @@ class ConsoleApplication:
 
     def _submit(self, payload, kind):
         with self.lock, self.state.lock:
+            target = getattr(self, "execution_target", None)
+            if target is not None:
+                target.validate()
             if self.views.preview:
                 raise RuntimeError("미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "stopping") or self.closing.is_set():
@@ -231,7 +245,7 @@ class ConsoleApplication:
             if path.is_relative_to((self.cell.root/"runtime").resolve()) and path.name == identifier+".json" and path.is_file() and path.stat().st_size <= 32*1024*1024:
                 data = json.loads(path.read_text())
                 if data["request_id"] == identifier:
-                    record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results", "plan_selection", "failure_kind", "clearance_diagnostic", "endpoint_moveit_validity", "mode", "review", "initial_state_rad")})
+                    record.update({k:data.get(k) for k in ("events", "spans", "plans", "planned_clearance", "observed_clearance", "compute_budget", "action_results", "plan_selection", "failure_kind", "clearance_diagnostic", "endpoint_moveit_validity", "mode", "review", "initial_state_rad", "operation", "execution_transport", "contact_guard", "clock")})
                     record["review_summary"] = summarize_review(dict(data, command=data.get("command", record.get("command"))))
                     approval = data.get("approval")
                     if isinstance(approval, dict):
@@ -246,6 +260,36 @@ class ConsoleApplication:
                     record["departure_search"] = (data.get("departure_search") or {}).get("profiling")
         return record
 
+    def analysis(self, identifier):
+        from .analysis import summarize_analysis
+        snapshot = self.state.snapshot()
+        image = getattr(self.bridge, "image_source", None)
+        image_snapshot = None if image is None else image.snapshot()
+        sources = dict(
+            joints=dict(stamp_sec=snapshot.get("joint_state_stamp_simulation_sec"),
+                age_sec=snapshot.get("state_age_sec"), clock_domain="ros_simulation", stale_after_sec=.5),
+            clock=dict(stamp_sec=snapshot.get("simulation_sec"),
+                age_sec=snapshot.get("clock_age_sec"), clock_domain="ros_simulation", stale_after_sec=.5))
+        view = self.views.snapshot()
+        if view.get("binding_id") and self.views.host is not None:
+            try:
+                envelope = self.views.host.pose_envelope(view["binding_id"])
+            except (RuntimeError, ValueError):
+                envelope = None
+            if envelope is not None:
+                descriptor = view.get("manifest_descriptor") or {}
+                sources["scene"] = dict(stamp_sec=envelope.get("simulation_sec"),
+                    age_sec=envelope.get("source_state_age_sec"),
+                    clock_domain="ros_simulation" if view.get("mode")=="live" else "unknown",
+                    stale_after_sec=.5, sequence=envelope.get("sequence"),
+                    binding_id=view["binding_id"], mode=view.get("mode"),
+                    preview_time_sec=view.get("preview_time_sec"),
+                    scene_sha256=descriptor.get("scene_sha256"),
+                    model_sha256=descriptor.get("model_sha256"))
+        if image_snapshot is not None:
+            sources["image"] = image_snapshot
+        return summarize_analysis(self.request_details(identifier), sources=sources)
+
     def camera(self, view):
         if view not in ("overview", "front", "top"):
             raise ValueError("지원하지 않는 카메라입니다.")
@@ -256,6 +300,8 @@ class ConsoleApplication:
         if mode not in ("web3d", "image") or not isinstance(mode, str):
             raise ValueError("지원하는 화면 표시 방식을 선택하세요.")
         with self.lock, self.state.lock:
+            if mode == "image" and getattr(self, "execution_target", None) is not None:
+                raise RuntimeError("선택한 설치 환경은 웹 3D에서 표시합니다. 서버 이미지 전환은 지원하지 않습니다.")
             if not self.render_enabled:
                 raise RuntimeError("이 실행은 화면 표시가 비활성화되어 있습니다.")
             if self.demos.busy or self.state.active or self.phase in ("starting", "stopping", "demo") or self.closing.is_set():
@@ -341,6 +387,9 @@ class ConsoleApplication:
             self.state.observed_model_path = None
             self.state.identity_requested_at = self.state.identity_checked_at = None
             self.state.pending_plan = self.state.review_at = None
+        image = getattr(self.bridge, "image_source", None)
+        if image is not None:
+            image.new_epoch()
 
     def clear_frames(self):
         for name in ("frame.json", "frame.jpg"):
@@ -427,6 +476,14 @@ class ConsoleApplication:
                 generation=self.generation,
                 last_launch_directory=None if self.last_launch is None else str(self.last_launch)), frame=frame)
             data["demo"] = self.demos.snapshot()
+            target = getattr(self, "execution_target", None)
+            data["execution_target"] = None if target is None else target.description()
+            image = getattr(self.bridge, "image_source", None)
+            data["image_source"] = None if image is None else image.snapshot()
+            if data["image_source"] is not None:
+                # Full metadata history is fetched only by the visible sensor
+                # panel. Do not repeat 256 rows in every 250ms state response.
+                data["image_source"].pop("history", None)
             data["view"] = self.views.snapshot()
             base = self.views.base
             data["view"].update(display_mode=self.display_mode,

@@ -290,7 +290,7 @@
         "ros_ws/install/ur_description/share/ur_description/urdf/inc/ur_common.xacro": "6f01bf71dc8073b5cd7458c12ed39d87eb99ffec7d6bb31d534d96f83c534304",
         "ros_ws/install/ur_description/share/ur_description/urdf/inc/ur_transmissions.xacro": "85096b2102ef26cb11313956e9ba737f3fae63a0b702108f8cf3253de1cdadf3",
         "ros_ws/install/ur_description/share/ur_description/urdf/ur_macro.xacro": "e5ef4dd07523e5832fd34ca564e882a3980a95845ee4af3f3690e418d6c3ce98",
-        "src/mujoco_ros2_manipulation/build.py": "b042c890bab90d828c814a76146c1f474f08f8f30b31f5ee0d0dc4c34f925e38",
+        "src/mujoco_ros2_manipulation/build.py": "e0d6b793c6285418e314034a85df155b290009ce34ceff8f5e5cc15a4f76f9ff",
         "src/mujoco_ros2_manipulation/model_build/collada.py": "3ea91e431f96ed2c7a0912b2b4eea3e833821e18dde86f9e87af941312eb2251",
         "src/mujoco_ros2_manipulation/model_build/integrity.py": "23d6f8cfe4366ba3865a0c82401a52303f863b6409451e8c81c03501f5684f89",
         "src/mujoco_ros2_manipulation/model_build/prepare.py": "7ed4f9cfdaa65adb3088ab875bc2128ae98ec963b967b49630a9036035cb1173",
@@ -301,7 +301,7 @@
     },
     "outputs": {
       "ur5e.xml": "30cbaefe8670fe103804172f29d1262ebb480bfaab155e1c1c09ed353b03da7c",
-      "ur5e.ros2_control.urdf": "787f8101b1aa799a007fe8d1f2943f3f189ee04c87644cd498eaa845e0b78b22",
+      "ur5e.ros2_control.urdf": "fcaa00d88587466841b76113e6bd33b6ad1a9ad2da399f034f371b6f5390d3a1",
       "visual_meshes/base_01bfc311_0.obj": "a22eb7ba8c0746e5fcfe52b9a6cfe41553ce663ca0f0658383271039c3c2bb3e",
       "visual_meshes/base_01bfc311_1.obj": "84238c0f79ffca4e57da371fa2e47d98abc8fdc04509ffcdddec4656b4f2d1ee",
       "visual_meshes/forearm_871d47b0_0.obj": "d42474d8fc3ac34603d76ab9c391bdbebb33dd25d78d8104c5e7ec060d8aeb1c",

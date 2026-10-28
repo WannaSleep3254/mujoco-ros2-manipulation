@@ -122,3 +122,16 @@ class RequestJournalTests(unittest.TestCase):
         with patch("builtins.open") as opened, self.assertRaises(ValueError):
             trace.append_events("events.jsonl")
         opened.assert_not_called()
+
+    def test_execution_identifiers_preserve_exact_journal_prefix_without_geometry(self):
+        trace = self.trace()
+        trace.event("goal_sent", arm="fr5", controller="fr5_controller")
+        trace.event("goal_acceptance", arm="fr5", controller="fr5_controller",
+                    goal_uuid="a"*32, accepted=True)
+        trace.event("goal_result", arm="fr5", controller="fr5_controller",
+                    goal_uuid="a"*32, status=4, error_code=0)
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "events.jsonl"
+            trace.append_events(path)
+            rows = [json.loads(line) for line in path.read_text().splitlines()]
+        self.assertEqual([row["event"] for row in rows], trace.data["events"])

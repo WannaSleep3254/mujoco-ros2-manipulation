@@ -128,6 +128,9 @@ class ConsoleState:
             return "양팔이 이전 요청을 처리하고 있습니다."
         if not self.server or self.server.get("status") != "ready" or now - self.server_at > 3:
             return "명령 노드가 준비되지 않았습니다."
+        expected = self.config.get("execution_target")
+        if expected is not None and self.server.get("execution_target") != expected:
+            return "명령 노드와 선택한 설치 환경이 일치하지 않습니다. 같은 환경으로 다시 시작하세요."
         return None
 
     def reserve(self, payload):

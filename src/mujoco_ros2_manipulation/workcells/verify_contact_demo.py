@@ -275,13 +275,30 @@ class VisibleContactDemo(WorkcellVerification):
 
 
 def finalize_demo(report, cell, args):
-    finalize_physics(report, cell, args)
+    verification = finalize_physics(report, cell, args)
     physics = report.data["physics"]
     report.update(
         contact_demo_model_sha256=file_sha256(report.directory / "contact_test.xml")
     )
+    if verification["interrupted"]:
+        # run() returns its motion times only after the complete command/tail.
+        # An interrupted run has no such payload. Preserve its strict native
+        # observation without fabricating a completed motion or remaining time.
+        if not args.control and physics.get("stop_latched") is True:
+            require(physics.get("stop_reason") == "contact", "Expected contact stop")
+            require(
+                all(OBSTACLE_BODY in p["bodies"]
+                    and any(n.startswith("left_") for n in p["bodies"])
+                    and p["min_distance_m"] > -0.01 for p in physics["pairs"]),
+                "Unexpected or deep contact during interrupted demo",
+            )
+        report.update(contact_demo_interrupted=True, contact_demo_complete=False,
+                      fixed_obstacle_contact_checks_passed=False,
+                      control_no_contact_checks_passed=False)
+        return
     if args.control:
-        report.update(control_no_contact_checks_passed=True)
+        report.update(control_no_contact_checks_passed=True,
+                      contact_demo_interrupted=False, contact_demo_complete=True)
         return
     require(
         all(
@@ -299,6 +316,7 @@ def finalize_demo(report, cell, args):
     require(remaining > 4.5, "Contact must interrupt a substantial remaining command")
     report.update(
         fixed_obstacle_contact_checks_passed=True,
+        contact_demo_interrupted=False, contact_demo_complete=True,
         native_remaining_motion_at_contact_sec=remaining,
         native_contact_motion_elapsed_sec=physics["stop_time_sec"]
         - report.data["motion_start_clock_sec"],

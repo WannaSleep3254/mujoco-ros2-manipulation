@@ -78,7 +78,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("X-Frame-Options", "DENY")
         if not self.path.startswith("/reports/"):
-            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-"+IMPORT_MAP_CSP_HASH+"'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self' 'sha256-"+IMPORT_MAP_CSP_HASH+"'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
         self.end_headers()
         try:
             self.wfile.write(data)
@@ -100,6 +100,28 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(dict(config=app.state.config, reports=catalog["reports"], demos=describe_scenarios(), token=self.server.token))
             if path == "/api/state":
                 return self.respond(app.snapshot())
+            if path == "/api/image-source":
+                image = getattr(app.bridge, "image_source", None)
+                return self.respond(None if image is None else image.snapshot())
+            if path == "/api/image-source/frame":
+                image = getattr(app.bridge, "image_source", None)
+                query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                if (set(query) != {"generation", "sequence"}
+                        or any(len(v) != 1 for v in query.values())
+                        or not re.fullmatch("[0-9a-f]{32}", query["generation"][0])
+                        or not re.fullmatch("[1-9][0-9]{0,15}", query["sequence"][0])):
+                    raise ValueError("이미지 세대와 수신 순번이 필요합니다.")
+                frame = None if image is None else image.frame(query["generation"][0], int(query["sequence"][0]))
+                if frame is None:
+                    return self.respond(dict(error="이미지 보존 범위 밖이거나 공급원이 바뀌었습니다."), 410)
+                return self.respond(frame[1], mime="image/jpeg")
+            if path.startswith("/api/analysis/"):
+                return self.respond(app.analysis(path.removeprefix("/api/analysis/")))
+            if path == "/api/view/hierarchy":
+                reader = getattr(app.views.host, "hierarchy_bytes", None)
+                binding = _view_binding_query(self.path)
+                value = reader(binding) if callable(reader) else None
+                return self.respond(b"",204) if value is None else self.respond(value,mime="application/json; charset=utf-8")
             if path == "/api/view/manifest":
                 value = app.views.host.manifest_bytes(_view_binding_query(self.path)) if app.views.host else None
                 return self.respond(b"",204) if value is None else self.respond(value,mime="application/json; charset=utf-8")
@@ -140,7 +162,7 @@ class Handler(BaseHTTPRequestHandler):
                         reader.seek(max(0, source.stat().st_size-12000))
                         logs.append(dict(name=source.name, text=reader.read().decode(errors="replace")))
                 return self.respond(dict(logs=logs))
-            assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js",
+            assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js", "/inspector.js":"inspector.js",
                 "/viewer.js":"viewer.js", "/viewer_contract.mjs":"viewer_contract.mjs", "/scene_app.js":"scene_app.js",
                 "/vendor/three.module.js":"vendor/three.module.js", "/vendor/three.core.js":"vendor/three.core.js",
                 "/vendor/OrbitControls.js":"vendor/OrbitControls.js", "/vendor/LICENSE":"vendor/LICENSE",
