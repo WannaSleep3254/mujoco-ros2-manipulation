@@ -14,6 +14,34 @@ python3 verify_robot.py --robot fr5 --scene pedestal --domain 97
 GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 잠긴 deb의 배포 중단 등으로
 빌드 준비가 실패할 수도 있으며, 이 경우 ROS 검증 성공으로 보고하지 않습니다.
 
+## 네이티브 종료 순서
+
+새 런타임을 빌드한 뒤, 비어 있는 도메인과 새 출력 폴더를 사용합니다.
+다음 검사는 시험 전용 interposer로 실행 순서를 관측하거나 지연합니다. 성능 표본으로 사용하지 않습니다.
+
+```bash
+source ./manipulation_env.sh
+task_native_binary="$PWD/ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"
+python3 tests/integration/verify_native_shutdown_clock.py \
+  --binary "$task_native_binary" --domain 201 --output runtime/validation/shutdown-clock-new
+python3 tests/native/shutdown_probe/build_probe.py --output runtime/validation/shutdown-probe-new
+python3 tests/integration/verify_native_shutdown_race.py \
+  --expect fixed --domain 206 \
+  --expected-native-sha256 "$(sha256sum "$task_native_binary" | cut -d' ' -f1)" \
+  --probe runtime/validation/shutdown-probe-new/update_probe.so \
+  --output runtime/validation/shutdown-race-new
+```
+
+첫 검사는 로봇·하드웨어 없이 실제 네이티브 노드의 시계 미수신·정지와 초기 SIGTERM을 확인합니다.
+두 번째는 자체 MuJoCo 작업 환경에서 실제 JTC update를 붙잡아 둔 채 자체 native PID에만 SIGINT를
+보냅니다. update 반환 → RT join → Context 종료 → 제어기 정리 순서와 전체 물리 기록·프로세스 정리를
+요구합니다. 기본적으로 어떤 로봇 목표도 전송하지 않습니다. 설치한 CM 2.54.3/JTC 2.54.1 ABI가
+달라지면 검사를 멈추고 interposer를 재검토해야 합니다.
+
+`--expect legacy`는 격리된 구형 런타임의 잘못된 종료 순서를 재현하는 진단 모드입니다.
+성공한 안전 실행으로 집계하지 않으며, CI는 `fixed`만 검사합니다.
+원인·실패 원본과 검증 범위는 [네이티브 종료 기록](../../docs/native_shutdown.md)에 있습니다.
+
 ## FR3 이동 중 취소와 신선한 정지 관측
 
 ```bash
