@@ -49,8 +49,8 @@ class _CancelStackCapture:
             faulthandler.dump_traceback_later(self.delay, file=self._stream, exit=False)
             self._armed = True
         except Exception:
-            # A full/unavailable diagnostics folder must not replace SIGINT's
-            # DemoCancelled exception or prevent the existing cleanup path.
+            # Diagnostics must not raise from the signal handler or prevent
+            # cancellation at the next safe Python boundary.
             self.close()
 
     def close(self):
@@ -164,10 +164,13 @@ class DemoJob:
         if not self.cancel_requested:
             self.cancel_requested = True
             self._cancel_stacks.start()
-            raise DemoCancelled("The user stopped this simulation comparison")
+        # A signal may arrive while rclpy/pybind is decoding a response. Raising
+        # there can become a conversion RuntimeError instead of cancellation.
+        # check_cancel() raises only after that callback returns to Python.
 
     def _on_launch(self, report, cell, args, process):
-        self.check_cancel()
+        # Popen may have returned just as SIGINT arrived. Persist ownership
+        # before honoring cancellation so cleanup and its report stay linked.
         self.active_report = report
         model = (report.directory / "contact_test.xml"
                  if self.data["variant"] in ("contact", "control") else cell.output / "cell.xml")
@@ -176,7 +179,9 @@ class DemoJob:
             run_id=report.run_id, model_path=str(model.resolve()), model_sha256=None,
             report_path=str(report.path.resolve()),
         ))
-        self.stage("launching")
+        self.data["stage"] = "launching"
+        self.save()
+        self.check_cancel()
 
     def _frame_barrier(self, node):
         self.check_cancel()
@@ -228,7 +233,9 @@ class DemoJob:
                 self.check_cancel()
                 progress(name)
                 self.stage(name)
-            return factory(profile, observed_progress)
+            node = factory(profile, observed_progress)
+            node.cancel_check = self.check_cancel
+            return node
         # Preserve our SIGINT -> no-next-variant rule across every ROS context.
         ros = SimpleNamespace(
             init=lambda: rclpy.init(signal_handler_options=SignalHandlerOptions.NO),
@@ -250,8 +257,15 @@ class DemoJob:
         if launch and group_gone(launch["pid"]):
             self.data["active_launch"] = None
         self.save()
-        if code == 130 or self.cancel_requested:
+        interrupted = code == 130 and value is not None and (
+            value.get("status") == "interrupted"
+            and (value.get("error") or {}).get("type") in ("DemoCancelled", "KeyboardInterrupt")
+            and value.get("shutdown_clean") is True
+            and value.get("process_group_gone") is True)
+        if interrupted:
             raise DemoCancelled("The user stopped this simulation comparison")
+        # A concurrent cancellation must not erase a genuine verifier failure,
+        # inconsistent interruption report, or unproven process cleanup.
         if (code != 0 or value is None or value.get("status") != "passed"
                 or value.get("shutdown_clean") is not True
                 or value.get("process_group_gone") is not True):
