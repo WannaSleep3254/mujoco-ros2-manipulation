@@ -14,6 +14,25 @@ python3 verify_robot.py --robot fr5 --scene pedestal --domain 97
 GUI와 실제 하드웨어는 CI 범위에 포함하지 않습니다. 새 PC는 잠긴 deb의 배포 중단 등으로
 빌드 준비가 실패할 수도 있으며, 이 경우 ROS 검증 성공으로 보고하지 않습니다.
 
+## TCP Pose 목표
+
+```bash
+source ./manipulation_env.sh
+python3 -m mujoco_ros2_manipulation.workcells.verify_pose_goal --domain 151
+```
+
+기존 장면의 플랜지 원점 참조를 사용합니다. 별도의 Pose 계획 요청, IK/FK 확인,
+다른 팔의 전체 spline 유지, 일회 승인한 경로 실행과 관측 TCP 오차를 확인합니다.
+잘못된 공구 SHA·도달 불가·검토 후 환경 변경·대기 중 취소에는 목표 전송 0회를 요구합니다.
+Action 성공과 TCP 완료 조건을 각각 검사하며, 이 검사는 그리퍼가 있는 ROS 장면을 검증하지 않습니다.
+CI의 기존 공동 작업 환경 작업에서 같은 명령을 실행합니다.
+
+FR5·평행 그리퍼·자유 블록의 독립 물리 실행과 실제 3D 화면은
+[기본 집기 실험](../../docs/grasping.md)에서 설명합니다. 이 실행은 Python MuJoCo 3.14.0이며
+기존 ROS native 3.12.0의 검사와 결과를 합산하지 않습니다.
+
+## 공동 작업 환경
+
 공동 작업 환경 검증은 `python3 verify_scene.py --workcell fr5_ur5e --domain 93`을 실행합니다.
 `build_workspace.py --workcell fr5_ur5e`로 준비하며 CI에서는 두 번 연속 실행합니다.
 

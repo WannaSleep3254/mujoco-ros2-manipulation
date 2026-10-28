@@ -73,7 +73,7 @@ class PlanReviewStore:
             return deepcopy(self.record["payload"])
 
     def issue(self, plan_request_id, *, identity, initial_state_rad, simulation_sec,
-              command, trajectories, no_motion_required=False):
+              command, trajectories, no_motion_required=False, goal_context=None):
         request_id(plan_request_id)
         _state(initial_state_rad)
         if type(simulation_sec) not in (int, float) or not math.isfinite(simulation_sec):
@@ -84,6 +84,10 @@ class PlanReviewStore:
             session_id=self.session_id, identity=identity, initial_state_rad=initial_state_rad,
             simulation_sec=simulation_sec, command=command, trajectories=trajectories,
             no_motion_required=no_motion_required))
+        if goal_context is not None:
+            from .pose_tools import validate_context_identity
+            validate_context_identity(goal_context, plan_request_id=plan_request_id)
+            payload["goal_context"] = _copy(goal_context)
         digest = hashlib.sha256(json.dumps(payload, sort_keys=True, allow_nan=False,
             separators=(",", ":")).encode()).hexdigest()
         with self.lock:

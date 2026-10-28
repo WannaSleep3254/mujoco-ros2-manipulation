@@ -45,6 +45,8 @@ manipulation-import-step = "mujoco_ros2_manipulation.workcells.import_step:main"
 manipulation-prepare-environment = "mujoco_ros2_manipulation.workcells.environment_cli:main"
 manipulation-verify-environment = "mujoco_ros2_manipulation.workcells.verify_environment_overlay:main"
 manipulation-verify-environment-views = "mujoco_ros2_manipulation.operator_console.verify_environment_views:main"
+manipulation-grasp-demo = "mujoco_ros2_manipulation.grasping.demo_server:main"
+manipulation-grasp-export = "mujoco_ros2_manipulation.grasping.display_export:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -56,3 +58,4 @@ where = ["src"]
 "mujoco_ros2_manipulation.reporting" = ["report.schema.json", "operator-demos.schema.json", "templates/*.html", "templates/*.css"]
 
 "mujoco_ros2_manipulation.operator_console" = ["static/*.html", "static/*.css", "static/*.js", "static/*.mjs", "static/vendor/*.js", "static/vendor/*.json", "static/vendor/LICENSE"]
+"mujoco_ros2_manipulation.grasping" = ["static/*.html", "static/*.css", "static/*.js"]

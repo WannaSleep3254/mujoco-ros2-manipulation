@@ -8,6 +8,7 @@ COMMAND_TOPIC = "/workcell/motion/command"
 CANCEL_TOPIC = "/workcell/motion/cancel"
 STATUS_TOPIC = "/workcell/motion/status"
 PLAN_TOPIC = "/workcell/motion/plan"
+POSE_PLAN_TOPIC = "/workcell/motion/pose_plan"
 APPROVE_TOPIC = "/workcell/motion/approve"
 STRATEGIES = ("coordinated", "departure_timing")
 MAX_MESSAGE_BYTES = 65536

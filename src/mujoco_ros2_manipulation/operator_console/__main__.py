@@ -55,10 +55,12 @@ def main():
     from .ros_adapter import ConsoleBridge
     from .application import ConsoleApplication
     rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
+    from ..workcells.pose_tools import describe_pose_tools
     configuration = dict(workcell=cell.id, label=cell.label, domain=args.domain, home_rad=dict(zip(cell.joints, cell.home)),
         joint_limits=metadata["joint_limits"], instances=[dict(id=i.id, model=i.profile.id, label=i.profile.label, joints=i.joints) for i in cell.instances],
         targets=dict(home=dict(zip(cell.joints, cell.home)), sample={n:v for i in cell.instances for n,v in zip(i.joints,i.plan_target)}),
-        render_enabled=not args.no_render, scene_view_version=1, workcell_contract=describe_workcell(cell, metadata))
+        render_enabled=not args.no_render, scene_view_version=1, workcell_contract=describe_workcell(cell, metadata),
+        pose_tools=describe_pose_tools(cell))
     if execution_target is not None:
         configuration["execution_target"] = execution_target.description()
     state = ConsoleState(configuration)

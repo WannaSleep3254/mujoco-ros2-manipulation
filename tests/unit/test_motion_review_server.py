@@ -26,6 +26,10 @@ from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 from mujoco_ros2_manipulation.workcells.environment_clearance import EnvironmentClearanceRejected
 from mujoco_ros2_manipulation.workcells.operation_contract import describe_operation
 from mujoco_ros2_manipulation.workcells.execution_adapter import ExecutionLedger, ExecutionAttempt
+from mujoco_ros2_manipulation.workcells.pose_planning import PosePlanningMixin
+from mujoco_ros2_manipulation.workcells.pose_adapter import PoseAdapterError
+from mujoco_ros2_manipulation.workcells.pose_goal import validate_pose_goal
+from mujoco_ros2_manipulation.workcells.pose_tools import validate_goal_context, describe_pose_tools
 
 
 def require(condition, message):
@@ -38,6 +42,9 @@ def load_server():
     tree = ast.parse(source.read_text(),filename=str(source))
     body = [v for v in tree.body if isinstance(v,ast.ClassDef)]
     namespace = dict(WorkcellVerification=object,InterferenceVerification=SimpleNamespace(split=lambda *a:None),
+        PosePlanningMixin=PosePlanningMixin,PoseAdapterError=PoseAdapterError,
+        validate_pose_goal=validate_pose_goal,
+        validate_goal_context=validate_goal_context,describe_pose_tools=describe_pose_tools,
         deepcopy=deepcopy,Path=Path,json=json,time=time,uuid=uuid,RequestTrace=RequestTrace,
         PlanReviewStore=PlanReviewStore,ReviewRejected=ReviewRejected,request_id=request_id,
         decode_message=decode_message,validate_command=validate_command,validate_cancel=validate_cancel,

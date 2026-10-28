@@ -225,6 +225,8 @@ class Handler(BaseHTTPRequestHandler):
                 result = app.submit(payload)
             elif path == "/api/plan":
                 result = app.create_plan(payload)
+            elif path == "/api/pose/plan":
+                result = app.create_pose_plan(payload)
             elif path == "/api/plan/execute":
                 result = app.execute_plan(payload)
             elif path == "/api/plan/discard" and set(payload) == {"request_id"}:

@@ -169,6 +169,10 @@ class ConsoleApplication:
         """Plan and check only. No approval is implied by a successful plan."""
         return self._submit(payload, "plan")
 
+    def create_pose_plan(self, payload):
+        """Resolve a registered TCP goal for review; never imply approval."""
+        return self._submit(payload, "pose_plan")
+
     def execute_plan(self, payload):
         with self.lock, self.state.lock:
             from ..workcells.motion_request import validate_approval
@@ -205,6 +209,7 @@ class ConsoleApplication:
             if self.demos.busy or self.phase in ("starting", "stopping") or self.closing.is_set():
                 raise RuntimeError("실행 준비 또는 종료 중입니다.")
             reserve = {"command":self.state.reserve, "plan":self.state.reserve_plan,
+                       "pose_plan":self.state.reserve_pose_plan,
                        "approve":self.state.reserve_approval}[kind]
             if reserve(payload):
                 try:
@@ -491,17 +496,20 @@ class ConsoleApplication:
             if self.demos.busy or self.phase in ("starting", "stopping"):
                 data["can_submit"] = False
                 data["can_plan"] = False
+                data["can_pose_plan"] = False
                 if self.demos.busy:
                     data["reason"] = "시연 진행 중입니다. 종료 후 일반 관절 조작을 시작하세요."
             if self.views.preview:
                 data["can_submit"] = False
                 data["can_plan"] = False
+                data["can_pose_plan"] = False
                 data["reason"] = "미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요."
             review = data.get("pending_plan")
             data["can_approve"] = bool(review and review.get("state") == "awaiting_approval"
                 and self.state.reason() is None and not self.demos.busy
                 and self.phase not in ("starting", "stopping") and not self.closing.is_set()
-                and self.state.graph.get("approvals", 0) >= 1)
+                and self.state.graph.get("approvals", 0) >= 1
+                and self.state.pose_review_reason(review) is None)
             return data
 
     def close(self):

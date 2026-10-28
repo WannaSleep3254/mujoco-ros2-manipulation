@@ -7,6 +7,7 @@ import threading
 import time
 
 from ..workcells.motion_request import validate_command, validate_approval
+from .catalog import validate_pose_registration
 
 TERMINAL = {"succeeded", "failed", "cancelled", "rejected"}
 
@@ -141,6 +142,33 @@ class ConsoleState:
         validate_command(payload, self.config["joint_limits"])
         return self._reserve(payload, "plan")
 
+    def pose_reason(self, payload=None, *, ignore_request=None):
+        reason = self.reason(ignore_request=ignore_request)
+        if reason:
+            return reason
+        if self.graph.get("pose_plans", 0) != 1:
+            return "Pose 계획을 지원하는 명령 노드가 하나 연결되어야 합니다."
+        registered = self.config.get("pose_tools")
+        if (not registered or type(registered) is not list
+                or (self.server or {}).get("pose_tools") != registered):
+            return "명령 노드와 등록한 TCP 기준점이 일치하지 않습니다. 연결 정보를 확인하세요."
+        if payload is not None:
+            try:
+                validate_pose_registration(self.config, payload)
+            except (TypeError, ValueError) as error:
+                return str(error)
+        return None
+
+    def reserve_pose_plan(self, payload):
+        validate_pose_registration(self.config, payload)
+        return self._reserve(payload, "pose_plan")
+
+    def pose_review_reason(self, review, *, ignore_request=None):
+        record = self.history.get((review or {}).get("plan_request_id"), {})
+        if record.get("reservation_kind") != "pose_plan":
+            return None
+        return self.pose_reason(record.get("pose_goal") or record.get("command"), ignore_request=ignore_request)
+
     def review_snapshot(self):
         with self.lock:
             review = deepcopy(self.pending_plan)
@@ -161,6 +189,9 @@ class ConsoleState:
             return "실행할 수 있는 승인 대기 계획이 없습니다. 새 계획을 생성하세요."
         if any(payload.get(key) != review.get(key) for key in ("plan_request_id", "plan_sha256", "session_id")):
             return "검토한 계획이 바뀌었습니다. 새 계획을 확인하세요."
+        pose_reason = self.pose_review_reason(review, ignore_request=ignore_request)
+        if pose_reason:
+            return pose_reason
         return None
 
     def reserve_approval(self, payload):
@@ -177,13 +208,16 @@ class ConsoleState:
                 return False
             if kind == "plan" and self.graph.get("plans", 0) < 1:
                 raise RuntimeError("계획 검토를 지원하는 명령 노드가 연결되지 않았습니다.")
-            reason = self.approval_reason(payload) if kind == "approve" else self.reason()
+            reason = (self.approval_reason(payload) if kind == "approve" else
+                      self.pose_reason(payload) if kind == "pose_plan" else self.reason())
             if reason:
                 raise RuntimeError(reason)
             self.active = identifier
             self.ui_ids.add(identifier)
             self.history[identifier] = dict(request_id=identifier, status="submitting", stage="submitted",
-                command=deepcopy(payload), reservation_kind=kind, mode={"command":"automatic", "plan":"plan_only", "approve":"approved_plan"}[kind], metrics={}, error=None)
+                command=deepcopy(payload), reservation_kind=kind, mode={"command":"automatic", "plan":"plan_only", "pose_plan":"plan_only", "approve":"approved_plan"}[kind], metrics={}, error=None)
+            if kind == "pose_plan":
+                self.history[identifier]["pose_goal"] = deepcopy(payload)
             if kind == "approve":
                 self.history[identifier].update(approval=deepcopy(payload),
                     plan_request_id=payload["plan_request_id"], execution_request_id=identifier)
@@ -196,6 +230,7 @@ class ConsoleState:
             now = self.clock()
             reason = self.reason()
             review = self.review_snapshot()
+            pose_reason = self.pose_reason()
             return deepcopy(dict(positions_rad=self.positions, velocities_rad_sec=self.velocities,
                 simulation_sec=self.simulation_sec, joint_state_stamp_simulation_sec=self.joint_state_stamp_simulation_sec,
                 state_age_sec=None if self.joint_at is None else now-self.joint_at,
@@ -203,4 +238,5 @@ class ConsoleState:
                 graph=self.graph, simulation_verified=self.identity, guard=self.guard,
                 server=self.server, active_request_id=self.active, can_submit=reason is None,
                 can_plan=reason is None and self.graph.get("plans", 0) >= 1,
+                can_pose_plan=pose_reason is None, pose_reason=pose_reason,
                 pending_plan=review, reason=reason, history=list(reversed(list(self.history.values())))))
