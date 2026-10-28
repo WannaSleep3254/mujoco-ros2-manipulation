@@ -7,7 +7,7 @@
 
 ## 2026-10-27 야간 로컬 검증
 
-W01~W06의 진단·수정과 대표 실제 실행을 격리한 로컬 작업 환경에서 확인했습니다. 요청한 1~4단계의 로컬 구현과 대표 검증을 마쳤으며, 새 변경은 아직 원격 push·GitHub `main` 병합·사이트 배포 전입니다. 이전 원격 head `9365350`의 CI 6개 통과를 이번 변경의 CI 통과로 사용하지 않습니다. 원본 실패 자료와 새 결과는 각각 보존하며, 단위 검사·실제 ROS 실행·브라우저 확인을 구분합니다.
+이 절은 2026-10-27의 W01~W06 진단·수정과 대표 실제 실행을 격리한 로컬 작업 환경에서 확인한 기록입니다. 요청한 1~4단계의 로컬 구현과 대표 검증을 마쳤으며, 원격 CI와 공개 반영 상태는 [PR #52](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/52)와 후속 승격 PR에서 확인합니다. 원본 실패 자료와 새 결과는 각각 보존하며, 단위 검사·실제 ROS 실행·브라우저 확인을 구분합니다.
 
 ### W01~W03 취소 정리와 접촉 원인
 
@@ -56,7 +56,7 @@ W01~W06의 진단·수정과 대표 실제 실행을 격리한 로컬 작업 환
 
 같은 로컬 작업 환경의 Python 소스로 단위 852개를 54.759초에 통과했습니다. 진단 궤적의 FK 시작점과 토픽·이미지 stamp 경계 회귀를 포함합니다. 모델 38개와 저장소 문법·로컬 링크·build manifest·로봇 프로필 3종·scene 검사, JavaScript 10개 검사 파일도 통과했습니다. 이미지 수신 모듈과 선택 기능의 순수 import 검사를 포함하며, 선택 기능을 가져오는 것만으로 ROS·MuJoCo·Pillow를 시작하지 않습니다.
 
-최근 단위 검사 로그는 `runtime/night-release-clock-allowed-unit.log`이며 이전 전체 검사 로그는 `runtime/w05-w06-full-unit.log`, `runtime/w05-w06-full-model.log`, `runtime/w05-w06-full-repository.log`입니다. 의도한 NaN 제어 입력의 모델 시험이 생성한 경고는 `runtime/w05-w06-model-negative-mujoco.log`에 별도로 보존했습니다. 새 CI workflow에는 설치 환경 4조건과 실제 RGB8 전송 검사를 추가했으며 동일 명령을 로컬 도메인 218~222에서 모두 통과했습니다. 원격 workflow 통과를 확인한 결과는 아닙니다. 최종 시각 수정 후 도메인 222의 `runtime/validation/image-transport-final-clock/result.json`도 다시 통과했으며, 실제 HTTP의 원천 이미지와 `/clock` 나노초가 십진 문자열로 전달되고 정리 후 서버가 종료되는 것을 확인했습니다. epoch 시각의 1ns 역행 검사는 실제 콜백을 사용하는 단위 회귀로 구분합니다. 이 검사 수와 대표 실행 결과를 전체 suite·모든 로봇·모든 센서의 검증 완료로 확대하지 않습니다. W01의 간헐 지연 원인, 실제 카메라 보정과 복잡한 CAD는 [작업리스트](development_worklist.md)의 후속 항목으로 유지합니다.
+최근 단위 검사 로그는 `runtime/night-release-clock-allowed-unit.log`이며 이전 전체 검사 로그는 `runtime/w05-w06-full-unit.log`, `runtime/w05-w06-full-model.log`, `runtime/w05-w06-full-repository.log`입니다. 의도한 NaN 제어 입력의 모델 시험이 생성한 경고는 `runtime/w05-w06-model-negative-mujoco.log`에 별도로 보존했습니다. 새 CI workflow에는 설치 환경 4조건과 실제 RGB8 전송 검사를 추가했으며 동일 명령을 로컬 도메인 218~222에서 모두 통과했습니다. 위 수치는 로컬 결과이며 원격 workflow 결과는 해당 PR의 CI에서 확인합니다. 최종 시각 수정 후 도메인 222의 `runtime/validation/image-transport-final-clock/result.json`도 다시 통과했으며, 실제 HTTP의 원천 이미지와 `/clock` 나노초가 십진 문자열로 전달되고 정리 후 서버가 종료되는 것을 확인했습니다. epoch 시각의 1ns 역행 검사는 실제 콜백을 사용하는 단위 회귀로 구분합니다. 이 검사 수와 대표 실행 결과를 전체 suite·모든 로봇·모든 센서의 검증 완료로 확대하지 않습니다. W01의 간헐 지연 원인, 실제 카메라 보정과 복잡한 CAD는 [작업리스트](development_worklist.md)의 후속 항목으로 유지합니다.
 
 ## 2026-10-21 후속 검증
 

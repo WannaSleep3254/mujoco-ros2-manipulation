@@ -1,7 +1,7 @@
 {
   "document_type": "design_review",
   "document_schema_version": 1,
-  "document_version": "1.0",
+  "document_version": "1.1",
   "id": "system-direction-2026-10-27",
   "title": "로봇 시뮬레이션 시스템 개발 방향",
   "reviewed_date": "2026-10-27",
@@ -10,7 +10,7 @@
   "authoritative_worklist": {
     "url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/development_worklist.md",
     "edition": "2026-10-27 1.0",
-    "link_policy": "Main worklist is updated after publication. Implementation evidence is fixed to baseline_commit."
+    "link_policy": "Main worklist is updated after publication. Original design evidence is fixed to baseline_commit; local implementation progress is fixed to progress_update.implementation_commit."
   },
   "direction": {
     "goals": [
@@ -38,10 +38,10 @@
   },
   "current_architecture": {
     "model": "RobotProfile/Workcell, asset hashes, named joints and installation transforms",
-    "planning_execution": "Motion server still directly connects MoveIt requests, validation, FollowJointTrajectory and ROS state",
-    "display": "Common geometry/state contract, separate display worker, Three.js and ROS-free read-only recorded source",
+    "planning_execution": "Current stack separates planning, owned trajectory execution and observation adapters; representative local review/approval and replanning validated. Generic runtime plugin compatibility is unverified.",
+    "display": "Common geometry/state contract, ROS-free read-only recording, body/geom hierarchy, bounded RGB8 ROS-JPEG-HTTP input and state/event analysis locally validated.",
     "already_generic_runtime_plugins": false,
-    "cad_scope": "Single solid STEP to normalized immutable overlay and read-only preview; execution integration pending"
+    "cad_scope": "Single-solid STEP overlay/preview plus explicitly selected environment/SHA execution integration locally validated on a representative synthetic target. Complex CAD and wider repeated evaluation remain."
   },
   "completed": [
     "Single-model FR5/FR10/UR5e and shared FR5/UR5e simulation",
@@ -50,7 +50,10 @@
     "Viewer improvements 1-6, exact reviewed trajectory and one-use approval",
     "Common display and ROS-free recording playback",
     "STEP normalization and read-only environment preview",
-    "Existing reports, media, archive and publication workflow"
+    "Existing reports, media, archive and publication workflow",
+    "W04 planning/execution adapters and observation contract locally validated.",
+    "W05 bounded RGB8 input, body/geom hierarchy and state/event analysis locally validated.",
+    "W06 explicit synthetic environment execution and identity rejection locally validated; original preview remains."
   ],
   "interpretation_guards": {
     "approval": "Exact one-use review flow applies to the review UI; compatibility automatic plan/execute API remains.",
@@ -58,24 +61,26 @@
     "distance": "30 mm planned / 20 mm observed inter-arm criteria are not common environment clearance.",
     "search_measurement": "1.975 to 1.537 s wall is the historical offline departure-search median for the crossing input, not OMPL or end-to-end latency.",
     "replay": "Recorded display does not issue robot motion commands.",
-    "contact": "Observed nominal clearance and execution contact do not establish individual causal contributions."
+    "contact": "Preserved path reproduced with nominal/actual pre-contact comparison. A single run does not establish worst-case tracking error, a unique joint cause or occurrence frequency."
   },
   "open_cases": [
     {
       "id": "cleanup-delay",
-      "status": "observed_unresolved",
+      "status": "diagnostics_added_cause_unresolved",
       "fact": "Cancellation reached the nested verification flow; final cleanup was delayed.",
       "unknown": "Exact blocking call and causal resource lifetime are not established.",
       "next_work": "W01",
-      "public_evidence": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40440094953"
+      "public_evidence": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40440094953",
+      "local_followup": "Cleanup diagnostics and separate contact-after-cancel regression added; historical intermittent symptom not reproduced and not claimed solved."
     },
     {
       "id": "pillar-contact",
-      "status": "observed_unresolved",
+      "status": "locally_reproduced_representative_regression",
       "fact": "A nominal path passed with about 1.8 mm pillar clearance, then execution contact triggered the native interlock.",
-      "inference": "Low environment clearance combined with tracking difference is a candidate explanation, not a completed root-cause finding.",
+      "inference": "Pre-contact nominal/actual difference supports follow-up clearance policy; a single execution does not isolate all causal contributions or frequency.",
       "next_work": "W02",
-      "public_evidence": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40445409751/job/121995397417"
+      "public_evidence": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40445409751/job/121995397417",
+      "local_followup": "Same preserved path reproduced with nominal/actual pre-contact comparison; separate fixed-environment clearance guard and representative six-case regression locally passed. General worst-case bounds remain unverified."
     }
   ],
   "work_items": [
@@ -83,21 +88,23 @@
       "id": "W01",
       "title": "취소 후 종료·정리 지연 재현과 진단",
       "depends_on": [],
-      "status": "planned",
+      "status": "diagnostics_added_cause_unresolved",
       "acceptance": [
         "지연 위치와 소유 프로세스 최종 상태 설명",
         "실패 진단 보존·정지/작업/프로세스 종료 구분"
-      ]
+      ],
+      "local_progress": "Cleanup and cancellation diagnostics improved; historical intermittent delay still unresolved."
     },
     {
       "id": "W02",
       "title": "기둥 접촉과 추종 차이 분석",
       "depends_on": [],
-      "status": "planned",
+      "status": "representative_local_diagnosis",
       "acceptance": [
         "검사·전송 궤적 일치와 실제 상태·환경 간격·접촉 대조",
         "원인과 불확실성 구분"
-      ]
+      ],
+      "local_progress": "Preserved path contact reproduced and nominal/actual pre-contact geometry compared."
     },
     {
       "id": "W03",
@@ -106,11 +113,12 @@
         "W01",
         "W02"
       ],
-      "status": "planned",
+      "status": "representative_local_regression",
       "acceptance": [
         "고정 입력·인접 조건 수정 효과와 정상 취소·종료 확인",
         "실패와 수정 결과 함께 보존"
-      ]
+      ],
+      "local_progress": "Separate environment clearance check and representative six fixed cases passed; wider evaluation remains."
     },
     {
       "id": "W04",
@@ -118,12 +126,13 @@
       "depends_on": [
         "W03"
       ],
-      "status": "planned",
+      "status": "implemented_locally_validated",
       "acceptance": [
         "명령 종류·실행 방식·계획 전략과 단계별 입출력/완료/실패/취소 정의",
         "관절 이름·순서·단위·좌표·제어 모드·시계 영역·신선도 규약 정의",
         "현재 v1·검토 동일 궤적·호환 자동 실행·검사·한 번 전송 보존"
-      ]
+      ],
+      "local_progress": "Planning/execution/observation boundaries separated; representative actual review/approval and replanning passed."
     },
     {
       "id": "W05",
@@ -131,11 +140,12 @@
       "depends_on": [
         "W04"
       ],
-      "status": "planned",
+      "status": "implemented_locally_validated",
       "acceptance": [
         "대표 센서 입력 1종의 좌표·단위·시각·신선도·누락·재연결 검증",
         "기록의 명령 미발생과 입력량·유휴·복구 평가"
-      ]
+      ],
+      "local_progress": "RGB8 ROS-JPEG-HTTP and actual body/geom hierarchy checked; real-camera calibration and other sensors remain."
     },
     {
       "id": "W06",
@@ -144,12 +154,13 @@
         "W03",
         "W04"
       ],
-      "status": "planned",
+      "status": "implemented_locally_validated",
       "acceptance": [
         "실행 환경 선택과 표시 모델 선택의 별도 동작",
         "선택 환경의 MuJoCo·MoveIt·명령 서버 일치",
         "환경 변경의 이전 계획 무효화·실행 검증"
-      ]
+      ],
+      "local_progress": "Explicit environment identity and rejection conditions, same-target normal operations and separate diagnostic contact stop locally passed."
     },
     {
       "id": "W07",
@@ -411,6 +422,34 @@
     "Public failure links are evidence of observations; causal claims remain qualified.",
     "No runtime, tests, past measurements or media changed.",
     "Read-only editorial review identified human approval waiting as a separate timing segment; clarified in HTML and data.",
-    "README remains user edited; handle only on a separate review request."
-  ]
+    "README remains user edited; handle only on a separate review request.",
+    "2026-10-28 progress update corrects W04-W06 future-only descriptions without changing old measurements, runtime code, original design sources or README. Local validation and remote CI/publication are distinguished."
+  ],
+  "progress_update": {
+    "date": "2026-10-28",
+    "implementation_commit": "191c472a82c4027f17732dbacbe500481cc6bdee",
+    "pull_request": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/52",
+    "scope": "W01-W06 local implementation and representative validation; original 2026-10-27 design and baseline sources preserved.",
+    "validation": {
+      "unit_tests": 852,
+      "model_tests": 38,
+      "javascript_test_files": 10,
+      "actual_ros_and_browser": "Representative plan review/approval/replanning, RGB8 ROS-JPEG-HTTP and browser display, explicitly selected environment identity rejection, normal execution/cancellation/home return and independent diagnostic contact stop recorded separately.",
+      "remote_ci": "See PR52; local results are not remote CI results.",
+      "new_performance_comparison": false
+    },
+    "current_documents": [
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/operation_contract.md",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/sensor_analysis.md",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/environment_execution.md",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/verification.md",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/development_worklist.md"
+    ],
+    "remaining": [
+      "Historical intermittent cleanup-delay cause remains unknown.",
+      "Wider repetition, real-camera calibration/time synchronization and complex CAD collision approximation remain open.",
+      "W07 basic tasks, W08 bottleneck-driven comparison, W09 next robot model after review/CI/publication."
+    ],
+    "worklist_edition": "2026-10-27 1.2"
+  }
 }
