@@ -76,11 +76,13 @@ class RosGraspDistanceTests(unittest.TestCase):
         library = cls.vendor / 'lib/libmujoco.so.3.12.0'
         if not library.is_file():
             raise unittest.SkipTest('Native MuJoCo 3.12 runtime required')
+        base = load_workcell('fr5_ur5e')
+        if not base.output.exists() and not base.output.is_symlink():
+            raise unittest.SkipTest('Generated FR5 + UR5e workcell required')
         cls.temporary = tempfile.TemporaryDirectory()
         cls.addClassCleanup(cls.temporary.cleanup)
         cls.folder = Path(cls.temporary.name)
         cls.model = cls.folder / 'model'
-        base = load_workcell('fr5_ur5e')
         build_model(base, cls.model)
         target = load_ros_grasp_target(base, cls.model, file_sha256(cls.model / 'grasp.json'))
         cls.native_root = cls.folder / 'isolated-native'

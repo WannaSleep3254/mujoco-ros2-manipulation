@@ -16,9 +16,12 @@ class RosGraspNativePolicyTests(unittest.TestCase):
     def setUpClass(cls):
         cls.vendor=ROOT/'runtime/root/opt/ros/humble/opt/mujoco_vendor'
         if not (cls.vendor/'lib/libmujoco.so.3.12.0').is_file():raise unittest.SkipTest('Native MuJoCo runtime required')
+        base=load_workcell('fr5_ur5e')
+        if not base.output.exists() and not base.output.is_symlink():
+            raise unittest.SkipTest('Generated FR5 + UR5e workcell required')
         cls.temp=tempfile.TemporaryDirectory();cls.addClassCleanup(cls.temp.cleanup)
         cls.folder=Path(cls.temp.name);cls.model=cls.folder/'model'
-        build_model(load_workcell('fr5_ur5e'),cls.model)
+        build_model(base,cls.model)
         cls.monitor=hashlib.sha256((ROOT/'native/step_monitor.hpp').read_bytes()).hexdigest()
         cls.policy=hashlib.sha256((ROOT/'native/grasp_policy.hpp').read_bytes()).hexdigest()
         for suffix,definitions in (('checked',['-DMANIPULATION_GRASP_POLICY_SHA256="'+cls.policy+'"']),('unverified',[])):

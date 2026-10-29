@@ -23,8 +23,11 @@ class RosGraspModelTests(unittest.TestCase):
     def setUpClass(cls):
         import mujoco
         cls.mj=mujoco;cls.base=load_workcell('fr5_ur5e')
-        try:check_workcell(cls.base)
-        except ValueError as error:raise unittest.SkipTest('Checked generated base assets required: '+str(error))
+        if not cls.base.output.exists() and not cls.base.output.is_symlink():
+            raise unittest.SkipTest('Generated FR5 + UR5e workcell required')
+        # Existing partial or changed output is an integrity failure, not an
+        # absent prerequisite in a single-robot CI matrix entry.
+        check_workcell(cls.base)
         cls.folder=tempfile.TemporaryDirectory()
         cls.output=Path(cls.folder.name)/'grasp'
         cls.original={name:(cls.base.output/name).read_bytes() for name in (*OUTPUTS,'source.json')}
