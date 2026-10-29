@@ -57,16 +57,30 @@ class EnvironmentExecutionServerTests(unittest.TestCase):
         self.assertEqual(value['failure_kind'], 'execution_environment_changed')
         self.assertEqual(value['dispatched_goals'], 0)
         self.node.dispatch.assert_not_called()
+        self.assertEqual(self.node._review_runtime_identity.call_count, 2)
         self.assertTrue(self.node.blocked)
+
+    def test_stale_state_during_planning_still_blocks_before_final_identity_or_dispatch(self):
+        def plan(*_):
+            self.fixture.wall_ns += 300_000_001
+            return self.fixture.curve
+        self.node.coordinated_path.side_effect = plan
+        value = self.run_command()
+        self.assertEqual(value['failure_kind'], 'planning_error')
+        self.assertEqual(value['error']['message'], 'Joint state is stale')
+        self.assertEqual(value['dispatched_goals'], 0)
+        self.assertEqual(self.node._review_runtime_identity.call_count, 1)
+        self.node.dispatch.assert_not_called()
 
     def test_runtime_model_or_scene_change_after_planning_sends_zero_goals(self):
         changed = deepcopy(self.fixture.identity)
         changed['planning_scene_sha256'] = 'c'*64
         self.node._review_runtime_identity.side_effect = [deepcopy(self.fixture.identity), changed]
         value = self.run_command()
-        self.assertEqual(value['failure_kind'], 'execution_environment_changed')
+        self.assertEqual(value['failure_kind'], 'execution_environment_changed', value.get('error'))
         self.assertEqual(value['dispatched_goals'], 0)
         self.node.dispatch.assert_not_called()
+        self.assertEqual(self.node._review_runtime_identity.call_count, 2)
 
     def test_new_request_cannot_adopt_a_scene_that_changed_after_startup(self):
         startup = deepcopy(self.fixture.identity)

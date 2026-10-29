@@ -11,7 +11,7 @@ import tempfile
 import time
 from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import uuid
 
 from mujoco_ros2_manipulation.workcells.interference import Spline
@@ -75,6 +75,15 @@ class ReviewServerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
+        # ROS callbacks are replaced below, so their receipt times must advance
+        # only when the fixture advances them. Host scheduling or disk latency
+        # must not expire the 300 ms live-state gate during an identity test.
+        self.wall_ns = time.monotonic_ns()
+        clock = SimpleNamespace(monotonic_ns=lambda: self.wall_ns,
+                                monotonic=time.monotonic)
+        clock_patch = patch.dict(Server.process_next.__globals__, time=clock)
+        clock_patch.start()
+        self.addCleanup(clock_patch.stop)
         n = self.node = Server.__new__(Server)
         n.session_id = "a"*32
         n.directory = Path(self.temp.name)
@@ -102,7 +111,7 @@ class ReviewServerTests(unittest.TestCase):
         n.contact_guard = dict(latched=False)
         n.clock_last,n.state_stamp = 10.0,10.0
         n.clock_backwards = False
-        n.state_received_ns = n.clock_received_ns = time.monotonic_ns()
+        n.state_received_ns = n.clock_received_ns = self.wall_ns
         n.replies,n.observations,n.handles = {},[],[]
         n.dispatched = 0
         n.compute_budget,n.compute_budget_sec = None,30.0
