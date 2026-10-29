@@ -1,18 +1,19 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.8",
+  "document_version": "1.9",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "Original v1.1 design baseline, dated W01-W09 evidence and previous v3 ROS grasp proof/image preserved separately. Current update includes common-timeline replay and representative native MuJoCo 3.12 ROS/MoveIt grasp with explicit elliptic/impratio10 opt-in contact settings. CI133 physical creep, old hold failure, isolated 60s native diagnosis and current normal/30s-hold/two-cancellation cases remain distinct. Original closed-reference physical gates, base workcell and NoSlip0 are preserved. Current desktop browser/owner cleanup proof is separate from unchanged-source archived mobile layout evidence. Local function/physics diagnostics are not timing benchmarks, general success rates, hardware validation or remote CI/deployment claims.",
+  "scope": "Original v1.1 design, past performance, synchronized replay and archived v3/v4 grasp evidence/images preserved. Current update adds reduced CI136/137 native within-arm interference diagnosis, signed-distance admission, fixed-original rejection/acceptance, representative local CLI/HTTP/review and v5 grasp normal/held cancellation with clean ownership cleanup. Planning 10mm and observed-start 1mm are experimental sampled admission settings, not tracking-error bounds, continuous-time or hardware certification. Exact MoveIt/FCL cause is unproven; new remote CI/merge/deployment outcomes are separate.",
   "assets": {
-    "index.html": "1f67887a6cf39102d07c68b29ee33e32dc571e4c41c4d16c873ac20360b0ec1e",
-    "review-data.json": "c436f85c5e88f3823762a2d9394b18a6c3d869ae4a7680f4c9f764f381a13f46",
+    "index.html": "b5a6991212e7bfb630090b0544146e678c68f1a4561a544a49646f0b8322a73e",
+    "review-data.json": "239021b2f992110efe71404ceee2cd7233fa44adebf9f081b9b31e447d5c1dc4",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
     "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
     "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
     "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
-    "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b"
+    "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
+    "self-clearance-verification.json": "c5aac1e7f635521c75505e30f345150ff773149181a8c33b06b4037ff9d18eb5"
   }
 }

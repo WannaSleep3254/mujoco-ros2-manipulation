@@ -1,0 +1,297 @@
+{
+  "schema_version": 1,
+  "kind": "native-self-clearance-reduced-verification",
+  "date": "2026-10-29",
+  "scope": "Representative local simulation and fixed-original forensic regression; no new timing benchmark or hardware validation.",
+  "implementation": {
+    "fixture_commit": "b8e9107e96e64b71900db5f7681eed12723bc1f3",
+    "native_commit": "9ed12e5836d70fbe9d5ac5037a81a986a4779076",
+    "python_integration_commit": "5ad09d845f604e4f802a0b5176bc8d552e459b80",
+    "ui_review_commit": "390428d67c8daca3d4a3c0d1836cccb3460f4694",
+    "source_sha256": {
+      "native/path_distance.cpp": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+      "native/path_distance_environment.cpp": "31f35d635084d4bbf0c95c499b2b98c75d0d69a2f13ce6ecd0c6477fabd59368",
+      "native/path_distance_self.cpp": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+      "src/mujoco_ros2_manipulation/workcells/distance.py": "100f5fe5ae21a501b4319f58a8aef502f51d9d4e005d3ae00df3e0e60551055f",
+      "src/mujoco_ros2_manipulation/build.py": "6c09e04984cdebeb730fde0289c0680ee064c395c7648351698ab27a2833bfb2",
+      "tests/model/test_self_distance.py": "28b913ca88832dff584e43be1c63edf7e07f22d88328b8d25b1d638a2bda5d43",
+      "tests/unit/test_build.py": "ef6d32894c192ccb16e2b0160f3523e32d09981f67282bcca97b138bef6a02f5",
+      "config/planning/self_clearance.yaml": "cbda2515d2fa31d087215543f05869a6e8bdb49636793ab40aeb8a3cf555337c",
+      "src/mujoco_ros2_manipulation/workcells/self_clearance.py": "d219f84c6f711ed30ea2d48449108a90bb5dd56de20acad22a5cf14809d6a0e0",
+      "src/mujoco_ros2_manipulation/workcells/path_quality.py": "b10517d7b162ad3a47e4343110a9dd0070473774e6aceab453961c8256142ec8",
+      "src/mujoco_ros2_manipulation/workcells/plan_selection.py": "31622d04cde8d0c9390840980c76465b90986fefa246311b838258991e9f55c9",
+      "src/mujoco_ros2_manipulation/workcells/motion_diagnostics.py": "d3ac2df3e1641a85a933e121f9e09051f28b465174c9597a7616ff105579ec70",
+      "src/mujoco_ros2_manipulation/workcells/motion_server.py": "8bb2a525d6410de16e07f22f74829d8187473abf060127e71b36217f560268be",
+      "src/mujoco_ros2_manipulation/workcells/timing.py": "52d4b01dc0e60058f0b2b6cdfb65d3a8309961d826f6cb0220b3be8a542b3abe",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "470b705c500729ee5bf5098ce2a5900edecba7dabffd35678d0724c51567e5e3",
+      "tests/unit/test_self_path_gate.py": "a2c0bba1468041e1f3fd06c6d3c05cf943756b8f2dc6045f0e74b314e457a0e7",
+      "tests/unit/test_self_legacy_dispatch.py": "49876b2aed6e33ec286c2b06e3623f89aed74bc2b28eff9418545c41c76134b8",
+      "tests/unit/test_motion_review_server.py": "a66d340e81d63b1c71503e9af80113d158ead45a50e995ee31884260f7521f3f",
+      "tests/unit/test_motion_cache_server.py": "0797d8438e4d5607b8e6cbd581d9295c283a230b6d24e7326e0ebe0c7cff6d8a",
+      "tests/unit/test_pose_server.py": "1cc4cba71764cd0ed88d341261b69d47e6ccd2101641cc9f9f6ebbe870e757d6",
+      "tests/unit/test_spatial_proposal_contract.py": "759d50b4ddb42f3d4651172b98e0935671b9a2660ef99da404a9e00b9d5c01f1"
+    },
+    "fixture_sha256": "723046dd8b4a757d34fd64853d91507417cacf0b5020cf97ec82164baec3dfaa"
+  },
+  "original_ci": {
+    "same_source_tree_sha": "6b0b70e05b603622718ff4cb4b7a31df5063e11d",
+    "failed": {
+      "github_run_id": 40833481187,
+      "workflow_run_number": 137,
+      "commit_sha": "94f5cba26d8978234d1c4ae5578f517fd8f4a152",
+      "status": "failed",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "model_manifest_sha256": "918a5c19638974772d99b26857bff13f9ae91f8bd8b349ecb6aa7cbaaa1fb76d",
+      "trajectory_file_sha256": "835c2c5081101048b834a9bd25da60eae9ccf6eaca60546dab97f258db2c963e",
+      "selected_curve_canonical_sha256": "b116ef9ac0b1c297e1caf5b53606fff1b49590c3d232cd90b1f08060be96c4e7",
+      "selected_candidate": 2,
+      "knot_count": 1629,
+      "duration_sec": 32.555420687,
+      "native_cross_arm_path_minimum_m": 0.12861898746708772,
+      "moveit_validity_samples": 3256,
+      "moveit_invalid_samples": 0
+    },
+    "passed": {
+      "github_run_id": 40830332446,
+      "workflow_run_number": 136,
+      "commit_sha": "54ea938d4c697ee4c99f9e90521216682ab9f690",
+      "status": "passed",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "model_manifest_sha256": "918a5c19638974772d99b26857bff13f9ae91f8bd8b349ecb6aa7cbaaa1fb76d",
+      "trajectory_file_sha256": "413f59d7a6102182b87b81e9a84206da0de1a615cb3c1df91e697a163f564abf",
+      "selected_curve_canonical_sha256": "75b877fa18283335cac450d9edc49325fa3c2b949c780a46686cd9f7cc4cf11a",
+      "selected_candidate": 1,
+      "knot_count": 508,
+      "duration_sec": 10.134262096,
+      "native_cross_arm_path_minimum_m": 0.054269453453476446,
+      "moveit_validity_samples": 1014,
+      "moveit_invalid_samples": 0
+    },
+    "failure": {
+      "pair_bodies": [
+        "left_forearm_link",
+        "left_wrist3_link"
+      ],
+      "native_contact_depth_m": -5.248707854965156e-06,
+      "native_max_normal_force_n": 2.812592755439369,
+      "shutdown_clean": true,
+      "physics_checks_passed": false,
+      "nominal_pair_minimum_m": -0.002352902178110215,
+      "nominal_minimum_time_sec": 16.286,
+      "nominal_worst_was_not_reached": true,
+      "original_native_candidate_scope": "cross_arm_only"
+    }
+  },
+  "fix": {
+    "scope": "Native eligible within-arm collision geometry in addition to existing cross-arm and fixed-environment checks.",
+    "eligible_pairs": 24,
+    "policy": {
+      "schema_version": 1,
+      "planning_min_self_distance_m": 0.01,
+      "observed_start_min_self_distance_m": 0.001,
+      "sample_dt_sec": 0.01
+    },
+    "policy_sha256": "cbda2515d2fa31d087215543f05869a6e8bdb49636793ab40aeb8a3cf555337c",
+    "path_checks": [
+      "candidate selection",
+      "final spline validation",
+      "review and cache reuse",
+      "execution dispatch"
+    ],
+    "observed_start_check_before_dispatch": true,
+    "base_distance_abi_preserved": true,
+    "legacy_cross_bit_exact_states": 12,
+    "handle_lifecycle_cycles": 80,
+    "automatic_retry": false,
+    "contact_stop_relaxed": false
+  },
+  "fixed_original_regression": {
+    "ros_execution": false,
+    "automatic_retry": false,
+    "source_sha256": "9882665354d6c833e349966cb9f0c88f3664b994b15ee4450e9b572ec89a9359",
+    "rows": [
+      {
+        "original": "failed137",
+        "outcome": "rejected",
+        "original_trajectory_sha256": "835c2c5081101048b834a9bd25da60eae9ccf6eaca60546dab97f258db2c963e",
+        "moveit_callback_calls": 0,
+        "dispatched_goals": 0,
+        "sampled_self_distance_at_stop_or_completion_m": 0.00996961041147342,
+        "path_check_complete": false
+      },
+      {
+        "original": "passed136",
+        "outcome": "accepted",
+        "original_trajectory_sha256": "413f59d7a6102182b87b81e9a84206da0de1a615cb3c1df91e697a163f564abf",
+        "moveit_callback_calls": 1,
+        "dispatched_goals": 0,
+        "sampled_self_distance_at_stop_or_completion_m": 0.016557333564892293,
+        "path_check_complete": true
+      }
+    ]
+  },
+  "local_ros": {
+    "cli_final": {
+      "status": "passed",
+      "result_sha256": "695621dfb0f395ec11a22e13eb6dcf66ddaf29b71395071d9e9ca0f38ce5ff87",
+      "physics_checks_passed": true,
+      "shutdown_clean": true,
+      "contact_steps": 0,
+      "process_group_gone": true,
+      "admissions": [
+        {
+          "planned_min_self_distance_m": 0.016566322935428274,
+          "observed_start_min_self_distance_m": 0.01656872936285882,
+          "action_results": [
+            {
+              "status": 4,
+              "error_code": 0
+            },
+            {
+              "status": 4,
+              "error_code": 0
+            }
+          ]
+        },
+        {
+          "planned_min_self_distance_m": 0.016448212439791218,
+          "observed_start_min_self_distance_m": 0.016565049754863625,
+          "action_results": [
+            {
+              "status": 4,
+              "error_code": 0
+            },
+            {
+              "status": 4,
+              "error_code": 0
+            }
+          ]
+        }
+      ]
+    },
+    "http": {
+      "status": "passed",
+      "result_sha256": "c51cfb8f4bec28ce6b4f097086eebf19fd2d81bebb87b477430727bb480ac96c",
+      "recorded_code_commit": "9ed12e5836d70fbe9d5ac5037a81a986a4779076",
+      "checked_request_statuses": [
+        "succeeded",
+        "cancelled",
+        "succeeded"
+      ],
+      "wrong_target_rejected": true,
+      "busy_rejected": true,
+      "duplicate_did_not_redispatch": true,
+      "physics_checks_passed": true,
+      "shutdown_clean": true,
+      "contact_steps": 0,
+      "renderer_checked": false,
+      "source_scope": "Backend/native hashes match final implementation; later app.js Korean status text mapping was not part of this HTTP run."
+    },
+    "review": {
+      "status": "passed",
+      "result_sha256": "09847f6b84a0ddd387fd742f703d64d955348275b042c7f50d7dfbc71e0a0f64",
+      "checks": 10,
+      "physics_checks_passed": true,
+      "shutdown_clean": true,
+      "process_group_gone": true
+    }
+  },
+  "current_grasp_browser": {
+    "cases": [
+      {
+        "case": "normal",
+        "status": "succeeded",
+        "physical_grasp": "released",
+        "planning_attachment": "world",
+        "action_count": 6,
+        "all_dispatched_actions_successful": true,
+        "cleanup": {
+          "complete": true,
+          "clean": true,
+          "native_exit_observed": true,
+          "launcher_return_code": 0,
+          "process_group_gone": true,
+          "forced": false,
+          "owner_cleanup_clean": true,
+          "unexpected_failures": 0
+        },
+        "automatic_open": false,
+        "automatic_detach": false,
+        "automatic_retry": false,
+        "result_sha256": "1061fa6a9ed47f61dea53c2581781daecfa9b6b83ed1e367be672738b1f5ddb4",
+        "owner_receipt_sha256": "f3f816550c4844b66aa8375916d5fe93930407e2979cae82b2b50072d28e7924",
+        "model_xml_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275"
+      },
+      {
+        "case": "cancel_while_attached_before_transport_dispatch",
+        "status": "cancelled",
+        "physical_grasp": "unconfirmed",
+        "planning_attachment": "attached",
+        "action_count": 3,
+        "all_dispatched_actions_successful": true,
+        "cleanup": {
+          "complete": true,
+          "clean": true,
+          "native_exit_observed": true,
+          "launcher_return_code": 0,
+          "process_group_gone": true,
+          "forced": false,
+          "owner_cleanup_clean": true,
+          "unexpected_failures": 0
+        },
+        "automatic_open": false,
+        "automatic_detach": false,
+        "automatic_retry": false,
+        "result_sha256": "dfbe81216f3f3f4d2c69eaec409b0e14b99f54b2d7a51101c6519155fe672013",
+        "owner_receipt_sha256": "987575fe49bcf6015afdcb42a3c78ca850a42f165ba248a51d2504b96bc3bbe8",
+        "model_xml_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275"
+      }
+    ],
+    "model_xml_unchanged_from_archived_v4": true,
+    "archived_v4_evidence": "ros-grasp-verification.json",
+    "archived_v4_image": "ros-grasp.jpg",
+    "new_mobile_run_claimed": false,
+    "cancel_scope": "After physical lift and logical attachment, before sending the transport Action. Frozen contact values after stop do not confirm current physical holding."
+  },
+  "local_checks": {
+    "python_unit": {
+      "run": 1318,
+      "skipped": 1,
+      "status": "passed",
+      "log_sha256": "d7c2d5dff7f79c41f61255f8220cc5c4a6bc351e03c6847d0dfb22805d276dde"
+    },
+    "model": {
+      "run": 88,
+      "skipped": 1,
+      "status": "passed",
+      "log_sha256": "42543053ddc0f8e3714b3e4f77dd3282572656a6271d05b5bc8d3033d29f0b9a"
+    },
+    "javascript": {
+      "scripts": 16,
+      "passed": 16,
+      "failed": 0,
+      "log_sha256": "f0cd1dca5e1badd04f8c356690157881419cc347677ad5bf97a2b6700f945e9a"
+    },
+    "package_build": {
+      "status": "passed",
+      "artifacts": [
+        "sdist",
+        "wheel"
+      ],
+      "log_sha256": "1da203952381e5acbc9d5fd5342c776cf7637bf4a6c2e91d3f1601e3354b584e",
+      "scope": "Checkout workspace tools; no standalone native/config distribution claim."
+    }
+  },
+  "limits": [
+    "Planning 10mm and observed-start 1mm are separate experimental admission margins, not a measured tracking-error bound or hardware safety certificate.",
+    "Signed native collision-shape distance is sampled at up to 10ms for admission. The original forensic sweep used 2ms. Neither proves continuous-time clearance.",
+    "The nominal failed minimum is not actual maximum penetration. A complete time-aligned actual tracking series was not retained.",
+    "MoveIt/FCL versus native geometry/allowed-collision differences are not isolated by these tests; no exact FCL or engine defect cause is claimed.",
+    "Passed-curve reference pair 7/13 minimum 57.059mm differs from all-within-arm minimum 16.557mm.",
+    "Original pass/fail input case and source tree match, but observed start states and selected trajectories differ. Rerun success alone does not establish a fix.",
+    "Old v3/v4 grasp, hold, mobile and performance records remain separate. New remote CI, merge and deployment results are not claimed by local verification."
+  ],
+  "data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
+}
