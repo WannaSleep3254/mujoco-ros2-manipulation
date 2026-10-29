@@ -69,6 +69,7 @@ def contact_evidence(value, reference=None):
     relative = _relative(_observed_pose(value["tcp"]), _observed_pose(value["block"]))
     position, angle = _pose_error(relative, reference) if reference is not None else (0., 0.)
     return dict(sequence=value["sequence"], time_sec=value["time_sec"],
+                stamp_ns=value["stamp_ns"], stamp_semantics=value["stamp_semantics"],
                 finger_force_n=forces, bilateral_contact=min(forces) >= .2,
                 table_force_n=table, relative_pose=[*relative[0], *relative[1]],
                 relative_position_error_m=position, relative_angle_error_rad=angle,
@@ -79,16 +80,71 @@ def contact_evidence(value, reference=None):
                 force_timing_scope="nominal last native step, eligible only with a fresh unlatched guard")
 
 
+def _evidence_time_ns(sample):
+    """Retain the checked observer's rounded native clock, never exact ROS time."""
+    stamp, seconds = sample.get("stamp_ns"), sample.get("time_sec")
+    _require(type(stamp) is str and re.fullmatch(r"0|[1-9][0-9]{0,18}", stamp) is not None
+             and sample.get("stamp_semantics") == "rounded_native_mjData_time",
+             "native evidence requires its original rounded-time stamp")
+    _require(type(seconds) in (int, float) and math.isfinite(seconds) and 0 <= seconds <= 2147483647.,
+             "native evidence time is invalid")
+    rounded = seconds*1e9
+    _require(abs(int(stamp)-rounded) <= max(.501, math.ulp(rounded)),
+             "native evidence stamp differs from its rounded native time")
+    return int(stamp)
+
+
+def _window_minimum_ns(minimum_sec):
+    _require(type(minimum_sec) in (int, float) and math.isfinite(minimum_sec) and 0 < minimum_sec <= 60,
+             "native evidence duration is invalid")
+    return math.ceil(minimum_sec*1e9)
+
+
 def checked_window(samples, minimum_sec):
-    """Require distinct progressing native samples; held frames add no time."""
+    """Compare rounded native integer stamps; held frames add no evidence time.
+
+    A 150-ms maximum gap remains exactly 150,000,000 native nanoseconds. Native
+    floating timestep accumulation must not turn that boundary into a larger
+    gap. This clock is not an exact ROS timestamp or a force-timing certificate.
+    """
     _require(len(samples) >= 3, "insufficient distinct native observation samples")
-    times = [sample["time_sec"] for sample in samples]
+    times = [_evidence_time_ns(sample) for sample in samples]
     sequences = [sample["sequence"] for sample in samples]
-    _require(all(b > a for a, b in zip(times, times[1:]))
+    _require(all(type(value) is int and value > 0 for value in sequences)
+             and all(b > a for a, b in zip(times, times[1:]))
+             and all(b["time_sec"] > a["time_sec"] for a,b in zip(samples,samples[1:]))
              and all(b > a for a, b in zip(sequences, sequences[1:])), "native evidence did not advance")
-    _require(times[-1]-times[0] >= minimum_sec, "native evidence duration is insufficient")
-    _require(max(b-a for a, b in zip(times, times[1:])) <= .15, "native evidence has an observation gap")
-    return times[-1]-times[0]
+    _require(times[-1]-times[0] >= _window_minimum_ns(minimum_sec), "native evidence duration is insufficient")
+    _require(max(b-a for a, b in zip(times, times[1:])) <= 150_000_000, "native evidence has an observation gap")
+    return (times[-1]-times[0])/1e9
+
+
+def collect_evidence_window(duration, *, spin, current_evidence, predicate=None, timeout=8., clock=time.monotonic):
+    """Consume each ordered callback once; missing evidence is never filled in.
+
+    The owner uses a SingleThreadedExecutor: one spin executes one handler,
+    then this loop inspects that original observation before the next handler.
+    An ordered burst therefore retains all native samples, without replaying
+    actions or resetting a gap to manufacture a successful interval.
+    """
+    samples, last_sequence = [], None
+    minimum_ns = _window_minimum_ns(duration)
+    deadline = clock()+timeout
+    while clock() < deadline:
+        spin()
+        item = current_evidence()
+        if item["sequence"] == last_sequence:
+            continue
+        last_sequence = item["sequence"]
+        if predicate is not None and not predicate(item):
+            samples = []
+            continue
+        if not samples or _evidence_time_ns(item) > _evidence_time_ns(samples[-1]):
+            samples.append(item)
+        if len(samples) >= 3 and _evidence_time_ns(samples[-1])-_evidence_time_ns(samples[0]) >= minimum_ns:
+            checked_window(samples, duration)
+            return samples
+    raise TimeoutError("physical observation window did not complete")
 
 
 def trajectory_samples(trajectory, start, selected_names, limits):
@@ -144,6 +200,16 @@ def cancelled_hold_observation(lifecycle, *, stop_observed):
     lifecycle.cancelled_observation(stop_observed=True, grasp_still_observed=False)
     return dict(physical_grasp_before_cancel=prior,
                 current_hold_verification="not revalidated after the native physics clock was held")
+
+
+def failed_stop_hold_observation(lifecycle, *, stop_observed):
+    """Keep the historical lift fact separate from current holding after stop."""
+    _require(stop_observed is True, "native stop must be observed before failed hold is finalized")
+    prior = lifecycle.physical_grasp
+    lifecycle.failed_stop_observation(stop_observed=True)
+    return dict(physical_grasp_before_stop=prior,
+                current_hold_verification=("not revalidated after the native physics clock was held"
+                    if prior == "confirmed" else "prior physical state retained; native physics is held"))
 
 
 def admitted_action_submission(check_abort, prepare, check_identity, submit):
@@ -290,7 +356,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         saved = snapshot()
         public = {key: saved[key] for key in ("status", "stage", "physical_grasp", "planning_attachment",
             "action_terminal", "cleanup", "cleanup_errors", "simulation_only")}
-        for key in ("error", "failure_stage", "lifecycle", "planning_scene", "physical_grasp_before_cancel",
+        for key in ("error", "failure_stage", "lifecycle", "planning_scene", "physical_grasp_before_cancel", "physical_grasp_before_stop",
                     "current_hold_verification"):
             if key in saved:
                 public[key] = saved[key]
@@ -402,25 +468,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         return current()
 
     def window(duration, *, predicate=None, timeout=8.):
-        samples = []
-        last_sequence = None
-        deadline = time.monotonic()+timeout
-        while time.monotonic() < deadline:
-            spin()
-            value = current().payload
-            if value["sequence"] == last_sequence:
-                continue
-            last_sequence = value["sequence"]
-            item = contact_evidence(value, held_reference)
-            if predicate is not None and not predicate(item):
-                samples = []
-                continue
-            if not samples or item["time_sec"] > samples[-1]["time_sec"]:
-                samples.append(item)
-            if len(samples) >= 3 and samples[-1]["time_sec"]-samples[0]["time_sec"] >= duration:
-                checked_window(samples, duration)
-                return samples
-        raise TimeoutError("physical observation window: "+record["stage"])
+        return collect_evidence_window(duration, spin=spin,
+            current_evidence=lambda: contact_evidence(current().payload, held_reference), predicate=predicate, timeout=timeout)
 
     def send_action(name, trajectory, *, gripper=False, close=False, expected_scene=None, geometry_guard=None):
         client = clients["gripper" if gripper else "left"]
@@ -623,6 +672,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             *[ROOT/"src/mujoco_ros2_manipulation/workcells"/name for name in
               ("pose_adapter.py", "planning_adapter.py", "interference.py")],
             ROOT/"native/grasp_ros2_plugin/src/observation.cpp", ROOT/"native/grasp_policy.hpp",
+            ROOT/"native/grasp_ros2_plugin/src/ordered_fifo.hpp",
             ROOT/"native/grasp_distance.cpp", ROOT/"native/step_monitor.hpp", ROOT/"native/control_loop_shutdown.hpp"]
         source_hashes = {str(path): file_sha256(path) for path in source_paths}
         record["source_sha256"] = source_hashes
@@ -634,6 +684,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         input_hashes = dict(source_hashes, **record["runtime_binary_sha256"])
         store = GraspObservationStore(run_id=identifier, model_sha256=evaluator.model_sha256,
             plugin_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/observation.cpp"),
+            fifo_source_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/ordered_fifo.hpp"),
             manifest=target.manifest, geom_names=evaluator.geom_names())
 
         import rclpy
@@ -717,7 +768,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                 latest["guard"] = json.loads(message.data)
                 latest["guard_observed_monotonic_ns"] = received_ns
 
-        node.create_subscription(String, "/workcell/grasp_observation", observation_callback, qos)
+        observation_qos = QoSProfile(depth=32, reliability=ReliabilityPolicy.RELIABLE)
+        node.create_subscription(String, "/workcell/grasp_observation", observation_callback, observation_qos)
         node.create_subscription(String, "/workcell/contact_stop", guard_callback, guard_qos)
         publisher = node.create_publisher(String, "/workcell/grasp_phase", qos)
         timer = node.create_timer(.05, publish_phase)
@@ -876,6 +928,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                 record["cleanup"]["guard"] = deepcopy(latest["guard"])
                 if life is not None and life.stage == "cancelled":
                     record.update(cancelled_hold_observation(life, stop_observed=True))
+                elif life is not None and life.stage == "failed":
+                    record.update(failed_stop_hold_observation(life, stop_observed=True))
             except Exception as error:
                 record["cleanup_errors"].append("native stop: "+str(error))
         # Own any late accepted goal before draining. Native stop came first.

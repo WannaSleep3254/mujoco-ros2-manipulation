@@ -60,8 +60,8 @@
       "title": "로봇 시뮬레이션 시스템 개발 방향",
       "published_date": "2026-10-27",
       "document_type": "design_review",
-      "overview": "Three.js 작업실과 센서·3D 공통 재생, ROS 집기의 현재 구현을 정리합니다. CI에서 확인한 물체 처짐의 진단·수정과 유지·취소 검증을 연결하고 남은 개발 순서를 제시합니다.",
-      "manifest_sha256": "2db30c34cfc609e4be5a635e596d088313da278d8c42af2c8183a1a2725f9971"
+      "overview": "Three.js 작업실과 센서·3D 공통 재생, ROS 집기의 현재 구현을 정리합니다. 물체 처짐과 같은 팔 내부 간섭의 원본 진단·수정·로컬 회귀를 연결하고 남은 개발 순서를 제시합니다.",
+      "manifest_sha256": "5b268e7242ef90d9139a5a96814f21440d4229009e5d31651cefea56e92ea857"
     },
     {
       "id": "planner-cache-2026-10-28",

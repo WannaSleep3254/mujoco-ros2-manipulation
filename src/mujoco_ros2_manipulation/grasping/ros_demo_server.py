@@ -150,6 +150,7 @@ class RosJob:
     observation: object = None
     observed_ns: object = None
     progress_ns: object = None
+    capture_ns: object = None
     pose: object = None
     error: object = None
     display_error: object = None
@@ -415,6 +416,12 @@ class RosDemoApplication:
                 now = time.monotonic_ns()
                 _require(type(observed) is int and type(progressed) is int and 0 < progressed <= observed <= now + 100_000_000
                          and type(value.get('native_clock_has_advanced')) is bool, 'ROS 원본 관측 시각이 다릅니다.')
+                captured = native.get('capture_monotonic_ns')
+                _require(type(captured) is str and re.fullmatch(r'[1-9][0-9]{0,18}', captured) is not None
+                         and native.get('capture_clock_semantics') == 'linux_CLOCK_MONOTONIC',
+                         'Native 원본 수집 시각이 다릅니다.')
+                captured = int(captured)
+                _require(captured <= min(observed, now), 'Native 수집 시각이 원본 수신 시각보다 미래입니다.')
                 if job.observation is not None:
                     previous = job.observation.payload
                     _require(native.get('sequence', 0) >= previous['sequence'] and native.get('time_sec', -1) >= previous['time_sec'],
@@ -427,7 +434,7 @@ class RosDemoApplication:
                 observation = GraspObservation(observed * 1e-9, progressed * 1e-9,
                                                value['native_clock_has_advanced'], _canonical(native))
                 pose = job.display.pose(observation)
-                job.observation, job.observed_ns, job.progress_ns, job.pose = observation, observed, progressed, pose
+                job.observation, job.observed_ns, job.progress_ns, job.capture_ns, job.pose = observation, observed, progressed, captured, pose
             job.update, job.update_digest = value, digest
             if task['status'] == 'cancelled':
                 job.cancel_delivery = 'worker_observed'
@@ -558,7 +565,7 @@ class RosDemoApplication:
     def _snapshot_job(self, job):
         task = job.result or (job.update or {}).get('task') or {}
         native = job.observation.payload if job.observation is not None else None
-        age = None if native is None else max(0., (time.monotonic_ns() - min(job.observed_ns, job.progress_ns)) / 1e9)
+        age = self._source_age(job)
         guard = (job.update or {}).get('native_guard') or task.get('cleanup', {}).get('guard')
         forces = [0., 0.] if native is not None else None
         if native is not None:
@@ -589,6 +596,14 @@ class RosDemoApplication:
             process_exit_code=None if job.process is None else job.process.poll(),
             process_group_gone=None if not job.finished else job.process is None or _group_gone(job.process.pid),
             automatic_release=False, automatic_detach=False, automatic_retry=False)
+
+    @staticmethod
+    def _source_age(job):
+        if job.observation is None:
+            return None
+        # Delivery and IPC polling must not make a queued old capture current.
+        # Keep the stopped-clock age as an independent lower freshness bound.
+        return max(0., (time.monotonic_ns() - min(job.capture_ns, job.observed_ns, job.progress_ns)) / 1e9)
 
     def _save(self, job):
         atomic_json(job.directory / 'owner-receipt.json', dict(schema_version=1, kind='owned-ros-grasp-viewer-v1',
@@ -635,7 +650,7 @@ class RosDemoApplication:
             _require(job.pose is not None and job.observation is not None,
                      '검증한 실제 native 자세를 기다리고 있습니다.')
             native = job.observation.payload
-            age = max(0., (time.monotonic_ns() - min(job.observed_ns, job.progress_ns)) / 1e9)
+            age = self._source_age(job)
             result = envelope(job.binding, job.pose, native['sequence'], source_state_age_sec=age,
                               simulation_sec=native['time_sec'])
             result.update(schema_version=2, source=dict(session_id=job.identifier,

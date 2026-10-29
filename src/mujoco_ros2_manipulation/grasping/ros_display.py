@@ -163,6 +163,7 @@ class RosGraspDisplay:
         self._last_sequence = self._last_digest = self._last_pose = None
         self._description = target.description()
         self._plugin_sha256 = file_sha256(target.root / 'native/grasp_ros2_plugin/src/observation.cpp')
+        self._fifo_source_sha256 = file_sha256(target.root / 'native/grasp_ros2_plugin/src/ordered_fifo.hpp')
         raw, proof = _native_export(target, self._limits)
         descriptors, mesh_map, self._assets = _mesh_assets(raw, self._limits)
         qpos = _bounded_vector(raw.get('initial_qpos'), 21, 'initial static qpos', maximum=1e6)
@@ -280,7 +281,8 @@ class RosGraspDisplay:
                 return deepcopy(self._last_pose)
             if self._store is None:
                 self._store = GraspObservationStore(run_id=run_id, model_sha256=self._manifest['model_sha256'],
-                    plugin_sha256=self._plugin_sha256, manifest=self._description, geom_names=self._geom_names)
+                    plugin_sha256=self._plugin_sha256, fifo_source_sha256=self._fifo_source_sha256,
+                    manifest=self._description, geom_names=self._geom_names)
             accepted = self._store.ingest(value, receipt_sec=observation.receipt_sec)
             _require(accepted.accepted, 'Native display observation rejected: ' + accepted.reason)
             pose = validate_pose(dict(schema_version=1, model_sha256=self._manifest['model_sha256'],

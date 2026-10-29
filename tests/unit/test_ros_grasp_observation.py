@@ -15,6 +15,7 @@ ARMS = ["left_j" + str(i) for i in range(1, 7)] + [
 FINGERS = ["fr5_left_finger_slide", "fr5_right_finger_slide"]
 GEOMS = ["fr5_left_finger_geom", "fr5_right_finger_geom", "fr5_table_geom", "fr5_block_geom"]
 RUN, MODEL, PLUGIN = "1" * 32, "2" * 64, "3" * 64
+FIFO = "4" * 64
 
 
 def manifest():
@@ -30,7 +31,7 @@ def manifest():
                 qpos_state_contract=dict(nq=21, nv=20, njnt=15, nu=14, layout=layout))
 
 
-def sample(sequence=1, time_sec=0, *, armed=True, phase=1):
+def sample(sequence=1, time_sec=0, *, armed=True, phase=1, capture_sec=None):
     qpos = [i / 100 for i in range(14)] + [.1, .2, .3, 1., 0., 0., 0.]
     names = ARMS[:6] + FINGERS + ARMS[6:]
     positions = dict(zip(names, qpos))
@@ -38,6 +39,10 @@ def sample(sequence=1, time_sec=0, *, armed=True, phase=1):
                 model_sha256=MODEL, plugin_sha256=PLUGIN, native_version="3.12.0",
                 sequence=sequence, time_sec=time_sec, stamp_ns=str(round(time_sec * 1e9)),
                 stamp_semantics="rounded_native_mjData_time", phase=phase, armed=armed,
+                capture_monotonic_ns=str(round((10.+time_sec if capture_sec is None else capture_sec)*1e9)),
+                capture_clock_semantics="linux_CLOCK_MONOTONIC",
+                observation_delivery=dict(schema_version=1,mode="bounded_ordered_fifo",capacity=32,
+                    max_drain_per_callback=8,max_source_age_ns="500000000",overflow_count=0,source_sha256=FIFO),
                 heartbeat_fresh=armed and phase >= 0, pose_sample_sec=time_sec,
                 force_evaluation_sec=max(0., time_sec - .001), force_timing_verified=False,
                 force_time_semantics="nominal last mj_step evaluation; invalid when native physics is held",
@@ -64,6 +69,7 @@ def guard(**changes):
 class RosGraspObservationTests(unittest.TestCase):
     def store(self, **changes):
         arguments = dict(run_id=RUN, model_sha256=MODEL, plugin_sha256=PLUGIN,
+                         fifo_source_sha256=FIFO,
                          manifest=manifest(), geom_names=GEOMS[:])
         arguments.update(changes)
         return GraspObservationStore(**arguments)
@@ -101,7 +107,7 @@ class RosGraspObservationTests(unittest.TestCase):
 
     def test_duplicate_and_out_of_order_sequence_never_refresh_receipt(self):
         store = self.store()
-        store.ingest(sample(2, .05), receipt_sec=10)
+        store.ingest(sample(2, .05, capture_sec=10), receipt_sec=10)
         for value in (sample(2, .05), sample(1, .02), sample(2, .1)):
             self.assertFalse(store.ingest(value, receipt_sec=10.4).accepted)
         self.assertEqual(store.snapshot(now_sec=10.4).receipt_sec, 10)
@@ -110,22 +116,62 @@ class RosGraspObservationTests(unittest.TestCase):
 
     def test_higher_sequence_at_held_time_does_not_make_physics_fresh(self):
         store = self.store()
-        store.ingest(sample(1, .05), receipt_sec=10)
+        store.ingest(sample(1, .05, capture_sec=10), receipt_sec=10)
         store.ingest(sample(2, .1), receipt_sec=10.1)
-        self.assertTrue(store.ingest(sample(3, .1), receipt_sec=10.55).accepted)
+        self.assertTrue(store.ingest(sample(3, .1, capture_sec=10.55), receipt_sec=10.55).accepted)
         self.assertEqual(store.snapshot(now_sec=10.55).receipt_sec, 10.55)
         with self.assertRaisesRegex(ObservationUnavailable, "stale or held"):
             store.snapshot(now_sec=10.61)
 
     def test_clock_reversal_cannot_be_cleared_by_later_messages(self):
         store = self.store()
-        store.ingest(sample(1, .2), receipt_sec=10)
+        store.ingest(sample(1, .2, capture_sec=10), receipt_sec=10)
         failure = store.ingest(sample(2, .1), receipt_sec=10.1)
         self.assertFalse(failure.accepted)
         self.assertIn("new run", failure.reason)
         self.assertFalse(store.ingest(sample(3, .3), receipt_sec=10.2).accepted)
         with self.assertRaisesRegex(ObservationUnavailable, "reversed"):
             store.snapshot(now_sec=10.2)
+
+    def test_reversed_native_time_still_latches_when_capture_clock_also_reverses(self):
+        store=self.store()
+        self.assertTrue(store.ingest(sample(1,.2,capture_sec=10.2),receipt_sec=10.3).accepted)
+        failure=store.ingest(sample(2,.1,capture_sec=10.1),receipt_sec=10.4)
+        self.assertFalse(failure.accepted);self.assertIn('native grasp clock reversed',failure.reason)
+        self.assertFalse(store.ingest(sample(3,.3,capture_sec=10.5),receipt_sec=10.5).accepted)
+        with self.assertRaisesRegex(ObservationUnavailable,'new run'):
+            store.snapshot(now_sec=10.5)
+
+    def test_queued_receipt_preserves_original_capture_age_and_expires_at_the_source(self):
+        store=self.store()
+        self.assertTrue(store.ingest(sample(1,0.,capture_sec=10.),receipt_sec=10.45).accepted)
+        self.assertEqual(store.snapshot(now_sec=10.49).capture_monotonic_ns,10_000_000_000)
+        self.assertEqual(store.snapshot(now_sec=10.49).receipt_sec,10.45)
+        with self.assertRaisesRegex(ObservationUnavailable,'source capture'):
+            store.snapshot(now_sec=10.500000001)
+        with self.assertRaisesRegex(ObservationUnavailable,'source capture'):
+            store.snapshot(now_sec=10.6,max_age_sec=5.)
+        # A newly delivered old sample cannot recover freshness by its receipt.
+        rejected=store.ingest(sample(2,.05,capture_sec=10.05),receipt_sec=10.550000001)
+        self.assertFalse(rejected.accepted);self.assertIn('already stale',rejected.reason)
+
+    def test_capture_clock_and_fifo_policy_fail_closed_without_retimestamping(self):
+        mutations=[lambda d:d.update(capture_monotonic_ns='10000000001'),
+            lambda d:d.update(capture_monotonic_ns='010000000000'),
+            lambda d:d.update(capture_monotonic_ns=10_000_000_000),
+            lambda d:d.update(capture_clock_semantics='receipt_time'),
+            lambda d:d['observation_delivery'].update(capacity=64),
+            lambda d:d['observation_delivery'].update(overflow_count=1),
+            lambda d:d['observation_delivery'].update(overflow_count=False),
+            lambda d:d['observation_delivery'].update(source_sha256='a'*64),
+            lambda d:d['observation_delivery'].update(mode='latest_only')]
+        for mutation in mutations:
+            value=sample();mutation(value)
+            with self.subTest(value=value['capture_monotonic_ns'],delivery=value['observation_delivery']):
+                self.assertFalse(self.store().ingest(value,receipt_sec=10).accepted)
+        store=self.store();store.ingest(sample(),receipt_sec=10)
+        bad=sample(2,.05,capture_sec=9.99)
+        self.assertIn('did not advance',store.ingest(bad,receipt_sec=10.1).reason)
 
     def test_identity_schema_or_invalid_json_blocks_previous_sample_until_valid_update(self):
         mutations = [

@@ -4,6 +4,7 @@
 #include <mujoco_ros2_control_plugins/mujoco_ros2_control_plugins_base.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <std_msgs/msg/string.hpp>
+#include "ordered_fifo.hpp"
 
 #include <algorithm>
 #include <array>
@@ -20,9 +21,13 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <time.h>
 
 #ifndef MANIPULATION_GRASP_PLUGIN_SHA256
 #error "The observer must carry its source SHA256"
+#endif
+#ifndef MANIPULATION_GRASP_FIFO_SHA256
+#error "The observation FIFO must carry its source SHA256"
 #endif
 
 namespace manipulation_grasp
@@ -32,15 +37,18 @@ namespace
 constexpr int kQpos = 21, kQvel = 20, kGeoms = 256, kContacts = 256;
 constexpr std::size_t kJsonBytes = 256 * 1024;
 constexpr std::uint64_t kHeartbeatMs = 1000;
+constexpr std::size_t kQueueCapacity = 32, kMaximumDrain = 8;
+constexpr std::uint64_t kMaximumSourceAgeNs = 500000000;
 constexpr const char * kPolicy = "fr5_parallel_block_v1";
-using Clock = std::chrono::steady_clock;
 using Message = std_msgs::msg::String;
 
-std::uint64_t steady_ms()
+std::uint64_t steady_ns()
 {
-  return static_cast<std::uint64_t>(
-    std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count());
+  struct timespec value{};
+  if (::clock_gettime(CLOCK_MONOTONIC, &value) != 0 || value.tv_sec < 0 || value.tv_nsec < 0) return 0;
+  return static_cast<std::uint64_t>(value.tv_sec) * 1000000000 + static_cast<std::uint64_t>(value.tv_nsec);
 }
+std::uint64_t steady_ms() {return steady_ns() / 1000000;}
 
 bool hex(const char * value, std::size_t length)
 {
@@ -104,7 +112,7 @@ struct Contact
 };
 struct Snapshot
 {
-  std::uint64_t sequence = 0, stamp_ns = 0, dropped = 0;
+  std::uint64_t sequence = 0, stamp_ns = 0, capture_monotonic_ns = 0;
   double time_sec = 0, force_evaluation_sec = 0;
   int phase = 0;
   bool armed = false, heartbeat_fresh = false;
@@ -118,13 +126,6 @@ struct Snapshot
   std::array<Contact, kContacts> contacts{};
   int geom_count = 0, contact_count = 0;
 };
-enum SlotState {free_slot = 0, writing = 1, ready = 2, reading = 3};
-struct Slot
-{
-  std::atomic<int> state{free_slot};
-  std::atomic<std::uint64_t> sequence{0};
-  Snapshot frame;
-};
 struct DataDelete {void operator()(mjData * data) const {if (data) mj_deleteData(data);}};
 
 struct Transport
@@ -133,8 +134,11 @@ struct Transport
   // plugin object; an already running callback can finish after cleanup.
   std::atomic<bool> closed{false}, fault{false};
   std::atomic_flag publishing = ATOMIC_FLAG_INIT;
+  std::atomic_flag fault_reported = ATOMIC_FLAG_INIT;
+  std::atomic<int> fault_code{0};
+  std::atomic<std::uint64_t> overflow_count{0};
   std::atomic<std::uint64_t> command{0};  // one coherent receipt-ms/phase word
-  std::array<Slot, 3> slots;
+  OrderedFifo<Snapshot, kQueueCapacity> frames;
   std::mutex publisher_mutex;  // timer/cleanup only; never update/pre_step
   rclcpp::Publisher<Message>::SharedPtr publisher;
   std::string run_id, model_sha256;
@@ -146,8 +150,29 @@ struct Transport
   const mjModel * model = nullptr;
   std::unique_ptr<mjData, DataDelete> copy;
   int tcp_id = -1, block_id = -1;
-  std::uint64_t sequence = 0, dropped = 0, last_capture_ms = 0, published_sequence = 0;
+  std::uint64_t sequence = 0, last_capture_ms = 0;
 };
+
+void transport_fault(Transport & state, int code)
+{
+  int expected = 0;
+  state.fault_code.compare_exchange_strong(expected, code, std::memory_order_relaxed);
+  state.fault.store(true, std::memory_order_release);
+}
+
+void report_transport_fault(Transport & state)
+{
+  if (state.fault.load(std::memory_order_acquire) &&
+    !state.fault_reported.test_and_set(std::memory_order_acquire)) {
+    // Non-real-time timer only. Preserve one bounded fault diagnostic even
+    // when no old queued observation may be published as a current sample.
+    RCLCPP_ERROR(rclcpp::get_logger("manipulation_grasp_observation"),
+      "OBSERVATION_TRANSPORT_FAULT code=%d overflow_count=%llu fifo_capacity=%zu fifo_source_sha256=%s",
+      state.fault_code.load(std::memory_order_relaxed),
+      static_cast<unsigned long long>(state.overflow_count.load(std::memory_order_relaxed)),
+      kQueueCapacity, MANIPULATION_GRASP_FIFO_SHA256);
+  }
+}
 
 std::pair<int, bool> phase(const Transport & state, std::uint64_t now)
 {
@@ -214,7 +239,6 @@ bool fill(Transport & state, const mjModel * model, const mjData * data, Snapsho
   output.phase = static_cast<int>(observed_phase);
   output.armed = observed_armed == 1;
   output.heartbeat_fresh = output.armed && output.phase >= 0;
-  output.dropped = state.dropped;
   for (int i = 0; i < 12; ++i) output.arms[i] = output.qpos[state.arm_addresses[i]];
   for (int i = 0; i < 2; ++i) output.fingers[i] = output.qpos[state.finger_addresses[i]];
   // This is a private copy. Reconstruct post-integration kinematics without
@@ -260,11 +284,18 @@ std::string serialize(const Transport & state, const Snapshot & frame)
       << ",\"plugin_sha256\":\"" << MANIPULATION_GRASP_PLUGIN_SHA256 << "\",\"native_version\":" << quoted(mj_versionString())
       << ",\"sequence\":" << frame.sequence << ",\"time_sec\":" << frame.time_sec
       << ",\"stamp_ns\":\"" << frame.stamp_ns << "\",\"stamp_semantics\":\"rounded_native_mjData_time\""
+      << ",\"capture_monotonic_ns\":\"" << frame.capture_monotonic_ns
+      << "\",\"capture_clock_semantics\":\"linux_CLOCK_MONOTONIC\""
       << ",\"phase\":" << frame.phase << ",\"armed\":" << (frame.armed ? "true" : "false")
       << ",\"heartbeat_fresh\":" << (frame.heartbeat_fresh ? "true" : "false")
       << ",\"pose_sample_sec\":" << frame.time_sec << ",\"force_evaluation_sec\":" << frame.force_evaluation_sec
       << ",\"force_timing_verified\":false,\"force_time_semantics\":\"nominal last mj_step evaluation; invalid when native physics is held\""
-      << ",\"local_overwrites_or_skips\":" << frame.dropped << ",\"qpos\":";
+      << ",\"local_overwrites_or_skips\":0,\"observation_delivery\":{\"schema_version\":1,"
+      << "\"mode\":\"bounded_ordered_fifo\",\"capacity\":" << kQueueCapacity
+      << ",\"max_drain_per_callback\":" << kMaximumDrain
+      << ",\"max_source_age_ns\":\"" << kMaximumSourceAgeNs
+      << "\",\"overflow_count\":" << state.overflow_count.load(std::memory_order_relaxed)
+      << ",\"source_sha256\":\"" << MANIPULATION_GRASP_FIFO_SHA256 << "\"},\"qpos\":";
   vector(out, frame.qpos);out << ",\"qvel\":";vector(out, frame.qvel);
   out << ",\"arm_positions_rad\":{";
   for (int i = 0; i < 12; ++i) {if (i) out << ',';out << quoted(state.arm_names[i]) << ':' << frame.arms[i];}
@@ -295,44 +326,49 @@ std::string serialize(const Transport & state, const Snapshot & frame)
   return out.str();
 }
 
-void publish_latest(const std::shared_ptr<Transport> & state)
+void publish_pending(const std::shared_ptr<Transport> & state)
 {
   if (state->closed.load(std::memory_order_acquire) ||
     state->publishing.test_and_set(std::memory_order_acquire)) return;
   struct PublishingDone {Transport & state;~PublishingDone() {state.publishing.clear(std::memory_order_release);}} done{*state};
-  Slot * selected = nullptr;
-  for (auto & slot : state->slots) {
-    int expected = ready;
-    if (!slot.state.compare_exchange_strong(expected, reading, std::memory_order_acquire)) continue;
-    const auto sequence = slot.sequence.load(std::memory_order_relaxed);
-    if (sequence <= state->published_sequence ||
-      (selected && sequence < selected->sequence.load(std::memory_order_relaxed))) {
-      slot.state.store(free_slot, std::memory_order_release);
-    } else {
-      if (selected) selected->state.store(free_slot, std::memory_order_release);
-      selected = &slot;
+  report_transport_fault(*state);
+  if (state->fault.load(std::memory_order_acquire)) return;
+  for (std::size_t drained = 0; drained < kMaximumDrain; ++drained) {
+    if (state->closed.load(std::memory_order_acquire) || state->fault.load(std::memory_order_acquire)) break;
+    try {
+      const bool consumed = state->frames.try_read([&](const Snapshot & frame) {
+        // Original capture age survives queueing. No old frame is re-stamped
+        // on publication; Python independently checks this same source clock.
+        if (!capture_age_valid(frame.capture_monotonic_ns, steady_ns(), kMaximumSourceAgeNs)) {
+          transport_fault(*state, 3);return;
+        }
+        Message message;
+        message.data = serialize(*state, frame);
+        if (message.data.size() > kJsonBytes) {transport_fault(*state, 4);return;}
+        rclcpp::Publisher<Message>::SharedPtr publisher;
+        {
+          // This mutex is never shared with update or pre_step. A callback's
+          // local publisher remains alive while cleanup closes admission.
+          std::lock_guard<std::mutex> lock(state->publisher_mutex);
+          if (!state->closed.load(std::memory_order_acquire)) publisher = state->publisher;
+        }
+        // Serialization and publisher acquisition must not extend the age.
+        if (!capture_age_valid(frame.capture_monotonic_ns, steady_ns(), kMaximumSourceAgeNs)) {
+          transport_fault(*state, 3);return;
+        }
+        if (publisher && !state->fault.load(std::memory_order_acquire)) publisher->publish(message);
+      });
+      if (!consumed) break;
+    } catch (...) {
+      // Do not throw through an executor callback during a transport failure
+      // or concurrent ROS teardown. The next pre_step stops native admission.
+      if (!state->closed.load(std::memory_order_acquire)) transport_fault(*state, 5);
+      break;
     }
   }
-  if (!selected) return;
-  struct ReadingDone {Slot & slot;~ReadingDone() {slot.state.store(free_slot, std::memory_order_release);}} reading_done{*selected};
-  try {
-    Message message;
-    message.data = serialize(*state, selected->frame);
-    if (message.data.size() > kJsonBytes) {state->fault.store(true, std::memory_order_release);return;}
-    rclcpp::Publisher<Message>::SharedPtr publisher;
-    {
-      // cleanup never invalidates a callback's local publisher. This lock is
-      // not shared with either control update or the physics hook.
-      std::lock_guard<std::mutex> lock(state->publisher_mutex);
-      if (!state->closed.load(std::memory_order_acquire)) publisher = state->publisher;
-    }
-    if (publisher) {publisher->publish(message);state->published_sequence=selected->frame.sequence;}
-  } catch (...) {
-    // ROS teardown can race an already entered callback. Stop admission via
-    // the physics userdata heartbeat; never throw across a native hook.
-    if (!state->closed.load(std::memory_order_acquire)) state->fault.store(true, std::memory_order_release);
-  }
+  report_transport_fault(*state);
 }
+
 }  // namespace
 
 class ObservationPlugin final : public mujoco_ros2_control_plugins::MuJoCoROS2ControlPluginBase
@@ -351,7 +387,8 @@ public:
     state_ = state;
     node_ = std::move(node);
     const auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile();
-    state->publisher = node_->create_publisher<Message>("/workcell/grasp_observation", qos);
+    const auto observation_qos = rclcpp::QoS(rclcpp::KeepLast(kQueueCapacity)).reliable().durability_volatile();
+    state->publisher = node_->create_publisher<Message>("/workcell/grasp_observation", observation_qos);
     phase_subscription_ = node_->create_subscription<Message>("/workcell/grasp_phase", qos,
       [state](Message::ConstSharedPtr message) {
         if (state->closed.load(std::memory_order_acquire) || message->data.size() != 34 ||
@@ -360,7 +397,7 @@ public:
         const auto phase_value = static_cast<std::uint64_t>(message->data[33] - '0' + 1);
         state->command.store((steady_ms() << 4) | phase_value, std::memory_order_release);
       });
-    timer_ = node_->create_wall_timer(std::chrono::milliseconds(50), [state]() {publish_latest(state);});
+    timer_ = node_->create_wall_timer(std::chrono::milliseconds(50), [state]() {publish_pending(state);});
     return true;
   }
 
@@ -368,30 +405,22 @@ public:
   {
     const auto state = state_;
     if (!state || state->closed.load(std::memory_order_acquire)) return;
-    const auto now = steady_ms();
-    if (now >= state->last_capture_ms && now - state->last_capture_ms < 50) return;
-    state->last_capture_ms = now;
-    Slot * selected = nullptr;
-    for (auto & slot : state->slots) {
-      int expected = free_slot;
-      if (slot.state.compare_exchange_strong(expected, writing, std::memory_order_acquire)) {selected = &slot;break;}
+    if (state->fault.load(std::memory_order_acquire)) return;
+    const auto capture_ns = steady_ns();
+    if (!capture_ns) {transport_fault(*state, 6);return;}
+    const auto now_ms = capture_ns / 1000000;
+    if (now_ms >= state->last_capture_ms && now_ms - state->last_capture_ms < 50) return;
+    state->last_capture_ms = now_ms;
+    const auto result = state->frames.try_write([&](Snapshot & frame) {
+      frame.capture_monotonic_ns = capture_ns;
+      return state->sequence < (std::uint64_t{1} << 53) - 1 && fill(*state, model, data, frame);
+    });
+    if (result == FifoWrite::full) {
+      state->overflow_count.fetch_add(1, std::memory_order_relaxed);
+      transport_fault(*state, 1);
+    } else if (result == FifoWrite::invalid) {
+      transport_fault(*state, 2);
     }
-    if (!selected) {
-      // Keep the latest frame instead of building a backlog. Reading slots are
-      // never reused, so producer and serializer cannot race on frame memory.
-      for (auto & slot : state->slots) {
-        int expected = ready;
-        if (slot.state.compare_exchange_strong(expected, writing, std::memory_order_acquire)) {selected = &slot;++state->dropped;break;}
-      }
-    }
-    if (!selected) {++state->dropped;return;}
-    if (state->sequence >= (std::uint64_t{1} << 53) - 1 || !fill(*state, model, data, selected->frame)) {
-      state->fault.store(true, std::memory_order_release);
-      selected->state.store(free_slot, std::memory_order_release);
-      return;
-    }
-    selected->sequence.store(selected->frame.sequence, std::memory_order_relaxed);
-    selected->state.store(ready, std::memory_order_release);
   }
 
   void pre_step(mjData * data) override
@@ -409,14 +438,17 @@ public:
     // monitor fail-closed until a new process/run identity is created.
     const auto state = state_;
     if (!state) return;
-    state->fault.store(true, std::memory_order_release);
+    transport_fault(*state, 7);
     if (data) {data->userdata[0] = -1;data->userdata[1] = 1;}
   }
 
   void cleanup() override
   {
     const auto state = state_;
-    if (state) state->closed.store(true, std::memory_order_release);
+    if (state) {
+      state->closed.store(true, std::memory_order_release);
+      state->frames.close();
+    }
     if (timer_) {timer_->cancel();timer_.reset();}
     phase_subscription_.reset();
     if (state) {

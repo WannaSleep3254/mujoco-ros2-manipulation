@@ -76,11 +76,16 @@ class TimingRejected(ValueError):
         self.profiling = profiling
 
 
-def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, checkpoint=None, clock=time.monotonic_ns, optimize=True):
+def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, checkpoint=None, clock=time.monotonic_ns, optimize=True, self_policy=None):
     if len(curves) != 2 or abs(curves[0].duration - curves[1].duration) > 1e-8:
         raise ValueError("Expected two synchronized source curves")
     if type(optimize) is not bool:
         raise ValueError("optimize must be a boolean")
+    self_options = {}
+    if self_policy is not None:
+        from .self_clearance import validate_self_policy
+        validate_self_policy(self_policy)
+        self_options["self_reject_below"] = self_policy["planning_min_self_distance_m"]
     candidates = []
     decisions = []
     profiling = dict(clock="time.monotonic_ns", elapsed_wall_sec=0.0, candidate_wall_sec=0.0,
@@ -113,9 +118,13 @@ def choose_delay(curves, initial, cell, evaluator, policy, *, diagnostics=None, 
         before = clock()
         counted = CountedDistance()
         try:
-            result = evaluate_path(scheduled, initial, cell, counted, dt=policy["sample_dt_sec"],
+            result = evaluate_path(scheduled, initial, cell, counted,
+                dt=min(policy["sample_dt_sec"], self_policy["sample_dt_sec"]) if self_policy is not None else policy["sample_dt_sec"],
                 reject_below=policy["min_inter_arm_distance_m"] + policy["tracking_reserve_m"],
-                checkpoint=checkpoint)
+                checkpoint=checkpoint, **self_options)
+            if "self_minimum" in result:
+                entry["self_minimum"] = deepcopy(result["self_minimum"])
+                entry["rejection_kind"] = result.get("rejection_kind")
             entry.update(status="completed", complete=result["complete"], samples=result["samples"], minimum=result["minimum"])
             return result
         except BaseException as error:

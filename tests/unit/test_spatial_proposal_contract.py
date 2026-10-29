@@ -58,10 +58,13 @@ class SpatialProposalContractTests(unittest.TestCase):
             nearest_points_m=[[0., 0., 0.], [1., 0., 0.]], tips_m=[[0., 0., 0.], [1., 0., 0.]],
             environment=dict(distance_m=.1, bodies=["left", "fixture"],
                 nearest_points_m=[[0., 0., 0.], [.1, 0., 0.]], pair_count=2,
-                scope="moving_robot_vs_fixed_environment"))))
+                scope="moving_robot_vs_fixed_environment"),
+            self_collision=dict(distance_m=.02,geom_ids=[7,13],bodies=["forearm","wrist3"],
+                nearest_points_m=[[0.,0.,0.],[.02,0.,0.]],pair_count=24,scope="within_each_arm"))))
         self.node = NS(goal_tolerance_rad=.003, max_plan_candidates=2,
             policy=dict(min_inter_arm_distance_m=.02, tracking_reserve_m=.01, sample_dt_sec=.02),
             environment_policy=dict(schema_version=1, min_environment_distance_m=.005, tracking_reserve_m=.01),
+            self_policy=dict(schema_version=1,planning_min_self_distance_m=.01,observed_start_min_self_distance_m=.001,sample_dt_sec=.01),
             cell=NS(joints=["left", "right"], instances=[NS(id="left", joints=["left"]), NS(id="right", joints=["right"])]),
             evaluator=self.evaluator, event=Mock(), compute_checkpoint=Mock(),
             assess_spatial_candidate=Mock(return_value=dict(invalid_samples=0)),

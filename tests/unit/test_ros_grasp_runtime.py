@@ -21,13 +21,14 @@ SOURCES = {
     'native/step_monitor.hpp': b'monitor current source\n',
     'native/grasp_policy.hpp': b'grasp policy current source\n',
     'native/grasp_ros2_plugin/src/observation.cpp': b'observation current source\n',
+    'native/grasp_ros2_plugin/src/ordered_fifo.hpp': b'ordered FIFO current source\n',
     'native/control_loop_shutdown.hpp': b'shutdown current source\n',
 }
 BINARIES = {
     'ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so':
         ('native/step_monitor.hpp', 'native/grasp_policy.hpp'),
     f'ros_ws/install/{PACKAGE}/lib/libmujoco_ros2_control_grasp_observer.so':
-        ('native/grasp_ros2_plugin/src/observation.cpp',),
+        ('native/grasp_ros2_plugin/src/observation.cpp', 'native/grasp_ros2_plugin/src/ordered_fifo.hpp'),
     'ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node':
         ('native/control_loop_shutdown.hpp',),
 }

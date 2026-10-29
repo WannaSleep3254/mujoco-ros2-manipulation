@@ -8,6 +8,7 @@ from mujoco_ros2_manipulation.workcells.path_quality import (
     ScheduleSamplingBudgetExceeded, evaluate_states, prepare_sample_schedule,
 )
 from mujoco_ros2_manipulation.workcells.environment_clearance import required_environment_distance
+from .self_clearance import validate_self_policy, require_self_result
 
 MAX_PLAN_CANDIDATES = 12
 
@@ -106,13 +107,19 @@ class _ObservedEvaluator:
             previous = self.progress.get("environment_minimum")
             if previous is None or environment["distance_m"] < previous["distance_m"]:
                 self.progress["environment_minimum"] = dict(state_rad=dict(state), **deepcopy(environment))
+        own = result.get("self_collision")
+        if own is not None:
+            own = require_self_result(own)
+            previous = self.progress.get("self_minimum")
+            if previous is None or own["distance_m"] < previous["distance_m"]:
+                self.progress["self_minimum"] = dict(state_rad=dict(state), **deepcopy(own))
         return result
 
 
 def select_clearance_plan(
     propose, initial, cell, evaluator, policy, moveit_check, save,
     *, max_candidates=MAX_PLAN_CANDIDATES, checkpoint=None, diagnostics=None,
-    validate_curve=None, environment_policy=None,
+    validate_curve=None, environment_policy=None, self_policy=None,
 ):
     """Return the first valid trajectory, preserving every bounded attempt.
 
@@ -134,6 +141,9 @@ def select_clearance_plan(
     threshold = policy["min_inter_arm_distance_m"] + policy["tracking_reserve_m"]
     environment_options = {} if environment_policy is None else dict(
         environment_reject_below=required_environment_distance(environment_policy))
+    if self_policy is not None:
+        validate_self_policy(self_policy)
+        environment_options["self_reject_below"] = self_policy["planning_min_self_distance_m"]
     candidates = []
     started = time.monotonic()
     diagnostics.update(status="running", stage="proposal", max_candidates=max_candidates,
@@ -199,7 +209,8 @@ def select_clearance_plan(
                         # native result below represents the fully assessed path.
                         progress = record["native_progress"] = dict(samples=0, minimum=None)
                         try:
-                            states = prepare_sample_schedule([curve], initial, policy["sample_dt_sec"])
+                            states = prepare_sample_schedule([curve], initial, min(policy["sample_dt_sec"], self_policy["sample_dt_sec"])
+                                if self_policy is not None else policy["sample_dt_sec"])
                         except ScheduleSamplingBudgetExceeded as error:
                             record["sampling_budget"] = deepcopy(error.diagnostic)
                             reject("sampling_budget", str(error))
@@ -215,6 +226,7 @@ def select_clearance_plan(
                             if not native["complete"]:
                                 kind = native.get("rejection_kind", "native_clearance")
                                 reject(kind, "Environment clearance below planning minimum" if kind == "environment_clearance"
+                                       else "Native self-clearance below planning minimum" if kind == "self_clearance"
                                        else "Native inter-arm clearance below planning minimum")
                             else:
                                 stage("moveit")

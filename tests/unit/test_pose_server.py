@@ -57,6 +57,13 @@ class PoseServerTests(unittest.TestCase):
         self.assertEqual(record["review_payload"]["trajectories"], record["trajectories"])
         self.assertEqual(record["command"]["target_rad"]["right"], 0.)
 
+    def test_pose_native_self_overlap_never_issues_review_or_action(self):
+        self.node.evaluator.at.return_value['self_collision']['distance_m'] = -.002
+        goal = self.goal(); self.send(goal); self.node.process_next()
+        self.assertEqual(self.node.replies[goal['request_id']]['status'], 'failed')
+        self.assertIsNone(self.node.review_store.summary())
+        self.node.dispatch.assert_not_called()
+
     def test_joint_success_cannot_hide_observed_tcp_error(self):
         goal = self.goal(); tool = self.node.pose_tools["left"]
         trace = RequestTrace(goal["request_id"])

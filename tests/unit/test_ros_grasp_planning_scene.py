@@ -5,7 +5,7 @@ import unittest
 
 from mujoco_ros2_manipulation.grasping.ros_observation import GraspObservationStore
 from mujoco_ros2_manipulation.grasping.ros_planning_scene import RosGraspPlanningScene, GraspPlanningSceneError
-from tests.unit.test_ros_grasp_observation import manifest as state_manifest, sample, RUN, MODEL, PLUGIN, GEOMS
+from tests.unit.test_ros_grasp_observation import manifest as state_manifest, sample, RUN, MODEL, PLUGIN, FIFO, GEOMS
 
 
 class Pose(NS):
@@ -77,7 +77,7 @@ def manifest():
 
 
 def observation(phase=1, *, block_position=None, tcp_position=None, tcp_quaternion=None, now=10.1):
-    value = sample(2, .05, phase=phase)
+    value = sample(2, .05, phase=phase, capture_sec=now)
     if block_position is not None:
         value["block"]["position"] = list(block_position)
         value["qpos"][14:17] = list(block_position)
@@ -86,8 +86,9 @@ def observation(phase=1, *, block_position=None, tcp_position=None, tcp_quaterni
     if tcp_quaternion is not None:
         value["tcp"]["quaternion_wxyz"] = list(tcp_quaternion)
     store = GraspObservationStore(run_id=RUN, model_sha256=MODEL, plugin_sha256=PLUGIN,
+                                 fifo_source_sha256=FIFO,
                                  manifest=manifest(), geom_names=GEOMS)
-    assert store.ingest(sample(), receipt_sec=now-.1).accepted
+    assert store.ingest(sample(capture_sec=now-.1), receipt_sec=now-.1).accepted
     assert store.ingest(value, receipt_sec=now).accepted
     return store.snapshot(now_sec=now)
 

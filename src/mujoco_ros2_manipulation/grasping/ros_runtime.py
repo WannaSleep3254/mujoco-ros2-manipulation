@@ -103,7 +103,8 @@ def check_grasp_runtime(root):
         (root / 'ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so',
          (root / 'native/step_monitor.hpp', root / 'native/grasp_policy.hpp')),
         (root / f'ros_ws/install/{_PACKAGE}/lib/lib{_LIBRARY}.so',
-         (root / 'native/grasp_ros2_plugin/src/observation.cpp',)),
+         (root / 'native/grasp_ros2_plugin/src/observation.cpp',
+          root / 'native/grasp_ros2_plugin/src/ordered_fifo.hpp')),
         (root / 'ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node',
          (root / 'native/control_loop_shutdown.hpp',)),
     )

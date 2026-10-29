@@ -158,6 +158,19 @@ class GraspLifecycle:
         self._event("cancelled_hold_observed", stop_observed=stop_observed,
                     grasp_still_observed=grasp_still_observed and prior_confirmed)
 
+    def failed_stop_observation(self, *, stop_observed):
+        """A stopped failed run cannot renew an earlier grasp confirmation.
+
+        Preserve a known slip or confirmed release, the original failure and
+        logical attachment. There is no automatic release or recovery here.
+        """
+        self._at("failed")
+        _require(stop_observed is True, "Failed-run stop must be explicitly observed")
+        prior = self.physical_grasp
+        if prior == "confirmed":
+            self.physical_grasp = "unconfirmed"
+        self._event("failed_stop_observed", stop_observed=True, physical_grasp_before_stop=prior)
+
     def snapshot(self):
         return dict(stage=self.stage, physical_grasp=self.physical_grasp,
             planning_attachment=self.planning_attachment, events=[dict(event) for event in self.events],

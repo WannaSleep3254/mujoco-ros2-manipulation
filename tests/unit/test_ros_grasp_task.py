@@ -5,7 +5,7 @@ import unittest
 from mujoco_ros2_manipulation.grasping.ros_task import (
     checked_window, contact_evidence, trajectory_samples, RosGraspTaskError,
     kinematics_state_limits,
-    latest_action_terminal, cancelled_hold_observation,
+    latest_action_terminal, cancelled_hold_observation, failed_stop_hold_observation, collect_evidence_window,
     admitted_action_submission,
     validate_dispatch_geometry,
     diagnostic_hold_duration,
@@ -77,6 +77,8 @@ class RosGraspTaskTests(unittest.TestCase):
         self.assertFalse(result["bilateral_contact"])
         self.assertAlmostEqual(result["table_force_n"], .8)
         self.assertFalse(result["force_timing_verified"])
+        self.assertEqual(result["stamp_ns"],value["stamp_ns"])
+        self.assertEqual(result["stamp_semantics"],"rounded_native_mjData_time")
         self.assertAlmostEqual(result["open_gap_m"], .07-sum(value["finger_positions_m"].values()))
         value["contacts"][2]["normal_force_n"] = .3
         self.assertTrue(contact_evidence(value)["bilateral_contact"])
@@ -92,13 +94,55 @@ class RosGraspTaskTests(unittest.TestCase):
         value["block"]["position"][0] += .01
         self.assertAlmostEqual(contact_evidence(value, reference)["relative_position_error_m"], .01)
 
+    def test_ci139_exact_rounded_native_150ms_boundary_is_accepted_without_float_gap_relaxation(self):
+        rows = [(186,9.82599999999995,'9826000000'), (189,9.976,'9976000000'),
+                (190,10.036000000000021,'10036000000'), (191,10.096000000000041,'10096000000')]
+        values = [dict(sequence=seq,time_sec=t,stamp_ns=ns,stamp_semantics='rounded_native_mjData_time') for seq,t,ns in rows]
+        self.assertGreater(values[1]['time_sec']-values[0]['time_sec'], .15)
+        self.assertEqual(int(values[1]['stamp_ns'])-int(values[0]['stamp_ns']),150_000_000)
+        self.assertEqual(checked_window(values,.25), .27)
+
     def test_evidence_window_cannot_count_held_duplicate_or_missing_frames(self):
-        values = [dict(sequence=i+1, time_sec=i*.05) for i in range(6)]
+        values = [dict(sequence=i+1, time_sec=i*.05, stamp_ns=str(i*50_000_000),
+                       stamp_semantics="rounded_native_mjData_time") for i in range(6)]
         self.assertAlmostEqual(checked_window(values, .2), .25)
-        for bad in (values[:2], [values[0], values[0], values[-1]],
-                    [values[0], values[1], dict(sequence=9, time_sec=.4)]):
+        for bad in (values[:2], [values[0], values[0], values[-1]], [values[1], values[0], values[-1]],
+                    [values[0], values[1], dict(sequence=9, time_sec=.4, stamp_ns="400000000",stamp_semantics="rounded_native_mjData_time")]):
             with self.assertRaises(RosGraspTaskError):
                 checked_window(bad, .2)
+
+    def test_integer_gap_limit_does_not_accept_one_ns_over_or_genuine_missing_time(self):
+        for gap in (150_000_001, 152_000_000, 160_000_000, 170_000_000, 212_000_000, 250_000_000, 280_000_000):
+            values=[dict(sequence=i+1,time_sec=ns/1e9,stamp_ns=str(ns),stamp_semantics='rounded_native_mjData_time')
+                    for i,ns in enumerate((0,gap,gap+100_000_000))]
+            with self.subTest(gap=gap),self.assertRaisesRegex(RosGraspTaskError,'observation gap'):
+                checked_window(values,.2)
+
+    def test_integer_minimum_duration_and_stamp_identity_remain_fail_closed(self):
+        values=[dict(sequence=i+1,time_sec=ns/1e9,stamp_ns=str(ns),stamp_semantics='rounded_native_mjData_time')
+                for i,ns in enumerate((1_000_000_000,1_100_000_000,1_250_000_000))]
+        self.assertEqual(checked_window(values,.25),.25)
+        short=deepcopy(values);short[-1].update(time_sec=1.249999999,stamp_ns='1249999999')
+        with self.assertRaisesRegex(RosGraspTaskError,'duration is insufficient'):checked_window(short,.25)
+        for field,value in [('stamp_ns','01250000000'),('stamp_ns',1250000000),
+                            ('stamp_ns','1200000000'),('stamp_semantics','exact_ros_time')]:
+            changed=deepcopy(values);changed[-1][field]=value
+            with self.subTest(field=field,value=value),self.assertRaises(RosGraspTaskError):checked_window(changed,.2)
+
+    def test_ordered_callback_burst_retains_each_original_sample_and_true_gap_still_fails(self):
+        def collect(stamps):
+            queued=iter(dict(sequence=i+1,time_sec=ns/1e9,stamp_ns=str(ns),stamp_semantics='rounded_native_mjData_time')
+                        for i,ns in enumerate(stamps))
+            latest,wall={},[0.]
+            def spin():
+                latest.update(next(queued));wall[0]+=.001  # one executor handler, original native times
+            return collect_evidence_window(.25,spin=spin,current_evidence=lambda:dict(latest),clock=lambda:wall[0])
+        values=collect([0,50_000_000,100_000_000,150_000_000,200_000_000,250_000_000])
+        self.assertEqual([s['sequence'] for s in values],list(range(1,7)))
+        self.assertEqual([s['stamp_ns'] for s in values],['0','50000000','100000000','150000000','200000000','250000000'])
+        # CI140's genuine170ms is not reset or bridged by a later good frame.
+        with self.assertRaisesRegex(RosGraspTaskError,'observation gap'):
+            collect([27_410_000_000,27_580_000_000,27_680_000_000])
 
     def test_actual_cubic_controller_spline_is_sampled_without_mutating_trajectory(self):
         path = trajectory(positions=[[0.]*6, [.1]*6], velocities=[[.2]*6, [-.1]*6])
@@ -165,6 +209,24 @@ class RosGraspTaskTests(unittest.TestCase):
         self.assertEqual(life.physical_grasp, "unconfirmed")
         self.assertEqual(life.planning_attachment, "attached")
         self.assertTrue(any(event["event"] == "physical_grasp_confirmed" for event in life.events))
+
+    def test_failed_native_stop_retains_historical_proof_and_failure_but_not_current_confirmation(self):
+        life=GraspLifecycle('a'*64)
+        life.approach_complete();life.contacts_confirmed(left_force_n=1.,right_force_n=1.,observed_sec=.2)
+        life.lift_confirmed(fixture_sha256='a'*64,lift_m=.08,stable_sec=.3,
+            relative_position_error_m=.001,relative_angle_error_rad=.01,bilateral_fraction=1.)
+        life.attach(object_id=life.object_id,owner=life.owner,link=life.link,fixture_sha256='a'*64)
+        life.carry();life.fail('native evidence has an observation gap')
+        before=deepcopy(life.events)
+        with self.assertRaises(RosGraspTaskError):failed_stop_hold_observation(life,stop_observed=False)
+        result=failed_stop_hold_observation(life,stop_observed=True)
+        self.assertEqual(result['physical_grasp_before_stop'],'confirmed')
+        self.assertEqual(life.physical_grasp,'unconfirmed');self.assertEqual(life.planning_attachment,'attached')
+        self.assertEqual(life.events[:-1],before);self.assertEqual(life.stage,'failed')
+        for known in ('slipped','released'):
+            other=deepcopy(life);other.physical_grasp=known
+            failed_stop_hold_observation(other,stop_observed=True)
+            self.assertEqual(other.physical_grasp,known)
 
     def test_cancel_during_preparation_callback_submits_zero_new_goals(self):
         cancelled, sent, identities = [False], [], []

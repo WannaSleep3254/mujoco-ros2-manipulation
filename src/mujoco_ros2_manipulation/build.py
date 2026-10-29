@@ -17,6 +17,20 @@ RUNTIME_PATCH_KEYS = ('patch', 'monitor_patch', 'contact_stop_patch', 'clock_wat
                       'control_loop_shutdown_patch', 'activation_shutdown_patch', 'grasp_policy_patch')
 
 
+def native_distance_command(root, vendor, output):
+    """Bind base, environment hooks and opt-in self scope to their source bytes."""
+    sources = (
+        ('MANIPULATION_DISTANCE_SHA256', 'path_distance.cpp'),
+        ('MANIPULATION_ENVIRONMENT_DISTANCE_SHA256', 'path_distance_environment.cpp'),
+        ('MANIPULATION_SELF_DISTANCE_SHA256', 'path_distance_self.cpp'),
+    )
+    definitions = ['-D'+macro+'="'+hashlib.sha256((root/'native'/name).read_bytes()).hexdigest()+'"'
+                   for macro, name in sources]
+    return ['g++', '-std=c++17', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
+            *definitions, '-I'+str(vendor/'include'), root/'native/path_distance_environment.cpp',
+            vendor/'lib/libmujoco.so.3.12.0', '-Wl,-rpath,'+str(vendor/'lib'), '-o', output]
+
+
 def local_path(root, name):
     if not isinstance(name, str) or Path(name).is_absolute():
         raise ValueError(f'Expected workspace-relative path: {name}')
@@ -254,12 +268,7 @@ def main():
             run(['gcc', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror', '-o', native / 'moveit_plugin_lifetime.so',
                  ROOT / 'native/moveit_plugin_lifetime.c', '-ldl', '-pthread'])
             vendor = ROOT / 'runtime/root/opt/ros/humble/opt/mujoco_vendor'
-            run(['g++', '-std=c++17', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
-                 '-DMANIPULATION_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/path_distance.cpp').read_bytes()).hexdigest() + '"',
-                 '-DMANIPULATION_ENVIRONMENT_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/path_distance_environment.cpp').read_bytes()).hexdigest() + '"',
-                 '-I' + str(vendor / 'include'), ROOT / 'native/path_distance_environment.cpp',
-                 vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
-                 '-o', native / 'path_distance.so'])
+            run(native_distance_command(ROOT, vendor, native/'path_distance.so'))
             run(['g++', '-std=c++17', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
                  '-DMANIPULATION_GRASP_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/grasp_distance.cpp').read_bytes()).hexdigest() + '"',
                  '-DMANIPULATION_GRASP_POLICY_SHA256="' + hashlib.sha256((ROOT / 'native/grasp_policy.hpp').read_bytes()).hexdigest() + '"',

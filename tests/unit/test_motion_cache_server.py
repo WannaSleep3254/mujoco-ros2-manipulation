@@ -24,6 +24,8 @@ class MotionCacheServerTests(unittest.TestCase):
         n.planning_source_sha256 = "a"*64
         n._planning_source_sha256 = Mock(return_value=n.planning_source_sha256)
         n._native_cache_provenance = Mock(return_value=dict(engine="MuJoCo 3.12.0", library_sha256="b"*64))
+        del n.opened_self_identity
+        n.opened_self_identity = deepcopy(n._self_admission_identity())
         n._planner_configuration_evidence = Mock(return_value=dict(
             requested_planner_id=n.planner_id, observed_type="geometric::RRTConnect", selected_planner_id=None))
         self.curve = Spline(n.joint_names, [dict(t=0.,p=[0.,0.],v=[0.,0.],a=[0.,0.]),
@@ -139,17 +141,20 @@ class MotionCacheServerTests(unittest.TestCase):
         self.node.dispatch.assert_not_called()
 
     def test_actual_native_or_moveit_rejection_performs_fresh_fallback(self):
-        for kind in ("native", "moveit"):
+        for kind in ("native", "self", "moveit"):
             with self.subTest(kind=kind):
                 self.setUp(); self.cold()
                 self.node.coordinated_path.reset_mock()
                 rejected = [False]
-                if kind == "native":
+                if kind in ("native", "self"):
                     baseline = deepcopy(self.node.evaluator.at.return_value)
                     def evaluate(state):
                         value = deepcopy(baseline)
                         if not rejected[0] and .03 < state["left"] < .07:
-                            value["distance_m"] = .01
+                            if kind == "native":
+                                value["distance_m"] = .01
+                            else:
+                                value["self_collision"]["distance_m"] = -.002
                             rejected[0] = True
                         return value
                     self.node.evaluator.at.side_effect = evaluate
@@ -306,14 +311,15 @@ class MotionCacheServerTests(unittest.TestCase):
         from mujoco_ros2_manipulation.model_build.integrity import file_sha256
         root = self.node.directory
         self.node.cell.root = root
-        names = ("native/path_distance.cpp", "native/path_distance_environment.cpp", "runtime/native/path_distance.so")
+        names = ("native/path_distance.cpp", "native/path_distance_environment.cpp", "runtime/native/path_distance.so", "native/path_distance_self.cpp")
         for name in names:
             path = root/name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(name.encode())
         opened = dict(engine="MuJoCo 3.12.0", source_sha256=file_sha256(root/names[0]),
             library_sha256=file_sha256(root/names[2]),
-            environment=dict(source_sha256=file_sha256(root/names[1])))
+            environment=dict(source_sha256=file_sha256(root/names[1])),
+            self_collision=dict(source_sha256=file_sha256(root/names[3])))
         self.node.evaluator.metadata = Mock(return_value=opened)
         check = review_fixture.Server._native_cache_provenance
         self.assertEqual(check(self.node)["opened"], opened)
