@@ -6,7 +6,7 @@
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
   "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim.",
   "assets": {
-    "index.html": "457cb64281b16d294752f1bfb4425042d13158d977a9a6418736ef489f258c22",
+    "index.html": "19ed1967e20c54c118a7b9cbfc52038d574462c6d878ad0b2c2fc045b0f9b597",
     "review-data.json": "3587d1711a81ddf4178944920ae622cc407bf0e6e7f41b58891d282ecfc9c9ac",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
