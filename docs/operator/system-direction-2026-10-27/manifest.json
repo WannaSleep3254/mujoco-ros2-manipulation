@@ -4,16 +4,16 @@
   "document_version": "1.9",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "Original v1.1 design, past performance, synchronized replay and archived v3/v4 grasp evidence/images preserved. Current update adds reduced CI136/137 native within-arm interference diagnosis, signed-distance admission, fixed-original rejection/acceptance, representative local CLI/HTTP/review and v5 grasp normal/held cancellation with clean ownership cleanup. Planning 10mm and observed-start 1mm are experimental sampled admission settings, not tracking-error bounds, continuous-time or hardware certification. Exact MoveIt/FCL cause is unproven; new remote CI/merge/deployment outcomes are separate. A later post-hash/pre-dispatch clock-age hardening has separate fake-clock (4 tests/6 injected subcases), 1322-unit and package proofs; prior actual CLI/HTTP/review runs are explicitly retained as pre-hardening. Grasp-v5 core/model/UI bytes remain unchanged.",
+  "scope": "Original v1.1 design, past performance, synchronized replay and archived v3/v4 grasp evidence/images preserved. Current update adds reduced CI136/137 native within-arm interference diagnosis, signed-distance admission, fixed-original rejection/acceptance, representative local CLI/HTTP/review and v5 grasp normal/held cancellation with clean ownership cleanup. Planning 10mm and observed-start 1mm are experimental sampled admission settings, not tracking-error bounds, continuous-time or hardware certification. Exact MoveIt/FCL cause is unproven; new remote CI/merge/deployment outcomes are separate. A later post-hash/pre-dispatch clock-age hardening has separate fake-clock (4 tests/6 injected subcases), 1322-unit and package proofs; prior actual CLI/HTTP/review runs are explicitly retained as pre-hardening. Grasp-v5 core/model/UI bytes remain unchanged. Original CI139 native evidence-window failure is preserved; a later integer-time correction keeps the 150ms gap gate, with 1325-unit proof and new-source normal/during-open cancellation browser receipts. Earlier v5 pre-transport cancellation is retained separately; XML/solver remain unchanged.",
   "assets": {
-    "index.html": "2a24be7022b32eb8f3dd48ae1ae41de0a869ae4c3c68b7b017f39975f06c4c9d",
-    "review-data.json": "194ffbccc72a8f4f12d9202d2e08f731354a9c133014d8c5ead9cf5b4a6cb0c3",
+    "index.html": "5003ebb6de00ee368c30f8bea5057d684d7d154a49cbeed7c8c78eb6b76593e6",
+    "review-data.json": "554a743e1720fb72b795d2a5bcbf67b0985ae1c7246cd86935531cbb804e74fb",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
     "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
     "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
     "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
     "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
-    "self-clearance-verification.json": "94b3141762332fa1745c1a7d1f20df2907c34c5978d9107606c94201fda4edf7"
+    "self-clearance-verification.json": "c8fa9a9bb4b5e1c5d7bd434cac7b66aa6fca3d3b797d83d714b4b4da55bc00f2"
   }
 }

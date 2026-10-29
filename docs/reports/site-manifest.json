@@ -217,7 +217,7 @@
     },
     "operator-demos.json": {
       "bytes": 4642,
-      "sha256": "f4540d405dbbc3cf3db3e7a97cc4916307981301e13ecd913c7dc49cca179332"
+      "sha256": "c39014d0706371197be8f5088c1524af502592593c6e9cb5236ccfa2b5d17598"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -368,16 +368,16 @@
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 77195,
-      "sha256": "2a24be7022b32eb8f3dd48ae1ae41de0a869ae4c3c68b7b017f39975f06c4c9d"
+      "bytes": 77757,
+      "sha256": "5003ebb6de00ee368c30f8bea5057d684d7d154a49cbeed7c8c78eb6b76593e6"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 1959,
-      "sha256": "5153204f9c90e670a53c8d5cbf383f4da2dcdee0dffc4229c50462b15b6dea30"
+      "bytes": 2254,
+      "sha256": "b2832d9a75ef79ee14a3d2386df0d6bc0a844c038a136795b0e1b66a38b03704"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 46178,
-      "sha256": "194ffbccc72a8f4f12d9202d2e08f731354a9c133014d8c5ead9cf5b4a6cb0c3"
+      "bytes": 46715,
+      "sha256": "554a743e1720fb72b795d2a5bcbf67b0985ae1c7246cd86935531cbb804e74fb"
     },
     "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,
@@ -396,8 +396,8 @@
       "sha256": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390"
     },
     "operator/system-direction-2026-10-27/self-clearance-verification.json": {
-      "bytes": 18350,
-      "sha256": "94b3141762332fa1745c1a7d1f20df2907c34c5978d9107606c94201fda4edf7"
+      "bytes": 33591,
+      "sha256": "c8fa9a9bb4b5e1c5d7bd434cac7b66aa6fca3d3b797d83d714b4b4da55bc00f2"
     },
     "operator/system-direction-2026-10-27/synchronized-replay.png": {
       "bytes": 57714,

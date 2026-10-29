@@ -487,6 +487,19 @@
         "scope": "Pure fake-monotonic boundary regression; no new native or ROS execution and no measured real-ROS failure.",
         "previous_actual_runs_not_relabelled": true,
         "grasp_v5_sources_unchanged": true
+      },
+      "later_native_time_window_correction": {
+        "implementation_commit": "215afa26dc7565e883eaa20e41598d248e30c483",
+        "evidence": "self-clearance-verification.json",
+        "maximum_gap_ns_unchanged": 150000000,
+        "python_unit": 1325,
+        "python_skipped": 1,
+        "current_browser_cases": [
+          "normal six Actions",
+          "cancel during open after transport and place"
+        ],
+        "old_v5_pre_transport_cancellation_preserved": true,
+        "model_xml_and_solver_unchanged": true
       }
     },
     "new_performance_measurements": [],
