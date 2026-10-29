@@ -483,6 +483,13 @@
           "cleanup_clean": true
         },
         "remote_result": "Pending verification of the combined release head."
+      },
+      "verified_harness_hotfix": {
+        "pull_request": 68,
+        "main_commit": "b9ceca5fc3b8269a453b6eb78d66aa9ea2d946ed",
+        "required_ci_run": 40827420046,
+        "required_checks_passed": 6,
+        "main_followup": "Tracked separately after merge; not inferred from PR CI."
       }
     },
     "ros_grasp": {

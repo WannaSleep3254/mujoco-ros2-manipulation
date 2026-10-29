@@ -217,7 +217,7 @@
     },
     "operator-demos.json": {
       "bytes": 4636,
-      "sha256": "ad587372f9f8c6d610b3b087295927d7f6f85ed6356e33e2b497bbc56fccc8cc"
+      "sha256": "c1f7d273928cdf746c4614ca8bffc460b6d331d9868dcb9715fb232cb06c9849"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -373,11 +373,11 @@
     },
     "operator/system-direction-2026-10-27/manifest.json": {
       "bytes": 1733,
-      "sha256": "f1c518eeb84aa6702236ab5341238d699c86a6d15307d2380ece67e47a97a03f"
+      "sha256": "2db30c34cfc609e4be5a635e596d088313da278d8c42af2c8183a1a2725f9971"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 43323,
-      "sha256": "a4ccc577c57f398db6cf14d4ee243ba4377ec04ebc4d4334414991d10bf955f0"
+      "bytes": 43623,
+      "sha256": "c436f85c5e88f3823762a2d9394b18a6c3d869ae4a7680f4c9f764f381a13f46"
     },
     "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,
