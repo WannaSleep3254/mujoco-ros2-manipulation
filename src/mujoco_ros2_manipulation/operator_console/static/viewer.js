@@ -671,14 +671,15 @@ export class LocalSceneView {
 
   _refreshStatus() {
     if (this.disposed) return;
-    const live = this.binding?.mode === 'live';
+    const recorded = this.options?.recordedPlayback === true;
+    const live = this.binding?.mode === 'live' && !recorded;
     const age = this.hasPose && live ? poseAgeMs(this.sourceAgeSec, this.receivedAt, this.now()) : null;
     const stale = this.hasPose && (this.manualStaleReason !== null || (live && age > this.staleAfterMs) || Boolean(this.sceneError));
     this.stats.source_age_ms = age;
     const state = this.sceneError ? 'error' : this.loading ? 'loading' : !this.hasPose ? 'waiting' : stale ? 'stale' : live ? 'fresh' : 'preview';
     this.canvas.style.visibility = this.hasPose && this.world.visible ? 'visible' : 'hidden';
     const text = this.sceneError ?? (this.loading ? '3D 표시 준비 중' : !this.hasPose ? (!this.binding ? this.manualStaleReason ?? '관절 상태 대기' : '관절 상태 대기') :
-      stale ? this.manualStaleReason ?? '갱신 대기 · 마지막 수신 자세' : live ? '현재 관절 자세 · 읽기 전용' :
+      stale ? this.manualStaleReason ?? '갱신 대기 · 마지막 수신 자세' : recorded ? '기록한 관절 자세 · 읽기 전용' : live ? '현재 관절 자세 · 읽기 전용' :
         this.binding.mode === 'plan_preview' ? '계획 경로 미리보기 · 읽기 전용' : '모델 미리보기 · 읽기 전용');
     if (this.label.dataset.state !== state) {
       this.canvas.style.opacity = stale ? '.55' : '1';

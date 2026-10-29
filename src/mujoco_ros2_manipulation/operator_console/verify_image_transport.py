@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--domain",type=int,required=True)
     parser.add_argument("--port",type=int,required=True)
     parser.add_argument("--output",type=Path,required=True)
+    parser.add_argument("--synchronized",action="store_true",help="Also capture actual published 3D poses and replay the immutable image/pose bundle")
     args=parser.parse_args()
     if not 0<=args.domain<=232 or not 1024<=args.port<=65535:
         parser.error("Invalid isolated domain or port")
@@ -52,7 +53,7 @@ def main():
         domain=args.domain,checks=records,note="Synthetic image transport only; no hardware camera, calibration, native-step alignment or latency claim")
     log=(output/"console.log").open("wb")
     process=subprocess.Popen(["/usr/bin/python3","-m","mujoco_ros2_manipulation.operator_console",
-        "--domain",str(args.domain),"--port",str(args.port),"--no-render",
+        "--domain",str(args.domain),"--port",str(args.port)]+([] if args.synchronized else ["--no-render"])+[
         "--image-topic","/diagnostic/image","--image-clock-domain","ros_simulation"],
         cwd=ROOT,env=os.environ.copy(),stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
     def http(path,payload=None,raw=False):
@@ -95,13 +96,19 @@ def main():
             assert decoded.size==(64,48) and decoded.format=="JPEG"
         records.append(dict(name="actual_ros_rgb8_to_http_jpeg",generation=old_generation,sequence=old_sequence,
             jpeg_sha256=hashlib.sha256(pixels).hexdigest(),status=source["status"],source_clock_domain=source["clock_domain"]))
+        capture_id=None
+        if args.synchronized:
+            wait(lambda:http("/api/state")["view"].get("pose_ready"),"published 3D pose",30,frames=True)
+            capture_id=http("/api/sync-recordings/start",{})["id"]
+            wait(lambda:http("/api/sync-recordings")["capture"]["image_count"]>=3,"initial synchronized image samples",frames=True)
+            records.append(dict(name="synchronized_capture_started",id=capture_id))
         before=source["counters"]["rejected"]
         for _ in range(8):
             rclpy.spin_once(node,timeout_sec=.025);publish("bgr8")
         invalid=wait(lambda:(lambda d:d if d["counters"]["rejected"]>before else None)(http("/api/image-source")),"invalid encoding rejected")
         assert invalid["invalid_reasons"].get("invalid_encoding",0)>0
         records.append(dict(name="invalid_encoding_rejected",rejected=invalid["counters"]["rejected"]))
-        stale=wait(lambda:(lambda d:d if d["status"]=="stale" else None)(http("/api/image-source")),"publisher present but frames stale")
+        stale=wait(lambda:(lambda d:d if d["status"]=="stale" and (not args.synchronized or d["latest"]["receive_age_sec"]>1.) else None)(http("/api/image-source")),"publisher present but frames stale")
         records.append(dict(name="stale_without_publisher_loss",status=stale["status"],publisher_count=stale["publisher_count"]))
         wait(lambda:http("/api/image-source")["status"]=="ready","recovered frame",frames=True)
         target=dict(boot["config"]["home_rad"])
@@ -114,6 +121,46 @@ def main():
         assert any(item["name"]=="goal_result" for item in analysis["timeline"]["items"])
         records.append(dict(name="request_image_joint_clock_observations",request_id=payload["request_id"],
             result=terminal["status"],analysis=analysis))
+        if args.synchronized:
+            wait(lambda:http("/api/sync-recordings")["capture"]["image_count"]>=3,"captured image samples",frames=True)
+            http("/api/sync-recordings/stop",dict(id=capture_id))
+            catalog=wait(lambda:(lambda d:d if d["capture"]["status"] in ("completed","failed") else None)(http("/api/sync-recordings")),"saved synchronized capture")
+            assert catalog["capture"]["status"]=="completed",catalog
+            prefix="/api/sync-recordings/"+capture_id
+            view=http(prefix)["view"]
+            count_before=len(http("/api/state")["history"])
+            # Locate only this owned console's output named in its own log.
+            text=(output/"console.log").read_text()
+            folder=Path(next(line.split(" session=",1)[1] for line in text.splitlines() if line.startswith("OPERATOR_READY ")))
+            from .synchronized_recording import SyncRecording
+            recording=SyncRecording.load(folder/"synchronized"/capture_id/"recording.json")
+            assert recording.sha256==view["recording_sha256"]
+            image_sample=recording.image_frames[1]
+            at=(int(image_sample["stamp_ns"])-recording.origin_ns)/1e9
+            chosen=http(prefix+"/control",dict(action="seek",time_sec=at))
+            assert chosen["selection"]["image"]["stamp_ns"]==image_sample["stamp_ns"]
+            assert chosen["selection"]["image_status"]=="ready"
+            assert chosen["selection"]["pose_status"]=="ready",chosen["selection"]
+            digest=chosen["selection"]["image"]["jpeg_sha256"]
+            assert hashlib.sha256(http(prefix+"/images/"+digest+".jpg",raw=True)).hexdigest()==digest
+            pose_stamp=int(chosen["selection"]["pose"]["source"]["stamp_ns"])
+            assert pose_stamp<=int(chosen["selection"]["cursor_ns"])
+            old_binding=chosen["binding_id"]
+            advanced=http(prefix+"/control",dict(action="next"))
+            assert advanced["binding_id"]!=old_binding
+            # The deliberate input pause above must remain a missing image gap.
+            gaps=[(a,b) for a,b in zip(recording.image_frames,recording.image_frames[1:])
+                if int(b["stamp_ns"])-int(a["stamp_ns"])>700_000_000]
+            assert gaps,"No preserved synthetic image gap"
+            gap_at=(int(gaps[0][0]["stamp_ns"])+600_000_000-recording.origin_ns)/1e9
+            gap=http(prefix+"/control",dict(action="seek",time_sec=gap_at))["selection"]
+            assert gap["image_status"]=="missing" and gap["image"] is None
+            assert len(http("/api/state")["history"])==count_before
+            records.append(dict(name="synchronized_capture_and_readonly_replay",id=capture_id,
+                recording_path=str(folder/"synchronized"/capture_id/"recording.json"),
+                recording_sha256=recording.sha256,pose_count=len(recording.poses),image_count=len(recording.image_frames),
+                gap_count=len(gaps),chosen_cursor_ns=chosen["selection"]["cursor_ns"],pose_stamp_ns=str(pose_stamp),
+                image_stamp_ns=image_sample["stamp_ns"],no_command_replay=True))
         history_count=len(http("/api/state")["history"])
         node.destroy_publisher(publisher)
         disconnected=wait(lambda:(lambda d:d if d["publisher_count"]==0 else None)(http("/api/image-source")),"publisher disconnected")

@@ -1,5 +1,5 @@
 'use strict';
-// Read-only inspection. No command/approval/cancel endpoint is called here.
+// Local observation and recording. No command/approval/cancel endpoint is called here.
 function sensorFrameKey(snapshot, selection='live') {
  const frame=selection==='live'?snapshot?.latest:snapshot?.history?.find(item=>String(item.sequence)===selection);
  if(!frame||frame.generation!==snapshot?.generation||frame.image_available===false||!Number.isSafeInteger(frame.sequence)||frame.sequence<1||!/^[0-9a-f]{32}$/.test(snapshot?.generation||''))return null;
@@ -141,4 +141,60 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
  window.addEventListener('console-observation-lost',()=>{observed=false;geometrySelection=null;++hierarchySerial;objects.disabled=true;for(const button of treeButtons)button.disabled=true;get('object-state').textContent='상태 조회 중단 · 마지막 객체 정보';get('sensor-state').textContent='상태 조회 중단 · 마지막 수신 자료';++imageSerial;frameToken=null;get('analysis-state').textContent='상태 조회 중단 · 마지막 조회 자료';});
  document.querySelectorAll('[data-view="analysis"], [data-view="operate"]').forEach(button=>button.addEventListener('click',()=>setTimeout(render,0)));
  document.addEventListener('visibilitychange',()=>{if(document.hidden){++imageSerial;frameToken=null;}else render();});
+})();
+
+
+// Capture controls preserve observations only. Playback links open immutable
+// recordings explicitly; selecting a sensor frame above remains independent.
+(()=>{
+ const get=id=>document.getElementById(id),panel=get('analysis'),start=get('sync-capture-start'),stop=get('sync-capture-stop');
+ if(!panel||!start||!stop)return;
+ let token=null,capture=null,pending=false,changing=false,closed=false,readAt=0,serial=0;
+ const identifier=value=>typeof value==='string'&&/^[0-9a-f]{32}$/.test(value);
+ const reason=value=>({user_stop:'요청에 따라 종료',source_changed:'실행 또는 센서 공급원 변경',source_unavailable:'관측 연결 종료',clock_reversed:'원천 시계 역행',duration_limit:'기록 시간 상한 도달',byte_or_sample_limit:'기록 용량 또는 표본 상한 도달',insufficient_or_invalid_capture:'필수 표본이나 기록 식별을 확인하지 못했습니다'}[value]||value);
+ const allowed=()=>!closed&&!document.hidden&&!panel.hidden;
+ function enable(){const active=capture?.status==='recording',busy=changing||['preparing','saving','stopping'].includes(capture?.status);
+  start.disabled=closed||busy||!token||active||capture?.can_start===false;
+  stop.disabled=closed||busy||!token||!active||!identifier(capture?.id);
+ }
+ function render(data){
+  capture=data.capture;token=data.token;
+  const labels={idle:'기록 대기',recording:'동기 기록 중',preparing:'기록 준비 중',saving:'기록 저장 중',stopping:'기록 종료 중',completed:'기록 저장 완료',failed:'기록을 저장하지 못했습니다',unavailable:'기록 입력을 확인하세요'};
+  const counts=Number.isSafeInteger(capture?.pose_count)&&Number.isSafeInteger(capture?.image_count)?' · 3D '+capture.pose_count+'개 · 이미지 '+capture.image_count+'개':'';
+  get('sync-capture-state').textContent=(labels[capture?.status]||'기록 상태 미확인')+counts+(capture?.reason?' · '+reason(capture.reason):'')+(capture?.availability_reason?' · '+capture.availability_reason:'');
+  const list=get('sync-capture-list');list.replaceChildren();
+  for(const item of (data.recordings||[]).slice(-8).reverse()){
+   if(!identifier(item.id))continue;
+   const row=document.createElement('li'),link=document.createElement('a'),note=document.createElement('p');
+   link.href='/synchronized?id='+item.id;link.target='_blank';link.rel='noopener';link.textContent=item.label||'동기 기록';
+   note.className='help';note.textContent=(Number.isFinite(item.duration_sec)?item.duration_sec.toFixed(2)+' s':'길이 미확인')+(item.ended_reason?' · '+reason(item.ended_reason):'');
+   row.append(link,note);list.append(row);
+  }
+  get('sync-capture-empty').hidden=list.childElementCount>0;enable();
+ }
+ async function refresh(force=false){
+  if(!allowed()||pending||!force&&Date.now()-readAt<1000)return;
+  pending=true;readAt=Date.now();const epoch=++serial,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),4000);
+  try{const reply=await fetch('/api/sync-recordings',{cache:'no-store',signal:controller.signal});if(!reply.ok)throw Error('동기 기록 상태를 확인하지 못했습니다.');
+   const data=await reply.json();if(!closed&&epoch===serial)render(data);
+  }catch(error){if(!closed&&epoch===serial){token=null;get('sync-capture-state').textContent='동기 기록 연결을 확인할 수 없습니다.';enable();}}
+  finally{clearTimeout(timer);pending=false;}
+ }
+ async function change(action){
+  if(closed||changing||!token)return;
+  if(action==='stop'&&!identifier(capture?.id))return;
+  changing=true;enable();get('sync-capture-error').textContent='';
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+  try{const payload=action==='start'?{}:{id:capture.id};
+   const reply=await fetch('/api/sync-recordings/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Operator-Token':token},body:JSON.stringify(payload),signal:controller.signal});
+   const data=await reply.json();if(!reply.ok)throw Error(data.error||'기록 조작을 적용하지 못했습니다.');
+  }catch(error){if(!closed)get('sync-capture-error').textContent=error.name==='AbortError'?'기록 조작 응답이 지연되었습니다. 상태를 확인한 후 다시 조작하세요.':error.message;}
+  finally{clearTimeout(timer);changing=false;enable();void refresh(true);}
+ }
+ start.addEventListener('click',()=>void change('start'));stop.addEventListener('click',()=>void change('stop'));
+ window.addEventListener('console-observation',()=>void refresh());
+ document.querySelectorAll('[data-view="analysis"]').forEach(button=>button.addEventListener('click',()=>setTimeout(()=>void refresh(true),0)));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh(true);});
+ window.addEventListener('pagehide',()=>{closed=true;++serial;token=null;enable();});
+ void refresh(true);
 })();
