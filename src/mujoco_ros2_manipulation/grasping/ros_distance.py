@@ -38,6 +38,8 @@ class GraspDistanceEvaluator:
         self.api.grasp_distance_pair_count.restype = C.c_int
         self.api.grasp_distance_geom.argtypes = [C.c_void_p, C.c_int]
         self.api.grasp_distance_geom.restype = C.c_char_p
+        self.api.grasp_distance_geom_count.argtypes = [C.c_void_p]
+        self.api.grasp_distance_geom_count.restype = C.c_int
         self.api.grasp_distance_eval.argtypes = [C.c_void_p, C.POINTER(C.c_double), C.c_int,
             C.c_int, C.POINTER(C.c_double), C.POINTER(C.c_double), C.POINTER(C.c_int), C.POINTER(C.c_double)]
         self.api.grasp_distance_eval.restype = C.c_int
@@ -59,6 +61,17 @@ class GraspDistanceEvaluator:
 
     def __enter__(self):
         return self
+
+    def geom_names(self):
+        """Return the complete native-ID catalogue, retaining unnamed entries."""
+        with self._lock:
+            if not self.handle:
+                raise ValueError("Expected open grasp evaluator")
+            count = self.api.grasp_distance_geom_count(self.handle)
+            if not 1 <= count <= 4096:
+                raise ValueError("Invalid native geometry catalogue")
+            names = [self.api.grasp_distance_geom(self.handle, index) for index in range(count)]
+            return tuple(name.decode() if name else "" for name in names)
 
     def __exit__(self, *args):
         self.close()

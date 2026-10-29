@@ -116,6 +116,10 @@ class SceneServer:
         self.apply_requests.append(deepcopy(request))
         self._pending_confirmation = True
         if self.apply_success:
+            for attachment in request.scene.robot_state.attached_collision_objects:
+                if attachment.object.operation == attachment.object.ADD:
+                    self.scene.world.collision_objects[:] = [current for current in
+                        self.scene.world.collision_objects if current.id != attachment.object.id]
             for collection, additions, key in (
                 (self.scene.world.collision_objects, request.scene.world.collision_objects, lambda obj: obj.id),
                 (self.scene.robot_state.attached_collision_objects,
@@ -211,7 +215,7 @@ class RosGraspPlanningSceneTests(unittest.TestCase):
         native = observation(3, tcp_position=[1., 2., 3.], tcp_quaternion=q, block_position=[1., 2.1, 3.])
         result = adapter.attach(native, physical_confirmed=True)
         request = server.apply_requests[-1]
-        self.assertEqual(request.scene.world.collision_objects[0].operation, CollisionObject.REMOVE)
+        self.assertEqual(request.scene.world.collision_objects, [])  # native MoveIt Attached ADD owns world removal
         attached = request.scene.robot_state.attached_collision_objects[0]
         self.assertEqual(attached.link_name, "fr5_grasp_tcp")
         self.assertEqual(attached.object.header.frame_id, "fr5_grasp_tcp")
@@ -328,6 +332,22 @@ class RosGraspPlanningSceneTests(unittest.TestCase):
             adapter.initialize(observation())
         self.assertEqual(server.apply_requests, [])
 
+    def test_acm_semantics_allow_moveit_to_drop_default_rows_but_retain_false_exceptions(self):
+        server = SceneServer()
+        adapter = server.adapter()
+        full = NS(entry_names=["a", "b", "unused"],
+                  entry_values=[NS(enabled=[False, True, False]), NS(enabled=[True, False, False]),
+                                NS(enabled=[False, False, False])], default_entry_names=[], default_entry_values=[])
+        compact = NS(entry_names=["a", "b"], entry_values=[NS(enabled=[False, True]), NS(enabled=[True, False])],
+                     default_entry_names=[], default_entry_values=[])
+        self.assertEqual(adapter._matrix_identity(full), adapter._matrix_identity(compact))
+        denied = NS(entry_names=["a", "b"], entry_values=[NS(enabled=[True, False]), NS(enabled=[False, False])],
+                    default_entry_names=["a"], default_entry_values=[True])
+        permissive = NS(entry_names=["a", "b"], entry_values=[NS(enabled=[True, True]), NS(enabled=[True, False])],
+                        default_entry_names=["a"], default_entry_values=[True])
+        self.assertNotEqual(adapter._matrix_identity(denied), adapter._matrix_identity(permissive))
+        self.assertIn(["a", "b", False], adapter._matrix_identity(denied)["pairs"])
+
     def test_transport_failure_or_false_apply_never_claims_confirmed_attachment(self):
         server, adapter = self.allowed()
         server.apply_success = False
@@ -364,6 +384,50 @@ class RosGraspPlanningSceneTests(unittest.TestCase):
         self.assertEqual(result["reference_frame"], "fr5_grasp_tcp")
         slipped = adapter.block_drift(observation(4, tcp_position=[.3, .4, .6], block_position=[.3, .4, .48]))
         self.assertFalse(slipped["within_tolerance"])
+
+    def test_delayed_get_cannot_attach_using_stale_physical_observation(self):
+        server, adapter = self.allowed()
+        now = [10.1]
+        adapter.monotonic = lambda: now[0]
+        original_get = server.get_client.call_async
+        def delayed_get(request):
+            result = original_get(request)
+            now[0] += 1.
+            return result
+        server.get_client.call_async = delayed_get
+        count = len(server.apply_requests)
+        with self.assertRaisesRegex(GraspPlanningSceneError, "stale or held"):
+            adapter.attach(observation(3), physical_confirmed=True)
+        self.assertEqual(len(server.apply_requests), count)
+        self.assertFalse(adapter.snapshot()["mutation_uncertain"])
+
+    def test_refresh_after_get_accepts_current_healthy_physical_observation(self):
+        server, adapter = self.allowed()
+        now = [10.1]
+        adapter.monotonic = lambda: now[0]
+        original_get = server.get_client.call_async
+        def delayed_get(request):
+            result = original_get(request)
+            now[0] += .7
+            return result
+        server.get_client.call_async = delayed_get
+        adapter._fresh_observation = lambda: observation(3, now=now[0])
+        result = adapter.attach(observation(3), physical_confirmed=True)
+        self.assertEqual(result["planning_attachment"], "attached")
+
+    def test_cancel_or_lost_contact_at_pre_mutation_guard_sends_zero_apply(self):
+        for kind in ("cancelled", "bilateral contact lost"):
+            with self.subTest(kind=kind):
+                server, adapter = self.allowed()
+                count = len(server.apply_requests)
+                def guard():
+                    raise RuntimeError(kind)
+                adapter._pre_mutation_guard = guard
+                with self.assertRaisesRegex(RuntimeError, kind):
+                    adapter.attach(observation(3), physical_confirmed=True)
+                self.assertEqual(len(server.apply_requests), count)
+                self.assertFalse(adapter.snapshot()["mutation_uncertain"])
+                self.assertEqual(adapter.snapshot()["last_confirmed_state"], "contact_allowed")
 
 
 if __name__ == "__main__":

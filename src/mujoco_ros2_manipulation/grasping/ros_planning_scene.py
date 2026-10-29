@@ -114,7 +114,8 @@ class RosGraspPlanningScene:
     """
 
     def __init__(self, get_client, apply_client, wait_result, types, *, manifest,
-                 run_id, model_sha256, monotonic=time.monotonic, rpc_timeout_sec=5.):
+                 run_id, model_sha256, monotonic=time.monotonic, rpc_timeout_sec=5., on_evidence=None,
+                 fresh_observation=None, pre_mutation_guard=None):
         _require(type(run_id) is str and re.fullmatch(r"[0-9a-f]{32}", run_id) is not None,
                  "a complete native grasp run ID is required")
         _require(type(model_sha256) is str and re.fullmatch(r"[0-9a-f]{64}", model_sha256) is not None,
@@ -142,6 +143,11 @@ class RosGraspPlanningScene:
         self.link_name = tool["tcp_frame"]
         self.touch_links = ("fr5_left_finger", "fr5_right_finger")
         self.rpc_timeout_sec = _number(rpc_timeout_sec, "RPC timeout", maximum=10, minimum=.01)
+        _require(on_evidence is None or callable(on_evidence), "scene evidence callback must be callable")
+        self._on_evidence = on_evidence
+        _require(fresh_observation is None or callable(fresh_observation), "fresh observation supplier must be callable")
+        _require(pre_mutation_guard is None or callable(pre_mutation_guard), "pre-mutation guard must be callable")
+        self._fresh_observation, self._pre_mutation_guard = fresh_observation, pre_mutation_guard
         self._lock = threading.RLock()
         self._state = "uninitialized"
         self._fault = ""
@@ -264,10 +270,22 @@ class RosGraspPlanningScene:
 
     def _matrix_identity(self, matrix):
         names, rows, defaults = self._matrix(matrix)
-        ordered = sorted(names)
-        indices = [names.index(name) for name in ordered]
-        return dict(names=ordered, rows=[[rows[i][j] for j in indices] for i in indices],
-                    defaults=dict(sorted(defaults.items())))
+        # MoveIt's message constructor stores only off-diagonal exceptions to
+        # pair defaults. Names with entirely default-valued rows can therefore
+        # disappear on getMessage(). Compare the effective permissions, not
+        # that transport representation. False exceptions to true defaults
+        # remain essential and are retained here.
+        parsed = (names, rows, defaults)
+        ordered = sorted(set(names) | set(defaults))
+        exceptions = []
+        for index, left in enumerate(ordered):
+            for right in ordered[index+1:]:
+                values = [defaults[name] for name in (left, right) if name in defaults]
+                fallback = all(values) if values else False
+                allowed = self._effective(parsed, left, right)
+                if allowed != fallback:
+                    exceptions.append([left, right, allowed])
+        return dict(pairs=exceptions, defaults=dict(sorted(defaults.items())))
 
     def _scene_identity(self, scene):
         world, attached = self._objects(scene)
@@ -293,6 +311,11 @@ class RosGraspPlanningScene:
                      and value.get("heartbeat_fresh") is True and value.get("phase") in range(8),
                      "fresh guarded physical evidence is required")
         return value
+
+    def _refreshed(self, observation, now_sec, *, physical=False):
+        if self._fresh_observation is not None:
+            observation = self._fresh_observation()
+        return self._observation(observation, now_sec, physical=physical)
 
     def _assert_object(self, obj, expected_pose, *, attached=False):
         _require(obj.id == self.object_id and obj.header.frame_id == (self.link_name if attached else "world"),
@@ -342,14 +365,26 @@ class RosGraspPlanningScene:
         request.scene.world.collision_objects = list(world)
         request.scene.robot_state.attached_collision_objects = list(attached)
         request.scene.allowed_collision_matrix = matrix
+        submitted = False
         try:
-            answer = self._call(self.apply_client, request, "apply grasp planning scene")
+            if hasattr(self.apply_client, "service_is_ready"):
+                _require(self.apply_client.service_is_ready(), "apply grasp planning scene service is unavailable")
+            if self._pre_mutation_guard is not None:
+                self._pre_mutation_guard()
+            submitted = True
+            answer = self.wait_result(self.apply_client.call_async(request), self.rpc_timeout_sec, "apply grasp planning scene")
             _require(answer.success is True, "MoveIt rejected the grasp scene update")
             confirmed = self._get()
             self._assert_owned(confirmed, state, reference)
             # Confirm the whole copied ACM, not just the newly allowed pairs.
-            _require(self._matrix_identity(confirmed.allowed_collision_matrix) == self._matrix_identity(matrix),
-                     "confirmed ACM differs from the scoped update")
+            if self._matrix_identity(confirmed.allowed_collision_matrix) != self._matrix_identity(matrix):
+                if self._on_evidence is not None:
+                    convert = self.types.message_to_ordereddict
+                    self._on_evidence("acm_confirmation_mismatch", dict(
+                        schema_version=1, run_id=self.run_id, model_sha256=self.model_sha256,
+                        before=convert(before.allowed_collision_matrix), requested=convert(matrix),
+                        confirmed=convert(confirmed.allowed_collision_matrix)))
+                raise GraspPlanningSceneError("confirmed ACM differs from the scoped update")
             old_world, old_attached = self._objects(before)
             new_world, new_attached = self._objects(confirmed)
             convert = self.types.message_to_ordereddict
@@ -361,6 +396,8 @@ class RosGraspPlanningScene:
             self._state, self._reference, self._source = state, reference, source
             return self.snapshot()
         except Exception as exc:
+            if not submitted:
+                raise  # No mutation was sent; keep the last confirmed state.
             # The request may have been applied despite a transport/confirmation
             # failure. Never report the last known attachment as current fact.
             self._fault = str(exc) or type(exc).__name__
@@ -374,6 +411,7 @@ class RosGraspPlanningScene:
             world, attached = self._objects(before)
             _require(self.object_id not in world and self.object_id not in attached,
                      "owned object already exists; explicit recovery is required")
+            value = self._refreshed(observation, now_sec)
             reference = _observed_pose(value["block"])
             matrix = self._scoped_matrix(before.allowed_collision_matrix, (False, False))
             return self._apply(before, world=(self._collision(reference),), matrix=matrix,
@@ -386,6 +424,8 @@ class RosGraspPlanningScene:
             _require(value["phase"] in (2, 3), "finger contact is allowed only during closing/extraction")
             before = self._get()
             self._assert_owned(before, self._state, self._reference)
+            value = self._refreshed(observation, now_sec, physical=True)
+            _require(value["phase"] in (2, 3), "finger contact phase changed before mutation")
             parsed = self._matrix(before.allowed_collision_matrix)
             previous = tuple(self._effective(parsed, self.object_id, finger) for finger in self.touch_links)
             matrix = self._scoped_matrix(before.allowed_collision_matrix, (True, True))
@@ -402,8 +442,14 @@ class RosGraspPlanningScene:
             _require(value["phase"] in (3, 4), "attachment requires the extraction/holding phase")
             before = self._get()
             self._assert_owned(before, self._state, self._reference)
+            value = self._refreshed(observation, now_sec, physical=True)
+            _require(value["phase"] in (3, 4), "physical attachment phase changed before mutation")
             reference = _relative(_observed_pose(value["tcp"]), _observed_pose(value["block"]))
-            return self._apply(before, world=(self._collision(remove=True),), attached=(self._attached(reference),),
+            # MoveIt processes robot_state before world updates. Attached ADD
+            # atomically removes the same world ID itself; an additional world
+            # REMOVE would then fail after the attachment had already happened.
+            # Full fresh geometry prevents reuse of the old world source pose.
+            return self._apply(before, attached=(self._attached(reference),),
                                matrix=self._scoped_matrix(before.allowed_collision_matrix, (True, True)),
                                state="attached", reference=reference, source=self._source_identity(value))
 
@@ -415,6 +461,8 @@ class RosGraspPlanningScene:
             _require(value["phase"] in (6, 7), "detachment requires the opening/completed phase")
             before = self._get()
             self._assert_owned(before, self._state, self._reference)
+            value = self._refreshed(observation, now_sec, physical=True)
+            _require(value["phase"] in (6, 7), "physical release phase changed before mutation")
             _require(self._previous_finger_pairs == (False, False), "scoped finger permissions cannot be restored")
             reference = _observed_pose(value["block"])
             return self._apply(before, world=(self._collision(reference),), attached=(self._attached(remove=True),),

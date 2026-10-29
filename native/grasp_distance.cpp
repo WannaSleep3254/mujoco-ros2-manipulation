@@ -93,6 +93,10 @@ int grasp_distance_pair_count(void* handle) {
   const auto* c = static_cast<Context*>(handle);
   return c ? static_cast<int>(c->pairs.size()) : 0;
 }
+int grasp_distance_geom_count(void* handle) {
+  const auto* c = static_cast<Context*>(handle);
+  return c ? c->m->ngeom : 0;
+}
 const char* grasp_distance_geom(void* handle, int id) {
   const auto* c = static_cast<Context*>(handle);
   return c && id >= 0 && id < c->m->ngeom ? mj_id2name(c->m, mjOBJ_GEOM, id) : nullptr;

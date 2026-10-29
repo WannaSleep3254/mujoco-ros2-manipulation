@@ -125,6 +125,15 @@ class RosGraspDistanceTests(unittest.TestCase):
         tree.write(path, encoding='unicode')
         return path
 
+    def test_native_id_catalogue_retains_unnamed_geometries_and_rejects_closed_handle(self):
+        with GraspDistanceEvaluator(self.target) as evaluator:
+            names = evaluator.geom_names()
+            self.assertEqual(names, tuple(row['name'] for row in self.initial['geoms']))
+            self.assertEqual(len(names), 49)
+            self.assertIn('', names)
+        with self.assertRaises(ValueError):
+            evaluator.geom_names()
+
     @contextmanager
     def raw(self, model):
         # Exercise the native parser's explicit unsupported-model boundary with

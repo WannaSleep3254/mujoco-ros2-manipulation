@@ -35,6 +35,10 @@ OUTPUTS = (*BASE_OUTPUTS, "grasp_plugins.yaml")
 MAX_FILE_BYTES = 16 * 1024 * 1024
 MAX_OUTPUT_BYTES = 64 * 1024 * 1024
 MAX_DEPENDENCY_BYTES = 512 * 1024 * 1024
+# The manufacturer's wrist3 frame is a joint/link origin.  The synthetic tool
+# needs this standoff to clear the wrist collision meshes, rather than treating
+# that origin as the face of a physical mounting flange.
+TOOL_MOUNT_OFFSET_M = .095
 _SHA = re.compile(r"[0-9a-f]{64}")
 
 
@@ -123,7 +127,7 @@ def _tool_mjcf(mj):
     tip = mj.find(".//body[@name='" + TIP_BODY + "']")
     _require(tip is not None and mj.find("worldbody/body[@name='right_world']") is not None,
              "Both checked robot bodies are required")
-    tool = ET.SubElement(tip, "body", name=TOOL_BODY, pos="0 0 .045", quat="0 1 0 0")
+    tool = ET.SubElement(tip, "body", name=TOOL_BODY, pos=_numbers((0., 0., TOOL_MOUNT_OFFSET_M)), quat="0 1 0 0")
     surface = dict(condim="4", friction=".8 .01 .001", solref=".008 1", solimp=".95 .99 .001")
     ET.SubElement(tool, "geom", name="fr5_palm_geom", type="box", size=".055 .025 .01",
         mass=".15", rgba=".25 .45 .65 1", **surface)
@@ -176,7 +180,7 @@ def _joint(robot, name, parent, child, kind, xyz, rpy=(0., 0., 0.)):
 
 def _tool_urdf(robot, table_position):
     _box_link(robot, TOOL_BODY, (.055,.025,.01), .15, (.25,.45,.65,1.))
-    _joint(robot, TOOL_BODY+"_fixed", TIP_BODY, TOOL_BODY, "fixed", (0.,0.,.045), (math.pi,0.,0.))
+    _joint(robot, TOOL_BODY+"_fixed", TIP_BODY, TOOL_BODY, "fixed", (0.,0.,TOOL_MOUNT_OFFSET_M), (math.pi,0.,0.))
     ET.SubElement(robot, "link", name=TCP_SITE)
     _joint(robot, TCP_SITE+"_fixed", TOOL_BODY, TCP_SITE, "fixed", (0.,0.,-.10))
     for side, x, axis in (("left",-.04,(1.,0.,0.)),("right",.04,(-1.,0.,0.))):
@@ -200,7 +204,7 @@ def _gripper_controller():
 
 def _tool_contract():
     return dict(id="fr5_synthetic_parallel_gripper",parent_tip=TIP_BODY,body=TOOL_BODY,tcp_site=TCP_SITE,tcp_frame=TCP_SITE,
-        parent_to_tool_translation_m=[0.,0.,.045],parent_to_tool_quaternion_wxyz=[0.,1.,0.,0.],tool_to_tcp_translation_m=[0.,0.,-.10],
+        parent_to_tool_translation_m=[0.,0.,TOOL_MOUNT_OFFSET_M],parent_to_tool_quaternion_wxyz=[0.,1.,0.,0.],tool_to_tcp_translation_m=[0.,0.,-.10],
         finger_geoms=list(FINGER_GEOMS),finger_force_limit_n=20.,open_target_m=0.,close_target_m=.026,
         adjacent_collision_exclusions=[dict(link1=TIP_BODY,link2=TOOL_BODY,reason="Adjacent"),
             dict(link1=TOOL_BODY,link2="fr5_left_finger",reason="Adjacent"),
