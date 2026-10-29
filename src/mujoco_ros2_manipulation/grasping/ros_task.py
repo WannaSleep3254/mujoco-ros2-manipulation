@@ -69,6 +69,7 @@ def contact_evidence(value, reference=None):
     relative = _relative(_observed_pose(value["tcp"]), _observed_pose(value["block"]))
     position, angle = _pose_error(relative, reference) if reference is not None else (0., 0.)
     return dict(sequence=value["sequence"], time_sec=value["time_sec"],
+                stamp_ns=value["stamp_ns"], stamp_semantics=value["stamp_semantics"],
                 finger_force_n=forces, bilateral_contact=min(forces) >= .2,
                 table_force_n=table, relative_pose=[*relative[0], *relative[1]],
                 relative_position_error_m=position, relative_angle_error_rad=angle,
@@ -79,16 +80,43 @@ def contact_evidence(value, reference=None):
                 force_timing_scope="nominal last native step, eligible only with a fresh unlatched guard")
 
 
+def _evidence_time_ns(sample):
+    """Retain the checked observer's rounded native clock, never exact ROS time."""
+    stamp, seconds = sample.get("stamp_ns"), sample.get("time_sec")
+    _require(type(stamp) is str and re.fullmatch(r"0|[1-9][0-9]{0,18}", stamp) is not None
+             and sample.get("stamp_semantics") == "rounded_native_mjData_time",
+             "native evidence requires its original rounded-time stamp")
+    _require(type(seconds) in (int, float) and math.isfinite(seconds) and 0 <= seconds <= 2147483647.,
+             "native evidence time is invalid")
+    rounded = seconds*1e9
+    _require(abs(int(stamp)-rounded) <= max(.501, math.ulp(rounded)),
+             "native evidence stamp differs from its rounded native time")
+    return int(stamp)
+
+
+def _window_minimum_ns(minimum_sec):
+    _require(type(minimum_sec) in (int, float) and math.isfinite(minimum_sec) and 0 < minimum_sec <= 60,
+             "native evidence duration is invalid")
+    return math.ceil(minimum_sec*1e9)
+
+
 def checked_window(samples, minimum_sec):
-    """Require distinct progressing native samples; held frames add no time."""
+    """Compare rounded native integer stamps; held frames add no evidence time.
+
+    A 150-ms maximum gap remains exactly 150,000,000 native nanoseconds. Native
+    floating timestep accumulation must not turn that boundary into a larger
+    gap. This clock is not an exact ROS timestamp or a force-timing certificate.
+    """
     _require(len(samples) >= 3, "insufficient distinct native observation samples")
-    times = [sample["time_sec"] for sample in samples]
+    times = [_evidence_time_ns(sample) for sample in samples]
     sequences = [sample["sequence"] for sample in samples]
-    _require(all(b > a for a, b in zip(times, times[1:]))
+    _require(all(type(value) is int and value > 0 for value in sequences)
+             and all(b > a for a, b in zip(times, times[1:]))
+             and all(b["time_sec"] > a["time_sec"] for a,b in zip(samples,samples[1:]))
              and all(b > a for a, b in zip(sequences, sequences[1:])), "native evidence did not advance")
-    _require(times[-1]-times[0] >= minimum_sec, "native evidence duration is insufficient")
-    _require(max(b-a for a, b in zip(times, times[1:])) <= .15, "native evidence has an observation gap")
-    return times[-1]-times[0]
+    _require(times[-1]-times[0] >= _window_minimum_ns(minimum_sec), "native evidence duration is insufficient")
+    _require(max(b-a for a, b in zip(times, times[1:])) <= 150_000_000, "native evidence has an observation gap")
+    return (times[-1]-times[0])/1e9
 
 
 def trajectory_samples(trajectory, start, selected_names, limits):
@@ -403,6 +431,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
 
     def window(duration, *, predicate=None, timeout=8.):
         samples = []
+        minimum_ns = _window_minimum_ns(duration)
         last_sequence = None
         deadline = time.monotonic()+timeout
         while time.monotonic() < deadline:
@@ -415,9 +444,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             if predicate is not None and not predicate(item):
                 samples = []
                 continue
-            if not samples or item["time_sec"] > samples[-1]["time_sec"]:
+            if not samples or _evidence_time_ns(item) > _evidence_time_ns(samples[-1]):
                 samples.append(item)
-            if len(samples) >= 3 and samples[-1]["time_sec"]-samples[0]["time_sec"] >= duration:
+            if len(samples) >= 3 and _evidence_time_ns(samples[-1])-_evidence_time_ns(samples[0]) >= minimum_ns:
                 checked_window(samples, duration)
                 return samples
         raise TimeoutError("physical observation window: "+record["stage"])
