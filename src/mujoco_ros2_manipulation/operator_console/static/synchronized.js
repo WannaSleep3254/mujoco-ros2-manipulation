@@ -14,6 +14,7 @@ export class SynchronizedPlayer {
     this.token=null;this.view=null;this.binding=null;this.loaded=null;this.revision=0;
     this.inflight=false;this.busy=false;this.closed=false;this.timer=null;this.pending=false;
     this.readController=null;this.mediaController=null;this.image=null;this.displayKey=null;this.controlError=null;
+    this.scrubbing=false;
     this.enable();
   }
   node(id){return this.element(id);}
@@ -39,7 +40,7 @@ export class SynchronizedPlayer {
       this.viewer.setExpectedBinding(this.binding,view.binding);
     }
     this.node('sync-source').textContent=view.source.label+' · 보존한 관측 기록';
-    this.node('sync-seek').max=String(view.duration_sec);this.node('sync-seek').value=String(view.position_sec);
+    this.node('sync-seek').max=String(view.duration_sec);if(!this.scrubbing)this.node('sync-seek').value=String(view.position_sec);
     this.node('sync-time').textContent=stamp(view.position_sec)+' / '+stamp(view.duration_sec);
     this.node('sync-speed').value=String(view.speed);
     this.node('sync-playback-state').textContent=view.playing?'재생 중':view.position_sec>=view.duration_sec?'재생 완료':'일시 정지';
@@ -106,6 +107,7 @@ export class SynchronizedPlayer {
     try{
       const data=await this.readState();if(this.closed||epoch!==this.revision||this.busy)return;
       this.token=data.token;this.acceptView(data.view);this.enable();
+      this.node('sync-back').hidden=data.console_available===false;
       if(!this.hidden())await this.applySelection(data.view,epoch);
     }catch(error){if(!this.closed&&epoch===this.revision){this.clearDisplays('기록 표시를 확인할 수 없습니다.');this.node('sync-status').dataset.state='error';this.error(error.message||'기록 연결을 확인하세요.');}}
     finally{this.inflight=false;if(!this.closed&&!this.busy){const immediate=this.pending&&!this.hidden();this.pending=false;this.schedule(immediate?0:undefined);}}
@@ -113,6 +115,7 @@ export class SynchronizedPlayer {
   async control(action,value){
     if(this.closed||this.busy||!this.token)return;
     this.busy=true;const epoch=++this.revision;
+    this.scrubbing=false;
     if(this.timer!==null){this.timers.clear(this.timer);this.timer=null;}
     this.readController?.abort();this.mediaController?.abort();this.viewer.cancelPoseRead?.();
     this.clearDisplays('재생 위치를 적용하고 있습니다.');this.enable();
@@ -178,7 +181,9 @@ function bootstrap(){
     onMetrics:value=>{element('sync-metrics').textContent=JSON.stringify(value,null,2);}});
   const player=new SynchronizedPlayer({id,viewer,element});
   for(const [button,action] of [['sync-play','play'],['sync-pause','pause'],['sync-restart','seek'],['sync-previous','previous'],['sync-next','next']])element(button).addEventListener('click',()=>player.control(action,action==='seek'?0:undefined));
+  element('sync-seek').addEventListener('input',()=>{player.scrubbing=true;});
   element('sync-seek').addEventListener('change',()=>player.control('seek',Number(element('sync-seek').value)));
+  element('sync-seek').addEventListener('pointercancel',()=>{player.scrubbing=false;player.schedule(0);});
   element('sync-speed').addEventListener('change',()=>player.control('speed',Number(element('sync-speed').value)));
   document.addEventListener('visibilitychange',()=>player.visibility());window.addEventListener('pagehide',()=>player.destroy());
   void player.update();

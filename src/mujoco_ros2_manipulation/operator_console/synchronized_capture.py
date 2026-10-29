@@ -33,6 +33,7 @@ class CaptureLibrary:
         self.thread = None
         self.closed = False
         self.bytes = 0
+        self.retained_count = 0
 
     def _context(self, *, collecting=False):
         app = self.app
@@ -78,7 +79,7 @@ class CaptureLibrary:
         with self.lock:
             if self.closed or self.current["status"] in ("preparing", "recording", "saving"):
                 raise RuntimeError("현재 기록이 끝난 뒤 새 기록을 시작하세요.")
-            if len(self.records) >= MAX_RECORDINGS or self.bytes + MAX_CAPTURE_BYTES > MAX_LIBRARY_BYTES:
+            if self.retained_count >= MAX_RECORDINGS or self.bytes + MAX_CAPTURE_BYTES > MAX_LIBRARY_BYTES:
                 raise RuntimeError("이 콘솔의 기록 보존 상한에 도달했습니다.")
             identifier = uuid.uuid4().hex
             self.current = dict(status="preparing", id=identifier, reason=None,
@@ -98,6 +99,11 @@ class CaptureLibrary:
                     raise ValueError("콘솔이 종료 중입니다.")
                 self.stop_event = threading.Event()
                 self.current["status"] = "recording"
+                # Failed acquisitions retain original bytes too. Reserve their
+                # complete budget before collecting; failures keep the reserved
+                # upper bound instead of allowing unlimited partial bundles.
+                self.retained_count += 1
+                self.bytes += MAX_CAPTURE_BYTES
                 self.thread = threading.Thread(target=self._run,
                     args=(identifier, host, image, identity, manifest, assets),
                     name="synchronized-capture", daemon=True)
@@ -124,6 +130,9 @@ class CaptureLibrary:
         reason = "user_stop"
         try:
             while not self.stop_event.is_set():
+                if self.clock()-started >= MAX_WALL_SEC:
+                    reason = "duration_limit"
+                    break
                 try:
                     current_host, current_image, view, info, sample, observed = self._context(collecting=True)
                 except ValueError:
@@ -136,6 +145,9 @@ class CaptureLibrary:
                     reason = "source_changed"
                     break
                 stamp = int(sample["source_stamp_ns"])
+                if first_stamp is not None and stamp-first_stamp > MAX_CAPTURE_SEC*1_000_000_000:
+                    reason = "duration_limit"
+                    break
                 if last_pose_stamp is not None and stamp < last_pose_stamp:
                     reason = "clock_reversed"
                     break
@@ -163,6 +175,13 @@ class CaptureLibrary:
                         continue
                     descriptor, raw = value
                     stamp = int(descriptor["source_stamp_ns"])
+                    if first_stamp is not None and stamp < first_stamp:
+                        # Delayed acquisitions before the first captured pose
+                        # cannot move this capture's origin backwards.
+                        continue
+                    if first_stamp is not None and stamp-first_stamp > MAX_CAPTURE_SEC*1_000_000_000:
+                        reason = "duration_limit"
+                        break
                     if last_image_stamp is not None and stamp <= last_image_stamp:
                         reason = "clock_reversed"
                         break
@@ -176,7 +195,7 @@ class CaptureLibrary:
                     image_frames.append(item)
                     pixels[digest] = raw
                     byte_count += size
-                    first_stamp = stamp if first_stamp is None else min(first_stamp, stamp)
+                    first_stamp = stamp if first_stamp is None else first_stamp
                     last_image_seq, last_image_stamp = sequence, stamp
                 if reason != "user_stop":
                     break
@@ -201,13 +220,13 @@ class CaptureLibrary:
                 reason=reason, pose_count=len(poses), image_count=len(image_frames))))
             recording = SyncRecording(document, assets, pixels)
             actual_bytes = len(_canonical(recording.document))+sum(map(len,assets.values()))+sum(map(len,pixels.values()))
-            if actual_bytes > MAX_CAPTURE_BYTES or self.bytes+actual_bytes > MAX_LIBRARY_BYTES:
+            if actual_bytes > MAX_CAPTURE_BYTES or self.bytes-MAX_CAPTURE_BYTES+actual_bytes > MAX_LIBRARY_BYTES:
                 raise ValueError("기록 보존 용량 상한을 초과했습니다.")
             recording.save(folder/"recording.json")
             with self.lock:
                 self.records[identifier] = recording
                 self.hosts[identifier] = SynchronizedSceneHost(recording)
-                self.bytes += actual_bytes
+                self.bytes += actual_bytes-MAX_CAPTURE_BYTES
                 self.current.update(status="completed", reason=reason)
         except Exception as error:
             # An incomplete capture is diagnostic data, never a playable record.
@@ -236,9 +255,21 @@ class CaptureLibrary:
 
     def snapshot(self):
         with self.lock:
-            return dict(capture=deepcopy(self.current), recordings=[dict(id=identifier,
+            capture = deepcopy(self.current)
+            can_start = (not self.closed and capture["status"] not in ("preparing","recording","saving")
+                and self.retained_count < MAX_RECORDINGS and self.bytes+MAX_CAPTURE_BYTES <= MAX_LIBRARY_BYTES)
+            result = dict(capture=capture, recordings=[dict(id=identifier,
                 label=value.label, duration_sec=value.duration, ended_reason=value.ended_reason)
                 for identifier, value in self.records.items()])
+            if not can_start and (self.retained_count >= MAX_RECORDINGS or self.bytes+MAX_CAPTURE_BYTES > MAX_LIBRARY_BYTES):
+                capture["availability_reason"] = "이 콘솔의 완료·실패 기록 보존 상한에 도달했습니다."
+        if can_start:
+            try:self._context()
+            except ValueError as error:
+                can_start = False
+                capture["availability_reason"] = str(error)
+        capture["can_start"] = can_start
+        return result
 
     def get(self, identifier):
         with self.lock:
@@ -246,10 +277,13 @@ class CaptureLibrary:
                 raise ValueError("이 콘솔에서 보존한 기록을 선택하세요.")
             return self.hosts[identifier]
 
-    def close(self):
+    def request_close(self):
         with self.lock:
             self.closed = True
             self.stop_event.set()
+    def close(self):
+        self.request_close()
+        with self.lock:
             worker = self.thread
         if worker and worker is not threading.current_thread():
             worker.join(timeout=5)

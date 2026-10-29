@@ -517,22 +517,45 @@ class ConsoleApplication:
 
     def close(self):
         self.closing.set()
-        self.sync_recordings.close()
-        self.suspend_dispatch()
-        if self.worker and self.worker is not threading.current_thread():
-            self.worker.join(timeout=1)
-        self.demos.stop_sync()
-        with self.state.lock:
-            active = self.state.active if self.state.active in self.state.ui_ids else None
-        if active and "commands" not in self.children:
-            self.cancel(active)
-            deadline = time.monotonic()+8
-            while self.state.active == active and time.monotonic() < deadline:
-                time.sleep(0.05)
+        recordings = getattr(self, "sync_recordings", None)
+        errors = []
+        def attempt(stage, operation):
+            try:
+                return operation()
+            except Exception as problem:
+                errors.append(dict(stage=stage, error_type=type(problem).__name__))
+                return None
+        # Capturing can stop immediately, but saving/fsync must never precede
+        # dispatch suspension, action cancellation or owned process shutdown.
+        if recordings is not None:
+            attempt("capture_stop_requested", lambda:recordings.request_close())
         try:
-            self.views.close()
+            self.suspend_dispatch()
+            if self.worker and self.worker is not threading.current_thread():
+                self.worker.join(timeout=1)
+            self.demos.stop_sync()
+            with self.state.lock:
+                active = self.state.active if self.state.active in self.state.ui_ids else None
+            if active and "commands" not in self.children:
+                self.cancel(active)
+                deadline = time.monotonic()+8
+                while self.state.active == active and time.monotonic() < deadline:
+                    time.sleep(0.05)
+        except Exception as problem:
+            errors.append(dict(stage="dispatch_cleanup", error_type=type(problem).__name__))
         finally:
-            self.stop()
-            self.monitor.join(timeout=2)
+            attempt("view_cleanup", self.views.close)
+            stopped = attempt("owned_process_cleanup", self.stop)
+            if isinstance(stopped, dict) and stopped.get("cleanup_errors"):
+                errors.append(dict(stage="owned_process_cleanup", error_type="UncleanOwnedProcesses"))
+            attempt("monitor_cleanup", lambda:self.monitor.join(timeout=2))
             for stream in self.files:
-                stream.close()
+                attempt("log_cleanup", stream.close)
+            if recordings is not None:
+                recording_clean = attempt("capture_cleanup", recordings.close) is True
+                attempt("capture_cleanup_audit", lambda:self.audit("synchronized_capture_cleanup", clean=recording_clean))
+                if not recording_clean:
+                    errors.append(dict(stage="capture_cleanup", error_type="UncleanRecordingWorker"))
+            if errors:
+                attempt("cleanup_error_audit", lambda:self.audit("console_cleanup_failed", errors=list(errors)))
+        return not errors

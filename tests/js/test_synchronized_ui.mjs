@@ -241,3 +241,14 @@ test('default native fetch and timer functions keep their global receiver semant
  await player.control('pause');assert.equal(calls.fetch,2);assert.ok(calls.set>=4);assert.ok(calls.clear>=3);
  player.destroy();assert.equal(h.element('sync-play').disabled,true);
 });
+
+test('polling during timeline scrubbing preserves the chosen thumb until seek is submitted',async()=>{
+ const h=harness();await state(h,view({time:1,sequence:1,playing:true}));
+ h.player.scrubbing=true;h.element('sync-seek').value='3';
+ h.player.acceptView(view({time:1.05,sequence:2,playing:true}));
+ assert.equal(h.element('sync-seek').value,'3');
+ const action=h.player.control('seek',Number(h.element('sync-seek').value));
+ assert.equal(JSON.parse(h.post().at(-1).options.body).time_sec,3);
+ h.post().at(-1).resolve(response(view({binding:'c',time:3,sequence:3})));await action;
+ assert.equal(h.player.scrubbing,false);assert.equal(h.element('sync-seek').value,'3');
+});

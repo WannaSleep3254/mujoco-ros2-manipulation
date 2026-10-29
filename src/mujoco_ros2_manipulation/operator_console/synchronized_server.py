@@ -64,7 +64,7 @@ def main():
         parser.error("Port must be 1024..65535")
     library=Library(SyncRecording.load(args.recording))
     server=ConsoleHTTPServer(("127.0.0.1",args.port),ReadonlyHandler)
-    server.application=SimpleNamespace(sync_recordings=library)
+    server.application=SimpleNamespace(sync_recordings=library,readonly_recording=True)
     server.token=secrets.token_urlsafe(32)
     print(f"SYNCHRONIZED_RECORDING_READY http://127.0.0.1:{args.port}/synchronized?id={library.identifier}",flush=True)
     try:

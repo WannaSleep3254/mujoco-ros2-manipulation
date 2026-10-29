@@ -25,9 +25,9 @@
     "cause": "The test paused images before enough pre-gap images had been captured. The preserved recording therefore had a leading missing interval instead of the internal gap asserted by the test. The test now retains initial images and waits for a full one-second image gap."
   },
   "source_sha256": {
-    "src/mujoco_ros2_manipulation/operator_console/synchronized_capture.py": "40b4261b802e39c766f0902ee85ed4ec295a6e6b6871c74cc85b3733e07695d1",
+    "src/mujoco_ros2_manipulation/operator_console/synchronized_capture.py": "2821203327aaa396dbbc22ba2bd04f35e9c35d81078560e800a2db28642941ab",
     "src/mujoco_ros2_manipulation/operator_console/synchronized_recording.py": "52756137460e680f201144ec19d2243684fc68ec2ee2c948bf78dd4dbb5e59a0",
-    "src/mujoco_ros2_manipulation/operator_console/synchronized_server.py": "5dc0814ec90ed6483906e9691131ebc13ce37d27449dd2fdcac839b99bc68523"
+    "src/mujoco_ros2_manipulation/operator_console/synchronized_server.py": "a65cafc3b12956275fdd153917c19fa82257307420c48b71e093eb77132bc619"
   },
   "browser_checks": [
     "common playback reaches EOF",
@@ -56,8 +56,31 @@
     }
   },
   "tests": {
-    "python": 1199,
+    "python": 1210,
     "python_skipped": 1,
-    "javascript": 228
-  }
+    "javascript": 229
+  },
+  "reviewed_revalidation": {
+    "status": "passed",
+    "cleanup_clean": true,
+    "result_sha256": "d498987f44bebca6d3fc99fec5ace4a03eea0916a59af595493ba81ff56de4c6",
+    "recording": {
+      "name": "synchronized_capture_and_readonly_replay",
+      "id": "082c4c8f415c4cd68c6beae0fe255956",
+      "recording_sha256": "2d2e198282bc5aa0cb07b7b9ff2250ea1843863b2827d70c3803061b319aca7d",
+      "pose_count": 37,
+      "image_count": 18,
+      "gap_count": 1,
+      "chosen_cursor_ns": "3053999999",
+      "pose_stamp_ns": "2963999999",
+      "image_stamp_ns": "3053999999",
+      "no_command_replay": true
+    }
+  },
+  "reviewed_boundaries": [
+    "Failed originals consume reserved retention slots and bytes",
+    "Source samples beyond duration limit are excluded before append",
+    "Recording joins happen after command suspension and owned process shutdown",
+    "Playback polling preserves the cursor while the user scrubs"
+  ]
 }

@@ -55,7 +55,7 @@ class Fixture:
         original = self.library._context
         def context(**kwargs):
             self.step += 1
-            self.now = 10.+self.step*.2
+            self.now = 10.+self.step*.25
             if not gap or self.step < 5 or self.step > 12:
                 self.publish()
             if change and self.step == 7:
@@ -132,6 +132,43 @@ class CaptureTests(unittest.TestCase):
             f.library.stop(capture['id'])
             self.assertTrue(f.library.stop_event.is_set())
             self.assertEqual(f.library.records,{})
+
+    def test_failed_originals_consume_retention_slots_and_reserved_byte_budget(self):
+        from mujoco_ros2_manipulation.operator_console.synchronized_capture import MAX_RECORDINGS,MAX_CAPTURE_BYTES
+        with tempfile.TemporaryDirectory() as directory:
+            library=None
+            for index in range(MAX_RECORDINGS):
+                folder=Path(directory)/str(index);folder.mkdir()
+                f=Fixture(folder)
+                if library is None:library=f.library
+                f.library=library;library.app=f.app
+                library._context=lambda **kwargs:CaptureLibrary._context(library,**kwargs)
+                identifier=f.collect(count=1)
+                self.assertEqual(library.current['status'],'failed')
+                self.assertTrue((folder/'synchronized'/identifier/'partial.json').is_file())
+                self.assertTrue(list((folder/'synchronized'/identifier/'images').glob('*.jpg')))
+            self.assertEqual(library.retained_count,MAX_RECORDINGS)
+            self.assertEqual(library.bytes,MAX_RECORDINGS*MAX_CAPTURE_BYTES)
+            self.assertEqual(library.records,{})
+            with self.assertRaises(RuntimeError):library.start()
+
+    def test_forward_time_jump_is_excluded_before_it_exceeds_duration_limit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            f=Fixture(directory)
+            with patch('mujoco_ros2_manipulation.operator_console.synchronized_capture.threading.Thread'):
+                identifier=f.library.start()['id']
+            original=f.library._context;identity=original()[-1]
+            stamps=iter((10.2,10.4,131.0))
+            def context(**kwargs):
+                f.step+=1;f.now=next(stamps);f.publish();return original(**kwargs)
+            f.library._context=context;f.library.stop_event.wait=lambda timeout:False
+            f.library._run(identifier,f.host,f.image,identity,f.model.manifest,{})
+            self.assertEqual(f.library.current['status'],'completed')
+            value=f.library.get(identifier).recording
+            self.assertEqual(value.ended_reason,'duration_limit')
+            self.assertLessEqual(value.duration,120.)
+            self.assertEqual(f.library.current['pose_count'],len(value.poses))
+            self.assertTrue(all(int(item['stamp_ns'])-value.origin_ns<=120*10**9 for item in value.poses+value.image_frames))
 
 
 class CaptureHTTPTests(unittest.TestCase):

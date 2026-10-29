@@ -107,7 +107,8 @@ class Handler(BaseHTTPRequestHandler):
                 host = app.sync_recordings.get(matched[1])
                 resource = matched[2]
                 if resource is None:
-                    return self.respond(dict(view=host.snapshot(), token=self.server.token))
+                    return self.respond(dict(view=host.snapshot(), token=self.server.token,
+                        console_available=not getattr(app,"readonly_recording",False)))
                 if resource == "manifest":
                     return self.respond(host.manifest_bytes(_view_binding_query(self.path)))
                 asset = re.fullmatch(r"assets/([0-9a-f]{64})", resource)

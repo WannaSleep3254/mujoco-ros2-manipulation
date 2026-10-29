@@ -151,6 +151,7 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
  if(!panel||!start||!stop)return;
  let token=null,capture=null,pending=false,changing=false,closed=false,readAt=0,serial=0;
  const identifier=value=>typeof value==='string'&&/^[0-9a-f]{32}$/.test(value);
+ const reason=value=>({user_stop:'요청에 따라 종료',source_changed:'실행 또는 센서 공급원 변경',source_unavailable:'관측 연결 종료',clock_reversed:'원천 시계 역행',duration_limit:'기록 시간 상한 도달',byte_or_sample_limit:'기록 용량 또는 표본 상한 도달',insufficient_or_invalid_capture:'필수 표본이나 기록 식별을 확인하지 못했습니다'}[value]||value);
  const allowed=()=>!closed&&!document.hidden&&!panel.hidden;
  function enable(){const active=capture?.status==='recording',busy=changing||['preparing','saving','stopping'].includes(capture?.status);
   start.disabled=closed||busy||!token||active||capture?.can_start===false;
@@ -160,13 +161,13 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
   capture=data.capture;token=data.token;
   const labels={idle:'기록 대기',recording:'동기 기록 중',preparing:'기록 준비 중',saving:'기록 저장 중',stopping:'기록 종료 중',completed:'기록 저장 완료',failed:'기록을 저장하지 못했습니다',unavailable:'기록 입력을 확인하세요'};
   const counts=Number.isSafeInteger(capture?.pose_count)&&Number.isSafeInteger(capture?.image_count)?' · 3D '+capture.pose_count+'개 · 이미지 '+capture.image_count+'개':'';
-  get('sync-capture-state').textContent=(labels[capture?.status]||'기록 상태 미확인')+counts+(capture?.reason?' · '+capture.reason:'');
+  get('sync-capture-state').textContent=(labels[capture?.status]||'기록 상태 미확인')+counts+(capture?.reason?' · '+reason(capture.reason):'')+(capture?.availability_reason?' · '+capture.availability_reason:'');
   const list=get('sync-capture-list');list.replaceChildren();
   for(const item of (data.recordings||[]).slice(-8).reverse()){
    if(!identifier(item.id))continue;
    const row=document.createElement('li'),link=document.createElement('a'),note=document.createElement('p');
    link.href='/synchronized?id='+item.id;link.target='_blank';link.rel='noopener';link.textContent=item.label||'동기 기록';
-   note.className='help';note.textContent=(Number.isFinite(item.duration_sec)?item.duration_sec.toFixed(2)+' s':'길이 미확인')+(item.ended_reason?' · '+item.ended_reason:'');
+   note.className='help';note.textContent=(Number.isFinite(item.duration_sec)?item.duration_sec.toFixed(2)+' s':'길이 미확인')+(item.ended_reason?' · '+reason(item.ended_reason):'');
    row.append(link,note);list.append(row);
   }
   get('sync-capture-empty').hidden=list.childElementCount>0;enable();
