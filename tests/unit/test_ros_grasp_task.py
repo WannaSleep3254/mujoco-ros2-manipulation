@@ -5,7 +5,7 @@ import unittest
 from mujoco_ros2_manipulation.grasping.ros_task import (
     checked_window, contact_evidence, trajectory_samples, RosGraspTaskError,
     kinematics_state_limits,
-    latest_action_terminal, cancelled_hold_observation,
+    latest_action_terminal, cancelled_hold_observation, failed_stop_hold_observation, collect_evidence_window,
     admitted_action_submission,
     validate_dispatch_geometry,
     diagnostic_hold_duration,
@@ -112,7 +112,7 @@ class RosGraspTaskTests(unittest.TestCase):
                 checked_window(bad, .2)
 
     def test_integer_gap_limit_does_not_accept_one_ns_over_or_genuine_missing_time(self):
-        for gap in (150_000_001, 152_000_000, 160_000_000, 212_000_000, 250_000_000, 280_000_000):
+        for gap in (150_000_001, 152_000_000, 160_000_000, 170_000_000, 212_000_000, 250_000_000, 280_000_000):
             values=[dict(sequence=i+1,time_sec=ns/1e9,stamp_ns=str(ns),stamp_semantics='rounded_native_mjData_time')
                     for i,ns in enumerate((0,gap,gap+100_000_000))]
             with self.subTest(gap=gap),self.assertRaisesRegex(RosGraspTaskError,'observation gap'):
@@ -128,6 +128,21 @@ class RosGraspTaskTests(unittest.TestCase):
                             ('stamp_ns','1200000000'),('stamp_semantics','exact_ros_time')]:
             changed=deepcopy(values);changed[-1][field]=value
             with self.subTest(field=field,value=value),self.assertRaises(RosGraspTaskError):checked_window(changed,.2)
+
+    def test_ordered_callback_burst_retains_each_original_sample_and_true_gap_still_fails(self):
+        def collect(stamps):
+            queued=iter(dict(sequence=i+1,time_sec=ns/1e9,stamp_ns=str(ns),stamp_semantics='rounded_native_mjData_time')
+                        for i,ns in enumerate(stamps))
+            latest,wall={},[0.]
+            def spin():
+                latest.update(next(queued));wall[0]+=.001  # one executor handler, original native times
+            return collect_evidence_window(.25,spin=spin,current_evidence=lambda:dict(latest),clock=lambda:wall[0])
+        values=collect([0,50_000_000,100_000_000,150_000_000,200_000_000,250_000_000])
+        self.assertEqual([s['sequence'] for s in values],list(range(1,7)))
+        self.assertEqual([s['stamp_ns'] for s in values],['0','50000000','100000000','150000000','200000000','250000000'])
+        # CI140's genuine170ms is not reset or bridged by a later good frame.
+        with self.assertRaisesRegex(RosGraspTaskError,'observation gap'):
+            collect([27_410_000_000,27_580_000_000,27_680_000_000])
 
     def test_actual_cubic_controller_spline_is_sampled_without_mutating_trajectory(self):
         path = trajectory(positions=[[0.]*6, [.1]*6], velocities=[[.2]*6, [-.1]*6])
@@ -194,6 +209,24 @@ class RosGraspTaskTests(unittest.TestCase):
         self.assertEqual(life.physical_grasp, "unconfirmed")
         self.assertEqual(life.planning_attachment, "attached")
         self.assertTrue(any(event["event"] == "physical_grasp_confirmed" for event in life.events))
+
+    def test_failed_native_stop_retains_historical_proof_and_failure_but_not_current_confirmation(self):
+        life=GraspLifecycle('a'*64)
+        life.approach_complete();life.contacts_confirmed(left_force_n=1.,right_force_n=1.,observed_sec=.2)
+        life.lift_confirmed(fixture_sha256='a'*64,lift_m=.08,stable_sec=.3,
+            relative_position_error_m=.001,relative_angle_error_rad=.01,bilateral_fraction=1.)
+        life.attach(object_id=life.object_id,owner=life.owner,link=life.link,fixture_sha256='a'*64)
+        life.carry();life.fail('native evidence has an observation gap')
+        before=deepcopy(life.events)
+        with self.assertRaises(RosGraspTaskError):failed_stop_hold_observation(life,stop_observed=False)
+        result=failed_stop_hold_observation(life,stop_observed=True)
+        self.assertEqual(result['physical_grasp_before_stop'],'confirmed')
+        self.assertEqual(life.physical_grasp,'unconfirmed');self.assertEqual(life.planning_attachment,'attached')
+        self.assertEqual(life.events[:-1],before);self.assertEqual(life.stage,'failed')
+        for known in ('slipped','released'):
+            other=deepcopy(life);other.physical_grasp=known
+            failed_stop_hold_observation(other,stop_observed=True)
+            self.assertEqual(other.physical_grasp,known)
 
     def test_cancel_during_preparation_callback_submits_zero_new_goals(self):
         cancelled, sent, identities = [False], [], []

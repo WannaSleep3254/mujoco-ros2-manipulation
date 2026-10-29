@@ -59,6 +59,11 @@ class GraspObservation:
         return self.payload["stamp_ns"]
 
     @property
+    def capture_monotonic_ns(self):
+        """Original Linux CLOCK_MONOTONIC capture; never dequeue/receipt time."""
+        return int(self.payload["capture_monotonic_ns"])
+
+    @property
     def qpos(self):
         return tuple(self.payload["qpos"])
 
@@ -162,10 +167,11 @@ class GraspObservationStore:
     new run ID and a new store; callers cannot clear that fault in place.
     """
 
-    def __init__(self, *, run_id, model_sha256, plugin_sha256, manifest, geom_names):
+    def __init__(self, *, run_id, model_sha256, plugin_sha256, fifo_source_sha256, manifest, geom_names):
         self.run_id = _hex(run_id, 32, "run_id")
         self.model_sha256 = _hex(model_sha256, 64, "model_sha256")
         self.plugin_sha256 = _hex(plugin_sha256, 64, "plugin_sha256")
+        self.fifo_source_sha256 = _hex(fifo_source_sha256, 64, "fifo_source_sha256")
         if type(manifest) is not dict:
             raise ValueError("a checked grasp manifest is required")
         if manifest.get("artifact_kind") != "grasp-execution-target-v1":
@@ -227,6 +233,17 @@ class GraspObservationStore:
             raise ValueError("native stamp_ns does not match rounded native time")
         if value.get("stamp_semantics") != "rounded_native_mjData_time":
             raise ValueError("native time must retain its rounded-time semantics")
+        capture = value.get("capture_monotonic_ns")
+        if (type(capture) is not str or re.fullmatch(r"[1-9][0-9]{0,18}", capture) is None
+                or value.get("capture_clock_semantics") != "linux_CLOCK_MONOTONIC"):
+            raise ValueError("native capture must retain its original Linux monotonic timestamp")
+        delivery = value.get("observation_delivery")
+        expected_delivery = dict(schema_version=1, mode="bounded_ordered_fifo", capacity=32,
+            max_drain_per_callback=8, max_source_age_ns="500000000", overflow_count=0,
+            source_sha256=self.fifo_source_sha256)
+        if (type(delivery) is not dict or delivery != expected_delivery
+                or any(type(delivery.get(k)) is not type(v) for k,v in expected_delivery.items())):
+            raise ValueError("native ordered delivery policy/source differs or overflowed")
         if _number(value.get("pose_sample_sec"), "pose_sample_sec", maximum=2147483647., minimum=0) != time_sec:
             raise ValueError("pose sample time does not match native time")
         force_time = _number(value.get("force_evaluation_sec"), "force_evaluation_sec", maximum=2147483647., minimum=0)
@@ -300,6 +317,12 @@ class GraspObservationStore:
                 receipt = _number(receipt_sec, "receipt_sec", maximum=1e12, minimum=0)
                 value = _decode(payload)
                 self._validate(value)
+                capture_ns = int(value["capture_monotonic_ns"])
+                receipt_ns = round(receipt * 1e9)
+                if capture_ns > receipt_ns:
+                    raise ValueError("native capture timestamp is in the future")
+                if receipt_ns - capture_ns > 500_000_000:
+                    raise ValueError("native capture was already stale at receipt")
                 previous = self._latest
                 if previous is not None:
                     if receipt < previous.receipt_sec:
@@ -310,6 +333,8 @@ class GraspObservationStore:
                         self._fault = "native grasp clock reversed; a new run is required"
                         self._error = self._fault
                         return IngestResult(False, self._fault)
+                    if capture_ns <= previous.capture_monotonic_ns:
+                        raise ValueError("native capture monotonic clock did not advance")
                 progressed = previous is not None and value["time_sec"] > previous.time_sec
                 progress_receipt = receipt if previous is None or progressed else previous.clock_progress_receipt_sec
                 has_advanced = progressed or (previous is not None and previous.clock_has_advanced)
@@ -368,6 +393,9 @@ class GraspObservationStore:
                 raise ObservationUnavailable("native grasp clock is stale or held")
             if now - latest.receipt_sec > max_age:
                 raise ObservationUnavailable("native grasp observation is stale")
+            capture_age_ns = round(now * 1e9) - latest.capture_monotonic_ns
+            if capture_age_ns < 0 or capture_age_ns > min(round(max_age * 1e9), 500_000_000):
+                raise ObservationUnavailable("native source capture is stale or in the future")
             if require_physical:
                 value = latest.payload
                 if not latest.clock_has_advanced:

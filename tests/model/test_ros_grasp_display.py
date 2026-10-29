@@ -104,7 +104,8 @@ class RosGraspDisplayTests(unittest.TestCase):
         build_model(base, cls.model)
         target = load_ros_grasp_target(base, cls.model, file_sha256(cls.model / 'grasp.json'))
         cls.native_root = cls.folder / 'native-build'
-        for relative in ('native/grasp_scene_export.cpp', 'native/grasp_ros2_plugin/src/observation.cpp'):
+        for relative in ('native/grasp_scene_export.cpp', 'native/grasp_ros2_plugin/src/observation.cpp',
+                         'native/grasp_ros2_plugin/src/ordered_fifo.hpp'):
             destination = cls.native_root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, destination)
@@ -145,6 +146,10 @@ class RosGraspDisplayTests(unittest.TestCase):
             plugin_sha256=file_sha256(self.native_root / 'native/grasp_ros2_plugin/src/observation.cpp'),
             native_version='3.12.0', sequence=sequence, time_sec=clock, stamp_ns=str(round(clock * 1e9)),
             stamp_semantics='rounded_native_mjData_time', phase=0, armed=False, heartbeat_fresh=False,
+            capture_monotonic_ns=str(round((10.+clock)*1e9)),capture_clock_semantics='linux_CLOCK_MONOTONIC',
+            observation_delivery=dict(schema_version=1,mode='bounded_ordered_fifo',capacity=32,
+                max_drain_per_callback=8,max_source_age_ns='500000000',overflow_count=0,
+                source_sha256=file_sha256(self.native_root/'native/grasp_ros2_plugin/src/ordered_fifo.hpp')),
             pose_sample_sec=clock, force_evaluation_sec=max(0., clock - .002), force_timing_verified=False,
             force_time_semantics='nominal last mj_step evaluation; invalid when native physics is held',
             local_overwrites_or_skips=0, qpos=qpos, qvel=[0.] * 20,
@@ -154,6 +159,7 @@ class RosGraspDisplayTests(unittest.TestCase):
             block=dict(frame['block'], linear_velocity_m_sec=[0., 0., 0.], angular_velocity_rad_sec=[0., 0., 0.]),
             contacts=[])
         store = GraspObservationStore(run_id=run, model_sha256=payload['model_sha256'], plugin_sha256=payload['plugin_sha256'],
+                                      fifo_source_sha256=payload['observation_delivery']['source_sha256'],
                                       manifest=self.target.description(), geom_names=scene.geom_names)
         self.assertTrue(store.ingest(payload, receipt_sec=10. + clock).accepted)
         return store.snapshot(now_sec=10. + clock), payload
