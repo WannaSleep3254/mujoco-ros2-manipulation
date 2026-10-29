@@ -4,6 +4,7 @@ import argparse
 from copy import deepcopy
 from contextlib import contextmanager
 import json
+import math
 import time
 from pathlib import Path
 
@@ -39,7 +40,7 @@ from mujoco_ros2_manipulation.workcells.plan_selection import (
 )
 from mujoco_ros2_manipulation.workcells.timing import load_policy
 from mujoco_ros2_manipulation.workcells.trajectory import partitions
-from mujoco_ros2_manipulation.workcells.verify import WorkcellVerification, require
+from mujoco_ros2_manipulation.workcells.verify import WorkcellVerification, require, seconds
 
 
 def preflight(cell, case):
@@ -64,6 +65,8 @@ class InterferenceVerification(WorkcellVerification):
     def __init__(self, cell, progress=None, case="dual_arm_crossing"):
         self.self_policy_path, self.self_policy, self.self_policy_sha256 = self_policy_snapshot(cell)
         self._self_clock_received_ns = self._self_state_received_ns = None
+        self._self_state_clock_sec = None
+        self._self_state_backwards = False
         super().__init__(cell, progress)
         self.case_path, self.case = load_case(cell, case)
         self.case_sha256 = file_sha256(self.case_path)
@@ -82,6 +85,11 @@ class InterferenceVerification(WorkcellVerification):
         previous = self.joint_count
         super().joints(message)
         if self.joint_count != previous:
+            stamp = seconds(message.header.stamp)
+            require(math.isfinite(stamp) and stamp >= 0, "Invalid native joint-state time")
+            if self._self_state_clock_sec is not None and stamp < self._self_state_clock_sec:
+                self._self_state_backwards = True
+            self._self_state_clock_sec = stamp
             self._self_state_received_ns = received
 
     def _self_dispatch_fresh(self, scheduled_start):
@@ -91,6 +99,7 @@ class InterferenceVerification(WorkcellVerification):
         require(self._self_clock_received_ns is not None
                 and 0 <= (now-self._self_clock_received_ns)/1e9 <= .3, "Simulation clock is stale at native self admission")
         require(not self.clock_backwards, "Simulation clock moved backwards")
+        require(not self._self_state_backwards, "Native joint-state time moved backwards")
         clock_age_sec = (now-self._self_clock_received_ns)/1e9
         require(scheduled_start is None or scheduled_start-self.clock_last-clock_age_sec > .1,
                 "Native self admission exhausted the original future start reservation")
@@ -225,18 +234,98 @@ class InterferenceVerification(WorkcellVerification):
         return assessment
 
     def _self_command_key(self, commands, *, headers=True):
+        """Exact immutable message content, without large repeated JSON copies."""
+        def numbers(values):
+            value=tuple(values)
+            require(all(type(x) in (int,float) and math.isfinite(x) for x in value),"Non-finite native command")
+            return value
+        def point_key(point):
+            stamp=point.time_from_start
+            require(type(stamp.sec) is int and type(stamp.nanosec) is int and stamp.sec>=0
+                    and 0<=stamp.nanosec<1_000_000_000,"Invalid native relative command duration")
+            return (numbers(point.positions),numbers(point.velocities),numbers(point.accelerations),
+                numbers(getattr(point,"effort",[])),stamp.sec,stamp.nanosec)
         values=[]
         for inst,trajectory in commands:
             header=getattr(trajectory,"header",None)
             stamp=getattr(header,"stamp",None)
-            value=dict(arm=getattr(inst,"id",inst),controller=getattr(inst,"controller",None),
-                frame=getattr(header,"frame_id",""),names=list(trajectory.joint_names),points=[
-                    dict(p=list(p.positions),v=list(p.velocities),a=list(p.accelerations),
-                         effort=list(getattr(p,"effort",[])),sec=p.time_from_start.sec,ns=p.time_from_start.nanosec)
-                    for p in trajectory.points])
-            if headers:value["stamp"]=None if stamp is None else [stamp.sec,stamp.nanosec]
+            arm=getattr(inst,"id",inst);controller=getattr(inst,"controller",None);frame=getattr(header,"frame_id","")
+            names=tuple(trajectory.joint_names)
+            require(type(arm) is str and (controller is None or type(controller) is str) and type(frame) is str
+                    and all(type(name) is str for name in names),"Invalid native command identity")
+            value=(arm,controller,frame,names,tuple(point_key(p) for p in trajectory.points))
+            if headers:
+                require(stamp is None or (type(stamp.sec) is int and type(stamp.nanosec) is int
+                        and 0<=stamp.nanosec<1_000_000_000),"Invalid native absolute command stamp")
+                value+=(None if stamp is None else (stamp.sec,stamp.nanosec),)
             values.append(value)
-        return json.dumps(values,sort_keys=True,separators=(",",":"),allow_nan=False)
+        return tuple(values)
+
+    def _self_freeze(self, value):
+        if isinstance(value,dict):return tuple((k,self._self_freeze(v)) for k,v in sorted(value.items()))
+        if isinstance(value,(list,tuple)):return tuple(self._self_freeze(v) for v in value)
+        require(type(value) in (str,int,float,bool,type(None)),"Invalid native preparation metadata")
+        require(type(value) is not float or math.isfinite(value),"Non-finite native preparation metadata")
+        return value
+
+    def _self_source_binding(self, evaluator, expected=None):
+        if expected is not None:
+            require(self._self_file_stats(expected["stats"])==expected["stats"],
+                    "Native self-clearance or policy files changed before submission")
+            require(evaluator.metadata().get("self_collision")==expected["identity"]["opened_component"],
+                    "Opened native self-clearance identity changed")
+            return expected
+        paths=[self.self_policy_path]+[self.cell.root/name for name in (
+            "native/path_distance.cpp","native/path_distance_environment.cpp","native/path_distance_self.cpp",
+            "runtime/native/path_distance.so")]
+        stats=self._self_file_stats(list(map(str,paths)))
+        identity=self_evaluator_identity(evaluator,self.cell.root)
+        require(file_sha256(self.self_policy_path)==self.self_policy_sha256,"Self-clearance policy changed before submission")
+        require(self._self_file_stats(stats)==stats,"Native source or policy changed during full hash validation")
+        return dict(identity=identity,stats=stats)
+
+    def _self_cost(self, prepared, label, started):
+        rows=prepared["record"].setdefault("bounded_stage_costs",[])
+        row=dict(stage=label,elapsed_sec=(time.monotonic_ns()-started)/1e9)
+        if len(rows)<64:rows.append(row)
+        else:rows[-1]=row;prepared["record"]["stage_costs_omitted"]=prepared["record"].get("stage_costs_omitted",0)+1
+
+    def _self_refresh(self, prepared, scheduled_start=None):
+        """Pump real callbacks; never manufacture receipt freshness or retime."""
+        started=time.monotonic_ns();deadline=started+2_000_000_000
+        baseline=(self.joint_count,self.clock_count,self._self_state_clock_sec,self.clock_last)
+        require(all(type(x) in (int,float) and math.isfinite(x) and x>=0 for x in baseline),
+                "Missing validated native joint and clock baseline")
+        attempts=0
+        try:
+            while True:
+                if prepared["prior_abort"] is not None:prepared["prior_abort"]()
+                self.check_cancel()
+                require(not self.clock_backwards and not self._self_state_backwards,"Native observation time moved backwards")
+                require(not self.contact_guard or not self.contact_guard["latched"],"Native contact guard latched")
+                now=time.monotonic_ns()
+                require(self._self_clock_received_ns is not None and self._self_state_received_ns is not None
+                        and self._self_clock_received_ns<=now and self._self_state_received_ns<=now,
+                        "Invalid native observation receipt time")
+                if scheduled_start is not None:
+                    require(self._self_clock_received_ns is not None and
+                            scheduled_start-self.clock_last-(now-self._self_clock_received_ns)/1e9>.1,
+                            "Native self admission exhausted the original future start reservation")
+                if (self.joint_count>baseline[0] and self.clock_count>baseline[1]
+                        and baseline[2] is not None and self._self_state_clock_sec>baseline[2]
+                        and self.clock_last>baseline[3]
+                        and self._self_state_received_ns>started and self._self_clock_received_ns>started):
+                    self._self_dispatch_fresh(scheduled_start)
+                    return
+                require(now<deadline,"Timeout: fresh native joint and clock progression at admission")
+                self.spin_once(timeout_sec=.01);attempts+=1
+        finally:
+            self._self_cost(prepared,"genuine_joint_clock_sync",started)
+            self._self_boundary(prepared,"genuine_joint_clock_sync")
+            prepared["record"]["latest_sync"]=dict(callback_pumps=attempts,
+                joint_count_delta=self.joint_count-baseline[0],clock_count_delta=self.clock_count-baseline[1],
+                state_time_advanced=baseline[2] is not None and self._self_state_clock_sec>baseline[2],
+                clock_time_advanced=self.clock_last>baseline[3])
 
     def _self_file_stats(self, paths):
         require(0<len(paths)<=4096,"Native model file inventory exceeds its bound")
@@ -280,22 +369,27 @@ class InterferenceVerification(WorkcellVerification):
             rows[-1]=row;record["boundary_records_omitted"]=record.get("boundary_records_omitted",0)+1
 
     def _self_proof_key(self, prepared):
-        return json.dumps({key:prepared[key] for key in ("command_key","initial","policy","policy_sha256","identity","model","fresh","observed_anchor","fixed_start")},
-            sort_keys=True,separators=(",",":"),allow_nan=False)
+        # The nested command tuple is already immutable; don't serialize its
+        # thousands of spline scalars again on every goal admission.
+        return prepared["command_key"],self._self_freeze({key:prepared[key] for key in (
+            "initial","policy","policy_sha256","identity","source","model","fresh","observed_anchor","fixed_start")})
 
     def _confirm_prepared(self, prepared, commands, *, scheduled_start=None):
+        started=time.monotonic_ns()
         require(getattr(self,"_native_prepared",None) is prepared and prepared["active"],"Native preparation owner/lifetime differs")
         if prepared["prior_abort"] is not None:prepared["prior_abort"]()
         require(self._self_proof_key(prepared)==prepared["binding"],"Native preparation proof was changed")
         require(self._self_command_key(commands,headers=not prepared["fresh"])==prepared["command_key"],
                 "Prepared relative trajectory, arm order or derivatives changed")
         require(dict(self.commanded)==prepared["initial"],"Commanded start changed after native preparation")
-        require(self.self_policy==prepared["policy"] and self.self_policy_sha256==prepared["policy_sha256"]
-                and file_sha256(self.self_policy_path)==prepared["policy_sha256"],
+        require(self.self_policy==prepared["policy"] and self.self_policy_sha256==prepared["policy_sha256"],
                 "Self-clearance policy changed before submission")
-        require(self_evaluator_identity(prepared["evaluator"],self.cell.root)==prepared["identity"],
-                "Native self-clearance implementation changed before submission")
+        self._self_cost(prepared,"exact_command_and_metadata_seal",started)
+        started=time.monotonic_ns()
+        self._self_source_binding(prepared["evaluator"],prepared["source"])
         self._self_model_binding(prepared["model"])
+        self._self_cost(prepared,"source_policy_model_quick_stat",started)
+        started=time.monotonic_ns()
         prepared["record"]["observed_start"]=require_self_clearance(prepared["evaluator"],self.state(),
             self.self_policy["observed_start_min_self_distance_m"])
         if prepared["fresh"]:
@@ -303,6 +397,7 @@ class InterferenceVerification(WorkcellVerification):
             require(max(abs(self.state()[n]-prepared["observed_anchor"][n]) for n in prepared["observed_anchor"])<tolerance,
                     "Observed start changed after native preparation")
         self._self_boundary(prepared,"final_current_identity_geometry")
+        self._self_cost(prepared,"current_geometry_and_anchor",started)
         self._self_dispatch_fresh(scheduled_start)
         if prepared["prior_abort"] is not None:prepared["prior_abort"]()
         self._self_dispatch_fresh(scheduled_start)
@@ -315,7 +410,9 @@ class InterferenceVerification(WorkcellVerification):
         this context never chooses, extends or rebases a start time.
         """
         require(getattr(self,"_native_prepared",None) is None,"A native dispatch preparation is already active")
-        commands=deepcopy(list(trajectories));initial=deepcopy(dict(self.commanded));policy=deepcopy(self.self_policy);policy_sha=self.self_policy_sha256
+        started_copy=time.monotonic_ns()
+        commands=deepcopy(list(trajectories));stamp_commands=deepcopy(commands)
+        initial=deepcopy(dict(self.commanded));policy=deepcopy(self.self_policy);policy_sha=self.self_policy_sha256
         command_key=self._self_command_key(commands,headers=not fresh_relative)
         if fresh_relative:
             require(scheduled_start is None,"Fresh relative preparation cannot replace an existing reservation")
@@ -327,6 +424,7 @@ class InterferenceVerification(WorkcellVerification):
         self.evidence.setdefault("dispatch_admission",[]).append(record)
         prepared=dict(record=record,fresh=fresh_relative,active=False,used=False,fixed_start=scheduled_start,
             prior_abort=getattr(self,"dispatch_abort",None))
+        self._self_cost(prepared,"private_command_copies_and_tuple",started_copy)
         primary=None;started=time.monotonic_ns()
         self._self_boundary(prepared,"prepare_begin")
         try:
@@ -338,7 +436,9 @@ class InterferenceVerification(WorkcellVerification):
                 curves.append(Spline(held,[dict(t=t,p=[initial[n] for n in held],v=[],a=[]) for t in (0.,duration)]))
             require(file_sha256(self.self_policy_path)==policy_sha,"Self-clearance policy changed; restart and replan")
             with DistanceEvaluator(self.cell,self_collision=True) as evaluator:
-                identity=self_evaluator_identity(evaluator,self.cell.root)
+                hashed=time.monotonic_ns();source=self._self_source_binding(evaluator)
+                identity=source["identity"]
+                self._self_cost(prepared,"full_native_policy_hash_binding",hashed)
                 scan_started=time.monotonic_ns()
                 result=evaluate_path(curves,initial,self.cell,evaluator,dt=policy["sample_dt_sec"],
                     self_reject_below=policy["planning_min_self_distance_m"])
@@ -352,11 +452,12 @@ class InterferenceVerification(WorkcellVerification):
                     record["status"]="rejected"
                     raise SelfClearanceRejected("Native self-clearance rejected the legacy schedule before dispatch")
                 self.ready_guard()
-                prepared.update(commands=deepcopy(commands),command_key=command_key,
+                prepared.update(commands=commands,stamp_commands=stamp_commands,command_key=command_key,
                     initial=deepcopy(initial),policy=policy,policy_sha256=policy_sha,identity=identity,
-                    model=model,evaluator=evaluator,observed_anchor=self.state(),active=True)
+                    source=source,model=model,evaluator=evaluator,observed_anchor=self.state(),active=True)
                 prepared["binding"]=self._self_proof_key(prepared)
                 self._native_prepared=prepared
+                self._self_refresh(prepared,scheduled_start=None if fresh_relative else scheduled_start)
                 self._confirm_prepared(prepared,commands,scheduled_start=None if fresh_relative else scheduled_start)
                 record["stage_elapsed_sec"]["prepare_total"]=(time.monotonic_ns()-started)/1e9
                 self._self_boundary(prepared,"prepare_complete_before_reservation")
@@ -382,6 +483,8 @@ class InterferenceVerification(WorkcellVerification):
         require(prepared["fresh"] and not prepared["used"] and getattr(self,"_native_reservation",(None,))[0] is not prepared,
                 "Native preparation already reserved or consumed")
         self._confirm_prepared(prepared,prepared["commands"])
+        self._self_refresh(prepared)
+        self._confirm_prepared(prepared,prepared["commands"])
         start=self.clock_last+1.0
         sec,ns=divmod(round(start*1e9),10**9)
         minted=time.monotonic_ns()
@@ -394,10 +497,13 @@ class InterferenceVerification(WorkcellVerification):
 
     def stamp_prepared(self, trajectories, prepared):
         require(getattr(self,"_native_reservation",(None,))[0] is prepared,"Fresh native reservation is missing")
-        commands=deepcopy(list(trajectories))
-        require(self._self_command_key(commands,headers=False)==prepared["command_key"],"Prepared relative trajectory changed before stamping")
+        started=time.monotonic_ns()
+        require(self._self_command_key(trajectories,headers=False)==prepared["command_key"],"Prepared relative trajectory changed before stamping")
+        commands=prepared["stamp_commands"]
+        require(self._self_command_key(commands,headers=False)==prepared["command_key"],"Prepared private relative trajectory changed before stamping")
         sec,ns=self._native_reservation[2]
         for _,trajectory in commands:trajectory.header.stamp=Time(sec=sec,nanosec=ns)
+        self._self_cost(prepared,"stamp_preallocated_messages",started)
         return commands
 
     def dispatch_prepared(self, trajectories, prepared, *, inject_cancel_at=None, scheduled_start=None):
@@ -418,11 +524,14 @@ class InterferenceVerification(WorkcellVerification):
             require(not self.contact_guard or not self.contact_guard["latched"],"Native contact guard latched")
             ledger=getattr(self,"execution_ledger",None)
             new_submission=ledger is not None and any(not item.submission_started for item in ledger.attempts)
-            if new_submission:self._confirm_prepared(prepared,commands,scheduled_start=scheduled_start)
+            if new_submission:
+                self._self_refresh(prepared,scheduled_start)
+                self._confirm_prepared(prepared,commands,scheduled_start=scheduled_start)
             if previous_abort is not None:previous_abort()
             if new_submission:self._self_dispatch_fresh(scheduled_start)
         if previous_abort is not None:previous_abort()
         require(not self.contact_guard or not self.contact_guard["latched"],"Native contact guard latched")
+        self._self_refresh(prepared,scheduled_start)
         self._confirm_prepared(prepared,commands,scheduled_start=scheduled_start)
         self.dispatch_abort=admission_abort
         try:
