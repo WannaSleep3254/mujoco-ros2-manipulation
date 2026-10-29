@@ -178,6 +178,12 @@ def validate_dispatch_geometry(value, *, anchor_arms, anchor_fingers,
                  "held block/contact changed after path validation")
 
 
+def diagnostic_hold_duration(value):
+    _require(type(value) in (int, float) and math.isfinite(value) and 0 <= value <= 60,
+             "diagnostic hold must be explicitly selected within 0..60 simulation seconds")
+    return float(value)
+
+
 def _native_exit_proof(log):
     values = re.findall(r"\[INFO\] \[(ros2_control_node-\d+)\]: process started with pid \[(\d+)\]", log)
     if len(values) != 1:
@@ -187,8 +193,40 @@ def _native_exit_proof(log):
     return dict(observed=marker in log, node=name, pid=int(pid), clean_exit_marker=marker)
 
 
+def expected_startup_spawner_interruptions(log, *, startup_cancel, launch_was_alive, native_stop_observed):
+    """Recognize only owned startup helpers interrupted by our orderly SIGINT.
+
+    Python controller-manager spawners can report KeyboardInterrupt/-SIGINT
+    after launch sends their stop signal. This is not a native control-node
+    crash. Raw failure rows remain in the receipt; all other exits still fail.
+    """
+    if not (startup_cancel and launch_was_alive and native_stop_observed):
+        return []
+    expected = []
+    commands = {"spawner-3": "joint_state_broadcaster", "spawner-4": "left_controller",
+                "spawner-5": "right_controller", "spawner-6": "gripper_controller"}
+    for row in process_failures(log):
+        name, pid = row["node"], row["pid"]
+        if row["exit_code"] != -signal.SIGINT or name not in commands:
+            continue
+        start = f"[INFO] [{name}]: process started with pid [{pid}]"
+        stopped = f"[INFO] [{name}]: sending signal 'SIGINT' to process[{name}]"
+        command = ("/opt/ros/humble/lib/controller_manager/spawner "+commands[name]+
+                   " -c /controller_manager --controller-manager-timeout 30 --ros-args")
+        failure = f"[ERROR] [{name}]: process has died [pid {pid}, exit code {-signal.SIGINT}, cmd '{command}']."
+        starts = re.findall(r"^\[INFO\] \["+re.escape(name)+r"\]: process started with pid \[(\d+)\]$", log, re.MULTILINE)
+        # An ambiguous PID/name, changed command, duplicate failure or an exit
+        # before our signal is ineligible, even during an intended cancellation.
+        if (starts == [str(pid)] and log.splitlines().count(stopped) == 1
+                and log.splitlines().count(failure) == 1
+                and sum(item["node"] == name for item in process_failures(log)) == 1
+                and log.index(start) < log.index(stopped) < log.index(failure)):
+            expected.append(dict(row, controller=commands[name], reason="owned startup spawner interrupted by launch SIGINT"))
+    return expected
+
+
 def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_event=None,
-                  on_update=None, run_id=None):
+                  on_update=None, run_id=None, diagnostic_hold_sec=0):
     """Run one fresh fixed task and retain originals, including any failure.
 
     ``on_update`` receives detached dictionaries with ``kind`` (task or
@@ -197,6 +235,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
     native three-controller stop and never opens/detaches/replays a task.
     """
     _require(type(domain) is int and 0 <= domain <= 232, "select an independent ROS domain 0..232")
+    diagnostic_hold_sec = diagnostic_hold_duration(diagnostic_hold_sec)
     _require(type(manifest_sha256) is str and re.fullmatch(r"[0-9a-f]{64}", manifest_sha256),
              "select an explicit SHA-paired grasp target")
     identifier = uuid.uuid4().hex if run_id is None else run_id
@@ -214,6 +253,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                   automatic_retry=False, physical_grasp="unconfirmed", planning_attachment="uninitialized",
                   action_terminal=None, cleanup=dict(status="not_started", clean=False),
                   checks=[], actions=[], cleanup_errors=[], simulation_only=True)
+    record["diagnostic_hold"] = dict(requested_simulation_sec=diagnostic_hold_sec,
+        enabled=diagnostic_hold_sec > 0, production_default_sec=0., gui_option=False,
+        reference_policy="original closed-grasp reference is retained; no tolerance or contact gate change")
     process = node = context = executor = target = evaluator = scene = life = frames = log_stream = timer = publisher = None
     clients, pending, handles = {}, [], []
     phase = [0]
@@ -766,6 +808,17 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                     fixture_sha256=evaluator.model_sha256)
         life.carry()
         change_phase(4)
+        if diagnostic_hold_sec > 0:
+            stage("diagnostic_hold")
+            held = window(diagnostic_hold_sec, timeout=diagnostic_hold_sec+10.)
+            record["checks"].append(dict(name="diagnostic_held_stability", diagnostic_only=True,
+                requested_simulation_sec=diagnostic_hold_sec,
+                observed_simulation_sec=checked_window(held, diagnostic_hold_sec), sample_count=len(held),
+                relative_position_error_m_max=max(item["relative_position_error_m"] for item in held),
+                relative_angle_error_rad_max=max(item["relative_angle_error_rad"] for item in held),
+                bilateral_fraction=sum(item["bilateral_contact"] for item in held)/len(held),
+                original_closed_reference_retained=True, samples=held))
+            save()
         carry_target = list(current().payload["tcp"]["position"])
         carry_target[0] += .06
         motion("transport", carry_target, orientation, held_pose=held_pose)
@@ -803,6 +856,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             else:
                 life.fail(str(error)[:256] or type(error).__name__, slipped="slip" in str(error))
     finally:
+        startup_cancel = bool(not ready and not record["actions"] and cancel_event.is_set()
+            and record["status"] == "cancelled" and record.get("error", {}).get("type") == "RosGraspCancelled")
         ready = False
         monitor_held = False
         record["cleanup"] = dict(status="running", clean=False, automatic_release=False, automatic_detach=False)
@@ -852,6 +907,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         if timer is not None:
             timer.cancel()
         forced = False
+        launch_was_alive_at_stop = process is not None and process.poll() is None
         if process is not None:
             try:
                 forced = stop_process(process)
@@ -885,13 +941,18 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             frames.close()
         log = log_path.read_text(errors="replace")
         failures, native = process_failures(log), _native_exit_proof(log)
+        interruptions = expected_startup_spawner_interruptions(log, startup_cancel=startup_cancel,
+            launch_was_alive=launch_was_alive_at_stop, native_stop_observed=record["cleanup"].get("native_stop_observed", False))
+        expected_keys = {(item["node"], item["pid"], item["exit_code"]) for item in interruptions}
+        unexpected = [item for item in failures if (item["node"], item["pid"], item["exit_code"]) not in expected_keys]
         gone = process is None or group_gone(process.pid)
         clean = bool((process is None or (process.returncode == 0 and native["observed"] and gone))
-                     and not forced and not failures and not record["cleanup_errors"])
+                     and not forced and not unexpected and not record["cleanup_errors"])
         record["cleanup"].update(status="complete", clean=clean, launch_started=process is not None,
             forced=forced, process_group_gone=gone,
             native_exit=native, launcher_return_code=process.returncode if process is not None else None,
-            child_process_failures=failures)
+            child_process_failures=failures, expected_startup_spawner_interruptions=interruptions,
+            unexpected_child_process_failures=unexpected, launch_was_alive_at_stop=launch_was_alive_at_stop)
         if process is not None and not clean:
             record["status"] = "failed"
             record.setdefault("error", dict(type="NativeCleanupFailure", message="clean native shutdown was not observed"))
@@ -921,6 +982,8 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run-id", help="startup owner's fresh 32-character lowercase run ID")
     parser.add_argument("--updates", type=Path, help="new output/latest.json atomic IPC; never an arbitrary destination")
+    parser.add_argument("--diagnostic-hold-sec", type=float, default=0.,
+        help="Explicit diagnostic only: hold the confirmed physical grasp for 0..60 simulation seconds; GUI never sets this")
     args = parser.parse_args(argv)
     cancel = threading.Event()
     previous_sigint = signal.getsignal(signal.SIGINT)
@@ -936,7 +999,8 @@ def main(argv=None):
             atomic_json(updates, value)
         signal.signal(signal.SIGINT, lambda *_: cancel.set())
         result = run_ros_grasp(args.target, args.sha, args.output, domain=args.domain, run_id=args.run_id,
-                               cancel_event=cancel, on_update=update if updates is not None else None)
+            cancel_event=cancel, on_update=update if updates is not None else None,
+            diagnostic_hold_sec=args.diagnostic_hold_sec)
         print(result["status"].upper()+": "+str(args.output/"result.json"), flush=True)
         return 0 if result["status"] == "succeeded" else 1
     except Exception as error:

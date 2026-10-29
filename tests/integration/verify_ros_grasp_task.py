@@ -4,7 +4,9 @@ The child runs the production CLI, including original observation IPC, checked
 MoveIt trajectories and physical lifecycle gates. A transport cancellation is
 injected only after its Action is accepted and native TCP/block motion exceeds
 5 mm from the lifted pose. No test moves qpos, welds an object, releases after
-cancel, retries a failed case, or changes collision permissions.
+cancel, retries a failed case, or changes collision permissions. normal_hold
+explicitly adds a 30-simulation-second stability diagnostic before transport;
+the ordinary GUI task retains its zero-second diagnostic default.
 """
 import argparse
 import json
@@ -52,7 +54,7 @@ def verify(args):
     run_id = uuid.uuid4().hex
     record = dict(schema_version=1, case=args.case, status="running", started_utc=utc_now(),
                   domain=args.domain, run_id=run_id, automatic_retry=False, signal_sent=False,
-                  diagnostic_only_fault_injection="SIGINT to owned worker" if args.case != "normal" else None,
+                  diagnostic_only_fault_injection="SIGINT to owned worker" if args.case.startswith("cancel_") else None,
                   source_sha256=file_sha256(Path(__file__)), cleanup_errors=[])
     process = None
     inner = None
@@ -70,6 +72,8 @@ def verify(args):
         command = [sys.executable, "-m", "mujoco_ros2_manipulation.grasping.ros_task", "--domain", str(args.domain),
                    "--target", str(args.target.resolve()), "--sha", args.sha, "--output", str(worker_output),
                    "--run-id", run_id, "--updates", str(worker_output/"latest.json")]
+        if args.case == "normal_hold":
+            command += ["--diagnostic-hold-sec", "30"]
         stream = (output/"worker.log").open("wb")
         process = subprocess.Popen(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True,
                                    env=dict(os.environ, ROS_DOMAIN_ID=str(args.domain), MANIPULATION_ROS_DOMAIN_ID=str(args.domain)))
@@ -134,9 +138,20 @@ def verify(args):
         require(not result["cleanup"]["automatic_release"] and not result["cleanup"]["automatic_detach"],
                 "cleanup must never automatically release or detach")
         actions = result["actions"]
+        expected_interruptions = result["cleanup"].get("expected_startup_spawner_interruptions", [])
+        if expected_interruptions:
+            require(args.case == "cancel_startup" and not actions
+                    and result["cleanup"].get("launch_was_alive_at_stop") is True
+                    and result["cleanup"].get("unexpected_child_process_failures") == []
+                    and all(item["exit_code"] == -signal.SIGINT
+                            and item["controller"] in ("joint_state_broadcaster", "left_controller", "right_controller", "gripper_controller")
+                            for item in expected_interruptions)
+                    and result["cleanup"]["child_process_failures"] == [
+                        {key: item[key] for key in ("node", "pid", "exit_code")} for item in expected_interruptions],
+                    "startup helper interruptions were not narrowly classified and retained")
         stages = [action["stage"] for action in actions]
         checks = {check["name"]: check for check in result["checks"]}
-        if args.case == "normal":
+        if args.case in ("normal", "normal_hold"):
             require(process.returncode == 0 and result["status"] == "succeeded", "normal grasp task failed")
             require(stages == ["approach", "close", "verification_lift", "transport", "place", "open"]
                     and all(action.get("terminal_observed") and action.get("terminal_status") == 4
@@ -151,6 +166,15 @@ def verify(args):
                         "native sampled path clearance is missing")
             require(any(event["event"] == "logical_attachment_recorded" for event in result["lifecycle"]["events"]),
                     "confirmed MoveIt attachment transition is missing")
+            if args.case == "normal_hold":
+                hold = checks.get("diagnostic_held_stability", {})
+                require(result.get("diagnostic_hold", {}).get("requested_simulation_sec") == 30
+                        and hold.get("observed_simulation_sec", 0) >= 30 and hold.get("sample_count", 0) >= 3
+                        and hold.get("relative_position_error_m_max", 1) <= .005
+                        and hold.get("relative_angle_error_rad_max", 1) <= .15
+                        and hold.get("bilateral_fraction") == 1.
+                        and hold.get("original_closed_reference_retained") is True,
+                        "explicit 30-second held stability with unchanged physical gates was not verified")
         else:
             require(record["signal_sent"] and process.returncode == 1 and result["status"] == "cancelled",
                     "owned SIGINT did not produce a cancelled task")
@@ -213,7 +237,7 @@ def main(argv=None):
     parser.add_argument("--target", type=Path, required=True)
     parser.add_argument("--sha", required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--case", choices=("normal", "cancel_transport", "cancel_startup"), required=True)
+    parser.add_argument("--case", choices=("normal", "normal_hold", "cancel_transport", "cancel_startup"), required=True)
     args = parser.parse_args(argv)
     try:
         return verify(args)

@@ -31,6 +31,8 @@ BLOCK_BODY, TABLE_BODY = "fr5_grasp_block", "fr5_grasp_table"
 POLICY = "fr5_parallel_block_v1"
 CONTROLLER = "gripper_controller"
 ARTIFACT = "grasp-execution-target-v1"
+CONTACT_CONE = "elliptic"
+FRICTION_IMPEDANCE_RATIO = 10.0
 OUTPUTS = (*BASE_OUTPUTS, "grasp_plugins.yaml")
 MAX_FILE_BYTES = 16 * 1024 * 1024
 MAX_OUTPUT_BYTES = 64 * 1024 * 1024
@@ -234,6 +236,14 @@ def _compose(base, directory, initial_tcp=None, block_xyz=None, block_quat=None)
     """Static composition; returned model has no free object until FK locates it."""
     raw = {name:_read(base.output/name) for name in BASE_OUTPUTS}
     mj, robot, semantic = (ET.fromstring(raw[name]) for name in ("cell.xml","cell.urdf","cell.srdf"))
+    option = mj.find("option")
+    _require(option is not None, "Missing base physics option")
+    # This override belongs only to the explicit manipulation artifact. The
+    # base workcell, force limits and physical acceptance gates are unchanged.
+    # Harder elliptic friction dimensions reduce regularized-contact creep;
+    # this does not add a weld, carry qpos, or enable NoSlip post-processing.
+    option.set("cone", CONTACT_CONE)
+    option.set("impratio", format(FRICTION_IMPEDANCE_RATIO, ".17g"))
     _tool_mjcf(mj)
     home = _home(base)
     for keys in list(mj.findall("keyframe")):
@@ -309,10 +319,21 @@ def _compose(base, directory, initial_tcp=None, block_xyz=None, block_quat=None)
         tcp_rotation_matrix=None if rotation is None else rotation.tolist())
 
 
+def _solver_contract(base):
+    option = ET.fromstring(_read(base.output/"cell.xml")).find("option")
+    _require(option is not None, "Missing base physics option")
+    return dict(scope="explicit_grasp_execution_target_only", cone=CONTACT_CONE,
+                impratio=FRICTION_IMPEDANCE_RATIO, base_option_attributes=dict(option.attrib),
+                changed_option_attributes=["cone", "impratio"], noslip_postprocessing_added=False,
+                friction_coefficients_and_force_limits_changed=False)
+
+
 def _compiled_contract(mj, base):
     import mujoco
     model=mujoco.MjModel.from_xml_string(_xml(mj).decode())
     _require((model.nu,model.njnt,model.nq,model.nv)==(14,15,21,20),"ROS grasp compiled dimensions differ")
+    _require(model.opt.cone == mujoco.mjtCone.mjCONE_ELLIPTIC
+             and model.opt.impratio == FRICTION_IMPEDANCE_RATIO, "ROS grasp contact solver differs")
     expected={**dict.fromkeys(base.joints,"hinge"),**dict.fromkeys(FINGER_JOINTS,"slide"),FREE_JOINT:"free"}
     types={int(mujoco.mjtJoint.mjJNT_HINGE):("hinge",1),int(mujoco.mjtJoint.mjJNT_SLIDE):("slide",1),
            int(mujoco.mjtJoint.mjJNT_FREE):("free",7)}
@@ -368,6 +389,7 @@ def build_model(base, destination, *, base_validator=check_workcell):
                 initial_xyz_m=geometry["block_xyz_m"],initial_quaternion_wxyz=geometry["block_quaternion_wxyz"],attachment_constraint="none"),
             table=dict(body=TABLE_BODY,geom=TABLE_GEOM,half_size_m=[.16,.1,.02],position_m=geometry["table_position_m"],top_m=geometry["table_top_m"]),
             contact_policy=_contact_contract(),
+            physics_solver=_solver_contract(base),
             geometry=geometry,dependencies=dependencies,outputs={name:_sha(raw) for name,raw in outputs.items()},
             validation=dict(static_fk_engine="MuJoCo "+__import__('mujoco').__version__,physics_steps=0,
                 native_engine_required="3.12.0",native_execution_verified=False,ros_execution_verified=False))
@@ -393,7 +415,7 @@ def check_model(directory, base, *, expected_sha256=None, base_validator=check_w
     value=_json(raw);base_manifest=_base(base,base_validator)
     expected_fields={"schema_version","artifact_kind","id","simulation_only","inputs","arm_joint_names","arm_joint_limits","home_rad",
         "finger_joint_names","finger_joint_limits","scalar_joint_units","qpos_state_contract","tool","block","table","contact_policy",
-        "geometry","dependencies","outputs","validation","fingerprint"}
+        "geometry","dependencies","outputs","validation","fingerprint","physics_solver"}
     _require(type(value) is dict and set(value)==expected_fields and type(value["schema_version"]) is int
              and value["schema_version"]==1 and value["artifact_kind"]==ARTIFACT and value["id"]==POLICY
              and value["simulation_only"] is True,"Invalid grasp execution artifact")
@@ -440,6 +462,7 @@ def check_model(directory, base, *, expected_sha256=None, base_validator=check_w
         numbers=[float(v) for v in keys[0].get(field,"").split()]
         _require(len(numbers)==len(expected) and all(math.isfinite(a) and abs(a-b)<=1e-12 for a,b in zip(numbers,expected)),"Grasp keyframe "+field+" changed")
     _require(value["tool"]==_tool_contract() and value["contact_policy"]==_contact_contract(),"Grasp TCP or contact policy contract changed")
+    _require(value["physics_solver"]==_solver_contract(base),"Grasp contact solver contract changed")
     _require(value["block"]==dict(body=BLOCK_BODY,geom=BLOCK_GEOM,free_joint=FREE_JOINT,half_size_m=[.02,.015,.025],mass_kg=.08,
         initial_xyz_m=geometry["block_xyz_m"],initial_quaternion_wxyz=geometry["block_quaternion_wxyz"],attachment_constraint="none"),"Grasp free block contract changed")
     _require(value["table"]==dict(body=TABLE_BODY,geom=TABLE_GEOM,half_size_m=[.16,.1,.02],position_m=geometry["table_position_m"],top_m=geometry["table_top_m"]),"Grasp table contract changed")

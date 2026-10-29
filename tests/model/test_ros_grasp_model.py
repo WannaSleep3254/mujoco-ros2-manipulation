@@ -13,7 +13,8 @@ import yaml
 from mujoco_ros2_manipulation.paths import ROOT
 from mujoco_ros2_manipulation.workcells.config import load_workcell
 from mujoco_ros2_manipulation.workcells.integrity import OUTPUTS,check_workcell
-from mujoco_ros2_manipulation.grasping.ros_model import build_model,check_model,FINGER_JOINTS,FREE_JOINT,POLICY
+from mujoco_ros2_manipulation.grasping.ros_model import (build_model,check_model,FINGER_JOINTS,FREE_JOINT,POLICY,
+    CONTACT_CONE,FRICTION_IMPEDANCE_RATIO)
 from mujoco_ros2_manipulation.grasping.ros_target import load_ros_grasp_target
 
 
@@ -61,6 +62,27 @@ class RosGraspModelTests(unittest.TestCase):
         self.assertEqual([row.attrib for row in source.findall('contact/exclude')],[row.attrib for row in result.findall('contact/exclude')])
         for name,raw in self.original.items():self.assertEqual((self.base.output/name).read_bytes(),raw)
 
+    def test_contact_solver_override_is_explicit_and_does_not_change_base_options_or_materials(self):
+        base = ET.fromstring(self.original['cell.xml'])
+        target = ET.parse(self.output/'cell.xml').getroot()
+        expected = dict(base.find('option').attrib, cone=CONTACT_CONE,
+                        impratio=format(FRICTION_IMPEDANCE_RATIO,'.17g'))
+        self.assertEqual(target.find('option').attrib, expected)
+        base_model = self.mj.MjModel.from_xml_string(self.original['cell.xml'].decode())
+        self.assertEqual(self.model.opt.cone,self.mj.mjtCone.mjCONE_ELLIPTIC)
+        self.assertEqual(self.model.opt.impratio,10.)
+        for name in ('timestep','integrator','solver','noslip_iterations'):
+            self.assertEqual(getattr(self.model.opt,name),getattr(base_model.opt,name))
+        for node in target.findall(".//geom[@name='fr5_left_finger_geom']"):
+            self.assertEqual(node.get('friction'),'.8 .01 .001')
+        contract=self.manifest['physics_solver']
+        self.assertEqual(contract['base_option_attributes'],base.find('option').attrib)
+        self.assertEqual(contract['changed_option_attributes'],['cone','impratio'])
+        self.assertFalse(contract['noslip_postprocessing_added'])
+        self.assertFalse(contract['friction_coefficients_and_force_limits_changed'])
+        self.assertEqual(load_ros_grasp_target(self.base,self.output,self.sha).description()['physics_solver'],contract)
+        for name,raw in self.original.items():self.assertEqual((self.base.output/name).read_bytes(),raw)
+
     def test_initial_keyframe_uses_joint_addresses_not_assumed_arm_order(self):
         data=self.mj.MjData(self.model);self.mj.mj_resetDataKeyframe(self.model,data,0);self.mj.mj_forward(self.model,data)
         for name,value in zip(self.base.joints,self.manifest['home_rad']):
@@ -105,7 +127,7 @@ class RosGraspModelTests(unittest.TestCase):
         with self.assertRaises(ValueError):build_model(self.base,self.output)
 
     def test_modified_output_units_qpos_or_policy_is_rejected(self):
-        for change in ('output','units','qpos','policy','native_claim'):
+        for change in ('output','units','qpos','policy','native_claim','solver_metadata','solver_option'):
             with self.subTest(change=change),tempfile.TemporaryDirectory() as folder:
                 import shutil
                 copied=Path(folder)/'grasp';shutil.copytree(self.output,copied)
@@ -115,7 +137,12 @@ class RosGraspModelTests(unittest.TestCase):
                 elif change=='units':value['scalar_joint_units'][FINGER_JOINTS[0]]='rad'
                 elif change=='qpos':value['qpos_state_contract']['layout'][6]['qpos_width']=7
                 elif change=='policy':value['contact_policy']['finger_geoms']=['unrelated']
-                else:value['validation']['native_execution_verified']=True
+                elif change=='native_claim':value['validation']['native_execution_verified']=True
+                elif change=='solver_metadata':value['physics_solver']['impratio']=1.
+                else:
+                    changed=ET.parse(copied/'cell.xml');changed.find('option').set('impratio','1')
+                    changed.write(copied/'cell.xml',encoding='utf-8',xml_declaration=True)
+                    value['outputs']['cell.xml']=hashlib.sha256((copied/'cell.xml').read_bytes()).hexdigest()
                 (copied/'grasp.json').write_text(json.dumps(value))
                 with self.assertRaises(ValueError):check_model(copied,self.base,final_directory=self.output)
 

@@ -182,7 +182,7 @@ jobs:
                   '--domain', str(domain), '--execution-environment', str(target),
                   '--execution-manifest-sha256', digest, '--stop-mode', mode,
                   '--output', 'runtime/validation/ros-grasp-foundation-'+mode], check=True)
-          for domain, case in ((226, 'normal'), (227, 'cancel_transport'), (228, 'cancel_startup')):
+          for domain, case in ((226, 'normal'), (229, 'normal_hold'), (227, 'cancel_transport'), (228, 'cancel_startup')):
               subprocess.run([sys.executable, 'tests/integration/verify_ros_grasp_task.py',
                   '--domain', str(domain), '--target', str(target), '--sha', digest,
                   '--case', case, '--output', 'runtime/validation/ros-grasp-task-'+case], check=True)

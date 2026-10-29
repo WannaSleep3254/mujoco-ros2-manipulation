@@ -44,6 +44,7 @@ class RosGraspTarget:
             scalar_joint_units=deepcopy(value["scalar_joint_units"]),qpos_state_contract=deepcopy(value["qpos_state_contract"]),
             tool=deepcopy(value["tool"]),block=deepcopy(value["block"]),table=deepcopy(value["table"]),
             contact_policy=deepcopy(value["contact_policy"]),outputs_sha256=deepcopy(value["outputs"]),
+            physics_solver=deepcopy(value["physics_solver"]),
             selection="explicit_local_startup_only",native_execution_verified=False)
 
     def validate(self):

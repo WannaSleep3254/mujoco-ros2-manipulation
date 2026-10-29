@@ -12,7 +12,8 @@ from mujoco_ros2_manipulation.grasping.ros_model import FINGER_JOINTS
 def report():
     return dict(id="fr5_parallel_block_v1",fingerprint="a"*64,home_rad=[0.]*12,
         scalar_joint_units={**{f"arm_{n}":"rad" for n in range(12)},**dict.fromkeys(FINGER_JOINTS,"m")},
-        qpos_state_contract=dict(nq=21,nv=20,njnt=15,nu=14),tool={},block={},table={},contact_policy={},outputs={})
+        qpos_state_contract=dict(nq=21,nv=20,njnt=15,nu=14),tool={},block={},table={},contact_policy={},outputs={},
+        physics_solver=dict(scope="explicit_grasp_execution_target_only",cone="elliptic",impratio=10.))
 
 
 class RosGraspTargetTests(unittest.TestCase):
@@ -46,8 +47,10 @@ class RosGraspTargetTests(unittest.TestCase):
         with patch('mujoco_ros2_manipulation.grasping.ros_target.check_model',return_value=report()):
             target=load_ros_grasp_target(base,'/tmp/grasp','b'*64)
             first=target.description();first['scalar_joint_units'][FINGER_JOINTS[0]]='rad'
+            first['physics_solver']['impratio']=1.
             second=target.manifest;second['home_rad'][0]=2.
             self.assertEqual(target.description()['scalar_joint_units'][FINGER_JOINTS[0]],'m')
+            self.assertEqual(target.description()['physics_solver']['impratio'],10.)
             self.assertEqual(target.home[0],0.)
 
 
