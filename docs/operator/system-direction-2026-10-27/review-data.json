@@ -454,7 +454,7 @@
   },
   "latest_update": {
     "date": "2026-10-29",
-    "document_edition": "1.7",
+    "document_edition": "1.8",
     "original_design_preserved": {
       "document_version": "1.1",
       "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
@@ -486,8 +486,10 @@
       }
     },
     "ros_grasp": {
-      "status": "representative_native_and_browser_locally_verified",
+      "status": "representative_native_v4_and_desktop_locally_verified",
       "evidence": "ros-grasp-verification.json",
+      "implementation_commit": "9b7fc0fb4b96ecb00f15b6aa4fa238c015bd5015",
+      "source_identity_basis": "Exact source/model/manifest SHA and source Git blobs; previous v3 evidence is archived separately.",
       "native_version": "3.12.0",
       "robots": [
         "FAIRINO FR5",
@@ -498,9 +500,33 @@
       "display": "Same Three.js viewer, all 49 native geom transforms",
       "cases": [
         "normal six-Action grasp/carry/place/release",
+        "explicit 30-simulation-second held diagnostic then complete task",
         "cancel during observed transport",
         "cancel during owned startup before Action dispatch"
       ],
+      "physics_solver": {
+        "scope": "explicit_grasp_execution_target_only",
+        "cone": "elliptic",
+        "impratio": 10.0,
+        "base_option_attributes": {
+          "timestep": "0.002",
+          "integrator": "implicitfast"
+        },
+        "changed_option_attributes": [
+          "cone",
+          "impratio"
+        ],
+        "noslip_postprocessing_added": false,
+        "friction_coefficients_and_force_limits_changed": false
+      },
+      "original_acceptance_gates_retained": {
+        "position_m": 0.005,
+        "angle_rad": 0.15,
+        "finger_force_min_n": 0.2,
+        "reference": "original closed-grasp lifetime reference, never re-anchored at lift",
+        "base_workcell_unchanged": true,
+        "noslip_iterations": 0
+      },
       "physical_grasp_and_planning_attachment_separate": true,
       "cancellation_automatic_open_or_detach": false,
       "source_sha256": {
@@ -513,15 +539,36 @@
         "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
         "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
         "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
-        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "b4116e80f79eec7710824e696347558ecfe339ba55937ad674eabb4c1adb6d99",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "5c0c920db09a1e508015e9dd19ae63f19395b2716904e13de01c5e3553362c39",
         "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
         "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
         "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
       },
-      "model_sha256": "0270af485e0175be556f7d1fbcfd65de31382299b70366ba0ebc89812be6ece2",
-      "manifest_sha256": "b8a5487606cb9d4f9802c21c322df7a7c5baf205e1daf1c2d9c9b76e930d6f57",
+      "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+      "manifest_sha256": "7ca0f858c5b0d74442e683160c9eb68f6736d05d89059ed679a778ba4aa69276",
+      "held_ros_validation": {
+        "diagnostic_only": true,
+        "requested_simulation_sec": 30.0,
+        "observed_simulation_sec": 30.016000000002457,
+        "sample_count": 557,
+        "relative_position_error_m_max": 0.0013172183421610968,
+        "relative_angle_error_rad_max": 0.0017705285376229524,
+        "bilateral_fraction": 1.0,
+        "original_closed_reference_retained": true
+      },
+      "causal_diagnostic": {
+        "evidence": "ros-grasp-verification.json",
+        "ci_failure": "CI133 gradual physical creep with sustained bilateral normal force, followed by explicit old-solver hold failure. Originals retained.",
+        "probe_commit": "f06e442",
+        "offline_summary_sha256": "e33ea06e54abebfb706228eb469e1bdab854e5ca4f77c834d62b37579ca70575",
+        "offline_duration_simulation_sec": 60,
+        "original_max_relative_position_error_m": 0.08129730202467977,
+        "elliptic10_max_relative_position_error_m": 0.001958858432347157,
+        "low_friction_and_open_controls_failed": true,
+        "scope": "Offline state reinitialization using immutable local geometry; unrecorded solver warmstart/CI XML were not restored. Not a bit-exact CI continuation or timing benchmark."
+      },
       "ui_final_evidence": {
-        "status": "verified",
+        "status": "verified_desktop_current_v4",
         "evidence": "ros-grasp-verification.json",
         "cases": [
           "normal",
@@ -530,11 +577,6 @@
         "display_geoms": 49,
         "native_meshes": 34,
         "desktop_whole_3d_card_visible": true,
-        "mobile_viewport": {
-          "width": 390,
-          "height": 844,
-          "horizontal_overflow": false
-        },
         "owner_cleanup_confirmed": true,
         "ui_source_sha256": {
           "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "924bd7f3e4703942a6d0cfb67ee1412239b7499b25e07096aa2e4bec31f4eb53",
@@ -543,11 +585,27 @@
           "src/mujoco_ros2_manipulation/grasping/static/ros_demo.css": "6284b84bb85774da168a3955f62e96b55c1771cbdcdf30c56bd9e438b4b55671",
           "src/mujoco_ros2_manipulation/grasping/static/ros_demo.js": "433de6e4d81e2071ff4cbdff869c1afc24c26ac5f240e8e6be61894dad7aca66",
           "native/grasp_scene_export.cpp": "78068de552d62e4c47a43abab1e6d00c7126fcf7cab0dce1507857120bb0b5ae"
-        }
+        },
+        "mobile_layout_archive": {
+          "previous_evidence": "ros-grasp-v3-verification.json",
+          "same_ui_source_sha256": true,
+          "archived_viewport": {
+            "width": 390,
+            "height": 844,
+            "page_scroll_width": 375,
+            "horizontal_overflow": false
+          },
+          "scope": "Unchanged six UI/export source hashes retain the prior responsive layout evidence. A new v4 mobile override returned desktop dimensions, so it is not counted as a new mobile run."
+        },
+        "new_v4_mobile_verification": false
       },
-      "remote_ci_merge_deployment": "Not claimed by these local functional results.",
-      "implementation_commit": "77c595a504122df67eb9f06d95370795056f49cb",
-      "source_identity_basis": "Exact physical-source SHA and matching Git blobs; model producers and verifier sources are in ros-grasp-verification.json."
+      "previous_evidence": {
+        "file": "ros-grasp-v3-verification.json",
+        "image": "ros-grasp-v3.jpg",
+        "included_in_current_v4_results": false
+      },
+      "startup_helper_interruptions": "Only intended startup cancel with zero Actions, native stop and exact owned spawner name/PID/command/start-SIGINT-exit ordering may be separately expected. Raw failure rows and independent native/launcher/group cleanup gates remain.",
+      "remote_ci_merge_deployment": "Not claimed by these local functional results."
     },
     "remaining": [
       "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
@@ -555,6 +613,126 @@
       "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
     ],
     "new_performance_measurements": [],
-    "public_data_policy": "Only synthetic geometry, reviewed image and reduced verification facts/source hashes; no private CAD, local paths, process IDs, raw logs or session identifiers."
-  }
+    "public_data_policy": "Only synthetic geometry, reviewed image and reduced verification facts/source hashes; no private CAD, local paths, process IDs, raw logs or session identifiers.",
+    "local_checks": {
+      "targeted_model_and_unit": 25,
+      "model_tests": 78,
+      "model_skipped": 3,
+      "repository_check": "passed",
+      "python_unit": 1297,
+      "python_skipped": 1,
+      "note": "원래 native force 시간은 명목 시간입니다. 실물·성능 인증이 아닙니다.",
+      "javascript_scripts": 16,
+      "package_build": "sdist and wheel passed; critical source/static bytes matched the final tree"
+    }
+  },
+  "previous_updates": [
+    {
+      "date": "2026-10-29",
+      "document_edition": "1.7",
+      "original_design_preserved": {
+        "document_version": "1.1",
+        "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
+        "progress_update": "W01-W06 original update retained"
+      },
+      "synchronized_replay": {
+        "status": "representative_ros_and_browser_validated",
+        "evidence": "synchronized-verification.json",
+        "implementation_main_commit": "ce208a8f3112a3c0fcd997245215fae33f4a502b",
+        "publication": "Promotion verification passed six required checks and published Pages bytes matched main ce208a8. A later main image-test harness failure is tracked separately and is not claimed passed here.",
+        "samples": {
+          "joint_states": 41,
+          "diagnostic_rgb8_images": 18
+        },
+        "scope": "Read-only common-timeline playback; diagnostic pattern input, not calibrated camera or hardware/native-step synchronization.",
+        "followup_ci": {
+          "original_run": 40823479972,
+          "original_result": "main workcell failed at HTTP capture start; original log did not preserve the HTTP rejection body",
+          "diagnosis": "The diagnostic producer stopped publishing while one blocking start request prepared assets. A controlled 0.75-second input pause reproduced HTTP 400 with stale sensor readiness. This supports the failure path without proving the unrecorded original response body.",
+          "fix": "One bounded HTTP request runs in a worker while the existing main loop alone pumps diagnostic input and ROS callbacks; no retries or production freshness relaxation. Bounded rejection status, path and body are retained.",
+          "fix_source_sha256": "1ec6a947044e3ff271cffefa868b468e00dbbc50e39ae4a5012d73d349dff01a",
+          "local_delayed_verification": {
+            "result": "passed",
+            "poses": 40,
+            "diagnostic_images": 17,
+            "cleanup_clean": true
+          },
+          "remote_result": "Pending verification of the combined release head."
+        }
+      },
+      "ros_grasp": {
+        "status": "representative_native_and_browser_locally_verified",
+        "evidence": "ros-grasp-v3-verification.json",
+        "native_version": "3.12.0",
+        "robots": [
+          "FAIRINO FR5",
+          "Universal Robots UR5e"
+        ],
+        "tool": "Synthetic parallel gripper, two scalar finger joints",
+        "object": "Synthetic free block",
+        "display": "Same Three.js viewer, all 49 native geom transforms",
+        "cases": [
+          "normal six-Action grasp/carry/place/release",
+          "cancel during observed transport",
+          "cancel during owned startup before Action dispatch"
+        ],
+        "physical_grasp_and_planning_attachment_separate": true,
+        "cancellation_automatic_open_or_detach": false,
+        "source_sha256": {
+          "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5",
+          "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+          "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+          "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+          "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+          "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+          "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+          "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+          "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+          "src/mujoco_ros2_manipulation/grasping/ros_task.py": "b4116e80f79eec7710824e696347558ecfe339ba55937ad674eabb4c1adb6d99",
+          "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+          "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+          "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+        },
+        "model_sha256": "0270af485e0175be556f7d1fbcfd65de31382299b70366ba0ebc89812be6ece2",
+        "manifest_sha256": "b8a5487606cb9d4f9802c21c322df7a7c5baf205e1daf1c2d9c9b76e930d6f57",
+        "ui_final_evidence": {
+          "status": "verified",
+          "evidence": "ros-grasp-v3-verification.json",
+          "cases": [
+            "normal",
+            "cancel_while_attached"
+          ],
+          "display_geoms": 49,
+          "native_meshes": 34,
+          "desktop_whole_3d_card_visible": true,
+          "mobile_viewport": {
+            "width": 390,
+            "height": 844,
+            "horizontal_overflow": false
+          },
+          "owner_cleanup_confirmed": true,
+          "ui_source_sha256": {
+            "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "924bd7f3e4703942a6d0cfb67ee1412239b7499b25e07096aa2e4bec31f4eb53",
+            "src/mujoco_ros2_manipulation/grasping/ros_display.py": "6b5fa590471778d9d999a8e929d72eb64ae63c88e387443f3cc298990b2292ab",
+            "src/mujoco_ros2_manipulation/grasping/static/ros_demo.html": "fdd75baf6942a3442edd2f1b1df14f0ee56df3bc944c237a967b12423b9168b2",
+            "src/mujoco_ros2_manipulation/grasping/static/ros_demo.css": "6284b84bb85774da168a3955f62e96b55c1771cbdcdf30c56bd9e438b4b55671",
+            "src/mujoco_ros2_manipulation/grasping/static/ros_demo.js": "433de6e4d81e2071ff4cbdff869c1afc24c26ac5f240e8e6be61894dad7aca66",
+            "native/grasp_scene_export.cpp": "78068de552d62e4c47a43abab1e6d00c7126fcf7cab0dce1507857120bb0b5ae"
+          }
+        },
+        "remote_ci_merge_deployment": "Not claimed by these local functional results.",
+        "implementation_commit": "77c595a504122df67eb9f06d95370795056f49cb",
+        "source_identity_basis": "Exact physical-source SHA and matching Git blobs; model producers and verifier sources are in ros-grasp-verification.json.",
+        "archived_image": "ros-grasp-v3.jpg"
+      },
+      "remaining": [
+        "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
+        "Other grippers and objects, general task editing/integration and wider repeated ROS grasp evaluation.",
+        "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
+      ],
+      "new_performance_measurements": [],
+      "public_data_policy": "Only synthetic geometry, reviewed image and reduced verification facts/source hashes; no private CAD, local paths, process IDs, raw logs or session identifiers.",
+      "archived_as": "v1.7 original v3 implementation and local verification; not current v4 results"
+    }
+  ]
 }

@@ -92,9 +92,21 @@ Action 성공만으로 집기를 확인하지 않습니다. 취소하면 새 작
 시계가 멈추거나 정지 감시가 잠긴 표본으로 새 물리 집기를 확인하지 않습니다.
 
 현재 소스로 정상 완료·운반 중 취소·시작 중 취소의 실제 ROS 검사를 통과했습니다.
+집은 상태를 30초 더 유지한 뒤 운반·놓기를 완료하는 진단 검사도 통과했습니다.
 브라우저에서도 정상 실행과 부착 상태의 취소, 세 제어기의 정지와 소유 프로세스 정리를 확인했습니다.
-1280×720 화면에서 3D 카드 전체를 확인했고, 390×844 폭에서는 가로 넘침이 없었습니다.
+1280×720 화면에서 새 모델의 3D 카드 전체를 확인했습니다. 같은 UI 소스의 기존 390×844 검수 기록도 보존합니다.
 [소스 SHA와 대표 검증 근거](operator/system-direction-2026-10-27/ros-grasp-verification.json)에 실패 원본과 새 실행을 연결했습니다.
+첫 CI에서는 양쪽 접촉력이 유지되는 동안에도 물체가 서서히 처져 5 mm 기준을 넘었습니다.
+같은 현상을 움직이지 않고 잡아 둔 실제 ROS 실행에서도 재현했습니다.
+집기 전용 모델에만 `cone="elliptic"`, `impratio="10"`을 명시해 마찰 계산을 조정했습니다.
+기본 작업 환경 파일, 마찰계수·힘 제한, 처음 닫았을 때의 기준 자세와 기존 검사 한계는 유지합니다.
+NoSlip 후처리는 사용하지 않습니다. [MuJoCo의 느린 미끄럼 설명](https://mujoco.readthedocs.io/en/stable/modeling.html#preventing-slip)을 참고했습니다.
+격리된 60초 유지 진단과 실제 ROS의 30초 유지 후 전체 작업을 따로 확인했으며, 일반 집기 성공률이나 실물 성능을 뜻하지 않습니다.
+
+시작 중 취소로 ROS launch가 보낸 SIGINT에 Python spawner가 종료될 수 있습니다.
+이때는 취소 시점·목표 0개·프로세스 식별·신호 순서·native 정지를 모두 확인한 항목만 예상 중단으로 구분합니다.
+원래 자식 프로세스 오류는 보존하고, native 비정상 종료와 다른 오류는 계속 실패로 처리합니다.
+
 다음 명령은 기반 연결 검사이며 블록 집기 전체를 검증하는 명령이 아닙니다.
 
 ```bash
@@ -104,6 +116,16 @@ python3 tests/integration/verify_ros_grasp_foundation.py \
   --execution-environment "$task_ros_grasp_target" \
   --execution-manifest-sha256 "$task_ros_grasp_sha256" --stop-mode cancel
 # heartbeat 중단은 --stop-mode heartbeat와 별도의 새 output을 사용합니다.
+```
+
+전체 작업 검사는 `verify_ros_grasp_task.py`를 사용합니다. `normal`, `normal_hold`,
+`cancel_transport`, `cancel_startup`을 각각 새 출력 디렉터리와 빈 도메인에서 실행합니다.
+`normal_hold`만 30초 유지 진단을 명시적으로 추가하며, 뷰어에는 이 옵션을 노출하지 않습니다.
+
+```bash
+python3 tests/integration/verify_ros_grasp_task.py \
+  --domain 229 --target "$task_ros_grasp_target" --sha "$task_ros_grasp_sha256" \
+  --case normal_hold --output runtime/grasp-ros/held-task-01
 ```
 
 전용 뷰어는 `runtime/grasp-ros/viewer-01/<job ID>/`에 원본 관측·계획·MoveIt 장면·결과와

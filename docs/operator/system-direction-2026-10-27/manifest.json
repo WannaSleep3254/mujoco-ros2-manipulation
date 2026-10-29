@@ -1,16 +1,18 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.7",
+  "document_version": "1.8",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "Original v1.1 design baseline and dated W01-W09 evidence preserved. Current update includes the implemented common-timeline sensor/3D replay and representative native MuJoCo 3.12 ROS 2 / MoveIt 2 grasp, carry, place and cancellation cases, with model/manifest and exact physical-source SHA evidence. Same Three.js display distinguishes preview, current/last observation, physical grasp, planning attachment, Action, native stop and owned process cleanup. These are local functional samples, not new timing benchmarks, general grasp success rates or hardware validation. Remote CI, merge and publication are tracked separately.",
+  "scope": "Original v1.1 design baseline, dated W01-W09 evidence and previous v3 ROS grasp proof/image preserved separately. Current update includes common-timeline replay and representative native MuJoCo 3.12 ROS/MoveIt grasp with explicit elliptic/impratio10 opt-in contact settings. CI133 physical creep, old hold failure, isolated 60s native diagnosis and current normal/30s-hold/two-cancellation cases remain distinct. Original closed-reference physical gates, base workcell and NoSlip0 are preserved. Current desktop browser/owner cleanup proof is separate from unchanged-source archived mobile layout evidence. Local function/physics diagnostics are not timing benchmarks, general success rates, hardware validation or remote CI/deployment claims.",
   "assets": {
-    "index.html": "04fbcb16b6ea3f7560d7cc541380988543148ad6a22b537e640527c28830531a",
-    "review-data.json": "4c4f5aea369c1a084ecffc038752243387da92c256297f887c7abd155fd254f7",
+    "index.html": "1f67887a6cf39102d07c68b29ee33e32dc571e4c41c4d16c873ac20360b0ec1e",
+    "review-data.json": "a4ccc577c57f398db6cf14d4ee243ba4377ec04ebc4d4334414991d10bf955f0",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
-    "ros-grasp.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
-    "ros-grasp-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b"
+    "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
+    "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
+    "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
+    "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b"
   }
 }

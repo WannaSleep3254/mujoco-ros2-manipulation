@@ -60,8 +60,8 @@
       "title": "로봇 시뮬레이션 시스템 개발 방향",
       "published_date": "2026-10-27",
       "document_type": "design_review",
-      "overview": "Three.js 3D 작업실, 센서·3D 기록의 공통 재생과 대표 ROS 집기의 현재 구현을 정리합니다. 모듈 분리와 설치 환경 반영의 방향, 남은 검증과 개발 순서를 연결합니다.",
-      "manifest_sha256": "09afe0298ca53b967b2d1e6a25c9c069084998ea21f5b76ea0296a6257b41349"
+      "overview": "Three.js 작업실과 센서·3D 공통 재생, ROS 집기의 현재 구현을 정리합니다. CI에서 확인한 물체 처짐의 진단·수정과 유지·취소 검증을 연결하고 남은 개발 순서를 제시합니다.",
+      "manifest_sha256": "f1c518eeb84aa6702236ab5341238d699c86a6d15307d2380ece67e47a97a03f"
     },
     {
       "id": "planner-cache-2026-10-28",

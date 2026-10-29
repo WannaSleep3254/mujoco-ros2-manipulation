@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15059,
-      "sha256": "9dd4687bf390d47059ef5710d847ebd11d96e6b48e7e9f4740afa27a1723f417"
+      "bytes": 15072,
+      "sha256": "9ab65cf08583ce5e6eec6fb3dbf9e1af9d5b99164ed871c768df6456ec5e064d"
     },
     "operator-demos.json": {
-      "bytes": 4623,
-      "sha256": "d5997cbea6dd6b2d10aeba3292f1733340677ee1a1d1e8bd460efac104d150a4"
+      "bytes": 4636,
+      "sha256": "ad587372f9f8c6d610b3b087295927d7f6f85ed6356e33e2b497bbc56fccc8cc"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -368,24 +368,32 @@
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 71666,
-      "sha256": "04fbcb16b6ea3f7560d7cc541380988543148ad6a22b537e640527c28830531a"
+      "bytes": 73805,
+      "sha256": "1f67887a6cf39102d07c68b29ee33e32dc571e4c41c4d16c873ac20360b0ec1e"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 1418,
-      "sha256": "09afe0298ca53b967b2d1e6a25c9c069084998ea21f5b76ea0296a6257b41349"
+      "bytes": 1733,
+      "sha256": "f1c518eeb84aa6702236ab5341238d699c86a6d15307d2380ece67e47a97a03f"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 32714,
-      "sha256": "4c4f5aea369c1a084ecffc038752243387da92c256297f887c7abd155fd254f7"
+      "bytes": 43323,
+      "sha256": "a4ccc577c57f398db6cf14d4ee243ba4377ec04ebc4d4334414991d10bf955f0"
     },
-    "operator/system-direction-2026-10-27/ros-grasp-verification.json": {
+    "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,
       "sha256": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b"
     },
-    "operator/system-direction-2026-10-27/ros-grasp.jpg": {
+    "operator/system-direction-2026-10-27/ros-grasp-v3.jpg": {
       "bytes": 52729,
       "sha256": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599"
+    },
+    "operator/system-direction-2026-10-27/ros-grasp-verification.json": {
+      "bytes": 44184,
+      "sha256": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25"
+    },
+    "operator/system-direction-2026-10-27/ros-grasp.jpg": {
+      "bytes": 52127,
+      "sha256": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390"
     },
     "operator/system-direction-2026-10-27/synchronized-replay.png": {
       "bytes": 57714,
