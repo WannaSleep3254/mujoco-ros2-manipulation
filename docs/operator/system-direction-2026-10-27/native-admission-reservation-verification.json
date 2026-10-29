@@ -1,0 +1,4363 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "implementation_commit": "b1ec3707c1284d54e534c0f7e1c6c7dce3cfd69b",
+  "implementation_source_sha256": {
+    "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "fb42cd8e08ab23a0af2b86b7def3e3a85ef13e664a4aef921d3a64460eaf34b8",
+    "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "27a3f401487c9c2a2febc6e70f57ca37bc4c2802a973619e44337322fc964a6e",
+    "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "9f0c88d43f63e5e8a6fe3b6c9290d26211b9504d4248f13e5d1ba104c1b8e40b"
+  },
+  "test_sha256": {
+    "tests/unit/test_self_legacy_dispatch.py": "abc513c9ef27b57630bff17a1cd44f85d8d1bcb675e9600314afa48e7bed055a",
+    "tests/model/test_native_reservation_model.py": "08cbb322ba912ff79847924df6540e58923a65f73f0e9633c877d2112565b41d"
+  },
+  "original_ci_evidence": {
+    "failed146": {
+      "original_files_sha256": {
+        "result.json": "fefb876b2dfb963c22da7f99d1be99fc69104eb1bc528b2fd6c888f280427340",
+        "trajectories.json": "325e7f148132aeaf2a4d313759e68bef06f6893ba62942cc3d218c5acea175aa",
+        "physics.json": "f2d91b9d992361f1fd1280cf3d5dabe4969815d4606ad56fe1607e9a12324728",
+        "launch.log": "05e8b9e1714a1642e3e1e8fb59fda2ff4546fc40e65eff6c7d8148074b71aad3"
+      },
+      "artifact_zip_sha256": "996d544c75717c2788e73c68b44c3eca2a99d063003a202ccce3fd80283c8b68",
+      "model_manifest_sha256": "150939e3b45d75caf4f42103c37ebb7b4b7a8bfc08781e778f12c0ca66fa4f19",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "relative_coordinated_curve_sha256": "19530b00826afcce7929ac3770d786a4fbc45d7e22b8b3e65792e01cbc72e133",
+      "status": "failed",
+      "failure_stage": "coordinated_avoidance_plan",
+      "error": {
+        "type": "RuntimeError",
+        "message": "Native self admission exhausted the original future start reservation"
+      },
+      "dispatch_admission": [
+        {
+          "status": "terminal",
+          "scheduled_start_sec": 2.168,
+          "dispatched_goals_before": 0,
+          "dispatched_goals_after": 2,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 797,
+            "sample_dt_max_sec": 0.009984229952920032,
+            "duration_sec": 5.301626105,
+            "minimum_same_arm_distance_m": 0.016556977226326753,
+            "minimum_cross_arm_distance_m": 0.02618000075103239
+          },
+          "actions": [
+            {
+              "arm": "left",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            },
+            {
+              "arm": "right",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            }
+          ]
+        },
+        {
+          "status": "pre_dispatch",
+          "scheduled_start_sec": 16.29,
+          "dispatched_goals_before": 2,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 3578,
+            "sample_dt_max_sec": 0.00999984837065071,
+            "duration_sec": 23.849638364,
+            "minimum_same_arm_distance_m": 0.016486535918168947,
+            "minimum_cross_arm_distance_m": 0.324947613340492
+          }
+        }
+      ],
+      "physics": {
+        "last_state_time_sec": 16.54200000000171,
+        "contact_steps": 0,
+        "contacts": 0,
+        "active_contacts": 0,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "stop_latched": false
+      },
+      "cleanup": {
+        "shutdown_clean": true,
+        "launch_return_code": 0,
+        "process_group_gone": true,
+        "shutdown_timed_out": false,
+        "cleanup_errors": [],
+        "shutdown_failures": []
+      },
+      "job_log_sha256": "6234169183042d642483ea6a9e719dae4a063f727b425756f2dbf20a6528f246"
+    },
+    "passed145": {
+      "original_files_sha256": {
+        "result.json": "e63120c5c17347817dba22afce0e85ebedaa9bd4d07cb2dca2ecb39e8cccc93e",
+        "trajectories.json": "7c02e1d9a88126606519ec7dee134bdb2e70040b8f3683139de32d9e6b57bdde",
+        "physics.json": "e6e6edc6e524b13ab4e3c3092c83e5c37ffc228c827b83b28fa81a0811e8ce6d",
+        "launch.log": "9266b25d30cd1c6166ad13fa237a070f9645d7a3913a0608c05f1fa2c64d7919"
+      },
+      "artifact_zip_sha256": "1405002e8e9dd42964c5785df197cf553a6b711b810b27ff2e4ad59e16833316",
+      "model_manifest_sha256": "150939e3b45d75caf4f42103c37ebb7b4b7a8bfc08781e778f12c0ca66fa4f19",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "relative_coordinated_curve_sha256": "00d0d093630212372e8db553fbc48af651763717367611fccfa2270052a73d1d",
+      "status": "passed",
+      "failure_stage": null,
+      "error": null,
+      "dispatch_admission": [
+        {
+          "status": "terminal",
+          "scheduled_start_sec": 1.592,
+          "dispatched_goals_before": 0,
+          "dispatched_goals_after": 2,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 795,
+            "sample_dt_max_sec": 0.009997246522642556,
+            "duration_sec": 5.298540657,
+            "minimum_same_arm_distance_m": 0.01656154808167397,
+            "minimum_cross_arm_distance_m": 0.025811408935001855
+          },
+          "actions": [
+            {
+              "arm": "left",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            },
+            {
+              "arm": "right",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            }
+          ]
+        },
+        {
+          "status": "terminal",
+          "scheduled_start_sec": 11.466,
+          "dispatched_goals_before": 2,
+          "dispatched_goals_after": 4,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 2679,
+            "sample_dt_max_sec": 0.009998182211088391,
+            "duration_sec": 17.856753429,
+            "minimum_same_arm_distance_m": 0.016555933424847364,
+            "minimum_cross_arm_distance_m": 0.2771264470769196
+          },
+          "actions": [
+            {
+              "arm": "left",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            },
+            {
+              "arm": "right",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            }
+          ]
+        }
+      ],
+      "physics": {
+        "last_state_time_sec": 29.9139999999943,
+        "contact_steps": 0,
+        "contacts": 0,
+        "active_contacts": 0,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "stop_latched": false
+      },
+      "cleanup": {
+        "shutdown_clean": true,
+        "launch_return_code": 0,
+        "process_group_gone": true,
+        "shutdown_timed_out": false,
+        "cleanup_errors": [],
+        "shutdown_failures": []
+      }
+    }
+  },
+  "original_ci_links": {
+    "failed146": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40874617599",
+    "separate_success145": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40874343013"
+  },
+  "diagnosis": {
+    "original146": "Two setup goals succeeded; avoidance geometry passed but no avoidance goals were submitted because the remaining original start lead was at most0.1 second. The original exact rejection clock and remaining margin were not recorded, so passage of the absolute start itself is not established. Original failure remains preserved.",
+    "ordering": "The old fresh caller minted clock_last +1 second before full native relative-spline evaluation, large evidence persistence and ready/current guards.",
+    "original146_exact_wall_layer": "Unresolved: no per-stage elapsed timing or final residual-margin trace was preserved.",
+    "comparison145": "Different selected relative curve,2679 samples versus3578 in146; not an identical-path retry or a performance comparison.",
+    "original147": "The reservation-order change had completed before a single original one-second reservation. Later current-identity confirmation crossed the 0.3-second receipt-age limit, with 0.681511996 seconds remaining; no avoidance goals were sent. Individual operation costs inside the recorded interval were not measured."
+  },
+  "unchanged_original_curve_replay": {
+    "evidence_sha256": "003e7861f9673f02bb76b032666b7eff2de1420155be12f0f3347c65321e5ebe",
+    "unchanged_relative_curve": true,
+    "samples": 3578,
+    "duration_sec": 23.849638364,
+    "minimum_same_arm_distance_m": 0.016486535918168947,
+    "minimum_cross_arm_distance_m": 0.324947613340492,
+    "ros_goals_sent": 0,
+    "scope": "Single offline diagnostic; elapsed time does not reconstruct original CI delay."
+  },
+  "implementation": {
+    "fresh_callers": [
+      "InterferenceVerification.execute_joint",
+      "TimingVerification.run baseline and timing",
+      "ComparisonVerification.run safe left/right/avoidance"
+    ],
+    "order": "Copy exact relative commands and initial state; full geometry, strict model validation and large evidence checkpoint; ready/current checks; reserve original1-second lead once; stamp only absolute headers; final identity/current/freshness/cancel/guard/remaining-start checks; one submission.",
+    "proof_binding": [
+      "arm and joint order",
+      "exact positions/velocities/accelerations/effort/time_from_start",
+      "commanded initial and observed anchor",
+      "policy and source hash",
+      "native components/library and compiled evaluator",
+      "model XML/manifest and declared asset stat identities"
+    ],
+    "reservation_authority": "Private owner-held immutable one-use seal; mutable diagnostic evidence cannot alter authority.",
+    "fixed_schedule": "Existing stamped absolute schedules expire without rebasing or retry.",
+    "intentional_negative_control": "Explicit collision comparison retains its original Action path.",
+    "diagnostics": "Bounded stage timings, receipt ages, observed start, mint count, remaining margin and goal counts, including pre-submission failures. Primary error survives persistence failure."
+  },
+  "focused_regression": {
+    "run": 57,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "ab309346c7253822280b804714476c0bc68d51a18269c8560e7311ea331907ce",
+    "numeric_reproduction": {
+      "initial_original_state_age_sec": 0.193320787,
+      "injected_without_callback_sec": 0.125272624,
+      "old_final_state_age_sec": 0.318593411,
+      "maximum_state_and_clock_age_sec": 0.3,
+      "before": "Held receipts reject with zero goals.",
+      "after": "During immutable preparation a125.273ms full-hash delay is injected; only genuinely new simulated callbacks make one fresh reservation eligible. This is a deterministic unit fixture, not an actual ROS run or a measurement of original per-operation shares."
+    },
+    "positive_cases": [
+      "957-knot fractional-clock unit curve preserved exactly",
+      "Real generated twelve-joint model and native evaluator with957 knots; exact curves and derivatives preserved; single full-hash binding and one original reservation"
+    ],
+    "negative_cases": [
+      "No new frames, duplicate source times, clock-only or joint-only progress: no reservation or goal",
+      "Cancellation or native contact latch while waiting: no reservation or goal",
+      "Source/policy mutation during refresh rejected after fresh callbacks",
+      "Observer changes of p/v/a/effort/time/frame/controller/arm order/native file rejected",
+      "NaN/Inf numeric fields and invalid duration parts rejected before sealing and after observer",
+      "First arm accepted then second-arm fresh inputs absent: original start margin expires, second goal remains unsent; no new reservation",
+      "Existing fixed absolute schedule remains unchanged and expires without rebasing"
+    ]
+  },
+  "unchanged": {
+    "planning_min_self_distance_m": 0.01,
+    "observed_start_min_self_distance_m": 0.001,
+    "native_sample_dt_sec": 0.01,
+    "original_future_lead_sec": 1.0,
+    "minimum_final_start_margin_sec": 0.1,
+    "all_relative_spline_fields": true,
+    "no_automatic_rebase": true,
+    "no_command_retry": true,
+    "no_collision_filter_relaxation": true,
+    "grasp_sources_models_and_thresholds": true
+  },
+  "actual_new_source_validation": {
+    "schema_version": "native-freshness-actual-reduction-v1",
+    "date": "2026-10-29",
+    "implementation_commit": "b1ec3707c1284d54e534c0f7e1c6c7dce3cfd69b",
+    "source_snapshot_sha256": "8e5f3775dff1b9b8e0d8e2f932332a166f75e71f84dc14fabd83bbd6e0b41d41",
+    "implementation_source_sha256": {
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "fb42cd8e08ab23a0af2b86b7def3e3a85ef13e664a4aef921d3a64460eaf34b8",
+      "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "27a3f401487c9c2a2febc6e70f57ca37bc4c2802a973619e44337322fc964a6e",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "9f0c88d43f63e5e8a6fe3b6c9290d26211b9504d4248f13e5d1ba104c1b8e40b"
+    },
+    "test_sha256": {
+      "tests/unit/test_self_legacy_dispatch.py": "abc513c9ef27b57630bff17a1cd44f85d8d1bcb675e9600314afa48e7bed055a",
+      "tests/model/test_native_reservation_model.py": "08cbb322ba912ff79847924df6540e58923a65f73f0e9633c877d2112565b41d"
+    },
+    "historical_source70_actual_summary_sha256": "3d998437b370011733cb775f0156fb011b67752b919494e1c2e4e942f06d4175",
+    "original_failure_and_focused_regression_summary_sha256": "107809ed3a68c610d4589c940fee6a45205f1c7f636e65b55c5af1227acb75ee",
+    "outer_cpu_views": {
+      "result_sha256": "001a405416fd1c980b656aa55bd2e9510d9db567ad0ec887dc83f290110961c6",
+      "log_sha256": "1a8fb191f4151e6621f70229945c4d2315c967570f730128f9ed3e0d6e900106",
+      "status": "passed",
+      "code_commit": "b1ec3707c1284d54e534c0f7e1c6c7dce3cfd69b",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "cpu_views_checked": true,
+      "demo_cpu_views_checked": true,
+      "saved_plan_read_only_checked": true,
+      "process_group_gone": true,
+      "launch_return_code": 0,
+      "egl_requested": false,
+      "jpeg_requested": false,
+      "browser_requested": false
+    },
+    "fresh_prepare_baseline_timing": [
+      {
+        "variant": "prepare",
+        "original_sha256": {
+          "result.json": "a87291771919e7dabb2a8ad3572eff8f5bee64bca9fc4cf63c7af3bad0bda769",
+          "trajectories.json": "2d6d478011bf639e28fe60f8f695186972b69f597653152010885b9d53181262",
+          "physics.json": "7cbdb5b03009bedb31d780161592cccee3e92996aed516d7d18c1df8e4a81ceb",
+          "launch.log": "5f330a20cfc70812a508a8c4e07a62c7d708ef96fe0cf6e704418f810fca13ab"
+        },
+        "status": "passed",
+        "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "dispatch_admission": [
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 1.854,
+            "reserved_from_clock_sec": 0.8540000000000001,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.076146857,
+              "prepare_checkpoint": 0.016716165,
+              "prepare_total": 0.306424721
+            },
+            "recorded_stage_costs": [
+              {
+                "stage": "private_command_copies_and_tuple",
+                "elapsed_sec": 0.014209462
+              },
+              {
+                "stage": "full_native_policy_hash_binding",
+                "elapsed_sec": 0.000333323
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.00272334
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002030232
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000845345
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000159159
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001720077
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000754546
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000116312
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.004929721
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001766396
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000827038
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000134178
+              },
+              {
+                "stage": "stamp_preallocated_messages",
+                "elapsed_sec": 0.002733588
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.004036827
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001805051
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000824108
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000142624
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.007659994
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.00176527
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000837656
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000141048
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.005999068
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001760275
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000852626
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000147799
+              }
+            ],
+            "stage_costs_omitted": 0,
+            "latest_actual_sync": {
+              "callback_pumps": 9,
+              "joint_count_delta": 1,
+              "clock_count_delta": 5,
+              "state_time_advanced": true,
+              "clock_time_advanced": true
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9670197540000001,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 795,
+              "sample_dt_max_sec": 0.009994418205661049,
+              "duration_sec": 5.297041649,
+              "minimum_same_arm_distance_m": 0.016564251584620326,
+              "minimum_cross_arm_distance_m": 0.025952553343834187
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 0,
+            "goals_after": 2,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 15,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+          },
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 10.685999999,
+            "reserved_from_clock_sec": 9.685999999,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.148909046,
+              "prepare_checkpoint": 0.090231536,
+              "prepare_total": 0.325871885
+            },
+            "recorded_stage_costs": [
+              {
+                "stage": "private_command_copies_and_tuple",
+                "elapsed_sec": 0.037112489
+              },
+              {
+                "stage": "full_native_policy_hash_binding",
+                "elapsed_sec": 0.000246547
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000245608
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.00650311
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001572987
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000187023
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004899696
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000784708
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000335919
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000662164
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.019141322
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000822841
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000182545
+              },
+              {
+                "stage": "stamp_preallocated_messages",
+                "elapsed_sec": 0.012202535
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.001079113
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.00687671
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000834844
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000179401
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.00058172
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004570931
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000831238
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000162901
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.001238588
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.007188452
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001761186
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000209087
+              }
+            ],
+            "stage_costs_omitted": 0,
+            "latest_actual_sync": {
+              "callback_pumps": 4,
+              "joint_count_delta": 1,
+              "clock_count_delta": 1,
+              "state_time_advanced": true,
+              "clock_time_advanced": true
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9408167359999993,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 2405,
+              "sample_dt_max_sec": 0.009996196013103642,
+              "duration_sec": 16.023902209,
+              "minimum_same_arm_distance_m": 0.016487417349878776,
+              "minimum_cross_arm_distance_m": 0.12156161030637345
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 2,
+            "goals_after": 4,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 15,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+          }
+        ],
+        "timing": {},
+        "physics": {
+          "contacts": 0,
+          "contact_steps": 0,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "pair_overflow": 0,
+          "stop_latched": false
+        },
+        "cleanup": {
+          "shutdown_clean": true,
+          "launch_return_code": 0,
+          "process_group_gone": true,
+          "shutdown_timed_out": false,
+          "shutdown_failures": []
+        },
+        "retained_cpu_native_view_fresh_sequences": 253
+      },
+      {
+        "variant": "baseline",
+        "original_sha256": {
+          "result.json": "22980e2bae6c6683f3474d90d163920567b68c29c5f886689c01cc4af5ab5e68",
+          "trajectories.json": "bbac46ac06c3216ff7a58922cf0af862785716adc6ff5bf3c1d87374fb3a35c1",
+          "physics.json": "98ebbbc3132be1c9de6828d41c997536a7e1b00766a150c2c5ed28c6d5c2e2ce",
+          "launch.log": "2faffc111f0f067992d4b376333af7261bdbc65bd0bce47f918957eaff9a0982"
+        },
+        "status": "passed",
+        "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "dispatch_admission": [
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 1.6400000000000001,
+            "reserved_from_clock_sec": 0.64,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.060437957,
+              "prepare_checkpoint": 0.000488823,
+              "prepare_total": 0.163462469
+            },
+            "recorded_stage_costs": [
+              {
+                "stage": "private_command_copies_and_tuple",
+                "elapsed_sec": 0.020611273
+              },
+              {
+                "stage": "full_native_policy_hash_binding",
+                "elapsed_sec": 0.000325293
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000214826
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001879859
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000835561
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000138956
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001859619
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000758734
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000115234
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.0007069
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.00176085
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000812236
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000124906
+              },
+              {
+                "stage": "stamp_preallocated_messages",
+                "elapsed_sec": 0.00279585
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000626225
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001729414
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.0007744
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000115508
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.00052715
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001709022
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000736557
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 9.5254e-05
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000260852
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001757782
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.00077346
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000129896
+              }
+            ],
+            "stage_costs_omitted": 0,
+            "latest_actual_sync": {
+              "callback_pumps": 2,
+              "joint_count_delta": 1,
+              "clock_count_delta": 1,
+              "state_time_advanced": true,
+              "clock_time_advanced": true
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9853257670000001,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 795,
+              "sample_dt_max_sec": 0.009994418205661049,
+              "duration_sec": 5.297041649,
+              "minimum_same_arm_distance_m": 0.016564251584620326,
+              "minimum_cross_arm_distance_m": 0.025952553343834187
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 0,
+            "goals_after": 2,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 15,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+          },
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 9.089999999,
+            "reserved_from_clock_sec": 8.089999999,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.150562736,
+              "prepare_checkpoint": 0.001025403,
+              "prepare_total": 0.230010345
+            },
+            "recorded_stage_costs": [
+              {
+                "stage": "private_command_copies_and_tuple",
+                "elapsed_sec": 0.047656232
+              },
+              {
+                "stage": "full_native_policy_hash_binding",
+                "elapsed_sec": 0.000228604
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000210243
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004960819
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.00081772
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000174327
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004656047
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.00077558
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000140264
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000629578
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004676829
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000807705
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000153701
+              },
+              {
+                "stage": "stamp_preallocated_messages",
+                "elapsed_sec": 0.00867788
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000633099
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004733391
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000843131
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000159911
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000567295
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004925622
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.00080511
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000162005
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.00074338
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.004656128
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001563451
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000227019
+              }
+            ],
+            "stage_costs_omitted": 0,
+            "latest_actual_sync": {
+              "callback_pumps": 4,
+              "joint_count_delta": 1,
+              "clock_count_delta": 1,
+              "state_time_advanced": true,
+              "clock_time_advanced": true
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9635406550000006,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 2405,
+              "sample_dt_max_sec": 0.009996196013103642,
+              "duration_sec": 16.023902209,
+              "minimum_same_arm_distance_m": 0.016487417349878776,
+              "minimum_cross_arm_distance_m": 0.12156161030637345
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 2,
+            "goals_after": 4,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 15,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+          }
+        ],
+        "timing": {
+          "timing_mode": "baseline",
+          "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+          "timing_plan_sha256": "9f57a15da421119e5a91faa9462d5675f897371a8d3191d004f73d026c9004dc",
+          "delayed_arm": "left",
+          "departure_delay_sec": 2.2,
+          "motion_duration_sec": 16.023902209,
+          "goal_terminal_statuses": [
+            4,
+            4
+          ]
+        },
+        "physics": {
+          "contacts": 0,
+          "contact_steps": 0,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "pair_overflow": 0,
+          "stop_latched": false
+        },
+        "cleanup": {
+          "shutdown_clean": true,
+          "launch_return_code": 0,
+          "process_group_gone": true,
+          "shutdown_timed_out": false,
+          "shutdown_failures": []
+        },
+        "retained_cpu_native_view_fresh_sequences": 245
+      },
+      {
+        "variant": "timing",
+        "original_sha256": {
+          "result.json": "dba7e3fac78c5acccb6170858e751e51fa9d94dce58595dab033ffea913ea3f0",
+          "trajectories.json": "5e5e286ea4744e1be9fd4a42a5425569f9657846edd1af850f16778be015c264",
+          "physics.json": "c49b5ca872d45233ec2a73e77c41aa74aacc962ae3d7ab278289cea6f15c4485",
+          "launch.log": "79eb78f380156a30fb6734bf895eb2eec939b4b425a329b681b771fba6114531"
+        },
+        "status": "passed",
+        "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "dispatch_admission": [
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 1.6640000000000001,
+            "reserved_from_clock_sec": 0.664,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.094260489,
+              "prepare_checkpoint": 0.000751072,
+              "prepare_total": 0.184471045
+            },
+            "recorded_stage_costs": [
+              {
+                "stage": "private_command_copies_and_tuple",
+                "elapsed_sec": 0.012854216
+              },
+              {
+                "stage": "full_native_policy_hash_binding",
+                "elapsed_sec": 0.000269231
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000359431
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.00315153
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001719942
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000195672
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002662425
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001566543
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000123422
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.001780336
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002706765
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001647429
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000172253
+              },
+              {
+                "stage": "stamp_preallocated_messages",
+                "elapsed_sec": 0.004461679
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.001083336
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002931812
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001795551
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000252966
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.001282983
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002862619
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001864001
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000229862
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000674017
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002820052
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.001729449
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000205835
+              }
+            ],
+            "stage_costs_omitted": 0,
+            "latest_actual_sync": {
+              "callback_pumps": 3,
+              "joint_count_delta": 1,
+              "clock_count_delta": 1,
+              "state_time_advanced": true,
+              "clock_time_advanced": true
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9712195560000001,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 795,
+              "sample_dt_max_sec": 0.009994418205661049,
+              "duration_sec": 5.297041649,
+              "minimum_same_arm_distance_m": 0.016564251584620326,
+              "minimum_cross_arm_distance_m": 0.025952553343834187
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 0,
+            "goals_after": 2,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 15,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+          },
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 8.697999999,
+            "reserved_from_clock_sec": 7.697999999,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.091064497,
+              "prepare_checkpoint": 0.001063941,
+              "prepare_total": 0.175279621
+            },
+            "recorded_stage_costs": [
+              {
+                "stage": "private_command_copies_and_tuple",
+                "elapsed_sec": 0.014544833
+              },
+              {
+                "stage": "full_native_policy_hash_binding",
+                "elapsed_sec": 0.00022414
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000215982
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002237001
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000813511
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000173024
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002113588
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000768233
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000128192
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000582353
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001976264
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000829475
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000112869
+              },
+              {
+                "stage": "stamp_preallocated_messages",
+                "elapsed_sec": 0.003342641
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000543353
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001969473
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000767391
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000110194
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000253651
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.001982108
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000900783
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000117007
+              },
+              {
+                "stage": "genuine_joint_clock_sync",
+                "elapsed_sec": 0.000253454
+              },
+              {
+                "stage": "exact_command_and_metadata_seal",
+                "elapsed_sec": 0.002285061
+              },
+              {
+                "stage": "source_policy_model_quick_stat",
+                "elapsed_sec": 0.000767734
+              },
+              {
+                "stage": "current_geometry_and_anchor",
+                "elapsed_sec": 0.000106246
+              }
+            ],
+            "stage_costs_omitted": 0,
+            "latest_actual_sync": {
+              "callback_pumps": 2,
+              "joint_count_delta": 1,
+              "clock_count_delta": 1,
+              "state_time_advanced": true,
+              "clock_time_advanced": true
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9828274940000007,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 1488,
+              "sample_dt_max_sec": 0.009991754016395404,
+              "duration_sec": 8.53295793,
+              "minimum_same_arm_distance_m": 0.016564251584620326,
+              "minimum_cross_arm_distance_m": 0.03101383269289864
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 2,
+            "goals_after": 4,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 15,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+          }
+        ],
+        "timing": {
+          "timing_mode": "timing",
+          "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+          "timing_plan_sha256": "9f57a15da421119e5a91faa9462d5675f897371a8d3191d004f73d026c9004dc",
+          "delayed_arm": "left",
+          "departure_delay_sec": 2.2,
+          "motion_duration_sec": 8.53295793,
+          "goal_terminal_statuses": [
+            4,
+            4
+          ]
+        },
+        "physics": {
+          "contacts": 0,
+          "contact_steps": 0,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "pair_overflow": 0,
+          "stop_latched": false
+        },
+        "cleanup": {
+          "shutdown_clean": true,
+          "launch_return_code": 0,
+          "process_group_gone": true,
+          "shutdown_timed_out": false,
+          "shutdown_failures": []
+        },
+        "retained_cpu_native_view_fresh_sequences": 237
+      }
+    ],
+    "saved_relative_bundle": {
+      "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+      "timing_plan_sha256": "9f57a15da421119e5a91faa9462d5675f897371a8d3191d004f73d026c9004dc",
+      "comparison_sha256": "3f304fac46309039094835a6045923f326c299547c06fdba7f1f343b39fe85c2",
+      "relative_curve_sha256": {
+        "setup": "a2feae75881eb1839090ca7b7d224e4dd84e9bd1d2e9e6cd177f77e8e2e14d35",
+        "left": "fd09a5e8eefe61d5b6befb7615e09bf14da5a1b36329bdafb77807b03c202503",
+        "right": "58cd1de5b1f8144d134ecbc22f30579125d003d5676f154fb810f37ff67fea73",
+        "avoidance": "9ef35a559a7e8c791d058344e6a03e9a3550d58c517b8cce6d4d41a6e57ac08f"
+      },
+      "timing_relative_curve_sha256": [
+        "0b477a3aaf117d7b9cc7855e8f291c13d830c655011e4e13fa46c7cf5f80e6e8",
+        "58cd1de5b1f8144d134ecbc22f30579125d003d5676f154fb810f37ff67fea73"
+      ],
+      "delayed_arm": "left",
+      "departure_delay_sec": 2.2,
+      "matched_report": true,
+      "scope": "All variants reuse the identified relative bundle/plan. Only headers are stamped; exact knot/derivative/delay/order preservation is separately unit-tested."
+    },
+    "comparison_four_modes": {
+      "index_sha256": "6fae5589b774ac19bd0e00ef81440a6ae8c9d08c429b543fc65a64291cb390b7",
+      "matched_bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+      "all_command_hashes_equal_across_modes": true,
+      "runs": [
+        {
+          "variant": "left",
+          "original_sha256": {
+            "result.json": "c81bd43a1770efffabc5b48a33b370862671248f2fcbc52a4137020a9c558e4c",
+            "trajectories.json": "a08df68958af6316ff3201022bc4692ae50d47210f3036396c90ec229e02ddbb",
+            "physics.json": "77351cc896e92c268aa544b3c77f0c87b8a12812e79fe03e3f28359fab50fde2",
+            "launch.log": "415b63d706eaa1067274a699ea3ca03a5515d3df60055537a19c6fe020d71df0"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.614,
+              "reserved_from_clock_sec": 1.6139999999999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.051410674,
+                "prepare_checkpoint": 0.000451038,
+                "prepare_total": 0.152797243
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.01259299
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.000225573
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000224482
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002866927
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.00168318
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000243274
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002661134
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.00153203
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000120321
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000990527
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002587293
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.001540865
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000119866
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.004181515
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000406231
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002588033
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.001570174
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000142396
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000362381
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001743178
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000768461
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000113444
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000250286
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002437129
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.00158544
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000132057
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 2,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.9778306239999998,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 795,
+                "sample_dt_max_sec": 0.009994418205661049,
+                "duration_sec": 5.297041649,
+                "minimum_same_arm_distance_m": 0.016564251584620326,
+                "minimum_cross_arm_distance_m": 0.025952553343834187
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 15,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.195999999,
+              "reserved_from_clock_sec": 8.195999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.057127753,
+                "prepare_checkpoint": 0.001026488,
+                "prepare_total": 0.145682272
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.008296568
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.0002244
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000239234
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001174673
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000835832
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000125651
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001163676
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000750871
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 7.7947e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000533492
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001116228
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000756306
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.8084e-05
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.001612774
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000232633
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001142597
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000743775
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.0969e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000493844
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001115956
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000748322
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000100596
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 3,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.9920228299999998,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 951,
+                "sample_dt_max_sec": 0.009988892634070545,
+                "duration_sec": 6.33295793,
+                "minimum_same_arm_distance_m": 0.016564251584620326,
+                "minimum_cross_arm_distance_m": 0.05661296290497988
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 3,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 13,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "motion_duration_sec": 6.33295793,
+            "goal_terminal_statuses": [
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "a929d4731c5a31799f322401b0bcbbdb75fdbbc745b2845197bec52c534c3b40",
+          "matched_relative_commands": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "command_hashes": {
+              "setup": "f02bd2b0e724db2179464a5cbd0d72d804f7f1a1cc33a59f21538e766d25f9f7",
+              "left": "915d9dae5a85479ca853095145109fc9b43163cbf16e9168682bb584955f97ec",
+              "right": "400ba2cae8a7e3e2268fdc5256226b963a971346e7cd6701d513490afe8cc7de",
+              "avoidance": "9560edf2587b18c71c87932e0fbaa272219cbf795cc2e26813690a63ec38fed3"
+            },
+            "motion_duration_sec": 6.33295793,
+            "comparison_duration_sec": 18.023902209,
+            "goal_terminal_statuses": [
+              4
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 1.1179335386302114e-06,
+            "post_stop_drift_rad": null
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": false,
+            "stop_reason": ""
+          },
+          "contact_guard": {
+            "latched": false,
+            "reason": "",
+            "phase": "ready",
+            "controllers": {
+              "joint_state_broadcaster": "active",
+              "right_controller": "active",
+              "left_controller": "active"
+            },
+            "deactivation_requests": 0,
+            "error": ""
+          },
+          "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+        },
+        {
+          "variant": "right",
+          "original_sha256": {
+            "result.json": "7772963482468183ad88ff7a176b7bad9dcc87407e699999c75d518583ef6537",
+            "trajectories.json": "ae789debaaf814630cbfdd33e5fe05cb7737c374a734a5042e233abe8dd0c588",
+            "physics.json": "51f59543a62af9de0194e946638d016072396e089d6e8a82023a0dfc427781f6",
+            "launch.log": "08c990613b4c32a1fd37d08b8306067ff8bc5a7d6ac96ae824f3b4d52beff015"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.6,
+              "reserved_from_clock_sec": 1.6,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.051232442,
+                "prepare_checkpoint": 0.000453514,
+                "prepare_total": 0.156928414
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.012759227
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.000236043
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000216049
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002205776
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000805534
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.00016666
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001670534
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000722522
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.9054e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000540302
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001632669
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000713911
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.0947e-05
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.002666591
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000242412
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001648647
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000716692
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.7807e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000232461
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001641711
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000728582
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000102264
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000236892
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001692613
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000724044
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000104079
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 2,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.9874670790000002,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 795,
+                "sample_dt_max_sec": 0.009994418205661049,
+                "duration_sec": 5.297041649,
+                "minimum_same_arm_distance_m": 0.016564251584620326,
+                "minimum_cross_arm_distance_m": 0.025952553343834187
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 15,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.163999999,
+              "reserved_from_clock_sec": 8.163999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.057183522,
+                "prepare_checkpoint": 0.00103954,
+                "prepare_total": 0.146551147
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.00739706
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.000299869
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000233006
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001159218
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000830223
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000120934
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001150388
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000737368
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.1187e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.00057822
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001109619
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000740906
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.9058e-05
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.001599929
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000260418
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001147621
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000744477
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.00011039
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000528744
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001178351
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000734971
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.8442e-05
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 3,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.9919755169999998,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 951,
+                "sample_dt_max_sec": 0.009988892634070545,
+                "duration_sec": 6.33295793,
+                "minimum_same_arm_distance_m": 0.016564251584620326,
+                "minimum_cross_arm_distance_m": 0.16070962749865567
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 3,
+              "action_results": [
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 13,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "motion_duration_sec": 6.33295793,
+            "goal_terminal_statuses": [
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "20b2f4aab79852678c4fd3d35bbb54eb5be7a1fa293ee4bcbc543f2c74e082b2",
+          "matched_relative_commands": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "command_hashes": {
+              "setup": "f02bd2b0e724db2179464a5cbd0d72d804f7f1a1cc33a59f21538e766d25f9f7",
+              "left": "915d9dae5a85479ca853095145109fc9b43163cbf16e9168682bb584955f97ec",
+              "right": "400ba2cae8a7e3e2268fdc5256226b963a971346e7cd6701d513490afe8cc7de",
+              "avoidance": "9560edf2587b18c71c87932e0fbaa272219cbf795cc2e26813690a63ec38fed3"
+            },
+            "motion_duration_sec": 6.33295793,
+            "comparison_duration_sec": 18.023902209,
+            "goal_terminal_statuses": [
+              4
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 1.001931512933929e-05,
+            "post_stop_drift_rad": null
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": false,
+            "stop_reason": ""
+          },
+          "contact_guard": {
+            "latched": false,
+            "reason": "",
+            "phase": "ready",
+            "controllers": {
+              "right_controller": "active",
+              "joint_state_broadcaster": "active",
+              "left_controller": "active"
+            },
+            "deactivation_requests": 0,
+            "error": ""
+          },
+          "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+        },
+        {
+          "variant": "collision",
+          "original_sha256": {
+            "result.json": "6586acf56cb70379db47d423349f0fa5a0402b6b29638264ed6a00d968546fa2",
+            "trajectories.json": "d60a70c4959722ff26e47151dd220a4b9f46a6e5cf665c20119549f0262c72e6",
+            "physics.json": "c2b4f663939360331cfdb1f24c927f7baa58f0d9950ec1ee111df1c6a50e46c4",
+            "launch.log": "4775b672e3b989c930d74c0ce9f9c0a4fffaf0d09ec2ebde1615e701a5aee9ed"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.612,
+              "reserved_from_clock_sec": 1.612,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.051386885,
+                "prepare_checkpoint": 0.000454768,
+                "prepare_total": 0.155115332
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.012829444
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.000224559
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000211028
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002099096
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000829896
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000176982
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001716792
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000728735
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.3783e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.00058202
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001687284
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000758793
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.5085e-05
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.002705953
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000273723
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001669559
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.00075358
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.343e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000264871
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001717198
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000738832
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.823e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000248398
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001675405
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000751029
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.9777e-05
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 2,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.98546152,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 795,
+                "sample_dt_max_sec": 0.009994418205661049,
+                "duration_sec": 5.297041649,
+                "minimum_same_arm_distance_m": 0.016564251584620326,
+                "minimum_cross_arm_distance_m": 0.025952553343834187
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 15,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "motion_duration_sec": 6.33295793,
+            "goal_terminal_statuses": [
+              5,
+              5
+            ]
+          },
+          "physics": {
+            "contacts": 1,
+            "contact_steps": 1,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": true
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "0e70e366b0303f74c6b53e52a8f3dffb13d24ade671429c33a40e4199e021247",
+          "matched_relative_commands": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "command_hashes": {
+              "setup": "f02bd2b0e724db2179464a5cbd0d72d804f7f1a1cc33a59f21538e766d25f9f7",
+              "left": "915d9dae5a85479ca853095145109fc9b43163cbf16e9168682bb584955f97ec",
+              "right": "400ba2cae8a7e3e2268fdc5256226b963a971346e7cd6701d513490afe8cc7de",
+              "avoidance": "9560edf2587b18c71c87932e0fbaa272219cbf795cc2e26813690a63ec38fed3"
+            },
+            "motion_duration_sec": 6.33295793,
+            "comparison_duration_sec": 18.023902209,
+            "goal_terminal_statuses": [
+              5,
+              5
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 0.0,
+            "post_stop_drift_rad": 0.0,
+            "native_remaining_motion_at_contact_sec": 3.2409579289992827
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": true,
+            "stop_reason": "contact"
+          },
+          "contact_guard": {
+            "latched": true,
+            "reason": "contact",
+            "phase": "stopped",
+            "controllers": {
+              "right_controller": "inactive",
+              "left_controller": "inactive",
+              "joint_state_broadcaster": "active"
+            },
+            "deactivation_requests": 1,
+            "error": ""
+          },
+          "meaning": "Explicit intentional inter-arm collision negative control. Only setup uses safe reservation admission; the existing deliberate collision commands bypass that safe path. Native physical contact stop and controller deactivation, not a new manual cancel/injection, stop the two goals."
+        },
+        {
+          "variant": "avoidance",
+          "original_sha256": {
+            "result.json": "a6b102845fa33bea989e480ae6833e8fe8b9c96272fdae167f093b27fff32d24",
+            "trajectories.json": "b65012ce76f3f8e17790e4669d3fb566a37dbf4c270b558d78a7fcdf7cca6856",
+            "physics.json": "4b66cbd213788c01e39850f52d94f950fa89e5bc0fd375b81b588711e1f5181c",
+            "launch.log": "f83cbc3fd4c672c27b9266911f2745d673a93e45a37902178a17f50cfd029e62"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.62,
+              "reserved_from_clock_sec": 1.62,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.050259568,
+                "prepare_checkpoint": 0.000460696,
+                "prepare_total": 0.163992752
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.012765722
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.000241624
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.00020769
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.002135554
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000793485
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000137729
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001670207
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000713215
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 8.4326e-05
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000534379
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001683044
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000751489
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000111937
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.002753296
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.00050951
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001687123
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000885274
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000164733
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.00033949
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001711903
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000743459
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000112671
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000242213
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.001717585
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000739764
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 9.6076e-05
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 2,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.985433949,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 795,
+                "sample_dt_max_sec": 0.009994418205661049,
+                "duration_sec": 5.297041649,
+                "minimum_same_arm_distance_m": 0.016564251584620326,
+                "minimum_cross_arm_distance_m": 0.025952553343834187
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 15,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.387999999,
+              "reserved_from_clock_sec": 8.387999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.156911443,
+                "prepare_checkpoint": 0.001052035,
+                "prepare_total": 0.256451325
+              },
+              "recorded_stage_costs": [
+                {
+                  "stage": "private_command_copies_and_tuple",
+                  "elapsed_sec": 0.045778879
+                },
+                {
+                  "stage": "full_native_policy_hash_binding",
+                  "elapsed_sec": 0.000225722
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000208996
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.005794854
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000807365
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000171794
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.004790285
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000779435
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000142663
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000621758
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.004791359
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000771357
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.00013549
+                },
+                {
+                  "stage": "stamp_preallocated_messages",
+                  "elapsed_sec": 0.008661258
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000608395
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.004690832
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000778263
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000148388
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000585835
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.004661464
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000759878
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000123049
+                },
+                {
+                  "stage": "genuine_joint_clock_sync",
+                  "elapsed_sec": 0.000700715
+                },
+                {
+                  "stage": "exact_command_and_metadata_seal",
+                  "elapsed_sec": 0.014059742
+                },
+                {
+                  "stage": "source_policy_model_quick_stat",
+                  "elapsed_sec": 0.000875327
+                },
+                {
+                  "stage": "current_geometry_and_anchor",
+                  "elapsed_sec": 0.000168872
+                }
+              ],
+              "stage_costs_omitted": 0,
+              "latest_actual_sync": {
+                "callback_pumps": 4,
+                "joint_count_delta": 1,
+                "clock_count_delta": 1,
+                "state_time_advanced": true,
+                "clock_time_advanced": true
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.9548824360000007,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 2405,
+                "sample_dt_max_sec": 0.009996196013103642,
+                "duration_sec": 16.023902209,
+                "minimum_same_arm_distance_m": 0.016487417349878776,
+                "minimum_cross_arm_distance_m": 0.12156161030637345
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 4,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 15,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from current-identity/geometry boundaries before submission. Negative post-completion terminal margins are not pre-send admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "motion_duration_sec": 16.023902209,
+            "goal_terminal_statuses": [
+              4,
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "2aecf9d5693faef4d5e5aeeb2ce79bdafb17de9cad0754e4677d92e44b902e85",
+          "matched_relative_commands": {
+            "bundle_sha256": "6401552eac1b9c167d07d4fb2155db706137034726416cb0948b93cced9b1dc6",
+            "command_hashes": {
+              "setup": "f02bd2b0e724db2179464a5cbd0d72d804f7f1a1cc33a59f21538e766d25f9f7",
+              "left": "915d9dae5a85479ca853095145109fc9b43163cbf16e9168682bb584955f97ec",
+              "right": "400ba2cae8a7e3e2268fdc5256226b963a971346e7cd6701d513490afe8cc7de",
+              "avoidance": "9560edf2587b18c71c87932e0fbaa272219cbf795cc2e26813690a63ec38fed3"
+            },
+            "motion_duration_sec": 16.023902209,
+            "comparison_duration_sec": 18.023902209,
+            "goal_terminal_statuses": [
+              4,
+              4
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 0.0,
+            "post_stop_drift_rad": null
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": false,
+            "stop_reason": ""
+          },
+          "contact_guard": {
+            "latched": false,
+            "reason": "",
+            "phase": "ready",
+            "controllers": {
+              "joint_state_broadcaster": "active",
+              "right_controller": "active",
+              "left_controller": "active"
+            },
+            "deactivation_requests": 0,
+            "error": ""
+          },
+          "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+        }
+      ],
+      "scope": "Four modes share one relative bundle and command identities. No aggregate wall-time benchmark, success-rate or continuous-clearance guarantee is inferred."
+    },
+    "scope": "One new local actual ROS/CPU-view exercise on frozen source, separate from original CI145/146 and zero-goal offline replay. Timings/margins are diagnostics of these runs, not performance or reliability rates. Contact/control CPU demos are separate negative controls.",
+    "privacy": "Whitelisted facts and hashes only; public source paths are repository-relative. No host paths/process/job/session/run identifiers or full commands.",
+    "broad_checks": {
+      "unit": {
+        "run": 1365,
+        "skipped": 1,
+        "failures": 0,
+        "log_sha256": "733a016ae61db992cc6f1bd2566415bbf198688b5fe1480770e96e39c5893f07"
+      },
+      "model": {
+        "run": 91,
+        "skipped": 1,
+        "failures": 0,
+        "log_sha256": "055ea6e655ffa842578d407f53c2f7e6b634612b66d24180a86c7e607cbedeb7"
+      },
+      "package": {
+        "audit_sha256": "75a231e3c74449b11d11df30da0f22ad16480aff9cf55940c3364ac3e0d1b3ec",
+        "source_commit": "b1ec3707c1284d54e534c0f7e1c6c7dce3cfd69b",
+        "tracked_files": 200,
+        "working_tree_matches_source_commit": true,
+        "artifacts": {
+          "wheel": {
+            "filename": "mujoco_ros2_manipulation-0.2.0-py3-none-any.whl",
+            "sha256": "6a950d0ec08e89564c09111c30046c0f2d5e22e985c185a60014bdc8f4766a9e",
+            "bytes": 1225707,
+            "matched": 200,
+            "missing": [],
+            "different": [],
+            "unexpected_package_files": []
+          },
+          "sdist": {
+            "filename": "mujoco_ros2_manipulation-0.2.0.tar.gz",
+            "sha256": "5c935905c406cdd3c96476f7bf753194ed080bc08cae9b6a7d51b719fee893d9",
+            "bytes": 1099538,
+            "matched": 200,
+            "missing": [],
+            "different": [],
+            "unexpected_package_files": []
+          }
+        },
+        "build_log_sha256": "7e6c6afc73dac358dfe58bfe8be12e161e4099b7a240a1c1eef829d05df2d2bd",
+        "scope": "Tracked Python/static package files in wheel/sdist only. Native binaries/config remain workspace resources."
+      }
+    },
+    "source_scope": "Only verify_interference.py changed in the receive-progress followup. Timing and comparison callers retain the source70 implementation and use the same strengthened base admission API.",
+    "actual_observation_and_seal_scope": "Each successful admission records genuinely newer validated joint/clock counts and simulation stamps, original callback receipt ages, one complete native/policy hash binding, exact message/seal checks and quick-stat/model checks. Stage times are individual diagnostics, not before/after performance comparisons. Negative terminal margins after completion do not represent pre-send failures."
+  },
+  "evidence_summary_sha256": {
+    "original146_and_first_reservation_fix": "c2107a8768749a91946ae930272b27fe135c579221a81a7f74a31d18651c81de",
+    "original147_and_latest_hardening": "107809ed3a68c610d4589c940fee6a45205f1c7f636e65b55c5af1227acb75ee",
+    "latest_actual_new_source": "13ccea41331724ab297111b44782876fe65a89d35c6eefc100d0a527ac6c3537"
+  },
+  "previous_evidence": {
+    "edition": "1.10",
+    "preserved_assets_sha256": {
+      "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
+      "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
+      "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
+      "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
+      "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
+      "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
+      "self-clearance-verification.json": "8b20e697c33d8afefba515276a9f25876ddd02c601f3818d2269363c15f93f2b",
+      "grasp-observation-verification.json": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275",
+      "grasp-admission-verification.json": "2f64bff5567d31cca36b106b3baff195b177fdd21b0f3746f41c2d0f958a5b25",
+      "grasp-admission.jpg": "49ebaf600673218433fb83fd12441d57682d2952dfd12fa4b25f235cbde8f7fa"
+    },
+    "grasp_source_files_unchanged": 15,
+    "scope": "Existing ROS-grasp/native/UI and synchronized-replay implementations and their previous actual proof remain unchanged. These earlier runs were not re-executed or aggregated as the new relative-reservation checks.",
+    "unchanged_formal_and_browser_grasp_source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_task.py": "72a99c9cc7d4e73266fc87cc87e4bb24386493f7eb40fa5507e6bf65e4941515",
+      "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e",
+      "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+      "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+      "src/mujoco_ros2_manipulation/grasping/ros_admission.py": "d7e612e4b006d0fe7473c726b8f07417333354ed58f7490e8f7056c5970d6278",
+      "src/mujoco_ros2_manipulation/grasping/contract.py": "549421dcb39266b30de2c75a94ee1791286f29236c4c396a562ee1c2256846ac",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+      "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+      "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+      "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+      "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+      "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5"
+    },
+    "additional_demo_server_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "10423fae3e60a54208bb1ecc31bf78f29e5cd177ea86b557414619ced8dfdd5b"
+    }
+  },
+  "limits": [
+    "The original exception identifies remaining estimated future-start lead at most 0.1 seconds; the exact original failure clock and stage costs were not recorded. It does not prove the absolute scheduled time had already passed at the exception.",
+    "The original saved admission checkpoint predates observed-start assignment. Missing observed-start details in that file do not mean its check was not reached.",
+    "Original CI145 chose a different relative curve than CI146. Its success is a separate observation, not a retry of the failed path or a performance comparison.",
+    "The original unchanged curve was re-evaluated offline with zero ROS goals. This is not an actual replay of the original dispatch or a reconstruction of its wall delay.",
+    "The 2.25-second injected preparation check is deterministic regression evidence. New actual stage durations and remaining margins are individual diagnostics, not a speedup, reliability rate, or original CI146 timing.",
+    "Planning 10 mm and observed-start 1 mm self-clearance thresholds are sampled experimental settings. They do not certify continuous-time clearance, physical hardware safety, exact FCL shape behavior, or unknown tracking errors.",
+    "Intentional collision comparison is a distinct negative control with its existing contact/cancel behavior. It is not counted as zero-contact safe execution.",
+    "Latest-head remote CI, protected merge, main followup and publication are recorded separately from these frozen local results.",
+    "The original CI147 freshness gate correctly rejected at a recorded state age 0.318593411 seconds while remaining start lead was 0.681511996 seconds. This is distinct from the CI146 reservation-order failure.",
+    "The original 147 mint-to-current-boundary interval does not identify the individual deepcopy, tuple/JSON, hash, filesystem, geometry or scheduling contributions.",
+    "Latest code requires genuinely newer joint and clock callbacks with advancing original simulation times. It retains 0.3-second receive-age and 0.1-second remaining-start limits, one original one-second reservation, and existing fixed-schedule expiry.",
+    "Latest actual stage costs, callback counts and remaining margins are diagnostics of identified runs only; no before/after timing or reliability statistic is claimed."
+  ],
+  "status": "latest_local_checks_and_actual_ros_passed_original146_and147_preserved",
+  "publication_scope": "Reduced synthetic-case facts, repository-relative source paths and reviewed hashes; no raw logs, full curves, host paths, process/session/job identifiers, CAD or model assets.",
+  "previous_reservation_order_source_validation": {
+    "implementation_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+    "report_commit": "acda0a1c0415bb0389786326024fb343d5efafd4",
+    "proof_sha256_before_receive_progress_hardening": "57a46e1b248f508f66a937e74600f36e8f2b6a5001d3158a63aaa06dc0e3083d",
+    "implementation_source_sha256": {
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "9dce36fb7abb495f7f222ff0f196e387875f5e8ca3a0a440937b7271b6ae013e",
+      "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "27a3f401487c9c2a2febc6e70f57ca37bc4c2802a973619e44337322fc964a6e",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "9f0c88d43f63e5e8a6fe3b6c9290d26211b9504d4248f13e5d1ba104c1b8e40b"
+    },
+    "test_sha256": {
+      "tests/unit/test_self_legacy_dispatch.py": "a7df60a8bd68d0172eaed1d8f828b5ee14554ea7c3106d80352b514a9f72f888",
+      "tests/model/test_native_reservation_model.py": "011ac83085b409d6a80bc53291d1a7f81930ddf8fb35348f62fe5d2a6db1ed23"
+    },
+    "focused_regression": {
+      "total_tests": 50,
+      "passed": 50,
+      "failed": 0,
+      "log_sha256": "72e35266743d331fb696aadc51088e4f9b4bd5099f48e5d5f3ee40713c419c3d",
+      "deterministic_slow_prepare": {
+        "geometry_sec": 1.5,
+        "checkpoint_sec": 0.75,
+        "total_before_mint_sec": 2.25,
+        "original_future_lead_sec": 1.0,
+        "mint_count": 1
+      },
+      "negative_checks": [
+        "Expired fixed schedule rejects zero new goals without rebase",
+        "Stale receipts reject before mint",
+        "Cancel/guard/model mutation/late final margin reject zero goals",
+        "Checkpoint input mutation cannot seal unchecked curve or initial",
+        "Mutable evidence cannot extend private reservation",
+        "Single-use token refuses second dispatch",
+        "Late goal observer policy/geometry/freshness checks retained"
+      ],
+      "exact_command_checks": [
+        "Fractional clock15.29 stamps16s290000000ns",
+        "Partial-arm delayed knots and held peer preserved without synthetic peer goal",
+        "Two-arm order, delays and all derivatives preserved"
+      ],
+      "real_generated_model_test": "Strict current workcell/model metadata and declared mesh assets bound; isolated asset replacement invalidates identity, production assets remain untouched."
+    },
+    "actual_validation": {
+      "schema_version": "native-reservation-actual-reduction-v1",
+      "date": "2026-10-29",
+      "implementation_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+      "source_snapshot_sha256": "c23a4f13e6849d1fef3eac3744dcf71888e47e78cb0b91dc3328bbff77ec925d",
+      "implementation_source_sha256": {
+        "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "9dce36fb7abb495f7f222ff0f196e387875f5e8ca3a0a440937b7271b6ae013e",
+        "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "27a3f401487c9c2a2febc6e70f57ca37bc4c2802a973619e44337322fc964a6e",
+        "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "9f0c88d43f63e5e8a6fe3b6c9290d26211b9504d4248f13e5d1ba104c1b8e40b"
+      },
+      "test_sha256": {
+        "tests/unit/test_self_legacy_dispatch.py": "a7df60a8bd68d0172eaed1d8f828b5ee14554ea7c3106d80352b514a9f72f888",
+        "tests/model/test_native_reservation_model.py": "011ac83085b409d6a80bc53291d1a7f81930ddf8fb35348f62fe5d2a6db1ed23"
+      },
+      "original_failure_and_focused_regression_summary_sha256": "c2107a8768749a91946ae930272b27fe135c579221a81a7f74a31d18651c81de",
+      "outer_cpu_views": {
+        "result_sha256": "4b237b11cea8a08caaa067e6a510c175affaabc3656d3f138e1c7e35b00ee90a",
+        "log_sha256": "d987b2987e389f323ebc2f5b7adee1583ea01395da705ccd00d544c041165d30",
+        "status": "passed",
+        "code_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+        "motion_checks_passed": true,
+        "shutdown_clean": true,
+        "cpu_views_checked": true,
+        "demo_cpu_views_checked": true,
+        "saved_plan_read_only_checked": true,
+        "process_group_gone": true,
+        "launch_return_code": 0,
+        "egl_requested": false,
+        "jpeg_requested": false,
+        "browser_requested": false
+      },
+      "fresh_prepare_baseline_timing": [
+        {
+          "variant": "prepare",
+          "original_sha256": {
+            "result.json": "0397aa8794b1cfb3d2a3ab71eece01055674f121d2a711fbf57519849ad3c266",
+            "trajectories.json": "28ba58703589840761197e37999cdd55ce3875d09878d451ad3600e483ed2e8f",
+            "physics.json": "2884eb3d4672dd882640ff77bae01e1efcb3ccb532b0d3a8f128029ffedb25ea",
+            "launch.log": "e44e553e9c59bfc007a0ead2102f8abaa660e7907c39362413a0ae9b518f873a"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 1.764,
+              "reserved_from_clock_sec": 0.764,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.058547638,
+                "prepare_checkpoint": 0.008582486,
+                "prepare_total": 0.217631394
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.958495773,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 12.024,
+              "reserved_from_clock_sec": 11.024,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.277610666,
+                "prepare_checkpoint": 0.149972511,
+                "prepare_total": 0.584733228
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.754742244,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 4497,
+                "sample_dt_max_sec": 0.00999907663296895,
+                "duration_sec": 29.967232669,
+                "minimum_same_arm_distance_m": 0.016513486527469808,
+                "minimum_cross_arm_distance_m": 0.23113774584725064
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 4,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {},
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "retained_cpu_native_view_fresh_sequences": 400
+        },
+        {
+          "variant": "baseline",
+          "original_sha256": {
+            "result.json": "72c98f459d53f8ba25c66cdad68aa682268bdc5a417592ec59f092ee1335d505",
+            "trajectories.json": "1ef68c378c05637824762ecfe35189b1aa6c2f61f0015dfe48f26fb6df8e1278",
+            "physics.json": "9e558ff183d925034d1baa24746956ffa16a67743d0eed5f79764aea4e29cd94",
+            "launch.log": "3ce38ee771d1611fbf10bc646434910d575b446293a85af3efd6ec2c7525a77c"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 1.6,
+              "reserved_from_clock_sec": 0.6000000000000001,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.053634936,
+                "prepare_checkpoint": 0.000455128,
+                "prepare_total": 0.134766317
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.959332446,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.785999999,
+              "reserved_from_clock_sec": 8.785999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.278332855,
+                "prepare_checkpoint": 0.000928739,
+                "prepare_total": 0.422650094
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.757959243,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 4497,
+                "sample_dt_max_sec": 0.00999907663296895,
+                "duration_sec": 29.967232669,
+                "minimum_same_arm_distance_m": 0.016513486527469808,
+                "minimum_cross_arm_distance_m": 0.23113774584725064
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 4,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {
+            "timing_mode": "baseline",
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "timing_plan_sha256": "50b71473a91fdf79bb42e2b67b2f2281b26a77ef781816587d0bea3bd6d0787b",
+            "delayed_arm": "left",
+            "departure_delay_sec": 2.2,
+            "motion_duration_sec": 29.967232669,
+            "goal_terminal_statuses": [
+              4,
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "retained_cpu_native_view_fresh_sequences": 369
+        },
+        {
+          "variant": "timing",
+          "original_sha256": {
+            "result.json": "9fecc352193ba34b6b1e73eee8fa72918caa96a257b0322cf91242ded65f100c",
+            "trajectories.json": "d1a4d949a59d127e9b8b44250a55c7d1394ff14e97d51ed71b7bf1c3380867af",
+            "physics.json": "52c3fa4f966437d59815fbfb1826ffb21ffdbad9a9d3c7ca897042c061b7849b",
+            "launch.log": "b91f55fd3e0f3ba7cdf442a2fe3d376bc9b511695896356ca7ed1bf405a9ceee"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 1.626,
+              "reserved_from_clock_sec": 0.626,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.0573996,
+                "prepare_checkpoint": 0.000491688,
+                "prepare_total": 0.141954135
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.9533524399999999,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 8.701999999,
+              "reserved_from_clock_sec": 7.701999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.090867394,
+                "prepare_checkpoint": 0.001098047,
+                "prepare_total": 0.195249957
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.929280472,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 1489,
+                "sample_dt_max_sec": 0.009990561714287693,
+                "duration_sec": 8.531939704,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.03051322197033167
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 4,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {
+            "timing_mode": "timing",
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "timing_plan_sha256": "50b71473a91fdf79bb42e2b67b2f2281b26a77ef781816587d0bea3bd6d0787b",
+            "delayed_arm": "left",
+            "departure_delay_sec": 2.2,
+            "motion_duration_sec": 8.531939704,
+            "goal_terminal_statuses": [
+              4,
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "retained_cpu_native_view_fresh_sequences": 357
+        }
+      ],
+      "saved_relative_bundle": {
+        "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+        "timing_plan_sha256": "50b71473a91fdf79bb42e2b67b2f2281b26a77ef781816587d0bea3bd6d0787b",
+        "comparison_sha256": "bf5c10fe51df09796650f87504ad0f8d26c31e0e84517b1967f96872d5278628",
+        "relative_curve_sha256": {
+          "setup": "ad073c756cc21998420d1cc818eadc14120f4bab7894190a4f1f7b29b26a20a7",
+          "left": "bfe03817c2bc1fed5d197c26d6ecd37527a90a989dc92ad28b9fc46e6af48f89",
+          "right": "fe163a8fbe1871e684cf37c0b78b0d4cd7d147638ad618491da4af1be01ea70b",
+          "avoidance": "94c4f034fcd9705341c98011210d74b91b6017cce949c5028424b96056a6b2c5"
+        },
+        "timing_relative_curve_sha256": [
+          "9574fa89cf2f14e62b92f06030ee11ee6d9f61bf50e43f84b53b06b80d160658",
+          "fe163a8fbe1871e684cf37c0b78b0d4cd7d147638ad618491da4af1be01ea70b"
+        ],
+        "delayed_arm": "left",
+        "departure_delay_sec": 2.2,
+        "matched_report": true,
+        "scope": "All variants reuse the identified relative bundle/plan. Only headers are stamped; exact knot/derivative/delay/order preservation is separately unit-tested."
+      },
+      "comparison_four_modes": {
+        "index_sha256": "af81548bdb612923c178107f10f9d4dd11a2cedb1e92ffa29c44bb387608773f",
+        "matched_bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+        "all_command_hashes_equal_across_modes": true,
+        "runs": [
+          {
+            "variant": "left",
+            "original_sha256": {
+              "result.json": "1a56d8920206c2c82a81cc84287a6d82d4726297cba2724f4ccc26bf8657a771",
+              "trajectories.json": "dfd5783fefe8407a349273d0971297b18b754ab5e1af992437e8ae5d4caca24a",
+              "physics.json": "33d59b83dd4b4a66bfd0e957d4480afc509102d3c7feb2c0c287796cf6367dac",
+              "launch.log": "1075a35ffd0f4dd985bb840031f1ee5ed566d5e5e55d09d508868f148a3623c3"
+            },
+            "status": "passed",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "motion_checks_passed": true,
+            "physics_checks_passed": true,
+            "dispatch_admission": [
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 2.962,
+                "reserved_from_clock_sec": 1.9620000000000002,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.054805133,
+                  "prepare_checkpoint": 0.000644063,
+                  "prepare_total": 0.173568186
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.949654154,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 797,
+                  "sample_dt_max_sec": 0.009985503905839188,
+                  "duration_sec": 5.3023025740000005,
+                  "minimum_same_arm_distance_m": 0.01656296449611603,
+                  "minimum_cross_arm_distance_m": 0.02611494505690018
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 0,
+                "goals_after": 2,
+                "action_results": [
+                  {
+                    "arm": "left",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  },
+                  {
+                    "arm": "right",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 9,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              },
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 9.553999999,
+                "reserved_from_clock_sec": 8.553999999,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.058933828,
+                  "prepare_checkpoint": 0.00086544,
+                  "prepare_total": 0.146821746
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.976531898,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 951,
+                  "sample_dt_max_sec": 0.00998728659936976,
+                  "duration_sec": 6.331939704,
+                  "minimum_same_arm_distance_m": 0.01656296449611603,
+                  "minimum_cross_arm_distance_m": 0.05582802024605544
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 2,
+                "goals_after": 3,
+                "action_results": [
+                  {
+                    "arm": "left",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 8,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              }
+            ],
+            "timing": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "motion_duration_sec": 6.331939704,
+              "goal_terminal_statuses": [
+                4
+              ]
+            },
+            "physics": {
+              "contacts": 0,
+              "contact_steps": 0,
+              "invalid_values": 0,
+              "time_discontinuities": 0,
+              "pair_overflow": 0,
+              "stop_latched": false
+            },
+            "cleanup": {
+              "shutdown_clean": true,
+              "launch_return_code": 0,
+              "process_group_gone": true,
+              "shutdown_timed_out": false,
+              "shutdown_failures": []
+            },
+            "verifier_log_sha256": "2901b4b1e63df0b926573807a0f6c9e87eb814bc71729caf2faee3ae39c30709",
+            "matched_relative_commands": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "command_hashes": {
+                "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+                "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+                "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+                "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+              },
+              "motion_duration_sec": 6.331939704,
+              "comparison_duration_sec": 31.967232669,
+              "goal_terminal_statuses": [
+                4
+              ],
+              "verifier_cancel_requests": 0,
+              "contact_injection_requests": 0,
+              "stationary_peer_drift_rad": 4.5404393300696455e-07,
+              "post_stop_drift_rad": null
+            },
+            "native_stop": {
+              "stop_enabled": true,
+              "stop_latched": false,
+              "stop_reason": ""
+            },
+            "contact_guard": {
+              "latched": false,
+              "reason": "",
+              "phase": "ready",
+              "controllers": {
+                "left_controller": "active",
+                "joint_state_broadcaster": "active",
+                "right_controller": "active"
+              },
+              "deactivation_requests": 0,
+              "error": ""
+            },
+            "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+          },
+          {
+            "variant": "right",
+            "original_sha256": {
+              "result.json": "811a37b5b5324858b8318eadc4aa35ee3efe74f2421c09db132301ec99172431",
+              "trajectories.json": "18145df67054b60e84d277e181f89de30bb09906ac25b73be6bbc8e9e8207083",
+              "physics.json": "ee98fedf26d295289255b552a9ee1b18ff226b9ca9c2caab01d913f2384f10c2",
+              "launch.log": "efa7381b86c00d44c7877799a0b067e5e48c1f26aa19fef61f1cd2e9fd8e4051"
+            },
+            "status": "passed",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "motion_checks_passed": true,
+            "physics_checks_passed": true,
+            "dispatch_admission": [
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 2.934,
+                "reserved_from_clock_sec": 1.9340000000000002,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.052621039,
+                  "prepare_checkpoint": 0.000641425,
+                  "prepare_total": 0.158338593
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.949847034,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 797,
+                  "sample_dt_max_sec": 0.009985503905839188,
+                  "duration_sec": 5.3023025740000005,
+                  "minimum_same_arm_distance_m": 0.01656296449611603,
+                  "minimum_cross_arm_distance_m": 0.02611494505690018
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 0,
+                "goals_after": 2,
+                "action_results": [
+                  {
+                    "arm": "left",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  },
+                  {
+                    "arm": "right",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 9,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              },
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 9.527999999,
+                "reserved_from_clock_sec": 8.527999999,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.059119208,
+                  "prepare_checkpoint": 0.001032195,
+                  "prepare_total": 0.151533024
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.976446691,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 951,
+                  "sample_dt_max_sec": 0.00998728659936976,
+                  "duration_sec": 6.331939704,
+                  "minimum_same_arm_distance_m": 0.01656296449611603,
+                  "minimum_cross_arm_distance_m": 0.16187366986152785
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 2,
+                "goals_after": 3,
+                "action_results": [
+                  {
+                    "arm": "right",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 8,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              }
+            ],
+            "timing": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "motion_duration_sec": 6.331939704,
+              "goal_terminal_statuses": [
+                4
+              ]
+            },
+            "physics": {
+              "contacts": 0,
+              "contact_steps": 0,
+              "invalid_values": 0,
+              "time_discontinuities": 0,
+              "pair_overflow": 0,
+              "stop_latched": false
+            },
+            "cleanup": {
+              "shutdown_clean": true,
+              "launch_return_code": 0,
+              "process_group_gone": true,
+              "shutdown_timed_out": false,
+              "shutdown_failures": []
+            },
+            "verifier_log_sha256": "2b27a05f1117bd3fbcdbd6948dfdd1fe45b6ad8f2964936511552a8e8f104eac",
+            "matched_relative_commands": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "command_hashes": {
+                "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+                "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+                "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+                "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+              },
+              "motion_duration_sec": 6.331939704,
+              "comparison_duration_sec": 31.967232669,
+              "goal_terminal_statuses": [
+                4
+              ],
+              "verifier_cancel_requests": 0,
+              "contact_injection_requests": 0,
+              "stationary_peer_drift_rad": 1.6335699363212441e-06,
+              "post_stop_drift_rad": null
+            },
+            "native_stop": {
+              "stop_enabled": true,
+              "stop_latched": false,
+              "stop_reason": ""
+            },
+            "contact_guard": {
+              "latched": false,
+              "reason": "",
+              "phase": "ready",
+              "controllers": {
+                "joint_state_broadcaster": "active",
+                "right_controller": "active",
+                "left_controller": "active"
+              },
+              "deactivation_requests": 0,
+              "error": ""
+            },
+            "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+          },
+          {
+            "variant": "collision",
+            "original_sha256": {
+              "result.json": "bb80b1643bfca320106544d2e95050a63c3d0f3ac3cc80ef5480864c22523ba0",
+              "trajectories.json": "8b022cb02eb67e289e29bfdd9cdedbbe9f32eae9f9f9fad329efac4184d0f409",
+              "physics.json": "30b20cc083a0f166a6c1440b8f97fb8cff6515b1e736a3e3107affd958c2e24a",
+              "launch.log": "df6044949aa8b400bf79b372f4b9cfde0a3c2fe98009dcb5e45e45bf13377c78"
+            },
+            "status": "passed",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "motion_checks_passed": true,
+            "physics_checks_passed": true,
+            "dispatch_admission": [
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 2.928,
+                "reserved_from_clock_sec": 1.928,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.052506441,
+                  "prepare_checkpoint": 0.000673573,
+                  "prepare_total": 0.167447824
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.949184344,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 797,
+                  "sample_dt_max_sec": 0.009985503905839188,
+                  "duration_sec": 5.3023025740000005,
+                  "minimum_same_arm_distance_m": 0.01656296449611603,
+                  "minimum_cross_arm_distance_m": 0.02611494505690018
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 0,
+                "goals_after": 2,
+                "action_results": [
+                  {
+                    "arm": "left",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  },
+                  {
+                    "arm": "right",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 9,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              }
+            ],
+            "timing": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "motion_duration_sec": 6.331939704,
+              "goal_terminal_statuses": [
+                5,
+                5
+              ]
+            },
+            "physics": {
+              "contacts": 3,
+              "contact_steps": 1,
+              "invalid_values": 0,
+              "time_discontinuities": 0,
+              "pair_overflow": 0,
+              "stop_latched": true
+            },
+            "cleanup": {
+              "shutdown_clean": true,
+              "launch_return_code": 0,
+              "process_group_gone": true,
+              "shutdown_timed_out": false,
+              "shutdown_failures": []
+            },
+            "verifier_log_sha256": "65d1eb4060a0708e818606fc061398d4ecd12ee757312428b876db866bda42e8",
+            "matched_relative_commands": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "command_hashes": {
+                "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+                "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+                "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+                "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+              },
+              "motion_duration_sec": 6.331939704,
+              "comparison_duration_sec": 31.967232669,
+              "goal_terminal_statuses": [
+                5,
+                5
+              ],
+              "verifier_cancel_requests": 0,
+              "contact_injection_requests": 0,
+              "stationary_peer_drift_rad": 0.0,
+              "post_stop_drift_rad": 0.0,
+              "native_remaining_motion_at_contact_sec": 3.2379397029991672
+            },
+            "native_stop": {
+              "stop_enabled": true,
+              "stop_latched": true,
+              "stop_reason": "contact"
+            },
+            "contact_guard": {
+              "latched": true,
+              "reason": "contact",
+              "phase": "stopped",
+              "controllers": {
+                "right_controller": "inactive",
+                "joint_state_broadcaster": "active",
+                "left_controller": "inactive"
+              },
+              "deactivation_requests": 1,
+              "error": ""
+            },
+            "meaning": "Explicit intentional inter-arm collision negative control. Only setup uses safe reservation admission; the existing deliberate collision commands bypass that safe path. Native physical contact stop and controller deactivation, not a new manual cancel/injection, stop the two goals."
+          },
+          {
+            "variant": "avoidance",
+            "original_sha256": {
+              "result.json": "7b52fa7512d7708c139317c7b4ac89a70f30e3b682c4c3413094535cf8116449",
+              "trajectories.json": "b12dc11d2d8ce9973ebabbe9fe8701c7b2cad6ab33948270dbb7c37f1a7438c8",
+              "physics.json": "64555aa10b25cb4172d32e34d155846977ceb2116d530076eb189f89379928a3",
+              "launch.log": "fead5ffe41edca77f891bca9ef9cf201f21dbf2bbb0c6897b1195e4341c539b3"
+            },
+            "status": "passed",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "motion_checks_passed": true,
+            "physics_checks_passed": true,
+            "dispatch_admission": [
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 2.97,
+                "reserved_from_clock_sec": 1.9700000000000002,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.05834728,
+                  "prepare_checkpoint": 0.000815326,
+                  "prepare_total": 0.176158322
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.946125642,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 797,
+                  "sample_dt_max_sec": 0.009985503905839188,
+                  "duration_sec": 5.3023025740000005,
+                  "minimum_same_arm_distance_m": 0.01656296449611603,
+                  "minimum_cross_arm_distance_m": 0.02611494505690018
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 0,
+                "goals_after": 2,
+                "action_results": [
+                  {
+                    "arm": "left",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  },
+                  {
+                    "arm": "right",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 9,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              },
+              {
+                "status": "terminal",
+                "reservation_mint_count": 1,
+                "reservation_lead_sec": 1.0,
+                "scheduled_start_sec": 9.859999999,
+                "reserved_from_clock_sec": 8.859999999,
+                "prepare_stage_elapsed_sec": {
+                  "native_full_scan": 0.276897701,
+                  "prepare_checkpoint": 0.000879846,
+                  "prepare_total": 0.431565275
+                },
+                "minimum_recorded_final_current_start_margin_sec": 0.753576996,
+                "native_self_clearance": {
+                  "complete": true,
+                  "samples": 4497,
+                  "sample_dt_max_sec": 0.00999907663296895,
+                  "duration_sec": 29.967232669,
+                  "minimum_same_arm_distance_m": 0.016513486527469808,
+                  "minimum_cross_arm_distance_m": 0.23113774584725064
+                },
+                "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+                "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+                "evaluator": {
+                  "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                  "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                  "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+                },
+                "goals_before": 2,
+                "goals_after": 4,
+                "action_results": [
+                  {
+                    "arm": "left",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  },
+                  {
+                    "arm": "right",
+                    "submission_started": true,
+                    "sent": true,
+                    "accepted": true,
+                    "terminal_seen": true,
+                    "terminal_status": 4,
+                    "terminal_error_code": 0
+                  }
+                ],
+                "recorded_boundary_count": 9,
+                "preparation_checkpoint_before_reservation_recorded": true,
+                "reservation_boundary_count": 1,
+                "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+              }
+            ],
+            "timing": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "motion_duration_sec": 29.967232669,
+              "goal_terminal_statuses": [
+                4,
+                4
+              ]
+            },
+            "physics": {
+              "contacts": 0,
+              "contact_steps": 0,
+              "invalid_values": 0,
+              "time_discontinuities": 0,
+              "pair_overflow": 0,
+              "stop_latched": false
+            },
+            "cleanup": {
+              "shutdown_clean": true,
+              "launch_return_code": 0,
+              "process_group_gone": true,
+              "shutdown_timed_out": false,
+              "shutdown_failures": []
+            },
+            "verifier_log_sha256": "1d2a7c04db2bbfaeef86979cb9317e12858a10ad4d6b37dfc47992795b4f3779",
+            "matched_relative_commands": {
+              "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+              "command_hashes": {
+                "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+                "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+                "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+                "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+              },
+              "motion_duration_sec": 29.967232669,
+              "comparison_duration_sec": 31.967232669,
+              "goal_terminal_statuses": [
+                4,
+                4
+              ],
+              "verifier_cancel_requests": 0,
+              "contact_injection_requests": 0,
+              "stationary_peer_drift_rad": 0.0,
+              "post_stop_drift_rad": null
+            },
+            "native_stop": {
+              "stop_enabled": true,
+              "stop_latched": false,
+              "stop_reason": ""
+            },
+            "contact_guard": {
+              "latched": false,
+              "reason": "",
+              "phase": "ready",
+              "controllers": {
+                "right_controller": "active",
+                "left_controller": "active",
+                "joint_state_broadcaster": "active"
+              },
+              "deactivation_requests": 0,
+              "error": ""
+            },
+            "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+          }
+        ],
+        "scope": "Four modes share one relative bundle and command identities. No aggregate wall-time benchmark, success-rate or continuous-clearance guarantee is inferred."
+      },
+      "scope": "One new local actual ROS/CPU-view exercise on frozen source, separate from original CI145/146 and zero-goal offline replay. Timings/margins are diagnostics of these runs, not performance or reliability rates. Contact/control CPU demos are separate negative controls.",
+      "privacy": "Whitelisted facts and hashes only; public source paths are repository-relative. No host paths/process/job/session/run identifiers or full commands.",
+      "broad_checks": {
+        "unit": {
+          "run": 1359,
+          "skipped": 1,
+          "failures": 0,
+          "log_sha256": "999aeec52d89c832782cc7b31cfa744e3c9fabc0fec7dd391f128fb16f6818f6"
+        },
+        "model": {
+          "run": 90,
+          "skipped": 1,
+          "failures": 0,
+          "log_sha256": "b67572050c30d04c505355f6749e1a6dfab69fb89e8b7a1c2155e70cbdb91b21"
+        },
+        "package": {
+          "audit_sha256": "2639b27ac23a5d33cdd5af20f7e8d6ed11994825c830897b96900dfaf0eabc5f",
+          "source_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+          "tracked_files": 200,
+          "working_tree_matches_source_commit": true,
+          "artifacts": {
+            "wheel": {
+              "filename": "mujoco_ros2_manipulation-0.2.0-py3-none-any.whl",
+              "sha256": "824d5d26050c7eb6dfadcd8898b7b8053e7cbbd89a5bb0197ccc7b5f7929982e",
+              "bytes": 1224176,
+              "matched": 200,
+              "missing": [],
+              "different": [],
+              "unexpected_package_files": []
+            },
+            "sdist": {
+              "filename": "mujoco_ros2_manipulation-0.2.0.tar.gz",
+              "sha256": "fd411b7cd147632ecb6a45371fe0287e0a62c3377ae85b244158f9b29d79c685",
+              "bytes": 1097968,
+              "matched": 200,
+              "missing": [],
+              "different": [],
+              "unexpected_package_files": []
+            }
+          },
+          "build_log_sha256": "02d9f11b5cb9529adab91580a419865bd24559960f942b11caba195616d3ee6c",
+          "scope": "Tracked Python/static package files in wheel/sdist only. Native binaries/config remain workspace resources."
+        }
+      }
+    },
+    "evidence_summary_sha256": {
+      "original_and_focused": "c2107a8768749a91946ae930272b27fe135c579221a81a7f74a31d18651c81de",
+      "actual_new_source": "3d998437b370011733cb775f0156fb011b67752b919494e1c2e4e942f06d4175"
+    },
+    "scope": "Historical single local success on source 70 before original CI147 freshness failure and later callback-progress hardening. It is not current-source ROS validation or a CI147 rerun."
+  },
+  "original_ci147": {
+    "source_phase": "70c03a8 reservation-order implementation before later receive-progress hardening",
+    "source_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+    "original_head": "acda0a1c0415bb0389786326024fb343d5efafd4",
+    "original_sha256": {
+      "zip": "ce5fc506c949f594fed52ff43473cd1488f646795213acbba2e325006117039d",
+      "job_log": "96c165a41966b331085c62734d1c9888398ddbc667eb3e1663ff532496c2c24f",
+      "outer_result": "155b700c4ad3cc5b5e1536b8cb8781f1ae89a9758bf658f006a21d5539e41e49",
+      "inner_result": "e879799e7de4c64d1267f36b1ed5f177e8eb1f47cff979ad04069e735c1827fc",
+      "trajectories": "a21cc7819e623522ed6703dbac6a559accbe23ab7295a0a39e9acc000a910e8e",
+      "physics": "c0813b5a9a591b36d1ab17f27daa1bbb81bedd1eb9375936a5bc47a6dcaed189"
+    },
+    "failure_stage": "coordinated_avoidance_plan",
+    "error": {
+      "type": "RuntimeError",
+      "message": "Joint state is stale at native self admission"
+    },
+    "recorded_admission": {
+      "status": "failed",
+      "reservation_mint_count": 1,
+      "reservation_lead_sec": 1.0,
+      "scheduled_start_sec": 17.302,
+      "prepare_stage_elapsed_sec": {
+        "native_full_scan": 0.461995317,
+        "prepare_checkpoint": 0.218269306,
+        "prepare_total": 1.004568755
+      },
+      "mint_state_age_sec": 0.193320787,
+      "mint_clock_age_sec": 0.19321538,
+      "mint_remaining_start_sec": 0.80678462,
+      "rejected_current_state_age_sec": 0.318593411,
+      "rejected_current_clock_age_sec": 0.318488004,
+      "remaining_start_sec": 0.681511996,
+      "mint_to_current_boundary_sec": 0.125272624,
+      "planning_samples": 2867,
+      "planning_minimum_same_arm_distance_m": 0.016449880763673395,
+      "observed_start_minimum_same_arm_distance_m": 0.016558497182028873,
+      "goals_before": 2,
+      "goals_after": 2
+    },
+    "cleanup": {
+      "shutdown_clean": true,
+      "launch_return_code": 0,
+      "process_group_gone": true,
+      "shutdown_timed_out": false,
+      "cleanup_errors": [],
+      "shutdown_failures": []
+    },
+    "physics": {
+      "complete": true,
+      "contacts": 0,
+      "invalid_values": 0,
+      "time_discontinuities": 0,
+      "stop_latched": false
+    },
+    "interpretation": [
+      "Preparation completed before a single original one-second reservation; this is not the CI146 pre-reservation ordering failure.",
+      "The 0.3-second state freshness gate rejected correctly while recorded remaining future lead was 0.681511996 seconds.",
+      "No avoidance goals were submitted; the two cumulative successful goals belong to setup.",
+      "The recorded 125.273ms interval includes confirmation work without per-operation measurements; the individual deepcopy, serialization, hash, filesystem and geometry shares are not determined.",
+      "The error does not establish a native transport loss or a collision failure.",
+      "Original failure and source 70 local actual successes remain separately preserved; no rerun, threshold relaxation or automatic retry."
+    ]
+  },
+  "original_ci147_url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40885365262",
+  "receive_progress_hardening": {
+    "implementation": {
+      "full_native_policy_hash": "Once during preparation, unchanged complete SHA identity checked against opened native metadata, with lstat/stat snapshots before and after full reads. Final quick stat checks retain inode/device/mode/size/mtime/ctime bindings.",
+      "relative_messages": "Private copies and exact nested immutable tuples of arm/controller/frame/joint order, positions/velocities/accelerations/effort and integer sec/nanosec knots are prepared before the first reservation. No repeated large JSON encoding or deep message copy after mint.",
+      "exact_submission_equality": "Every goal admission still checks the mutable outgoing messages against the original exact tuple; observer mutation cannot authorize a different spline. Finite numeric and duration/stamp type checks preserve former non-finite rejection.",
+      "genuine_observations": "Bounded callback pumping requires newer validated joint and clock counts, increasing original simulation timestamps and original callback receipts strictly after the synchronization began. Freshness is never manufactured by changing a receipt.",
+      "pump_bound": "At most2 seconds before mint. Once an original schedule exists, every pump iteration checks its remaining estimated lead greater than0.1 seconds, cancellation, native contact latch and backward clocks; no wait may extend the reservation.",
+      "final_checks": "After real refresh, exact messages/source-policy-model identities/current native clearance/start anchor/cancel/freshness are checked again immediately before dispatch. Existing execution-ledger ownership applies if a first arm was sent before a later admission abort.",
+      "telemetry": "At most64 cost rows and32 boundary rows per admission, explicit omitted counters, synchronization callback counts/time advancement, original receipt ages and remaining reservation margin. Full hash, copy/tuple work, genuine synchronization, exact seal, quick stat, current geometry and stamping have separate elapsed observations."
+    },
+    "unchanged": {
+      "maximum_state_and_clock_age_sec": 0.3,
+      "original_future_lead_sec": 1.0,
+      "minimum_final_start_margin_sec": 0.1,
+      "planning_minimum_same_arm_distance_m": 0.01,
+      "observed_start_minimum_same_arm_distance_m": 0.001,
+      "sample_dt_sec": 0.01,
+      "relative_spline_values": true,
+      "native_code_and_model_geometry": true,
+      "grasp_code_and_physical_thresholds": true,
+      "no_reservation_extension": true,
+      "no_command_retry": true,
+      "no_synthetic_receipt_refresh": true
+    },
+    "summary_sha256": "107809ed3a68c610d4589c940fee6a45205f1c7f636e65b55c5af1227acb75ee",
+    "source_scope": "Latest b1ec370 source. Original146, earlier source70 local success and original147 are preserved separately."
+  },
+  "publication_checks": {
+    "repository_check": {
+      "return_code": 0,
+      "log_sha256": "94bbaea21c33a6d14f5869dadeb8eaca98ba0660bbb8d7dbbcb913735f3882fa"
+    },
+    "report_schema_and_evidence_files": 130,
+    "report_validate_log_sha256": "dc5ccfd0469169c50cd4e7327fe00a891d5b90278d014f7fee6736e300978577",
+    "generated_report_files_checked": 21,
+    "generated_check_log_sha256": "6324b4e9db57764492028182637d67817e9ffef624850dbd5a58ddabad280978",
+    "diff_whitespace_check": "passed",
+    "scope": "Latest b1-source local publication checks after all concrete evidence was written. Remote latest-head CI, protected merges and publication remain separate."
+  }
+}

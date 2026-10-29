@@ -105,18 +105,17 @@ class TimingVerification(InterferenceVerification):
             )
         count = self.assess_schedule(curves)
         self.before_avoidance_execution()
-        self.tracking = True
-        start = self.clock_last + 1
-        commands = (
-            self.split(to_ros(curves[0]), start)
+        relative_commands = (
+            self.split(to_ros(curves[0]), 0.)
             if self.mode == "baseline"
-            else [
-                (inst, to_ros(curve, start))
-                for inst, curve in zip(self.cell.instances, curves)
-            ]
+            else [(inst, to_ros(curve)) for inst, curve in zip(self.cell.instances, curves)]
         )
         self.progress("timing_execute_" + self.mode)
-        self.dispatch(commands, scheduled_start=start)
+        with self.prepare_dispatch(relative_commands, fresh_relative=True) as prepared:
+            self.tracking = True
+            start = self.reserve_prepared(prepared)
+            commands = self.stamp_prepared(relative_commands, prepared)
+            self.dispatch_prepared(commands, prepared, scheduled_start=start)
         goal = {
             n: p
             for _, t in commands
