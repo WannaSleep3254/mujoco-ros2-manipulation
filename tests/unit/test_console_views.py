@@ -74,6 +74,25 @@ class ConsoleViewsTests(unittest.TestCase):
         return dict(job_id='c'*32,stage='motion',variant=variant,run_id=run,
             active_launch=dict(run_id=run,model_path=str(self.cell.output/'cell.xml'),model_sha256='d'*64))
 
+    def test_live_submit_retains_exact_stamp_without_changing_legacy_or_reset_rules(self):
+        stamp = 1_793_234_567_123_456_789
+        self.app.state.joint_state_stamp_ns = stamp
+        self.owner.tick()
+        positions, metadata = self.owner.host.submissions[-1]
+        self.assertEqual(positions, {'q':.1})
+        self.assertEqual(metadata['source_stamp_ns'], stamp)
+        self.assertEqual(metadata['simulation_sec'], 3.)
+        # Recorder epoch detection may use exact stamps; existing live display
+        # still follows the original validated float stamp and owner identity.
+        self.app.state.joint_state_stamp_ns = stamp - 1
+        self.owner.tick()
+        self.assertEqual(self.owner.host.submissions[-1][1]['source_stamp_ns'], stamp - 1)
+        self.assertIsNone(self.owner.run_reset_blocked)
+        del self.app.state.joint_state_stamp_ns
+        self.owner.tick()
+        self.assertIsNone(self.owner.host.submissions[-1][1]['source_stamp_ns'])
+        self.assertTrue(self.app.state.admission_suspended)
+
     def test_waiting_job_and_variant_changes_blank_binding_before_new_model_or_q(self):
         self.owner.tick()
         original=self.owner.host.snapshot()['binding_id']

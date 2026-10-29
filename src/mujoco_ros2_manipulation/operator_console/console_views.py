@@ -443,7 +443,7 @@ class ConsoleViews:
             if not valid_stamp:
                 return
             self.host.submit(deepcopy(state.positions),source_received_monotonic=state.joint_at,
-                simulation_sec=stamp)
+                simulation_sec=stamp,source_stamp_ns=getattr(state,'joint_state_stamp_ns',None))
             self.stamp_key, self.last_accepted_stamp = self.key, stamp
 
     def snapshot(self):

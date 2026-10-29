@@ -183,7 +183,7 @@ jobs:
         run: |
           source ./manipulation_env.sh
           python3 -m mujoco_ros2_manipulation.operator_console.verify_image_transport \
-            --domain 222 --port 8915 --output runtime/validation/image-transport-ci
+            --domain 222 --port 8915 --output runtime/validation/image-transport-ci --synchronized
       - name: Actual ROS / MoveIt headless verification
         run: |
           source ./manipulation_env.sh

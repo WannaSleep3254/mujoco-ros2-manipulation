@@ -58,8 +58,13 @@ class ConsoleBridge(Node):
         return result
 
     def joints(self, message):
+        stamp = message.header.stamp
+        stamp_ns = (stamp.sec * 1_000_000_000 + stamp.nanosec
+            if type(stamp.sec) is int and type(stamp.nanosec) is int
+            and 0 <= stamp.nanosec < 1_000_000_000 else None)
         self.state.joints(list(message.name), list(message.position), list(message.velocity),
-                          source_stamp=message.header.stamp.sec + message.header.stamp.nanosec / 1e9)
+                          source_stamp=stamp.sec + stamp.nanosec / 1e9,
+                          source_stamp_ns=stamp_ns)
 
     def guard(self, message):
         with self.state.lock:

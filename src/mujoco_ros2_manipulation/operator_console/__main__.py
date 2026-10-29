@@ -9,6 +9,37 @@ import threading
 import uuid
 
 
+def shutdown_console(server, app, ros_stopped, ros_thread, node, rclpy, previous):
+    """Always release ROS resources, including when a recording cannot finish."""
+    clean = True
+    def attempt(stage, operation):
+        nonlocal clean
+        try:
+            return operation()
+        except Exception as problem:
+            clean = False
+            print(f"OPERATOR_CLEANUP_FAILED stage={stage} error_type={type(problem).__name__}", flush=True)
+            return None
+    try:
+        attempt("http_shutdown", server.shutdown)
+        attempt("http_close", server.server_close)
+        if attempt("application", app.close) is False:
+            clean = False
+    finally:
+        ros_stopped.set()
+        attempt("ros_thread", lambda:ros_thread.join(timeout=3))
+        if attempt("ros_thread_status", ros_thread.is_alive):
+            clean = False
+        try:
+            attempt("ros_node", node.destroy_node)
+        finally:
+            if attempt("ros_context_status", rclpy.ok):
+                attempt("ros_context", rclpy.shutdown)
+            for sig, handler in previous.items():
+                attempt("signal_restore", lambda sig=sig, handler=handler:signal.signal(sig, handler))
+    return clean
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
@@ -89,19 +120,8 @@ def main():
         while not stopped.wait(0.2):
             pass
     finally:
-        server.shutdown()
-        server.server_close()
-        app.close()
-        ros_stopped.set()
-        ros_thread.join(timeout=3)
-        try:
-            node.destroy_node()
-        finally:
-            if rclpy.ok():
-                rclpy.shutdown()
-            for sig, handler in previous.items():
-                signal.signal(sig, handler)
-    return 0
+        clean = shutdown_console(server, app, ros_stopped, ros_thread, node, rclpy, previous)
+    return 0 if clean else 1
 
 
 if __name__ == "__main__":

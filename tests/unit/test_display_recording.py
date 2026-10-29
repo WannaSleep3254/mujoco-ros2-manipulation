@@ -128,7 +128,8 @@ assert host.pose_envelope(host.identifier)['source']['clock_domain'].startswith(
                 source=SceneSource('workcell:test','Test',xml,('j1',),{'j1':0.},lambda:None)
                 binding=make_binding('a'*32,1,source.id,'live')
                 identifier=host.activate(binding,source); host._step()
-                host.submit({'j1':0.},source_received_monotonic=clock());host._step()
+                stamp = 1_793_234_567_123_456_789
+                host.submit({'j1':0.},source_received_monotonic=clock(),source_stamp_ns=stamp);host._step()
                 factory.processes[-1].reply(1,processed=clock());host._step()
                 converted=json.loads(host.manifest_bytes(identifier))
                 pose=host.pose_envelope(identifier)
@@ -136,4 +137,15 @@ assert host.pose_envelope(host.identifier)['source']['clock_domain'].startswith(
                 self.assertEqual(converted['scene_sha256'],pose['pose']['scene_sha256'])
                 self.assertEqual(pose['pose']['geoms'][0]['position'],[1.,2.,3.])
                 self.assertEqual(hashlib.sha256(host.manifest_bytes(identifier)).hexdigest(),host.snapshot()['manifest_descriptor']['sha256'])
+                captured = host.capture_sample(identifier)
+                raw_capture = raw.capture_sample(identifier)
+                self.assertEqual(captured['pose'], pose['pose'])
+                self.assertEqual(captured['source_stamp_ns'], str(stamp))
+                self.assertEqual({k:v for k,v in captured.items() if k != 'pose'},
+                                 {k:v for k,v in raw_capture.items() if k != 'pose'})
+                self.assertEqual(raw_capture['pose']['scene_sha256'], legacy['scene_sha256'])
+                captured['positions_rad']['j1'] = 99.
+                captured['pose']['geoms'][0]['position'][0] = 99.
+                self.assertEqual(host.capture_sample(identifier)['positions_rad'], {'j1':0.})
+                self.assertEqual(host.capture_sample(identifier)['pose'], pose['pose'])
             finally: host.close()
