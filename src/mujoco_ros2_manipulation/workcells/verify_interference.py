@@ -2,6 +2,7 @@
 
 import argparse
 from copy import deepcopy
+from contextlib import contextmanager
 import json
 import time
 from pathlib import Path
@@ -223,87 +224,218 @@ class InterferenceVerification(WorkcellVerification):
         self.dispatch(commands, scheduled_start=scheduled_start)
         return assessment
 
-    def dispatch(self, trajectories, *, inject_cancel_at=None, scheduled_start=None):
-        """Apply the native self gate to setup, generated and saved schedules.
+    def _self_command_key(self, commands, *, headers=True):
+        values=[]
+        for inst,trajectory in commands:
+            header=getattr(trajectory,"header",None)
+            stamp=getattr(header,"stamp",None)
+            value=dict(arm=getattr(inst,"id",inst),controller=getattr(inst,"controller",None),
+                frame=getattr(header,"frame_id",""),names=list(trajectory.joint_names),points=[
+                    dict(p=list(p.positions),v=list(p.velocities),a=list(p.accelerations),
+                         effort=list(getattr(p,"effort",[])),sec=p.time_from_start.sec,ns=p.time_from_start.nanosec)
+                    for p in trajectory.points])
+            if headers:value["stamp"]=None if stamp is None else [stamp.sec,stamp.nanosec]
+            values.append(value)
+        return json.dumps(values,sort_keys=True,separators=(",",":"),allow_nan=False)
 
-        Timing/Comparison inherit this boundary. The deliberately colliding
-        VisibleContactDemo inherits WorkcellVerification directly and does not.
+    def _self_file_stats(self, paths):
+        require(0<len(paths)<=4096,"Native model file inventory exceeds its bound")
+        def key(stat):return [stat.st_dev,stat.st_ino,stat.st_mode,stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns]
+        return {str(p):[key(Path(p).lstat()),key(Path(p).stat())] for p in paths}
+
+    def _self_model_binding(self, expected=None):
+        if expected is not None:
+            require(self._self_file_stats(expected["stats"])==expected["stats"],"Native model files changed after preparation")
+            return expected
+        paths={(self.cell.output/"cell.xml"),self.cell.output,self.cell.output/"source.json"}
+        report=json.loads((self.cell.output/"source.json").read_text())
+        paths.update(self.cell.output/name for name in report["outputs"])
+        paths.update(self.cell.root/name for name in report["inputs"])
+        for inst in self.cell.instances:
+            profile=inst.profile
+            metadata=json.loads((profile.output/"source.json").read_text())
+            paths.update((profile.output,profile.output/"source.json"))
+            paths.update(profile.root/name for name in metadata["integrity"]["inputs"]["files"])
+            paths.update(profile.output/name for name in metadata["integrity"]["outputs"])
+            visual=profile.output/"visual_meshes"
+            if visual.exists():paths.add(visual)
+        stats=self._self_file_stats(sorted(map(str,paths)))
+        check_workcell(self.cell)  # full content checks happen before any fresh reservation
+        require(self._self_file_stats(stats)==stats,"Native model changed during preparation")
+        return dict(xml_sha256=file_sha256((self.cell.output/"cell.xml")),
+            manifest_sha256=file_sha256(self.cell.output/"source.json"),stats=stats)
+
+    def _self_boundary(self, prepared, label):
+        now=time.monotonic_ns();record=prepared["record"]
+        clock_age=None if self._self_clock_received_ns is None else (now-self._self_clock_received_ns)/1e9
+        state_age=None if self._self_state_received_ns is None else (now-self._self_state_received_ns)/1e9
+        seal=getattr(self,"_native_reservation",(None,))
+        start=seal[1] if seal[0] is prepared else prepared.get("fixed_start")
+        row=dict(stage=label,monotonic_ns=now,clock_sec=self.clock_last,clock_age_sec=clock_age,state_age_sec=state_age,
+            remaining_start_sec=None if start is None or clock_age is None else start-self.clock_last-clock_age,
+            dispatched_goals=self.dispatched)
+        rows=record.setdefault("boundaries",[])
+        if len(rows)<32:rows.append(row)
+        else:
+            rows[-1]=row;record["boundary_records_omitted"]=record.get("boundary_records_omitted",0)+1
+
+    def _self_proof_key(self, prepared):
+        return json.dumps({key:prepared[key] for key in ("command_key","initial","policy","policy_sha256","identity","model","fresh","observed_anchor","fixed_start")},
+            sort_keys=True,separators=(",",":"),allow_nan=False)
+
+    def _confirm_prepared(self, prepared, commands, *, scheduled_start=None):
+        require(getattr(self,"_native_prepared",None) is prepared and prepared["active"],"Native preparation owner/lifetime differs")
+        if prepared["prior_abort"] is not None:prepared["prior_abort"]()
+        require(self._self_proof_key(prepared)==prepared["binding"],"Native preparation proof was changed")
+        require(self._self_command_key(commands,headers=not prepared["fresh"])==prepared["command_key"],
+                "Prepared relative trajectory, arm order or derivatives changed")
+        require(dict(self.commanded)==prepared["initial"],"Commanded start changed after native preparation")
+        require(self.self_policy==prepared["policy"] and self.self_policy_sha256==prepared["policy_sha256"]
+                and file_sha256(self.self_policy_path)==prepared["policy_sha256"],
+                "Self-clearance policy changed before submission")
+        require(self_evaluator_identity(prepared["evaluator"],self.cell.root)==prepared["identity"],
+                "Native self-clearance implementation changed before submission")
+        self._self_model_binding(prepared["model"])
+        prepared["record"]["observed_start"]=require_self_clearance(prepared["evaluator"],self.state(),
+            self.self_policy["observed_start_min_self_distance_m"])
+        if prepared["fresh"]:
+            tolerance=self.settings["tracking_tolerance_rad"]
+            require(max(abs(self.state()[n]-prepared["observed_anchor"][n]) for n in prepared["observed_anchor"])<tolerance,
+                    "Observed start changed after native preparation")
+        self._self_boundary(prepared,"final_current_identity_geometry")
+        self._self_dispatch_fresh(scheduled_start)
+        if prepared["prior_abort"] is not None:prepared["prior_abort"]()
+        self._self_dispatch_fresh(scheduled_start)
+
+    @contextmanager
+    def prepare_dispatch(self, trajectories, *, scheduled_start=None, fresh_relative=False):
+        """Check full relative geometry before a caller may reserve a fresh start.
+
+        Already stamped callers retain their original absolute reservation;
+        this context never chooses, extends or rebases a start time.
         """
-        commands = list(trajectories)
-        curves = [Spline.from_ros(trajectory) for _, trajectory in commands]
-        initial = dict(self.commanded)
-        # Independent saved comparison runs submit one arm only. Validate the
-        # other arm at its existing hold without sending it a synthetic goal.
-        names = {name for curve in curves for name in curve.names}
-        held = [name for name in initial if name not in names]
-        if held:
-            duration = max(curve.duration for curve in curves)
-            curves.append(Spline(held, [dict(t=t, p=[initial[name] for name in held], v=[], a=[])
-                for t in (0., duration)]))
-        require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
-                "Self-clearance policy changed; restart and replan")
-        with DistanceEvaluator(self.cell, self_collision=True) as evaluator:
-            identity = self_evaluator_identity(evaluator, self.cell.root)
-            result = evaluate_path(curves, initial, self.cell, evaluator,
-                dt=self.self_policy["sample_dt_sec"],
-                self_reject_below=self.self_policy["planning_min_self_distance_m"])
-            record = dict(scheduled_start_sec=scheduled_start,
-                initial_commanded_rad=initial, native_self_clearance=result,
-                evaluator=evaluator.metadata(), status="pre_dispatch", dispatched_goals_before=self.dispatched)
-            self.evidence.setdefault("dispatch_admission", []).append(record)
-            self.save_evidence("native_self_dispatch_gate")
-            if not result["complete"]:
-                record["status"] = "rejected"
-                self.save_evidence("native_self_dispatch_rejected")
-                raise SelfClearanceRejected("Native self-clearance rejected the legacy schedule before dispatch")
-            # Persistence and callbacks above must not authorize an old state.
-            self.ready_guard()
-            require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
-                    "Self-clearance policy changed before dispatch")
-            record["observed_start"] = require_self_clearance(evaluator, self.state(),
-                self.self_policy["observed_start_min_self_distance_m"])
-            self._self_dispatch_fresh(scheduled_start)
-            previous_abort = getattr(self, "dispatch_abort", None)
-            def admission_abort():
-                if previous_abort is not None:
-                    previous_abort()
-                require(not self.contact_guard or not self.contact_guard["latched"], "Native contact guard latched")
-                ledger = getattr(self, "execution_ledger", None)
-                new_submission = ledger is not None and any(not item.submission_started for item in ledger.attempts)
-                if new_submission:
-                    require(scheduled_start is None or scheduled_start-self.clock_last > .1,
-                            "Native self admission start reservation expired before submission")
-                    require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
-                            "Self-clearance policy changed before submission")
-                    require(self_evaluator_identity(evaluator, self.cell.root) == identity,
-                            "Native self-clearance implementation changed before submission")
-                    require_self_clearance(evaluator, self.state(), self.self_policy["observed_start_min_self_distance_m"])
-                if previous_abort is not None:
-                    previous_abort()
-                if new_submission:
-                    self._self_dispatch_fresh(scheduled_start)
-            self.dispatch_abort = admission_abort
-            primary = None
-            try:
-                return super().dispatch(commands, inject_cancel_at=inject_cancel_at, scheduled_start=scheduled_start)
+        require(getattr(self,"_native_prepared",None) is None,"A native dispatch preparation is already active")
+        commands=deepcopy(list(trajectories));initial=deepcopy(dict(self.commanded));policy=deepcopy(self.self_policy);policy_sha=self.self_policy_sha256
+        command_key=self._self_command_key(commands,headers=not fresh_relative)
+        if fresh_relative:
+            require(scheduled_start is None,"Fresh relative preparation cannot replace an existing reservation")
+            require(all(getattr(t,"header",None) is not None and t.header.stamp.sec==0 and t.header.stamp.nanosec==0
+                        for _,t in commands),"Fresh relative commands are already stamped")
+        record=dict(scheduled_start_sec=scheduled_start,reservation_mint_count=0,
+            reservation_origin="fresh_relative_caller" if fresh_relative else "existing_absolute_preserved",
+            initial_commanded_rad=deepcopy(initial),status="preparing",dispatched_goals_before=self.dispatched,stage_elapsed_sec={})
+        self.evidence.setdefault("dispatch_admission",[]).append(record)
+        prepared=dict(record=record,fresh=fresh_relative,active=False,used=False,fixed_start=scheduled_start,
+            prior_abort=getattr(self,"dispatch_abort",None))
+        primary=None;started=time.monotonic_ns()
+        self._self_boundary(prepared,"prepare_begin")
+        try:
+            model=self._self_model_binding()
+            curves=[Spline.from_ros(t) for _,t in commands]
+            names={name for curve in curves for name in curve.names};held=[name for name in initial if name not in names]
+            if held:
+                duration=max(c.duration for c in curves)
+                curves.append(Spline(held,[dict(t=t,p=[initial[n] for n in held],v=[],a=[]) for t in (0.,duration)]))
+            require(file_sha256(self.self_policy_path)==policy_sha,"Self-clearance policy changed; restart and replan")
+            with DistanceEvaluator(self.cell,self_collision=True) as evaluator:
+                identity=self_evaluator_identity(evaluator,self.cell.root)
+                scan_started=time.monotonic_ns()
+                result=evaluate_path(curves,initial,self.cell,evaluator,dt=policy["sample_dt_sec"],
+                    self_reject_below=policy["planning_min_self_distance_m"])
+                record["stage_elapsed_sec"]["native_full_scan"]=(time.monotonic_ns()-scan_started)/1e9
+                complete=result["complete"]
+                record.update(native_self_clearance=deepcopy(result),evaluator=deepcopy(evaluator.metadata()),model_identity={
+                    "xml_sha256":model["xml_sha256"],"manifest_sha256":model["manifest_sha256"],"bound_files":len(model["stats"])},status="pre_dispatch")
+                checkpoint=time.monotonic_ns();self.save_evidence("native_self_dispatch_gate")
+                record["stage_elapsed_sec"]["prepare_checkpoint"]=(time.monotonic_ns()-checkpoint)/1e9
+                if not complete:
+                    record["status"]="rejected"
+                    raise SelfClearanceRejected("Native self-clearance rejected the legacy schedule before dispatch")
+                self.ready_guard()
+                prepared.update(commands=deepcopy(commands),command_key=command_key,
+                    initial=deepcopy(initial),policy=policy,policy_sha256=policy_sha,identity=identity,
+                    model=model,evaluator=evaluator,observed_anchor=self.state(),active=True)
+                prepared["binding"]=self._self_proof_key(prepared)
+                self._native_prepared=prepared
+                self._confirm_prepared(prepared,commands,scheduled_start=None if fresh_relative else scheduled_start)
+                record["stage_elapsed_sec"]["prepare_total"]=(time.monotonic_ns()-started)/1e9
+                self._self_boundary(prepared,"prepare_complete_before_reservation")
+                yield prepared
+        except BaseException as error:
+            primary=error;record["error"]=dict(type=type(error).__name__,message=str(error)[:2000])
+            if record["status"]!="rejected":record["status"]="failed"
+            raise
+        finally:
+            prepared["active"]=False
+            if getattr(self,"_native_prepared",None) is prepared:self._native_prepared=None
+            record.update(dispatched_goals_after=self.dispatched,execution_transport=deepcopy(getattr(self,"execution_transport",None)),
+                contact_guard=deepcopy(self.contact_guard))
+            self._self_boundary(prepared,"terminal_or_prefinal_failure")
+            if getattr(self,"_native_reservation",(None,))[0] is prepared:self._native_reservation=(None,)
+            try:self.save_evidence("dispatch_terminal")
             except BaseException as error:
-                primary = error
-                record["error"] = dict(type=type(error).__name__, message=str(error)[:2000])
-                raise
-            finally:
-                self.dispatch_abort = previous_abort
-                record.update(status="failed" if primary is not None else "terminal", dispatched_goals_after=self.dispatched,
-                    execution_transport=deepcopy(getattr(self, "execution_transport", None)),
-                    contact_guard=deepcopy(self.contact_guard))
-                try:
-                    self.save_evidence("dispatch_terminal")
-                except BaseException as error:
-                    record["persistence_error"] = dict(type=type(error).__name__, message=str(error)[:2000])
-                    # A diagnostic write must not replace the original action,
-                    # cancellation or native failure. Without a primary failure,
-                    # a missing terminal record remains a verification failure.
-                    if primary is None:
-                        raise
+                record["persistence_error"]=dict(type=type(error).__name__,message=str(error)[:2000])
+                if primary is None:raise
+
+    def reserve_prepared(self, prepared):
+        """The fresh caller mints its original one-second lead exactly once."""
+        require(prepared["fresh"] and not prepared["used"] and getattr(self,"_native_reservation",(None,))[0] is not prepared,
+                "Native preparation already reserved or consumed")
+        self._confirm_prepared(prepared,prepared["commands"])
+        start=self.clock_last+1.0
+        sec,ns=divmod(round(start*1e9),10**9)
+        minted=time.monotonic_ns()
+        # Authority is private/immutable, separate from mutable diagnostics.
+        self._native_reservation=(prepared,start,(sec,ns),self.clock_last,minted)
+        prepared["record"].update(scheduled_start_sec=start,reservation_mint_count=1,
+            reserved_from_clock_sec=self.clock_last,reservation_lead_sec=1.0,reservation_minted_monotonic_ns=minted)
+        self._self_boundary(prepared,"caller_reserved_once")
+        return start
+
+    def stamp_prepared(self, trajectories, prepared):
+        require(getattr(self,"_native_reservation",(None,))[0] is prepared,"Fresh native reservation is missing")
+        commands=deepcopy(list(trajectories))
+        require(self._self_command_key(commands,headers=False)==prepared["command_key"],"Prepared relative trajectory changed before stamping")
+        sec,ns=self._native_reservation[2]
+        for _,trajectory in commands:trajectory.header.stamp=Time(sec=sec,nanosec=ns)
+        return commands
+
+    def dispatch_prepared(self, trajectories, prepared, *, inject_cancel_at=None, scheduled_start=None):
+        commands=list(trajectories)
+        require(not prepared["used"],"Native dispatch preparation was already consumed")
+        prepared["used"]=True
+        if prepared["fresh"]:
+            seal=getattr(self,"_native_reservation",(None,))
+            require(seal[0] is prepared and scheduled_start==seal[1],"Original native start reservation differs")
+            require(prepared["record"]["reservation_mint_count"]==1 and prepared["record"]["scheduled_start_sec"]==seal[1],
+                    "Native reservation diagnostics changed")
+            require(all((t.header.stamp.sec,t.header.stamp.nanosec)==seal[2] for _,t in commands),"Prepared absolute headers differ")
+        else:
+            require(scheduled_start==prepared["fixed_start"],"Original native start reservation differs")
+        previous_abort=getattr(self,"dispatch_abort",None)
+        def admission_abort():
+            if previous_abort is not None:previous_abort()
+            require(not self.contact_guard or not self.contact_guard["latched"],"Native contact guard latched")
+            ledger=getattr(self,"execution_ledger",None)
+            new_submission=ledger is not None and any(not item.submission_started for item in ledger.attempts)
+            if new_submission:self._confirm_prepared(prepared,commands,scheduled_start=scheduled_start)
+            if previous_abort is not None:previous_abort()
+            if new_submission:self._self_dispatch_fresh(scheduled_start)
+        if previous_abort is not None:previous_abort()
+        require(not self.contact_guard or not self.contact_guard["latched"],"Native contact guard latched")
+        self._confirm_prepared(prepared,commands,scheduled_start=scheduled_start)
+        self.dispatch_abort=admission_abort
+        try:
+            result=super().dispatch(commands,inject_cancel_at=inject_cancel_at,scheduled_start=scheduled_start)
+            prepared["record"]["status"]="terminal"
+            return result
+        finally:self.dispatch_abort=previous_abort
+
+    def dispatch(self, trajectories, *, inject_cancel_at=None, scheduled_start=None):
+        """Strict admission for existing absolute/saved schedules; never retime."""
+        commands=list(trajectories)
+        with self.prepare_dispatch(commands,scheduled_start=scheduled_start) as prepared:
+            return self.dispatch_prepared(commands,prepared,inject_cancel_at=inject_cancel_at,scheduled_start=scheduled_start)
 
     def before_avoidance_execution(self):
         pass
@@ -314,10 +446,11 @@ class InterferenceVerification(WorkcellVerification):
         require(check["invalid_samples"] == 0, "Coordinated spline is colliding")
         if label == "avoidance":
             self.before_avoidance_execution()
-        start = self.clock_last + 1.0
-        before = self.state()
-        # Validate before adding the absolute start time, then send the same splits.
-        self.dispatch(self.split(trajectory, start), scheduled_start=start)
+        relative_commands=self.split(trajectory,0.)
+        with self.prepare_dispatch(relative_commands,fresh_relative=True) as prepared:
+            before=self.state()
+            start=self.reserve_prepared(prepared)
+            self.dispatch_prepared(self.stamp_prepared(relative_commands,prepared),prepared,scheduled_start=start)
         endpoint = dict(zip(curve.names, curve.points[-1]["p"]))
         error = self.settle([endpoint[n] for n in self.joint_names])
         require(

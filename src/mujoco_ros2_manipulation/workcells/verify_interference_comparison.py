@@ -137,7 +137,7 @@ class ComparisonVerification(InterferenceVerification):
         initial_measured = self.state()
         self.before_avoidance_execution()  # optional recorder; camera only, no model changes
         self.sample_after = dict(initial_measured)
-        start = self.clock_last + 1.0
+        start = self.clock_last + 1.0 if self.mode == "collision" else None
         duration = (
             self.curves["avoidance"].duration
             if self.mode == "avoidance"
@@ -147,10 +147,10 @@ class ComparisonVerification(InterferenceVerification):
             max(c.duration for k, c in self.curves.items() if k != "setup") + 2
         )
         if self.mode == "avoidance":
-            commands = self.split(to_ros(self.curves["avoidance"]), start)
+            commands = self.split(to_ros(self.curves["avoidance"]), 0.)
         else:
             commands = [
-                (i, to_ros(self.curves[i.id], start))
+                (i, to_ros(self.curves[i.id], start if self.mode == "collision" else 0.))
                 for i in self.cell.instances
                 if self.mode == "collision" or i.id == self.mode
             ]
@@ -213,7 +213,10 @@ class ComparisonVerification(InterferenceVerification):
             stopped = self.state()
         else:
             latch_clock = None
-            self.dispatch(commands, scheduled_start=start)
+            with self.prepare_dispatch(commands, fresh_relative=True) as prepared:
+                start = self.reserve_prepared(prepared)
+                commands = self.stamp_prepared(commands, prepared)
+                self.dispatch_prepared(commands, prepared, scheduled_start=start)
             statuses = [f.result().status for _, f in self.handles]
             target = dict(self.bundle["initial_rad"])
             for _, t in commands:
