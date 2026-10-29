@@ -163,6 +163,7 @@ class Handler(BaseHTTPRequestHandler):
                         logs.append(dict(name=source.name, text=reader.read().decode(errors="replace")))
                 return self.respond(dict(logs=logs))
             assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js", "/inspector.js":"inspector.js",
+                "/workspace.css":"workspace.css", "/workspace.js":"workspace.js", "/workspace_status.mjs":"workspace_status.mjs",
                 "/viewer.js":"viewer.js", "/viewer_contract.mjs":"viewer_contract.mjs", "/scene_app.js":"scene_app.js",
                 "/vendor/three.module.js":"vendor/three.module.js", "/vendor/three.core.js":"vendor/three.core.js",
                 "/vendor/OrbitControls.js":"vendor/OrbitControls.js", "/vendor/LICENSE":"vendor/LICENSE",

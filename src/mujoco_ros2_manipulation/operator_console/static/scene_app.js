@@ -10,7 +10,7 @@ export class SceneControls {
     this.request=request;this.notify=notify;this.showOperate=showOperate;
     this.onAvailabilityChange=onAvailabilityChange;this.destroyed=false;this.recovering=false;this.recoveryFailed=false;this.recoveryEpoch=0;this.pendingCamera=null;this.playbackSpeed=1;
     this.cameraListeners=[];
-    this.geometrySnapshot=null;this.geometrySignature=null;
+    this.geometrySnapshot=null;this.geometrySignature=null;this.publishedGeometrySelection=null;this.geometryObservationLost=false;this.geometryControlsReady=false;
     this.poseTimer=null;this.poseTimerAt=null;this.poseRead=null;this.poseNextAt=0;this.poseEpoch=0;this.poseTarget=null;this.poseVisible=null;
     this.submittedPoseViewer=null;this.submittedPoseBinding=null;this.submittedPoseSequence=null;
     this.seekInFlight=false;this.pendingSeek=null;this.seekSerial=0;this.seekEpoch=0;this.selecting=false;this.viewer=null;this.expected=null;this.loading=null;this.loadedBinding=null;this.data=null;this.playing=false;this.playEpoch=0;this.playStart=null;this.playTimer=null;this.manifestFailures=0;this.manifestRetryAt=0;this.notifiedManifest=null;
@@ -38,7 +38,14 @@ export class SceneControls {
     for(const button of cameraElements('[data-scene-geometry-reset]'))this.listenCamera(button,'click',()=>this.geometryAction('reset',null,button.dataset.geometryScope));
     for(const input of cameraElements('[data-scene-speed]'))this.listenCamera(input,'input',()=>this.setSensitivity(input.dataset.sceneSpeed,Number(input.value)));
     this.listenCamera(document,'visibilitychange',()=>{this.syncPosePolling(true);this.updateCameraControls();this.onAvailabilityChange();});
+    this.listenCamera(window,'console-geometry-select',event=>this.selectInspectorGeometry(event.detail));
+    this.listenCamera(window,'console-observation-lost',()=>{this.geometryObservationLost=true;});
     this.updateCameraControls();
+  }
+  selectInspectorGeometry(selection){
+    const snapshot=this.geometrySnapshot;
+    if(!selection||!snapshot||selection.binding_id!==this.data?.binding_id||selection.binding_id!==snapshot.binding_id||selection.scene_sha256!==this.viewer?.manifest?.scene_sha256||(selection.geom_id!==null&&!Number.isSafeInteger(selection.geom_id)))return false;
+    return this.geometryAction('select',selection.geom_id,snapshot.scope_key);
   }
   _createViewer(){
     let created;
@@ -148,6 +155,10 @@ export class SceneControls {
     const current=this.geometrySnapshot,items=current?.items||[],scope=current?.scope_key||'';
     const valid=Boolean(current&&current.binding_id===this.data?.binding_id);
     const ready=valid&&this.cameraReady(),review=this.data?.mode==='plan_preview'||Boolean(current?.review_mode);
+    // Body details remain readable in image mode or while rendering is not
+    // ready. Selections made there cannot change the canvas, so restore its
+    // authoritative selection once its geometry tools become available again.
+    const becameReady=ready&&!this.geometryControlsReady;this.geometryControlsReady=ready;
     const selected=valid?items.find(item=>item.id===current.selected_id):null;
     const signature=changed||this.geometrySignature===null?JSON.stringify([scope,items.map(item=>[item.id,item.name,item.type])]):this.geometrySignature;
     for(const select of cameraElements('[data-scene-geometry]')){
@@ -158,6 +169,9 @@ export class SceneControls {
       select.value=valid&&current.selected_id!==null?String(current.selected_id):'';select.disabled=!ready||!items.length;select.dataset.geometryScope=scope;
     }
     this.geometrySignature=signature;
+    const selection={binding_id:valid?current.binding_id:null,scene_sha256:valid?this.viewer?.manifest?.scene_sha256:null,geom_id:valid?current.selected_id:null};
+    const selectionKey=JSON.stringify(selection);
+    if(becameReady||selectionKey!==this.publishedGeometrySelection){this.publishedGeometrySelection=selectionKey;window.dispatchEvent?.(new CustomEvent('console-geometry-selection',{detail:selection}));}
     for(const button of cameraElements('[data-scene-fit-selected]')){button.disabled=!ready||!selected?.visible||selected.type==='plane';button.dataset.geometryScope=scope;}
     for(const input of cameraElements('[data-scene-geometry-hidden]')){input.checked=selected?!selected.local_visible:false;input.disabled=!ready||!selected||review;input.dataset.geometryScope=scope;}
     for(const input of cameraElements('[data-scene-geometry-opacity]')){input.value=String(selected?.opacity_multiplier??1);input.disabled=!ready||!selected||review;input.dataset.geometryScope=scope;input.setAttribute('aria-valuetext',Math.round(Number(input.value)*100)+'%');}
@@ -268,6 +282,10 @@ export class SceneControls {
     if(this.destroyed)return;
     const data=state.view;if(data?.binding&&this.data?.binding&&data.binding.operator_session_id===this.data.binding.operator_session_id&&data.binding.generation<this.data.binding.generation)return;
     if(this.recovering&&data?.binding_id!==this.expected){this.recoveryEpoch++;this.recovering=false;this.viewer?.clearBinding('표시 대상이 바뀌었습니다');this.pendingCamera=null;this.expected=this.loadedBinding=this.loading=null;}
+    // Inspector ignores local selection notifications while observations are
+    // lost. Republish once after the next accepted state, even if the canvas
+    // changed selection during that gap and already published its new key.
+    if(this.geometryObservationLost){this.geometryObservationLost=false;this.publishedGeometrySelection=null;}
     const previousError=Boolean(this.data?.status==='error'||this.data?.error),failed=Boolean(data?.status==='error'||data?.error);
     if(this.data?.binding_id!==data?.binding_id||failed||!data){this.pause();this._clearPendingSeek();this.resetPosePolling();}this.data=data;this.reconcilePreviewTime(data);this.viewer?.setReviewMode(data?.mode==='plan_preview');this.updateCameraControls();
     if(!data){$('plan-play').disabled=$('plan-seek').disabled=true;if(this.viewer&&(this.expected!==null||previousError))this.viewer.clearBinding('3D 표시 준비 대기');this.expected=null;this.loadedBinding=null;this.loading=null;return;}

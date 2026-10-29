@@ -24,12 +24,13 @@ class Element{
 }
 const content=element=>[element.textContent,...element.children.map(content)].join(' ');
 
-function harness({hidden=false,panelHidden=false,withApp=false}={}){
+function harness({hidden=false,panelHidden=false,operateHidden=true,withApp=false}={}){
  let now=10_000,timerID=0,urlID=0;
- const elements=new Map(),requests=[],timers=new Map(),created=[],revoked=[],listeners=new Map(),documentListeners=new Map();
+ const elements=new Map(),requests=[],timers=new Map(),created=[],revoked=[],listeners=new Map(),documentListeners=new Map(),events=[];
  const element=id=>{if(!elements.has(id))elements.set(id,new Element(['sensor-frame-select','analysis-request','object-select'].includes(id)?'select':'div'));return elements.get(id);};
  const makeOption=(value,label)=>{const node=new Element('option');node.value=value;node.textContent=label;return node;};
  element('analysis').hidden=panelHidden;
+ element('operate').hidden=operateHidden;
  element('sensor-image').hidden=true;
  element('sensor-frame-select').append(makeOption('live','latest'));
  element('analysis-request').append(makeOption('','select'));
@@ -40,7 +41,7 @@ function harness({hidden=false,panelHidden=false,withApp=false}={}){
   querySelectorAll:selector=>selector==='[data-view="analysis"]'?[nav]:[],
   addEventListener(name,callback){if(!documentListeners.has(name))documentListeners.set(name,[]);documentListeners.get(name).push(callback);}};
  class Event{constructor(type,options={}){this.type=type;this.detail=options.detail;}}
- const window={addEventListener(name,callback){if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(callback);},dispatchEvent(event){dispatch(listeners,event);}};
+ const window={addEventListener(name,callback){if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(callback);},dispatchEvent(event){events.push(event);dispatch(listeners,event);}};
  const context=vm.createContext({document,window,CustomEvent:Event,AbortController,
   Date:{now:()=>now},setTimeout(callback,delay){const id=++timerID;timers.set(id,{callback,at:now+delay,delay});return id;},clearTimeout:id=>timers.delete(id),
   URL:{createObjectURL(blob){const url='blob:inspector-'+(++urlID);created.push({url,blob});return url;},revokeObjectURL:url=>revoked.push(url)},
@@ -54,7 +55,8 @@ function harness({hidden=false,panelHidden=false,withApp=false}={}){
    globalThis.productionInspectorEvents={render,disconnected};`,context);
  }
  vm.runInContext(source,context);
- return {context,document,element,requests,created,revoked,timers,
+ return {context,document,element,requests,created,revoked,timers,events,
+  geometry(detail){window.dispatchEvent(new Event('console-geometry-selection',{detail}));},
   emit(value){window.dispatchEvent(new Event('console-observation',{detail:value}));},
   production(value){context.productionInspectorEvents.render(value);},
   lost(){window.dispatchEvent(new Event('console-observation-lost'));},
@@ -190,4 +192,89 @@ test('changing or clearing the binding immediately removes old object selection 
   assert.equal(h.element('object-select').children.some(child=>child.value==='old'),false,'Old options must be cleared before another response');
   assert.equal(h.element('object-details').children.length,0,'Old object details must not describe a new or unavailable binding');h.assertReadOnly();
  }
+});
+
+const descendants=element=>[element,...element.children.flatMap(descendants)];
+function objectCatalog(){
+ return {scene_sha256:SCENE,bodies:[
+  {id:'world',body_id:0,parent_body_id:null,parent_id:null,name:'world',robot_instance_id:null,tool_role:'unknown'},
+  {id:'arm',body_id:1,parent_body_id:0,parent_id:'world',name:'robot_base',robot_instance_id:'left',tool_role:'unknown'},
+  {id:'tool',body_id:2,parent_body_id:1,parent_id:'arm',name:'named_gripper',robot_instance_id:'left',tool_role:'unknown'}],
+ geoms:[{geom_id:0,body_id:0,name:'floor'},{geom_id:7,body_id:2,name:'tool_visual'},{geom_id:8,body_id:2,name:'tool_collision'}]};
+}
+function geomButton(h,id){return descendants(h.element('object-tree')).find(node=>node.tagName==='BUTTON'&&node.title==='3D 형상 #'+id+' 선택');}
+
+test('operation workspace loads actual object hierarchy without fetching hidden sensor or analysis data',async()=>{
+ const h=harness({panelHidden:true,operateHidden:false});h.emit(observation({sensor:image(),binding:BINDING_A}));
+ assert.equal(h.reads('/api/view/hierarchy').length,1);assert.equal(h.reads('/api/image-source').length,0);
+ h.reply(h.reads('/api/view/hierarchy')[0],objectCatalog());await drain();
+ const buttons=descendants(h.element('object-tree')).filter(node=>node.tagName==='BUTTON');
+ assert.equal(buttons.length,6,'Three body properties and three actual geometry buttons');
+ assert.ok(descendants(h.element('object-tree')).some(node=>node.tagName==='DETAILS'));
+ h.select('object-select','tool');assert.match(content(h.element('object-details')),/미지정/);
+ assert.match(content(h.element('object-details')),/robot_base/,'Parent must use the actual body mapping');
+ h.assertReadOnly();
+});
+
+test('explicit geometry selection is scoped to current binding and scene and issues no command request',async()=>{
+ const h=harness({panelHidden:true,operateHidden:false});h.emit(observation({binding:BINDING_A}));h.reply(h.reads('/api/view/hierarchy')[0],objectCatalog());await drain();
+ const button=geomButton(h,7);button.dispatchEvent({type:'click'});
+ assert.equal(h.element('object-select').value,'tool');assert.match(content(h.element('object-details')),/geom 7/);
+ assert.equal(button['aria-pressed'],'true');
+ const selection=h.events.find(event=>event.type==='console-geometry-select');
+ assert.equal(selection.detail.binding_id,BINDING_A);assert.equal(selection.detail.scene_sha256,SCENE);assert.equal(selection.detail.geom_id,7);
+ h.select('object-select','arm');const cleared=h.events.filter(event=>event.type==='console-geometry-select');assert.equal(cleared.length,2);assert.equal(cleared.at(-1).detail.geom_id,null,'Body details must clear the previous geometry instead of guessing a representative geometry');h.assertReadOnly();
+});
+
+test('canvas geometry selections synchronize body details, reject old scopes and do not echo another action',async()=>{
+ const h=harness();h.emit(observation({binding:BINDING_A}));h.reply(h.reads('/api/view/hierarchy')[0],objectCatalog());await drain();
+ h.geometry({binding_id:BINDING_A,scene_sha256:SCENE,geom_id:8});
+ assert.equal(h.element('object-select').value,'tool');assert.equal(geomButton(h,8)['aria-pressed'],'true');
+ const selected=content(h.element('object-details'));
+ for(const selection of [{binding_id:BINDING_B,scene_sha256:SCENE,geom_id:0},{binding_id:BINDING_A,scene_sha256:'bad',geom_id:0},{binding_id:BINDING_A,scene_sha256:SCENE,geom_id:999}])h.geometry(selection);
+ assert.equal(content(h.element('object-details')),selected);assert.equal(h.events.filter(event=>event.type==='console-geometry-select').length,0);h.assertReadOnly();
+});
+
+test('binding replacement clears old tree immediately and stale detached buttons cannot select new geometry',async()=>{
+ const h=harness();h.emit(observation({binding:BINDING_A}));h.reply(h.reads('/api/view/hierarchy')[0],objectCatalog());await drain();
+ const oldButton=geomButton(h,7);h.emit(observation({binding:BINDING_B}));assert.equal(h.element('object-tree').children.length,0);
+ h.reply(h.reads('/api/view/hierarchy')[1],objectCatalog());await drain();oldButton.dispatchEvent({type:'click'});
+ assert.equal(h.events.filter(event=>event.type==='console-geometry-select').length,0);assert.equal(h.element('object-select').value,'');
+ geomButton(h,7).dispatchEvent({type:'click'});assert.equal(h.events.find(event=>event.type==='console-geometry-select').detail.binding_id,BINDING_B);h.assertReadOnly();
+});
+
+test('lost observation invalidates pending hierarchy and disables stale selection until a fresh observation',async()=>{
+ const h=harness();h.emit(observation({binding:BINDING_A}));const pending=h.reads('/api/view/hierarchy')[0];h.lost();h.reply(pending,objectCatalog());await drain();
+ assert.equal(h.element('object-tree').children.length,0);assert.equal(h.element('object-select').disabled,true);assert.match(h.element('object-state').textContent,/状態|상태 조회 중단/);
+ h.emit(observation({binding:BINDING_A}));h.reply(h.reads('/api/view/hierarchy')[1],objectCatalog());await drain();
+ const control=geomButton(h,7);h.lost();control.dispatchEvent({type:'click'});assert.equal(control.disabled,true);assert.equal(h.events.filter(event=>event.type==='console-geometry-select').length,0);
+ h.emit(observation({binding:BINDING_A}));assert.equal(control.disabled,false);h.assertReadOnly();
+});
+
+test('a hierarchy from another scene is rejected even when fetched under the current binding',async()=>{
+ const h=harness();h.emit(observation({binding:BINDING_A}));h.reply(h.reads('/api/view/hierarchy')[0],{...objectCatalog(),scene_sha256:'d'.repeat(64)});await drain();
+ assert.equal(h.element('object-tree').children.length,0);assert.match(h.element('object-state').textContent,/버전이 다릅니다/);h.assertReadOnly();
+});
+
+
+test('a geometry selected while hierarchy is loading is applied after the matching read completes',async()=>{
+ const h=harness();h.emit(observation({binding:BINDING_A}));
+ h.geometry({binding_id:BINDING_A,scene_sha256:SCENE,geom_id:8});
+ h.reply(h.reads('/api/view/hierarchy')[0],objectCatalog());await drain();
+ assert.equal(h.element('object-select').value,'tool');assert.equal(geomButton(h,8)['aria-pressed'],'true');
+ assert.equal(h.events.filter(event=>event.type==='console-geometry-select').length,0);h.assertReadOnly();
+});
+
+
+test('body selection clears the renderer geometry while its null acknowledgement preserves chosen body details',async()=>{
+ const h=harness();h.emit(observation({binding:BINDING_A}));h.reply(h.reads('/api/view/hierarchy')[0],objectCatalog());await drain();
+ h.geometry({binding_id:BINDING_A,scene_sha256:SCENE,geom_id:7});
+ for(const method of ['tree','dropdown']){
+  if(method==='tree')descendants(h.element('object-tree')).find(node=>node.tagName==='BUTTON'&&node.title==='body 1 속성 보기').dispatchEvent({type:'click'});
+  else h.select('object-select','world');
+  const chosen=h.element('object-select').value,notification=h.events.filter(event=>event.type==='console-geometry-select').at(-1);
+  assert.equal(notification.detail.geom_id,null);h.geometry(notification.detail);
+  assert.equal(h.element('object-select').value,chosen);assert.equal(geomButton(h,7)['aria-pressed'],'false');assert.doesNotMatch(content(h.element('object-details')),/선택 geom/);
+ }
+ h.assertReadOnly();
 });

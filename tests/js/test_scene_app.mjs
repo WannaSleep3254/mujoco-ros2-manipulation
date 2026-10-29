@@ -7,6 +7,8 @@ const source = (await readFile(new URL('../../src/mujoco_ros2_manipulation/opera
   .replace(/^import[^\n]*\n/gm, '')
   .replace('export class SceneControls', 'class SceneControls');
 
+const inspectorSource = await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/inspector.js', import.meta.url), 'utf8');
+
 function deferred() {
   let resolve, reject;
   const promise = new Promise((yes, no) => {resolve = yes; reject = no;});
@@ -22,8 +24,10 @@ class Element {
   addEventListener(name, callback) {this.listeners[name] = callback;}
   removeEventListener(name, callback) {if (this.listeners[name] === callback) delete this.listeners[name];}
   setAttribute(name, value) {this.attributes[name] = String(value);}
+  removeAttribute(name) {delete this.attributes[name];}
+  dispatchEvent(event) {this.listeners[event.type]?.(event);return true;}
   append(...children) {for (const child of children) {child.parentElement = this; this.children.push(child); if (this.tagName === 'SELECT' && !this._value && !child.disabled) this._value = child.value;}}
-  replaceChildren() {this.rebuilds=(this.rebuilds||0)+1;this.children = []; if (this.tagName === 'SELECT') this._value = '';}
+  replaceChildren(...children) {this.rebuilds=(this.rebuilds||0)+1;this.children = []; if (this.tagName === 'SELECT') this._value = '';this.append(...children);}
 }
 
 function state(character = 'a', generation = 1, overrides = {}) {
@@ -39,11 +43,17 @@ function state(character = 'a', generation = 1, overrides = {}) {
       ...overrides}};
 }
 
-function harness({manifest, poseResult = false, submitFrame = true, collision = false} = {}) {
+function harness({manifest, poseResult = false, submitFrame = true, collision = false, withInspector = false} = {}) {
   let now = 0, nextTimer = 0, active = 0, maximumActive = 0;
-  const elements = new Map(), timers = new Map(), requests = [], notices = [];
+  const elements = new Map(), timers = new Map(), requests = [], notices = [], events = [], windowListeners = new Map(), inspectorReads = [];
+  class CustomEvent {constructor(type, options = {}) {this.type = type;this.detail = options.detail;}}
+  const window = {
+    addEventListener(name, callback) {if (!windowListeners.has(name)) windowListeners.set(name, new Set());windowListeners.get(name).add(callback);},
+    removeEventListener(name, callback) {windowListeners.get(name)?.delete(callback);},
+    dispatchEvent(event) {events.push(event);for (const callback of [...(windowListeners.get(event.type) || [])]) callback(event);return true;}
+  };
   const element = id => {
-    if (!elements.has(id)) elements.set(id, new Element(id === 'scene-source' ? 'select' : 'div'));
+    if (!elements.has(id)) elements.set(id, new Element(['scene-source', 'object-select', 'analysis-request', 'sensor-frame-select'].includes(id) ? 'select' : 'div'));
     return elements.get(id);
   };
   element('demos').hidden = true;
@@ -93,17 +103,27 @@ function harness({manifest, poseResult = false, submitFrame = true, collision = 
     restoreCamera(value){this.restored=value;return true;}
     destroy() {this.destroyed++;this.disposed=true;}
   }
-  const SceneControls = new Function('LocalSceneView', 'document', 'performance', 'setTimeout', 'clearTimeout',
+  const SceneControls = new Function('LocalSceneView', 'document', 'performance', 'setTimeout', 'clearTimeout', 'window', 'CustomEvent',
     source + '\nreturn SceneControls;')(FakeViewer, document, {now: () => now},
       (callback, delay) => {const id = ++nextTimer; timers.set(id, {callback, delay}); return id;},
-      id => timers.delete(id));
+      id => timers.delete(id), window, CustomEvent);
+  if(withInspector) {
+    element('analysis').hidden=true;
+    const inspectorFetch=(path,options)=>{const read={...deferred(),path,options};inspectorReads.push(read);return read.promise;};
+    new Function('document','window','CustomEvent','fetch','AbortController',inspectorSource)(document,window,CustomEvent,inspectorFetch,AbortController);
+  }
   let availabilityChanges=0;
   const controls = new SceneControls({onAvailabilityChange:()=>{availabilityChanges++;},request: (path, payload) => {
     const request = {...deferred(), path, payload}; requests.push(request);
     active++; maximumActive = Math.max(maximumActive, active);
     return request.promise.finally(() => active--);
   }, notify: message => notices.push(message), showOperate: () => {controls.shown = (controls.shown || 0)+1;}});
-  return {controls, element, requests, notices, timers,document, advance: milliseconds => {now += milliseconds;},
+  return {controls, element, requests, notices, timers,document, events, windowListeners, inspectorReads,
+    observe(value) {window.dispatchEvent(new CustomEvent('console-observation', {detail:value}));controls.update(value);},
+    lost() {window.dispatchEvent(new CustomEvent('console-observation-lost'));},
+    replyHierarchy(value) {inspectorReads.at(-1).resolve({status:200,ok:true,json:async()=>value});},
+    inspect(detail) {window.dispatchEvent(new CustomEvent('console-geometry-select', {detail}));},
+    advance: milliseconds => {now += milliseconds;},
     async tick(id=controls.poseTimer){const timer=timers.get(id);assert.ok(timer,'Expected a scheduled timer');timers.delete(id);now+=timer.delay;timer.callback();await drain();},
     visibility(hidden){document.hidden=hidden;document.listeners.visibilitychange?.();},
     createController:()=>new SceneControls({request:()=>{throw new Error('Camera must not request');},notify:message=>notices.push(message),showOperate(){}}),
@@ -761,4 +781,122 @@ test('an external overwrite before own state confirmation is bounded and reconci
   h.advance(10000);h.controls.update(state('a',1,{preview_time_sec:7}));assert.equal(h.controls.poseTarget.exhausted,true);assert.equal(h.controls.cameraReady(),false);assert.match(h.element('plan-time').textContent,/갱신 확인 중단/);
   h.controls.update(state('a',1,{preview_time_sec:7}));assert.equal(h.controls.poseTarget.time,7);assert.equal(h.controls.poseTarget.exhausted,undefined);next=7;await h.tick();
   assert.equal(h.controls.viewer.previewTimeSec,7);assert.equal(h.controls.cameraReady(),true);assert.equal(h.controls.poseTimer,null);assert.equal(h.notices.length,1);h.controls.destroy();
+});
+
+
+async function inspectableScene() {
+  const h = harness({poseResult: true});h.controls.update(selectedSource('workcell:manual'));await drain();await h.tick();
+  h.controls.viewer.geometryEvent({selected_id: null, items: [
+    {id: 7, name: 'real mesh', type: 'mesh', visible: true, local_visible: true, opacity_multiplier: 1},
+    {id: 8, name: 'real box', type: 'box', visible: true, local_visible: true, opacity_multiplier: 1}
+  ]});
+  assert.equal(h.controls.cameraReady(), true);
+  return h;
+}
+const inspectorSelection = overrides => ({binding_id: 'a'.repeat(64), scene_sha256: '3'.repeat(64), geom_id: 7, ...overrides});
+
+test('inspector selection uses the current renderer scope without issuing any network request', async () => {
+  const h = await inspectableScene(), viewer = h.controls.viewer, scope = viewer.geometryState.scope_key;
+  h.inspect(inspectorSelection());
+  assert.deepEqual(viewer.geometryCalls.at(-1), ['select', 7, scope]);
+  assert.equal(viewer.geometryState.selected_id, 7);
+  assert.equal(h.element('operate-geometry').value, '7');
+  assert.equal(h.element('demo-geometry').value, '7');
+  const notification = h.events.filter(event => event.type === 'console-geometry-selection').at(-1);
+  assert.deepEqual(notification.detail, inspectorSelection());
+  assert.equal(h.requests.length, 0, 'Object selection must not call any HTTP command or view-selection endpoint');
+  h.controls.destroy();
+});
+
+test('inspector rejects another binding, scene, invalid geometry identity and stale renderer scope', async () => {
+  const h = await inspectableScene(), viewer = h.controls.viewer;
+  for (const selection of [null, inspectorSelection({binding_id: 'b'.repeat(64)}), inspectorSelection({scene_sha256: '4'.repeat(64)}), inspectorSelection({geom_id: 1.5}), inspectorSelection({geom_id: '7'}), inspectorSelection({geom_id: undefined})])
+    assert.equal(h.controls.selectInspectorGeometry(selection), false);
+  assert.equal(viewer.geometryCalls.length, 0);
+  const oldScope = h.controls.geometrySnapshot.scope_key;
+  viewer.geometryState.scope_key = 'replacement-renderer-scope';
+  assert.equal(h.controls.selectInspectorGeometry(inspectorSelection()), false);
+  assert.deepEqual(viewer.geometryCalls.at(-1), ['select', 7, oldScope]);
+  assert.equal(viewer.geometryState.selected_id, null, 'The current renderer must reject a stale cached scope');
+  h.controls.updateGeometryControls(viewer.geometryCatalog());
+  viewer.contextLost = true;assert.equal(h.controls.selectInspectorGeometry(inspectorSelection()), false);
+  assert.equal(h.requests.length, 0);h.controls.destroy();
+});
+
+test('selection notifications only change with identity or selection, not each repeated render or camera update', async () => {
+  const h = await inspectableScene(), viewer = h.controls.viewer;
+  h.inspect(inspectorSelection());
+  const count = () => h.events.filter(event => event.type === 'console-geometry-selection').length;
+  const first = count();
+  for (let i = 0; i < 12; i++) {h.controls.updateGeometryControls(viewer.geometryCatalog());h.controls.updateCameraControls();}
+  assert.equal(count(), first);
+  viewer.geometryEvent({selected_id: 8});assert.equal(count(), first + 1);
+  viewer.geometryEvent({selected_id: 8});assert.equal(count(), first + 1);
+  viewer.geometryEvent({selected_id: null});assert.equal(count(), first + 2);
+  h.controls.update(selectedSource('profile:fr10', 2));await drain();
+  assert.equal(h.events.filter(event => event.type === 'console-geometry-selection').at(-1).detail.binding_id, 'b'.repeat(64));
+  assert.equal(h.requests.length, 0);h.controls.destroy();
+});
+
+test('destroy removes only its inspector listener and recreation cannot duplicate geometry actions', async () => {
+  const h = await inspectableScene(), viewer = h.controls.viewer;
+  assert.equal(h.windowListeners.get('console-geometry-select').size, 1);assert.equal(h.windowListeners.get('console-observation-lost').size, 1);
+  h.controls.destroy();assert.equal(h.windowListeners.get('console-observation-lost').size, 0);assert.equal(h.windowListeners.get('console-geometry-select').size, 0);
+  h.inspect(inspectorSelection());assert.equal(viewer.geometryCalls.length, 0);
+  const replacement = h.createController();assert.equal(h.windowListeners.get('console-geometry-select').size, 1);
+  replacement.update(selectedSource('workcell:manual'));await drain();await h.tick(replacement.poseTimer);
+  replacement.viewer.geometryEvent({selected_id: null, items: [{id: 7, name: 'mesh', type: 'mesh', visible: true, local_visible: true, opacity_multiplier: 1}]});
+  h.inspect(inspectorSelection());assert.equal(replacement.viewer.geometryCalls.length, 1);assert.equal(viewer.geometryCalls.length, 0);
+  replacement.destroy();assert.equal(h.windowListeners.get('console-geometry-select').size, 0);
+  assert.equal(h.requests.length, 0);
+});
+
+
+test('body inspection explicitly clears old canvas highlight without erasing selected body properties', async () => {
+ const h=harness({poseResult:true,withInspector:true}),packet=selectedSource('workcell:manual');packet.view.hierarchy_available=true;
+ h.observe(packet);await drain();await h.tick();
+ h.replyHierarchy({scene_sha256:'3'.repeat(64),bodies:[{id:'world',body_id:0,parent_id:null,parent_body_id:null,name:'world'},{id:'arm',body_id:1,parent_id:'world',parent_body_id:0,name:'arm'}],geoms:[{geom_id:7,body_id:1,name:'arm visual'}]});await drain();
+ const viewer=h.controls.viewer;viewer.geometryEvent({selected_id:7,items:[{id:7,name:'arm visual',type:'mesh',visible:true,local_visible:true,opacity_multiplier:1}]});
+ assert.equal(h.element('object-select').value,'arm');assert.equal(h.element('operate-geometry').value,'7');
+ h.element('object-select').value='world';h.element('object-select').dispatchEvent({type:'change'});
+ assert.equal(viewer.geometryState.selected_id,null);assert.equal(h.element('operate-geometry').value,'');assert.equal(h.element('object-select').value,'world');
+ assert.equal(h.element('operate-fit-selected').disabled,true);assert.equal(h.element('operate-geometry-hidden').disabled,true);assert.equal(h.element('operate-geometry-opacity').disabled,true);
+ assert.equal(h.requests.length,0);assert.equal(h.inspectorReads.length,1);h.controls.destroy();
+});
+
+test('reconnection republishes a canvas selection ignored by the inspector during observation loss exactly once', async () => {
+ const h=harness({poseResult:true,withInspector:true}),packet=selectedSource('workcell:manual');packet.view.hierarchy_available=true;
+ h.observe(packet);await drain();await h.tick();
+ h.replyHierarchy({scene_sha256:'3'.repeat(64),bodies:[{id:'world',body_id:0,parent_id:null,parent_body_id:null,name:'world'},{id:'arm',body_id:1,parent_id:'world',parent_body_id:0,name:'arm'}],geoms:[{geom_id:7,body_id:0,name:'floor'},{geom_id:8,body_id:1,name:'arm visual'}]});await drain();
+ const viewer=h.controls.viewer;viewer.geometryEvent({selected_id:7,items:[{id:7,name:'floor',type:'plane',visible:true,local_visible:true,opacity_multiplier:1},{id:8,name:'arm visual',type:'mesh',visible:true,local_visible:true,opacity_multiplier:1}]});
+ assert.equal(h.element('object-select').value,'world');h.lost();viewer.geometryEvent({selected_id:8});assert.equal(h.element('object-select').value,'world','Inspector intentionally ignores selection updates while observations are lost');
+ const count=()=>h.events.filter(event=>event.type==='console-geometry-selection').length,before=count();
+ h.observe(packet);assert.equal(h.element('object-select').value,'arm');assert.equal(count(),before+1);
+ for(let index=0;index<8;index++)h.observe(packet);assert.equal(count(),before+1,'Stable polling cannot overwrite later body inspection repeatedly');
+ assert.equal(h.requests.length,0);assert.equal(h.inspectorReads.length,1);h.controls.destroy();
+});
+
+test('returning from image or unready rendering reconciles readable body details with the actual canvas selection', async () => {
+ for(const unavailable of ['image','pose']){
+  const h=harness({poseResult:true,withInspector:true}),packet=selectedSource('workcell:manual');packet.view.hierarchy_available=true;
+  h.observe(packet);await drain();await h.tick();
+  h.replyHierarchy({scene_sha256:'3'.repeat(64),bodies:[{id:'world',body_id:0,parent_id:null,parent_body_id:null,name:'world'},{id:'arm',body_id:1,parent_id:'world',parent_body_id:0,name:'arm'}],geoms:[{geom_id:7,body_id:0,name:'floor'},{geom_id:8,body_id:1,name:'arm visual'}]});await drain();
+  const viewer=h.controls.viewer;viewer.geometryEvent({selected_id:7,items:[{id:7,name:'floor',type:'plane',visible:true,local_visible:true,opacity_multiplier:1},{id:8,name:'arm visual',type:'mesh',visible:true,local_visible:true,opacity_multiplier:1}]});
+  if(unavailable==='image')h.observe({...packet,view:{...packet.view,display_mode:'image'}});
+  else{viewer.hasPose=false;h.controls.updateCameraControls();}
+  assert.equal(h.controls.cameraReady(),false,unavailable);
+  assert.equal(h.element('operate-geometry').disabled,true,unavailable);
+  assert.equal(h.element('object-select').disabled,false,'Body information remains readable without a usable renderer');
+  h.element('object-select').value='arm';h.element('object-select').dispatchEvent({type:'change'});
+  assert.equal(h.element('object-select').value,'arm');assert.equal(viewer.geometryState.selected_id,7,'Inspection cannot bypass the renderer readiness gate');
+  const count=()=>h.events.filter(event=>event.type==='console-geometry-selection').length,before=count();
+  if(unavailable==='image')h.observe(packet);
+  else{viewer.hasPose=true;h.controls.updateCameraControls();}
+  assert.equal(h.controls.cameraReady(),true);assert.equal(count(),before+1,unavailable);
+  assert.equal(h.element('object-select').value,'world','The returned tools and details must describe the same real canvas selection');
+  assert.equal(h.element('operate-geometry').value,'7');assert.equal(h.element('operate-geometry').disabled,false);
+  for(let index=0;index<8;index++)h.observe(packet);
+  assert.equal(count(),before+1,'Stable ready polling must not repeatedly override body inspection');
+  assert.equal(h.requests.length,0);assert.equal(h.inspectorReads.length,1);h.controls.destroy();
+ }
 });

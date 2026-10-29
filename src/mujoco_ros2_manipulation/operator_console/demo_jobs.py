@@ -136,8 +136,8 @@ class DemoJobs:
                 if matching_process(launch):
                     self.members[key] = self.group_members(launch)
         self.current = data
-        if self.cancel_requested:
-            self.current["status"] = "cancel_requested"
+        # Keep the worker's outcome for finish(); snapshot() overlays the
+        # pending cancellation until owned cleanup has completed.
 
     def refresh_for_cleanup(self):
         try:
@@ -263,10 +263,15 @@ class DemoJobs:
             data.update(status="failed", error="시연 프로세스의 종료를 확인하지 못했습니다.")
         elif self.monitor_error:
             data.update(status="failed", error=self.monitor_error, comparison=None)
-        elif self.cancel_requested:
+        elif self.cancel_requested and (
+                (code == 130 and data.get("status") == "cancelled"
+                 and isinstance(data.get("error"), dict)
+                 and data["error"].get("type") == "Cancelled")
+                or (code == 0 and data.get("status") == "succeeded")):
             data.update(status="cancelled", comparison=None, error=None)
         elif code != 0 or data.get("status") != "succeeded":
-            data.update(status="failed", error=data.get("error") or f"시연 실행이 종료됐습니다 (exit={code}).")
+            data.update(status="failed", comparison=None,
+                        error=data.get("error") or f"시연 실행이 종료됐습니다 (exit={code}).")
         data.update(active_launch=None, cleanup_clean=not unclean)
         atomic_json(self.folder/"status.json", data)
         self.history.insert(0, deepcopy(data))
@@ -290,7 +295,6 @@ class DemoJobs:
             if self.cancel_requested:
                 return dict(job_id=identifier, status="cancel_requested")
             self.cancel_requested = True
-            self.current["status"] = "cancel_requested"
             self.process.send_signal(signal.SIGINT)
             app.audit("demo_cancel_requested", job_id=identifier)
             threading.Thread(target=self.stop_sync, daemon=True).start()

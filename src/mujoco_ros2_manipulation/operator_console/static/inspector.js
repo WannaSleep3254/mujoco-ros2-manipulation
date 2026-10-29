@@ -9,6 +9,7 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
 (()=>{
  const get=id=>document.getElementById(id),panel=get('analysis');if(!panel)return;
  let imageDetails=null,imageDetailsAt=0,imageDetailsSerial=0,imageDetailsPending=false;
+ let observed=false,selectedGeom=null,geometrySelection=null,treeButtons=[],treeBodies=new Map(),treeGeoms=new Map();
  let state=null,imageGeneration=null,frameURL=null,frameToken=null,imageSerial=0,analysisSerial=0,hierarchySerial=0,hierarchyBinding=null,hierarchy=null,requestKey=null,analysisReadAt=0,analysisPending=false,hierarchyPendingBinding=null;
  const requests=get('analysis-request'),frames=get('sensor-frame-select'),objects=get('object-select');
  const text=(tag,value)=>{const node=document.createElement(tag);node.textContent=value;return node;};
@@ -59,25 +60,85 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
    for(const [name,value] of Object.entries(data.sources||{}))if(value)field(sources,name,(value.clock_domain||'unknown')+' · 원천 '+observationTime(value.stamp_sec)+' · 수신 나이 '+observationTime(value.age_sec));
   }catch(error){if(serial===analysisSerial)get('analysis-state').textContent=error.message;}finally{analysisPending=false;}
  }
+ function bodyKey(item){return String(item.id??item.body_id??item.stable_id);}
+ function bodyList(){return hierarchy?.bodies||hierarchy?.nodes||[];}
+ function bodyName(item){return item?(item.name||item.body_name||('body '+item.body_id)):'';}
+ function markObjectSelection(){
+  for(const [key,row] of treeBodies)row.button.setAttribute('aria-pressed',String(selectedGeom===null&&key===objects.value));
+  for(const [key,row] of treeGeoms)row.button.setAttribute('aria-pressed',String(key===selectedGeom));
+ }
  function renderObject(){
-  const list=hierarchy?.bodies||hierarchy?.nodes||[],item=list.find(value=>String(value.id??value.body_id??value.stable_id)===objects.value),detail=get('object-details');detail.replaceChildren();if(!item)return;
-  for(const [label,value] of [['body',item.name||item.body_name||'이름 없음'],['부모',item.parent_id==null?'없음 (world)':(list.find(parent=>parent.id===item.parent_id)?.name||'body '+item.parent_body_id)],['로봇',item.instance_id??item.robot_instance_id??'환경/미분류'],['형상',JSON.stringify((hierarchy?.geoms||[]).filter(geom=>geom.body_id===item.body_id).map(geom=>geom.geom_id))],['공구',item.tool_role??'unknown']])field(detail,label,String(value));
+  const list=bodyList(),item=list.find(value=>bodyKey(value)===objects.value),detail=get('object-details');detail.replaceChildren();markObjectSelection();if(!item)return;
+  const geom=(hierarchy?.geoms||[]).find(value=>value.geom_id===selectedGeom);
+  const parent=list.find(value=>value.id===item.parent_id||value.body_id===item.parent_body_id);
+  const fields=[['선택',geom?'geom '+geom.geom_id+' · '+(geom.name||'이름 없음'):'body '+item.body_id],
+   ['body',bodyName(item)],['부모',item.parent_id==null&&item.parent_body_id==null?'없음 (world)':bodyName(parent)||'body '+item.parent_body_id],
+   ['등록된 로봇',item.instance_id??item.robot_instance_id??'미분류'],
+   ['연결 형상',(hierarchy?.geoms||[]).filter(value=>value.body_id===item.body_id).map(value=>'#'+value.geom_id).join(', ')||'없음'],
+   ['공구 역할',item.tool_role==='unknown'||!item.tool_role?'미지정':item.tool_role]];
+  for(const [label,value] of fields)field(detail,label,String(value));
+ }
+ function treeAvailable(){return observed&&hierarchy&&hierarchyBinding===state?.view?.binding_id;}
+ function selectObject(item,geom=null,fromViewer=false){
+  if(!treeAvailable())return;
+  objects.value=bodyKey(item);selectedGeom=geom?.geom_id??null;renderObject();
+  let current=treeBodies.get(bodyKey(item));const visited=new Set();
+  while(current&&!visited.has(current)){visited.add(current);if(current.details)current.details.open=true;current=treeBodies.get(current.parent);}
+  if(!fromViewer)publishGeometrySelection();
+ }
+ function publishGeometrySelection(){
+  geometrySelection={binding_id:hierarchyBinding,scene_sha256:hierarchy.scene_sha256,geom_id:selectedGeom};
+  window.dispatchEvent(new CustomEvent('console-geometry-select',{detail:geometrySelection}));
+ }
+ function applyGeometrySelection(selection){
+  if(!treeAvailable()||selection?.binding_id!==hierarchyBinding||selection.scene_sha256!==hierarchy.scene_sha256)return;
+  if(selection.geom_id===null){selectedGeom=null;renderObject();return;}
+  const geom=(hierarchy.geoms||[]).find(item=>item.geom_id===selection.geom_id),body=geom&&bodyList().find(item=>item.body_id===geom.body_id);if(body)selectObject(body,geom,true);
+ }
+ function renderObjectTree(){
+  const root=get('object-tree');treeButtons=[];treeBodies=new Map();treeGeoms=new Map();if(!root)return;root.replaceChildren();
+  const list=bodyList(),byId=new Map(list.map(item=>[bodyKey(item),item])),children=new Map(),roots=[];
+  for(const item of list){const parent=item.parent_id!=null?String(item.parent_id):list.find(value=>value.body_id===item.parent_body_id)?.id;
+   if(parent!=null&&byId.has(String(parent))&&String(parent)!==bodyKey(item)){const key=String(parent);if(!children.has(key))children.set(key,[]);children.get(key).push(item);}else roots.push(item);}
+  const geomsByBody=new Map();for(const geom of hierarchy?.geoms||[]){if(!geomsByBody.has(geom.body_id))geomsByBody.set(geom.body_id,[]);geomsByBody.get(geom.body_id).push(geom);}
+  const visited=new Set(),binding=hierarchyBinding;
+  const pick=(label,callback,cls='')=>{const button=text('button',label);button.type='button';button.className='object-pick '+cls;button.disabled=!observed;button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{if(treeAvailable()&&binding===hierarchyBinding)callback();});treeButtons.push(button);return button;};
+  function branch(items,depth=0){const ul=text('ul','');ul.className='object-tree-list';
+   for(const item of items){const key=bodyKey(item);if(visited.has(key))continue;visited.add(key);
+    const li=text('li','');li.className='object-body';const descendants=children.get(key)||[],geoms=geomsByBody.get(item.body_id)||[];
+    const button=pick(bodyName(item),()=>selectObject(item));button.title='body '+item.body_id+' 속성 보기';let details=null,container=li;
+    if(descendants.length||geoms.length){details=text('details','');details.open=depth<2;const summary=text('summary',bodyName(item));summary.title='body '+item.body_id+' 펼치기·접기';details.append(summary);li.append(details);container=details;button.textContent='body '+item.body_id+' 속성';}
+    container.append(button);treeBodies.set(key,{button,details,parent:item.parent_id==null?null:String(item.parent_id)});
+    if(geoms.length){const geomList=text('ul','');geomList.className='object-tree-list object-geoms';for(const geom of geoms){const row=text('li','');const control=pick((geom.name||'형상')+' · #'+geom.geom_id,()=>selectObject(item,geom),'object-geom');control.title='3D 형상 #'+geom.geom_id+' 선택';row.append(control);geomList.append(row);treeGeoms.set(geom.geom_id,{button:control,body:item});}container.append(geomList);}
+    if(descendants.length)container.append(branch(descendants,depth+1));ul.append(li);
+   }return ul;}
+  root.append(branch(roots));
+  // A malformed optional hierarchy must not recurse forever or hide a cycle.
+  const disconnected=list.filter(item=>!visited.has(bodyKey(item)));if(disconnected.length)root.append(branch(disconnected));
+  markObjectSelection();
  }
  async function renderHierarchy(){
   const binding=state?.view?.binding_id;
-  if(binding!==hierarchyBinding){hierarchyBinding=binding;hierarchy=null;++hierarchySerial;objects.replaceChildren();get('object-details').replaceChildren();get('object-state').textContent=binding?'현재 모델의 객체 정보를 확인하고 있습니다.':'현재 표시 모델이 없습니다.';}
-  if(!binding||panel.hidden||document.hidden||hierarchy||hierarchyPendingBinding===binding)return;
+  if(binding!==hierarchyBinding){if(geometrySelection?.binding_id!==binding)geometrySelection=null;hierarchyBinding=binding;hierarchy=null;selectedGeom=null;++hierarchySerial;objects.replaceChildren();get('object-tree')?.replaceChildren();treeButtons=[];treeBodies.clear();treeGeoms.clear();get('object-details').replaceChildren();get('object-state').textContent=binding?'현재 모델의 객체 정보를 확인하고 있습니다.':'현재 표시 모델이 없습니다.';}
+  const visible=!panel.hidden||get('operate')?.hidden===false;
+  objects.disabled=!observed||!hierarchy;for(const button of treeButtons)button.disabled=!observed;
+  if(!binding||!visible||document.hidden||!observed||hierarchy||hierarchyPendingBinding===binding)return;
   if(state.view?.hierarchy_available!==true){get('object-state').textContent='현재 표시 공급원이 객체 계층을 준비하지 않았습니다.';return;}
   hierarchyPendingBinding=binding;const serial=++hierarchySerial;
-  try{const data=await read('/api/view/hierarchy?binding_id='+encodeURIComponent(binding));if(serial!==hierarchySerial||state?.view?.binding_id!==binding)return;hierarchy=data;
-   const list=data?.bodies||data?.nodes||[];options(objects,[['','객체 선택'],...list.map(item=>[String(item.id??item.body_id??item.stable_id),(item.robot_instance_id?item.robot_instance_id+' · ':'')+(item.name||item.body_name||'body '+item.id)])],'');
-   get('object-state').textContent=data?'현재 표시 모델의 body·geom 연결입니다.':'현재 표시 공급원은 객체 계층을 제공하지 않습니다.';renderObject();
+  try{const data=await read('/api/view/hierarchy?binding_id='+encodeURIComponent(binding));if(serial!==hierarchySerial||!observed||state?.view?.binding_id!==binding)return;
+   const expectedScene=state.view?.manifest_descriptor?.scene_sha256;
+   if(data&&expectedScene&&data.scene_sha256!==expectedScene)throw Error('표시 모델과 객체 계층의 버전이 다릅니다. 다시 확인합니다.');
+   hierarchy=data;const list=bodyList();options(objects,[['','객체 선택'],...list.map(item=>[bodyKey(item),(item.robot_instance_id?item.robot_instance_id+' · ':'')+bodyName(item)])],'');objects.disabled=!hierarchy;
+   get('object-state').textContent=data?'body를 펼쳐 속성을 확인하거나 형상을 선택하세요.':'현재 표시 공급원은 객체 계층을 제공하지 않습니다.';renderObjectTree();renderObject();applyGeometrySelection(geometrySelection);
   }catch(error){if(serial===hierarchySerial){hierarchyBinding=null;get('object-state').textContent=error.message;}}finally{if(hierarchyPendingBinding===binding)hierarchyPendingBinding=null;}
  }
- function render(){if(!state)return;renderSensor();const selected=requests.value;options(requests,[['','요청을 선택하세요'],...(state.history||[]).map(item=>[item.request_id,item.request_id.slice(0,8)+' · '+item.status+' · '+(item.mode||'automatic')])],selected);if(!panel.hidden&&!document.hidden){renderRequest();renderHierarchy();}}
- frames.addEventListener('change',()=>{clearImage();renderSensor();});requests.addEventListener('change',()=>renderRequest(true));objects.addEventListener('change',renderObject);
- window.addEventListener('console-observation',event=>{state=event.detail;render();});
- window.addEventListener('console-observation-lost',()=>{get('sensor-state').textContent='상태 조회 중단 · 마지막 수신 자료';++imageSerial;frameToken=null;get('analysis-state').textContent='상태 조회 중단 · 마지막 조회 자료';});
- document.querySelectorAll('[data-view="analysis"]').forEach(button=>button.addEventListener('click',()=>setTimeout(render,0)));
+ function render(){if(!state)return;renderSensor();const selected=requests.value;options(requests,[['','요청을 선택하세요'],...(state.history||[]).map(item=>[item.request_id,item.request_id.slice(0,8)+' · '+item.status+' · '+(item.mode||'automatic')])],selected);if(!panel.hidden&&!document.hidden)renderRequest();renderHierarchy();}
+ frames.addEventListener('change',()=>{clearImage();renderSensor();});requests.addEventListener('change',()=>renderRequest(true));objects.addEventListener('change',()=>{if(!treeAvailable())return;const item=bodyList().find(value=>bodyKey(value)===objects.value);if(item)selectObject(item);else{selectedGeom=null;renderObject();publishGeometrySelection();}});
+ window.addEventListener('console-observation',event=>{const returning=!observed;observed=true;state=event.detail;if(returning&&hierarchy)get('object-state').textContent='body를 펼쳐 속성을 확인하거나 형상을 선택하세요.';render();});
+ window.addEventListener('console-geometry-selection',event=>{
+  if(!observed||event.detail?.binding_id!==state?.view?.binding_id)return;geometrySelection=event.detail;applyGeometrySelection(geometrySelection);
+ });
+ window.addEventListener('console-observation-lost',()=>{observed=false;geometrySelection=null;++hierarchySerial;objects.disabled=true;for(const button of treeButtons)button.disabled=true;get('object-state').textContent='상태 조회 중단 · 마지막 객체 정보';get('sensor-state').textContent='상태 조회 중단 · 마지막 수신 자료';++imageSerial;frameToken=null;get('analysis-state').textContent='상태 조회 중단 · 마지막 조회 자료';});
+ document.querySelectorAll('[data-view="analysis"], [data-view="operate"]').forEach(button=>button.addEventListener('click',()=>setTimeout(render,0)));
  document.addEventListener('visibilitychange',()=>{if(document.hidden){++imageSerial;frameToken=null;}else render();});
 })();

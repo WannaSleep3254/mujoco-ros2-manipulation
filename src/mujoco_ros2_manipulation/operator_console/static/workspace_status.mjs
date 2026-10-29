@@ -1,0 +1,104 @@
+/** Presentation of existing observations only; never admission or stop logic.
+ * Request rows refer to the active request (otherwise the latest record).
+ * Guard/lifecycle rows explicitly describe the current environment, not that
+ * request's historical outcome. Compact status omits most Action events.
+ */
+const row=(label,value,tone='neutral')=>({label,value,tone});
+const finite=value=>typeof value==='number'&&Number.isFinite(value);
+const requestName=record=>'요청 '+String(record.request_id).slice(0,8);
+const terminalStatuses=new Set(['succeeded','failed','cancelled','rejected','unknown']);
+
+function selectedRequest(state){
+ const history=Array.isArray(state?.history)?state.history:[];
+ // An active ID missing from this snapshot must not inherit an older outcome.
+ return state?.active_request_id?history.find(item=>item?.request_id===state.active_request_id):history.find(item=>item?.request_id);
+}
+
+function operationFor(record){
+ const operation=record?.operation;
+ return operation?.kind==='operation-observation-v1'&&operation.schema_version===1&&
+  operation.request_id===record.request_id&&(!record.session_id||operation.session_id===record.session_id)?operation:null;
+}
+
+function delivery(record,operation,localCancellation){
+ if(!record)return ['요청 기록 미확인','neutral'];
+ if(record.stage==='console_stopped_before_publish')return ['명령 노드 전송 전에 취소됨','neutral'];
+ const cancellation=operation?.cancellation?.state;
+ if(record.stage==='cancel_received'||operation?.cancellation?.server_acknowledged===true)
+  return ['취소 수신 확인 · 종료 결과는 별도 확인',terminalStatuses.has(record.status)?'neutral':'busy'];
+ // Local transport state is narrower than a server acknowledgement. It applies
+ // only to this still-active request, never an earlier/terminal record.
+ if(localCancellation?.request_id===record.request_id&&!terminalStatuses.has(record.status)){
+  if(localCancellation.phase==='unconfirmed')return ['취소 전달 결과 미확인 · 자동 재전송 없음','warn'];
+  if(localCancellation.phase==='submitting')return ['취소 요청 전달 중 · 노드 수신 미확인','busy'];
+  if(localCancellation.phase==='submitted')return ['콘솔이 취소 요청을 접수 · 명령 노드 수신 미확인','busy'];
+ }
+ if(cancellation==='submission_unconfirmed'||record.stage==='cancel_submission_unconfirmed')return ['취소 전달 결과 미확인','warn'];
+ if(cancellation==='submission_in_progress'||record.stage==='cancel_submitting')return ['취소 요청 전달 중','busy'];
+ if(cancellation==='submitted'||record.stage==='cancel_requested')return ['취소 요청 전달 · 노드 수신 미확인','busy'];
+ if(record.status==='cancelled')return ['요청은 취소로 종료 · 취소 수신 시점 미확인','neutral'];
+ if(record.status==='submitting'||record.stage==='submitted')return ['명령 노드 수신 확인 대기','busy'];
+ if(record.status==='unknown')return ['전달·종료 결과 미확인','warn'];
+ return ['취소 전달 여부는 기록에서 확인','neutral'];
+}
+
+function actionResult(record,operation){
+ if(!record)return ['Action 결과 미확인','neutral'];
+ if(record.mode==='plan_only')return ['계획 요청 · Action 실행 없음','neutral'];
+ if(record.stage==='console_stopped_before_publish')return ['명령 노드 전송 전 취소 · Action 실행 없음','neutral'];
+ const events=Array.isArray(operation?.events?.items)?operation.events.items:[];
+ const result=[...events].reverse().find(event=>event?.name==='goal_result');
+ if(result){
+  const status=({4:'성공',5:'취소',6:'중단'})[result.status]||'상태 미확인';
+  const arm=typeof result.arm==='string'?result.arm+' · ':'';
+  const error=Number.isInteger(result.error_code)?' / code '+result.error_code:'';
+  return [arm+status+' 응답'+error+' · 개별 관측, 전체 결과는 상세 기록',result.status===6||Number.isInteger(result.error_code)&&result.error_code!==0?'warn':'neutral'];
+ }
+ const responseTime=record.metrics?.received_to_actions_done_wall_sec;
+ if(record.stage==='actions_done'||events.some(event=>event?.name==='actions_done')||finite(responseTime)&&responseTime>=0)
+  return ['양팔 Action 응답 완료 · 개별 결과는 상세 기록','neutral'];
+ return ['요약에 개별 Action 결과 없음 · 상세 기록에서 확인','neutral'];
+}
+
+function terminalResult(record){
+ if(!record)return ['요청 종료 미확인','neutral'];
+ if(record.mode==='plan_only'&&record.status==='succeeded')return [record.stage==='plan_not_required'?'이동 불필요 · 계획 요청 종료':'계획 생성 완료 · 아직 실행하지 않음','good'];
+ const values={succeeded:['요청 성공','good'],failed:['요청 실패','bad'],cancelled:['요청 취소 완료 · 물리 정지와 구분','neutral'],
+  rejected:['요청 거부','warn'],unknown:['종료 결과 미확인','warn'],queued:['접수 · 처리 중','busy'],running:['처리 중','busy'],submitting:['전송 확인 대기','busy']};
+ return values[record.status]||['요청 종료 미확인','neutral'];
+}
+
+function currentStop(state,connected){
+ if(!connected)return row('물리 정지 관측','조회 중단 · 현재 정지 상태 미확인','warn');
+ const guard=state?.guard,reason=({contact:'접촉',clock_stall:'시계 정지'})[guard?.reason];
+ if(guard?.latched===true&&reason){
+  // This is a guard report, not a new velocity measurement or per-request proof.
+  return row('물리 정지 관측','현재 감시 · '+reason+' / '+(guard.phase==='stopped'?'정지 보고':'정지 확인 중')+' · 요청별 판정 아님',guard.phase==='stopped'?'neutral':'warn');
+ }
+ if(guard?.latched===true)return row('물리 정지 관측','현재 감시 · 정지 원인·확인 결과 미확인','warn');
+ if(guard?.latched===false&&guard.phase==='ready'){
+  const fresh=finite(state.state_age_sec)&&state.state_age_sec>=0&&state.state_age_sec<=.5&&finite(state.clock_age_sec)&&state.clock_age_sec>=0&&state.clock_age_sec<=.5;
+  return row('물리 정지 관측',fresh?'현재 감시 중 · 정지 판정 아님':'현재 상태 수신 지연·미확인 · 정지 판정 없음',fresh?'neutral':'warn');
+ }
+ return row('물리 정지 관측','현재 감시 결과 미확인','neutral');
+}
+
+function currentCleanup(state,connected){
+ if(!connected)return row('소유 프로세스 정리','조회 중단 · 현재 정리 결과 미확인','warn');
+ const lifecycle=state?.lifecycle;
+ if(lifecycle?.error||lifecycle?.phase==='failed')return row('소유 프로세스 정리','현재 실행 환경 오류 · 종료 결과는 로그 확인','bad');
+ if(lifecycle?.phase==='stopping')return row('소유 프로세스 정리','현재 환경 종료·자원 정리 중 · 완료 미확인','busy');
+ const owned=lifecycle?.owned,entries=owned&&typeof owned==='object'?Object.values(owned):null;
+ const running=entries?.filter(value=>value===true).length||0;
+ if(running)return row('소유 프로세스 정리','현재 소유 프로세스 '+running+'개 실행 중 · 요청별 정리 판정 아님','neutral');
+ if(entries&&entries.every(value=>typeof value==='boolean'))return row('소유 프로세스 정리','현재 실행 중인 소유 프로세스 없음 · 정리 성공 여부는 종료 기록 확인','neutral');
+ return row('소유 프로세스 정리','현재 소유 프로세스·정리 결과 미확인','neutral');
+}
+
+export function workspaceEvidence(state,{connected=true,cancellation=null}={}){
+ const record=selectedRequest(state),operation=operationFor(record);
+ const prefix=(connected?'':'마지막 수신 · ')+(record?requestName(record)+' · ':state?.active_request_id?'현재 요청 기록 없음 · ':'');
+ const requestRow=(label,result)=>row(label,prefix+result[0],connected?result[1]:'warn');
+ return [requestRow('요청·취소 전달',delivery(record,operation,cancellation)),requestRow('Action 응답',actionResult(record,operation)),
+  currentStop(state,connected),requestRow('요청 종료',terminalResult(record)),currentCleanup(state,connected)];
+}

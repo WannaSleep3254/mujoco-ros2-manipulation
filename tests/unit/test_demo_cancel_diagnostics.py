@@ -21,7 +21,7 @@ WORKER = "mujoco_ros2_manipulation.operator_console.demo_worker"
 
 
 class CancelStackCaptureTests(unittest.TestCase):
-    def test_first_interrupt_arms_once_and_keeps_the_existing_exception(self):
+    def test_first_interrupt_arms_once_and_defers_exception_until_safe_boundary(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             console = root / "runtime/operator/session"
@@ -29,8 +29,10 @@ class CancelStackCaptureTests(unittest.TestCase):
                           console, render=False, root=root)
             with patch(WORKER + ".faulthandler.dump_traceback_later") as dump, \
                  patch(WORKER + ".faulthandler.cancel_dump_traceback_later") as cancel:
+                job.interrupt()
+                self.assertTrue(job.cancel_requested)
                 with self.assertRaises(DemoCancelled):
-                    job.interrupt()
+                    job.check_cancel()
                 stream = dump.call_args.kwargs["file"]
                 self.assertFalse(stream.closed)
                 job.interrupt()
@@ -52,8 +54,9 @@ class CancelStackCaptureTests(unittest.TestCase):
                 with patch.object(Path, "open", **open_result), \
                      patch(WORKER + ".faulthandler.dump_traceback_later", side_effect=RuntimeError("watchdog unavailable")), \
                      patch(WORKER + ".faulthandler.cancel_dump_traceback_later") as cancel:
+                    job.interrupt()
                     with self.assertRaises(DemoCancelled):
-                        job.interrupt()
+                        job.check_cancel()
                     self.assertTrue(job.cancel_requested)
                     job._cancel_stacks.close()
                     cancel.assert_not_called()
@@ -113,7 +116,8 @@ class CancelStackSubprocessTests(unittest.TestCase):
             try:
                 (root / 'ready').write_text('ready')
                 while True:
-                    time.sleep(1)
+                    time.sleep(.01)
+                    job.check_cancel()
             finally:
                 (root / 'cleaning').write_text('cleaning')
                 if mode == 'blocked':
