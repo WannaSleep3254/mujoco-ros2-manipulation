@@ -500,6 +500,26 @@
         ],
         "old_v5_pre_transport_cancellation_preserved": true,
         "model_xml_and_solver_unchanged": true
+      },
+      "ordered_observation_followup": {
+        "evidence": "grasp-observation-verification.json",
+        "implementation_commit": "642a6b2c356b28a99084d288f79e830091d551d3",
+        "native_implementation_commit": "a72a16c",
+        "formal_cases": [
+          "normal",
+          "normal_hold",
+          "cancel_transport",
+          "cancel_startup"
+        ],
+        "current_browser_cases": [
+          "normal",
+          "cancel_after_lift_before_transport_dispatch"
+        ],
+        "python_unit": 1337,
+        "python_skipped": 1,
+        "model_tests": 88,
+        "model_skipped": 1,
+        "prior_sources_and_failures_preserved": true
       }
     },
     "new_performance_measurements": [],

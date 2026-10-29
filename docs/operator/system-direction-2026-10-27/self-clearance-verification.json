@@ -366,7 +366,8 @@
       "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
       "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
       "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5"
-    }
+    },
+    "source_phase": "Archived representative 215afa2 integer-window executions before the later ordered-FIFO provider correction; latest evidence is grasp-observation-verification.json."
   },
   "local_checks": {
     "python_unit": {
@@ -753,5 +754,6 @@
       "build_log_sha256": "0bba292baa83fa99021a8e86f119e9cc87043794059c8fed41c44d92f4a6ecf2",
       "audit_sha256": "3fb187cdd29fe0e9cda55ec2a50da560ce0eda8ded14bf5217ecb92bd5137cfb"
     }
-  }
+  },
+  "subsequent_observation_delivery_followup": "grasp-observation-verification.json"
 }
