@@ -2,6 +2,7 @@
 
 import xml.etree.ElementTree as ET
 import os
+import re
 import sys
 from pathlib import Path
 import yaml
@@ -36,6 +37,17 @@ def nodes(context):
         LaunchConfiguration("execution_environment").perform(context) or None,
         LaunchConfiguration("execution_manifest_sha256").perform(context) or None)
     output = cell.output if target is None else target.output
+    grasp = target is not None and callable(getattr(target,'description',None)) and target.description().get('artifact_kind') == 'grasp-execution-target-v1'
+    grasp_environment = {}
+    if grasp:
+        from ..grasping.ros_runtime import check_grasp_runtime
+        from ..model_build.integrity import file_sha256
+        check_grasp_runtime(cell.root)
+        run_id=LaunchConfiguration('grasp_run_id').perform(context)
+        if re.fullmatch('[0-9a-f]{32}',run_id) is None:
+            raise ValueError('The grasp launch requires a fresh explicit execution run ID')
+        grasp_environment=dict(MANIPULATION_GRASP_RUN_ID=run_id,
+            MANIPULATION_GRASP_MODEL_SHA256=file_sha256(target.model_path))
     check_contact_runtime(cell.root)
     contact_test = (
         LaunchConfiguration("contact_test").perform(context).lower() == "true"
@@ -65,6 +77,8 @@ def nodes(context):
             )
     gui = LaunchConfiguration("gui").perform(context).lower() == "true"
     rviz = LaunchConfiguration("rviz").perform(context).lower() == "true"
+    if grasp and gui:
+        raise ValueError('The fixed ROS grasp target uses headless native physics and the read-only 3D viewer')
     robot = ET.parse(output / "cell.urdf").getroot()
     robot.find("ros2_control/hardware/param[@name='headless']").text = str(
         not gui
@@ -94,11 +108,13 @@ def nodes(context):
             "MANIPULATION_CONTACT_STOP": "1",
             "MANIPULATION_CLOCK_TEST_MODE": clock_test,
             "MANIPULATION_ENABLE_CONTACT_TEST": "1" if contact_test else "0",
+            **grasp_environment,
         },
         output="screen",
         parameters=[
             description,
             str(output / "controllers.yaml"),
+            *([str(output/'grasp_plugins.yaml')] if grasp else []),
             {"use_sim_time": True},
         ],
     )
@@ -111,7 +127,7 @@ def nodes(context):
             parameters=[description, {"use_sim_time": True}],
         ),
     ]
-    for name in ["joint_state_broadcaster"] + [i.controller for i in cell.instances]:
+    for name in ["joint_state_broadcaster"] + [i.controller for i in cell.instances] + (['gripper_controller'] if grasp else []):
         result.append(
             Node(
                 package="controller_manager",
@@ -156,6 +172,7 @@ def nodes(context):
             "mujoco_ros2_manipulation.workcells.contact_guard",
             "--controllers",
             *[i.controller for i in cell.instances],
+            *(['--include-gripper'] if grasp else []),
         ],
         output="screen",
     )
@@ -188,6 +205,7 @@ def generate_launch_description():
             DeclareLaunchArgument("workcell", default_value="fr5_ur5e"),
             DeclareLaunchArgument("execution_environment", default_value=""),
             DeclareLaunchArgument("execution_manifest_sha256", default_value=""),
+            DeclareLaunchArgument("grasp_run_id", default_value=""),
             DeclareLaunchArgument("gui", default_value="true"),
             DeclareLaunchArgument("rviz", default_value="true"),
             DeclareLaunchArgument("contact_test", default_value="false"),

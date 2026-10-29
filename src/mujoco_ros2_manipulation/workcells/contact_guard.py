@@ -16,9 +16,9 @@ from mujoco_ros2_manipulation.verification.signals import cooperative_shutdown
 
 
 class ContactGuard(Node):
-    def __init__(self, controllers):
+    def __init__(self, controllers, *, include_gripper=False):
         super().__init__("workcell_contact_guard")
-        self.policy = ContactPolicy(controllers)
+        self.policy = ContactPolicy(controllers,gripper_controller='gripper_controller' if include_gripper else None)
         self.states = {}
         self.query = self.switch = None
         self.pending_at = 0
@@ -49,7 +49,7 @@ class ContactGuard(Node):
             self.create_client(
                 CancelGoal, f"/{name}/follow_joint_trajectory/_action/cancel_goal"
             )
-            for name in controllers
+            for name in self.policy.controllers
         ]
         self.create_timer(
             0.05, self.tick, clock=Clock(clock_type=ClockType.STEADY_TIME)
@@ -143,6 +143,7 @@ class ContactGuard(Node):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--controllers", nargs=2, required=True)
+    parser.add_argument("--include-gripper",action="store_true",help="Also stop the explicit grasp target's gripper_controller")
     args, ros_args = parser.parse_known_args()
     # Do not interrupt rclpy's C response conversion with Python's default SIGINT.
     # Keep handlers installed through cleanup; unrelated callback errors still fail.
@@ -150,7 +151,7 @@ def main():
         rclpy.init(args=ros_args, signal_handler_options=SignalHandlerOptions.NO)
         node = None
         try:
-            node = ContactGuard(args.controllers)
+            node = ContactGuard(args.controllers,include_gripper=args.include_gripper)
             while rclpy.ok() and not stop.requested:
                 rclpy.spin_once(node, timeout_sec=0.1)
         except rclpy.executors.ExternalShutdownException:

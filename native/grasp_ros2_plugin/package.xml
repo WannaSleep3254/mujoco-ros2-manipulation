@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>manipulation_grasp_plugin</name>
+  <version>0.1.0</version>
+  <description>Bounded native grasp observations and explicit phase heartbeat.</description>
+  <maintainer email="maintainer@example.invalid">Robot simulation project</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>mujoco_ros2_control_plugins</depend>
+  <depend>mujoco_vendor</depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

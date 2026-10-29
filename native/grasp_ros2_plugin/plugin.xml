@@ -1,0 +1,7 @@
+<library path="mujoco_ros2_control_grasp_observer">
+  <class name="manipulation_grasp/ObservationPlugin"
+         type="manipulation_grasp::ObservationPlugin"
+         base_class_type="mujoco_ros2_control_plugins::MuJoCoROS2ControlPluginBase">
+    <description>Read-only complete native snapshot; phase heartbeat writes only reserved userdata.</description>
+  </class>
+</library>

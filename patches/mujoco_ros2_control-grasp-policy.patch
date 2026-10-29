@@ -1,0 +1,14 @@
+diff --git a/mujoco_ros2_control/CMakeLists.txt b/mujoco_ros2_control/CMakeLists.txt
+--- a/mujoco_ros2_control/CMakeLists.txt
++++ b/mujoco_ros2_control/CMakeLists.txt
+@@ -215,6 +215,10 @@
+ endif()
+ target_include_directories(mujoco_ros2_control PRIVATE "${MANIPULATION_MONITOR_INCLUDE_DIR}")
+ target_compile_definitions(mujoco_ros2_control PRIVATE MANIPULATION_MONITOR_SHA256="${MANIPULATION_MONITOR_SHA256}")
++if(NOT MANIPULATION_GRASP_POLICY_SHA256)
++  message(FATAL_ERROR "Build with the workspace grasp policy SHA-256")
++endif()
++target_compile_definitions(mujoco_ros2_control PRIVATE MANIPULATION_GRASP_POLICY_SHA256="${MANIPULATION_GRASP_POLICY_SHA256}")
+ target_include_directories(mujoco_ros2_control PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+   $<INSTALL_INTERFACE:include>

@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "grasp_policy.hpp"
 
 #ifndef MANIPULATION_MONITOR_SHA256
 #error "Build the monitor with its source SHA-256"
@@ -444,6 +445,7 @@ class StepMonitor {
   std::map<std::pair<int, int>, Pair> pairs_;
   Timing physics_, monitor_;
   StepWitness witness_;
+  GraspContactPolicy grasp_policy_;
   static double seconds(Clock::duration value) {
     return std::chrono::duration<double>(value).count();
   }
@@ -520,6 +522,7 @@ class StepMonitor {
         << "{\"schema_version\":1,\"run_id\":" << json_string(run_id_)
         << ",\"monitor_source_sha256\":"
         << json_string(MANIPULATION_MONITOR_SHA256)
+        << ",\"grasp_policy_source_sha256\":" << json_string(MANIPULATION_GRASP_POLICY_SHA256)
         << ",\"mujoco_version\":" << json_string(mj_versionString())
         << ",\"pid\":" << getpid()
         << ",\"complete\":" << (finished_ ? "true" : "false")
@@ -621,6 +624,10 @@ class StepMonitor {
     if (latched_) freeze(m, d);
   }
   bool step(const mjModel *m, mjData *d) {
+    if (stop_enabled_ && !latched_) {
+      const char *reason = grasp_policy_.before_step(m, d);
+      if (reason) latch(m, d, reason);
+    }
     if (latched_) {
       hold_time_ += m->opt.timestep;
       freeze(m, d);
@@ -645,7 +652,7 @@ class StepMonitor {
     last_wall_ = inspected;
     physics_.add(seconds(after - before));
     monitor_.add(witness_pre_sec + seconds(inspected - after));
-    if (stop_enabled_ && d->ncon > 0) latch(m, d, "contact");
+    if (stop_enabled_ && grasp_policy_.forbidden_contact(m, d)) latch(m, d, "contact");
     return true;
   }
   void finish(uint64_t engine_steps) {
