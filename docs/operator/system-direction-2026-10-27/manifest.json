@@ -6,8 +6,8 @@
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
   "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim.",
   "assets": {
-    "index.html": "bbd1e28a65a6d5791524b9d2058b9b0ba6df3be2a5279bbc448687bae0f6e6c6",
-    "review-data.json": "31a41ce528cbe82751e9bd683e7b504aacf5eb7c1562dd2cbfd37680ad98a225",
+    "index.html": "72b556ed6d846081f1ebc4d966eb7dd0b886987749bbb03e8c4ddfca1568eb32",
+    "review-data.json": "fc10e0538831b79d2ea1b935ebd4275a056d8388d90f13998c3f13c82cb85957",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
     "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
@@ -18,6 +18,6 @@
     "grasp-observation-verification.json": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275",
     "grasp-admission-verification.json": "2f64bff5567d31cca36b106b3baff195b177fdd21b0f3746f41c2d0f958a5b25",
     "grasp-admission.jpg": "49ebaf600673218433fb83fd12441d57682d2952dfd12fa4b25f235cbde8f7fa",
-    "native-admission-reservation-verification.json": "57a46e1b248f508f66a937e74600f36e8f2b6a5001d3158a63aaa06dc0e3083d"
+    "native-admission-reservation-verification.json": "93a71a8af303af99a1d00d426ede001f9393167b2c87e1facc0379a22dc7c6b0"
   }
 }

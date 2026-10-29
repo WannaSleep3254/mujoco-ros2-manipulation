@@ -215,9 +215,10 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <div class="panel" id="native-reservation"><h3>회피 경로를 검사한 뒤 시작 시각 확정 · 2026-10-29</h3>
 <p>devel 동기화 CI #146에서는 회피 경로의 팔 내부 간격 검사를 마쳤지만, 목표를 보내는 데 필요한 시작 여유가 0.1초 이하로 줄어 실행을 거부했습니다. 충돌 거부와는 다른 원인입니다. 원본 실패는 보존하며, 당시 어느 검사에서 얼마나 시간이 걸렸는지는 원본 기록만으로 확정하지 않습니다.</p>
 <p>새 상대 경로는 형상·모델·정책 확인과 큰 근거 파일 저장을 먼저 마친 뒤, 기존의 1초 시작 여유를 처음 한 번만 확정합니다. 이후 현재 자세·파일 일치·관측 나이·취소·접촉 상태와 남은 여유를 다시 확인하고 목표를 보냅니다. 이미 시각이 지정된 경로는 원래 시각을 유지하며 늦으면 거부합니다.</p>
-<p>집중 검사 50개와 전체 단위 검사 1,359개(1 skip), 모델 검사 90개(1 skip)를 통과했습니다. 같은 새 소스에서 CPU 3D 화면에서 준비·기본 경로 실행·출발 지연을 확인하고, 같은 상대 경로 묶음의 왼팔·오른팔·의도한 접촉 대조·회피 4조건을 실제 ROS에서 확인했습니다. 각 실행의 결과와 최종 정리도 함께 기록했습니다.</p>
-<p class="small">2.25초 준비 지연을 넣은 회귀 검사와 원본 곡선의 명령 없는 재검사는 별도 진단입니다. 새 실행의 검사 시간·남은 여유는 해당 실행의 관측값이며 성능 개선율이나 원본 CI의 지연 측정값이 아닙니다. 팔 내부 간격의 10 mm 계획·1 mm 시작 기준과 기존 집기·재생 근거는 유지합니다.</p>
-<p><a href="native-admission-reservation-verification.json">원본146·예약 순서 수정·새 실제 검증</a></p></div>
+<p>첫 수정 뒤의 CI #147에서는 시작 시각 확정은 정상 동작했지만, 추가 확인 중 관절 상태의 수신 나이가 0.3186초로 늘어 0.3초 제한으로 실행을 거부했습니다. 큰 메시지 복사와 전체 해시 확인은 시작 시각 확정 전에 마치고, 이후 관절 상태의 새 수신과 시뮬레이션 시각의 전진을 함께 확인하도록 보강했습니다. 원래 수신 시각으로 나이를 검사하며 시작 여유와 취소·접촉 검사도 유지합니다.</p>
+<p>최종 소스의 집중 검사 57개와 전체 단위 검사 1,365개(1 skip), 모델 검사 91개(1 skip)를 통과했습니다. 같은 소스로 CPU 3D 화면에서 준비·기본 경로 실행·출발 지연을 확인하고, 같은 상대 경로 묶음의 왼팔·오른팔·의도한 접촉 대조·회피 4조건을 실제 ROS에서 확인했습니다. 각 실행의 결과와 최종 정리도 함께 기록했습니다.</p>
+<p class="small">첫 수정 소스의 로컬 통과, 원본 CI #147의 거부, 최종 소스의 실제 검증을 구분합니다. 2.25초 준비 지연과 수신 나이 경계값을 재현한 검사, 원본 곡선의 명령 없는 재검사는 별도 진단입니다. 새 실행의 검사 시간·남은 여유는 해당 실행의 관측값이며 성능 개선율이나 원본 CI의 지연 측정값이 아닙니다. 팔 내부 간격의 10 mm 계획·1 mm 시작 기준과 기존 집기·재생 근거는 유지합니다.</p>
+<p><a href="native-admission-reservation-verification.json">원본146/147·예약 순서와 새 수신 확인·최종 실제 검증</a></p></div>
 <div class="note warn"><p>현재 <strong>팔 사이 30 mm 계획·20 mm 관측 기준</strong>은 설비 전체와의 공통 여유가 아닙니다. 이산 표본·형상 근사 검사는 연속 시간이나 실물의 안전 인증으로 해석하지 않습니다. 수정 효과는 고정 입력과 인접 조건에서 확인하고, 재실행 성공만으로 과거 실패를 닫지 않습니다.</p></div></section>
 
 <section id="alternatives"><span class="section-no">03 / Selective reference adoption</span><h2>참고 기술의 역할과 반영 기준</h2>
@@ -273,7 +274,7 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <ol class="sources">
 <li id="src-progress"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/191c472a82c4027f17732dbacbe500481cc6bdee">2026-10-28 현황 코드 191c472</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/52">PR #52</a><span>W01~W06의 로컬 구현·대표 검증과 검토·CI·병합 상태를 구분해 확인합니다.</span></li>
 <li id="src-w07"><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/55">W07 devel 병합 · PR #55</a> · <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/main/docs/grasping.md">독립 집기 사용법과 범위</a><span>초기 ROS TCP Pose와 Python MuJoCo 3.14·DLS 집기의 기록입니다. 이후 native 3.12의 대표 ROS 집기는 아래 별도 근거로 연결합니다.</span></li>
-<li id="src-native-reservation"><a href="native-admission-reservation-verification.json">회피 경로 검사와 시작 여유의 후속 검증</a><span>원본 CI146의 전송 전 거부, 원본 곡선의 명령 없는 재검사, 새 소스의 실제 CPU 3D·출발 지연·4조건 비교를 구분합니다.</span></li>
+<li id="src-native-reservation"><a href="native-admission-reservation-verification.json">회피 경로 검사와 시작 여유의 후속 검증</a><span>원본 CI146/147의 서로 다른 전송 전 거부, 첫 수정 소스의 로컬 통과, 최종 소스의 실제 CPU 3D·출발 지연·4조건 비교를 구분합니다.</span></li>
 <li id="src-grasp-admission"><a href="grasp-admission-verification.json">실행 전 파일 확인과 관측·취소 후속 검증</a><span>원본 CI143의 캡처 나이 거부와 지연층 미확정, 소유 검사프로세스와 같은 새 소스의 실제4조건·브라우저4회·최종 정리를 구분합니다.</span></li>
 <li id="src-grasp-observation"><a href="grasp-observation-verification.json">관측 프레임 순서·원래 시각과 집기 재검증</a><span>CI140 원본 정상/유지 실패, FIFO·캡처 나이 검사와 정지 후 물리 표시, 같은 새 소스의 실제 4조건·브라우저 검수를 구분합니다.</span></li>
 <li id="src-self-clearance"><a href="self-clearance-verification.json">2026-10-29 팔 내부 충돌 검사와 재검증</a><span>원본 통과·실패 CI와 고정 표본, 새 검사에서의 원본 거부/수용, 실제 ROS·집기와 로컬 회귀를 구분합니다. 10 mm 계획·1 mm 시작 기준은 실험 설정이며 실물 안전 보증이 아닙니다.</span></li>

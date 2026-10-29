@@ -61,7 +61,7 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "Three.js 작업실과 센서·3D 재생, ROS 집기의 현재 구현을 정리합니다. 충돌·관측·실행 전 파일 확인과 시작 시각 확정의 진단·수정, 서로 다른 소스의 실제 검증을 연결하고 남은 개발 순서를 제시합니다.",
-      "manifest_sha256": "2112118ac4ff9f548377862254ff2ca013d703041958010bc3427200710c07d4"
+      "manifest_sha256": "5e4ab7cc496e16872ad95a828741eb95975f4c28793971065b45f3da34cc46f4"
     },
     {
       "id": "planner-cache-2026-10-28",
