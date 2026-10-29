@@ -96,12 +96,13 @@ class RosOwnedJobTests(unittest.TestCase):
     def start(self, request='1' * 32):
         return self.app.start(dict(request_id=request, model_sha256=MODEL))
 
-    def update(self, *, event=1, native_sequence=1, clock=1., observed=None, progressed=None, native=True):
+    def update(self, *, event=1, native_sequence=1, clock=1., observed=None, progressed=None, captured=None, native=True):
         job = self.app.current
         stamp = self.now_ns - 10_000_000 if observed is None else observed
         progress = stamp if progressed is None else progressed
         observation = dict(run_id=job.identifier, model_sha256=MODEL, plugin_sha256=PLUGIN,
             native_version='3.12.0', sequence=native_sequence, time_sec=clock, stamp_ns=str(round(clock * 1e9)),
+            capture_monotonic_ns=str(stamp if captured is None else captured), capture_clock_semantics='linux_CLOCK_MONOTONIC',
             stamp_semantics='rounded_native_mjData_time', geoms=deepcopy(job.display.static_preview_pose['geoms']),
             contacts=[], arm_positions_rad={}, tcp={'position': [0., 0., 0.]}, block={'position': [0., 0., 0.]})
         value = dict(schema_version=1, kind='observation' if native else 'task', run_id=job.identifier,
@@ -175,6 +176,34 @@ class RosOwnedJobTests(unittest.TestCase):
         self.assertGreater(state['job']['source_age_sec'], 1.)
         self.assertEqual(state['job']['freshness'], 'stale')
         self.assertIsNone(state['job']['error'])
+
+    def test_queued_capture_keeps_its_original_age_in_status_and_pose_after_new_task_updates(self):
+        self.start()
+        update = self.update(captured=self.now_ns - 400_000_000)
+        first = self.app.snapshot()
+        self.assertAlmostEqual(first['job']['source_age_sec'], .4)
+        self.assertEqual(first['job']['freshness'], 'fresh')
+        self.now_ns += 200_000_000
+        update.update(kind='task', sequence=2, event_sequence=2)
+        atomic_json(self.app.current.directory / 'run/latest.json', update)
+        later = self.app.snapshot()
+        self.assertAlmostEqual(later['job']['source_age_sec'], .6)
+        self.assertEqual(later['job']['freshness'], 'stale')
+        pose = self.app.pose_envelope(later['view']['binding_id'])
+        self.assertAlmostEqual(pose['source_state_age_sec'], .6)
+        self.assertFalse(later['job']['cancel_requested'])
+
+    def test_capture_after_its_callback_receipt_does_not_replace_last_valid_pose(self):
+        self.start()
+        self.update()
+        first = self.app.snapshot()
+        original = self.app.pose_envelope(first['view']['binding_id'])['pose']
+        self.update(event=2, native_sequence=2, clock=1.05,
+                    captured=self.now_ns - 9_999_999)
+        failed = self.app.snapshot()
+        self.assertTrue(failed['job']['cancel_requested'])
+        self.assertEqual(self.app.pose_envelope(first['view']['binding_id'])['pose'], original)
+        self.signals.assert_called_once_with(self.processes[0].pid, signal.SIGINT)
 
     def test_bad_identity_does_not_replace_last_pose_and_requests_only_owned_cancellation(self):
         self.start()
