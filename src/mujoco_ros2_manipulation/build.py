@@ -14,7 +14,7 @@ from mujoco_ros2_manipulation.paths import ROOT
 
 
 RUNTIME_PATCH_KEYS = ('patch', 'monitor_patch', 'contact_stop_patch', 'clock_watchdog_patch',
-                      'control_loop_shutdown_patch', 'activation_shutdown_patch')
+                      'control_loop_shutdown_patch', 'activation_shutdown_patch', 'grasp_policy_patch')
 
 
 def local_path(root, name):
@@ -195,6 +195,7 @@ def colcon(root, packages, runtime=False):
         command += ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                     f'-DMANIPULATION_MONITOR_INCLUDE_DIR={root / "native"}',
                     '-DMANIPULATION_MONITOR_SHA256=' + hashlib.sha256((root / 'native/step_monitor.hpp').read_bytes()).hexdigest(),
+                    '-DMANIPULATION_GRASP_POLICY_SHA256=' + hashlib.sha256((root / 'native/grasp_policy.hpp').read_bytes()).hexdigest(),
                     f'-DMANIPULATION_SHUTDOWN_INCLUDE_DIR={root / "native"}',
                     '-DMANIPULATION_SHUTDOWN_SHA256=' + hashlib.sha256((root / 'native/control_loop_shutdown.hpp').read_bytes()).hexdigest()]
     run(['bash', '-c', 'source "$1"\nexport CMAKE_PREFIX_PATH="$2/runtime/root/usr:$2/runtime/root/opt/ros/humble:${CMAKE_PREFIX_PATH:-}"\nshift 2\nexec "$@"',
@@ -259,8 +260,21 @@ def main():
                  '-I' + str(vendor / 'include'), ROOT / 'native/path_distance_environment.cpp',
                  vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
                  '-o', native / 'path_distance.so'])
+            run(['g++', '-std=c++17', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
+                 '-DMANIPULATION_GRASP_DISTANCE_SHA256="' + hashlib.sha256((ROOT / 'native/grasp_distance.cpp').read_bytes()).hexdigest() + '"',
+                 '-DMANIPULATION_GRASP_POLICY_SHA256="' + hashlib.sha256((ROOT / 'native/grasp_policy.hpp').read_bytes()).hexdigest() + '"',
+                 '-I' + str(vendor / 'include'), ROOT / 'native/grasp_distance.cpp',
+                 vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
+                 '-o', native / 'grasp_distance.so'])
+            run(['g++', '-std=c++17', '-O2', '-Wall', '-Wextra', '-Werror',
+                 '-DMANIPULATION_GRASP_SCENE_EXPORT_SHA256="' + hashlib.sha256((ROOT / 'native/grasp_scene_export.cpp').read_bytes()).hexdigest() + '"',
+                 '-I' + str(vendor / 'include'), ROOT / 'native/grasp_scene_export.cpp',
+                 vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
+                 '-o', native / 'grasp_scene_export'])
             definition = manifest['packages'][runtime['package']]
-            colcon(ROOT, [dict(name=runtime['package'], path=str(local_path(source, definition['path'])))], True)
+            colcon(ROOT, [dict(name=runtime['package'], path=str(local_path(source, definition['path']))),
+                          dict(name='manipulation_grasp_plugin', path=str(local_path(ROOT,
+                              manifest['packages']['manipulation_grasp_plugin']['path'])))], True)
         if args.component in ('all', 'models'):
             # Reject dirty manufacturer sources, including mesh edits, before colcon.
             from mujoco_ros2_manipulation.model_build.integrity import repository_commit

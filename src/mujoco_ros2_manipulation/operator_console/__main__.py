@@ -7,6 +7,21 @@ import secrets
 import signal
 import threading
 import uuid
+from urllib.parse import urlsplit
+
+
+def local_grasp_viewer_url(value):
+    """An explicit navigation destination; never discovers or controls a peer."""
+    try:
+        parsed = urlsplit(value)
+        if (parsed.scheme != "http" or parsed.hostname != "127.0.0.1"
+                or parsed.username is not None or parsed.password is not None
+                or parsed.port is None or not 1024 <= parsed.port <= 65535
+                or parsed.path not in ("", "/") or parsed.query or parsed.fragment):
+            raise ValueError()
+        return "http://127.0.0.1:"+str(parsed.port)+"/"
+    except (TypeError, ValueError):
+        raise argparse.ArgumentTypeError("ROS grasp viewer must be http://127.0.0.1:<port>/") from None
 
 
 def shutdown_console(server, app, ros_stopped, ros_thread, node, rclpy, previous):
@@ -51,6 +66,8 @@ def main():
     parser.add_argument("--execution-manifest-sha256", help="Expected SHA256 of the execution overlay manifest")
     parser.add_argument("--image-topic", help="Opt-in single RGB8 sensor_msgs/Image topic; separate from rendered model images")
     parser.add_argument("--image-clock-domain", choices=("unknown", "ros_simulation"), default="unknown", help="Declared acquisition clock; never inferred from the presence of /clock")
+    parser.add_argument("--ros-grasp-viewer", type=local_grasp_viewer_url,
+                        help="Explicit local ROS grasp viewer URL, shown as a separate-task link")
     args = parser.parse_args()
     if not 0 <= args.domain <= 232 or not 1024 <= args.port <= 65535:
         parser.error("ROS domain must be 0..232; port must be 1024..65535")
@@ -68,6 +85,9 @@ def main():
     metadata = check_workcell(cell)
     from ..workcells.execution_target import load_execution_target
     execution_target = load_execution_target(cell, args.execution_environment, args.execution_manifest_sha256)
+    if (execution_target is not None
+            and execution_target.description().get("artifact_kind") == "grasp-execution-target-v1"):
+        parser.error("이 집기 모델은 manipulation-grasp-ros-viewer로 실행하세요. 일반 조작 화면에서는 --ros-grasp-viewer로 연결합니다.")
     view_sources=()
     if args.view_scene_catalog is not None:
         from .environment_sources import load_scene_catalog
@@ -91,7 +111,7 @@ def main():
         joint_limits=metadata["joint_limits"], instances=[dict(id=i.id, model=i.profile.id, label=i.profile.label, joints=i.joints) for i in cell.instances],
         targets=dict(home=dict(zip(cell.joints, cell.home)), sample={n:v for i in cell.instances for n,v in zip(i.joints,i.plan_target)}),
         render_enabled=not args.no_render, scene_view_version=1, workcell_contract=describe_workcell(cell, metadata),
-        pose_tools=describe_pose_tools(cell))
+        pose_tools=describe_pose_tools(cell), ros_grasp_viewer_url=args.ros_grasp_viewer)
     if execution_target is not None:
         configuration["execution_target"] = execution_target.description()
     state = ConsoleState(configuration)

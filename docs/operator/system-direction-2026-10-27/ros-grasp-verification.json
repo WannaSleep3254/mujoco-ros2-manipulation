@@ -1,0 +1,928 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "status": "local_native_v4_and_desktop_verified",
+  "scope": {
+    "simulation_only": true,
+    "robot": "FAIRINO FR5",
+    "other_robot": "Universal Robots UR5e",
+    "other_robot_policy": "같은 물리 환경에서 자세를 유지하며 UR5e 궤적 목표를 전송하지 않습니다.",
+    "tool": "검증용 평행 그리퍼",
+    "object": "합성 단순 블록",
+    "engine": "MuJoCo",
+    "native_version": "3.12.0",
+    "control": "ROS 2 Humble / ros2_control",
+    "planner": "MoveIt 2",
+    "physical_attachment": "native contact forces; no live qpos carry or weld",
+    "coverage": "명시적으로 선택한 FR5·UR5e 합성 환경의 정상·30초 유지 진단·이동 중 취소·시작 중 취소 검사"
+  },
+  "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+  "manifest_sha256": "7ca0f858c5b0d74442e683160c9eb68f6736d05d89059ed679a778ba4aa69276",
+  "implementation": {
+    "basis": "exact_implementation_sha256",
+    "source_sha256": {
+      "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5",
+      "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+      "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+      "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+      "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+      "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+      "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+      "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+      "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+      "src/mujoco_ros2_manipulation/grasping/ros_task.py": "5c0c920db09a1e508015e9dd19ae63f19395b2716904e13de01c5e3553362c39",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+    },
+    "verification_source_sha256": {
+      "tests/integration/verify_ros_grasp_task.py": "f9e0a1f82c2615393d29dbb18ef35274bd628d2b293f804af4998f891a907690"
+    },
+    "git_commit_claim": true,
+    "model_producer_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_model.py": "c675be9aec0b8cff676f7fbd41d65cda6441c765d493fb609dcd3a72e7fb5cfb",
+      "src/mujoco_ros2_manipulation/grasping/ros_target.py": "182052917ac458e07f3407e1a5a28dcfd04a7891d2fb0aa7d42e80fdba22729a"
+    },
+    "implementation_commit": "9b7fc0fb4b96ecb00f15b6aa4fa238c015bd5015"
+  },
+  "normal": {
+    "status": "succeeded",
+    "worker_exit_code": 0,
+    "action_statuses": [
+      {
+        "stage": "approach",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "close",
+        "controller": "gripper_controller",
+        "units": "m",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "verification_lift",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "transport",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "place",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "open",
+        "controller": "gripper_controller",
+        "units": "m",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      }
+    ],
+    "grasp_observed": {
+      "lift_m": 0.07565498373853108,
+      "stable_sec": 0.27200000000009084,
+      "relative_position_error_m": 0.0004788295797726769,
+      "relative_angle_error_rad": 0.0018302583012295075,
+      "bilateral_fraction": 1.0
+    },
+    "grasp_required": {
+      "lift_m": 0.06,
+      "stable_sec": 0.2,
+      "relative_position_error_m_max": 0.005,
+      "relative_angle_error_rad_max": 0.15,
+      "bilateral_fraction_min": 0.95
+    },
+    "plans": [
+      {
+        "stage": "approach_plan",
+        "sample_count": 292,
+        "minimum_distance_m": 0.01434693735585624
+      },
+      {
+        "stage": "verification_lift_plan",
+        "sample_count": 300,
+        "minimum_distance_m": 0.009950566319427366
+      },
+      {
+        "stage": "transport_plan",
+        "sample_count": 332,
+        "minimum_distance_m": 0.016545026988105928
+      },
+      {
+        "stage": "place_plan",
+        "sample_count": 294,
+        "minimum_distance_m": 0.014030346313915639
+      }
+    ],
+    "planning_attachment_confirmed_before_transport": true,
+    "release_and_settle": {
+      "release_bilateral_contact_absent_sec": 0.26999999999985036,
+      "open_inner_face_gap_m_min": 0.06998510886953194,
+      "open_inner_face_gap_m_max": 0.06999999037648583,
+      "settle_contact_sec": 0.26999999999985036,
+      "settle_position_error_m": 0.000661333603678007,
+      "settle_speed_m_s_max": 4.95734036936858e-11
+    },
+    "final_physical_grasp": "released",
+    "final_planning_attachment": "world",
+    "cleanup": {
+      "clean": true,
+      "native_stop_observed": true,
+      "launch_started": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "forced": false,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "native_exit_observed": true,
+      "raw_child_failure_count": 0,
+      "expected_startup_spawner_interruptions": [],
+      "unexpected_child_failure_count": 0
+    }
+  },
+  "cancel_transport": {
+    "status": "cancelled",
+    "worker_exit_code": 1,
+    "observed_motion_before_sigint_m": 0.005034377350691672,
+    "injection": "accepted transport Action and at least 5 mm observed native motion",
+    "last_action": {
+      "stage": "transport",
+      "controller": "left_controller",
+      "units": "rad",
+      "accepted": true,
+      "terminal_observed": true,
+      "terminal_status": 5,
+      "terminal_error_code": 0
+    },
+    "physical_grasp_before_cancel": "confirmed",
+    "final_physical_grasp": "unconfirmed",
+    "final_planning_attachment": "attached",
+    "current_hold_verification": "물리 시계가 멈춘 뒤에는 접촉력을 새로운 집기 유지 확인으로 사용하지 않습니다.",
+    "open_action_sent": false,
+    "automatic_detach": false,
+    "cleanup": {
+      "clean": true,
+      "native_stop_observed": true,
+      "launch_started": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "forced": false,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "native_exit_observed": true,
+      "raw_child_failure_count": 0,
+      "expected_startup_spawner_interruptions": [],
+      "unexpected_child_failure_count": 0
+    }
+  },
+  "cancel_startup": {
+    "status": "cancelled",
+    "worker_exit_code": 1,
+    "injection": "SIGINT after native launch was bound to the owned worker PID/PGID/session instance",
+    "action_count": 0,
+    "final_physical_grasp": "unconfirmed",
+    "final_planning_attachment": "uninitialized",
+    "cleanup": {
+      "clean": true,
+      "native_stop_observed": true,
+      "launch_started": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "forced": false,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "native_exit_observed": true,
+      "raw_child_failure_count": 3,
+      "expected_startup_spawner_interruptions": [
+        {
+          "controller": "right_controller",
+          "exit_code": -2,
+          "reason": "owned startup spawner interrupted by launch SIGINT"
+        },
+        {
+          "controller": "joint_state_broadcaster",
+          "exit_code": -2,
+          "reason": "owned startup spawner interrupted by launch SIGINT"
+        },
+        {
+          "controller": "left_controller",
+          "exit_code": -2,
+          "reason": "owned startup spawner interrupted by launch SIGINT"
+        }
+      ],
+      "unexpected_child_failure_count": 0
+    }
+  },
+  "originals": {
+    "normal": {
+      "verification_result_sha256": "7ecf69297c0c6f2fde0de9a101b7439d7ccf0cf6d6f3a824150a591b313cbb90",
+      "worker_result_sha256": "43cd1ff50072cf22569d739e85ef2deb3ff22243c8fc36159eef548b281b5378",
+      "native_observations_sha256": "3f32698751d00c739a01701143ab37938b951ea4e55e2b309b60b077dcd1a034",
+      "physics_sha256": "741c254a35e6bfcee0408c963321a5f86265b0a899ffb39ec48b2b726f4c30be"
+    },
+    "normal_hold": {
+      "verification_result_sha256": "91e9933294fe1edaa603b4aab3b7347755fcb27f64260acffedf14e6ec6866c3",
+      "worker_result_sha256": "9757506785386e2cd46867b43808460f89245bf8bbbcdbdfc182e7b3af46894a",
+      "native_observations_sha256": "1f3792be4e8ba4da34905df1cd823938b16e7c76d27516593f3446942f4c1a74",
+      "physics_sha256": "0d37a4a7a93af96368b042aaa700b14c7a6bc3f410dda0d9bf7a517ffb743d0c"
+    },
+    "cancel_transport": {
+      "verification_result_sha256": "31810d77e4b0db547b82d4cb85dfd1d5b4252fc3d19d06ded29977ede327fb41",
+      "worker_result_sha256": "4a3a4958b2a452feeb5e68f79dd2fa455ad7700b6e1b7b37bd3fcc35c091f793",
+      "native_observations_sha256": "09bdf6e11722e4fbb13894a532b8c7a2f1f10126bd7976d98cbaded36e9b35a4",
+      "physics_sha256": "766bea3f640ea3cc3eed75c4451e1acf289c782fc9008fd3cae8da88bfbd397c"
+    },
+    "cancel_startup": {
+      "verification_result_sha256": "fcbfa6f903d83d8b9265729f542a7bb0f192d4bea5009ebfd545d7482cef95ea",
+      "worker_result_sha256": "b7295d066f9b46dac9cb18e38e934b2277d26c7e961c4192e402ff104b0b3e53",
+      "native_observations_sha256": "352359df830aad09ee77f7fcb9b50525a91cae7c70901795528d554f20cf5e1f",
+      "physics_sha256": "197563fd09466c292afdec0d588c1e1b63b3d9f3feb2bbd8c06478178cffa3c9"
+    }
+  },
+  "automatic_retry": false,
+  "ui_evidence": {
+    "status": "verified_desktop_current_v4",
+    "completion_claim": true,
+    "url_kind": "loopback_only",
+    "port": 8930,
+    "ros_domain": 222,
+    "model_geoms": 49,
+    "native_meshes": 34,
+    "desktop_viewport": {
+      "width": 1280,
+      "height": 720,
+      "whole_3d_card_visible": true
+    },
+    "automatic_replay": false,
+    "implementation_source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "924bd7f3e4703942a6d0cfb67ee1412239b7499b25e07096aa2e4bec31f4eb53",
+      "src/mujoco_ros2_manipulation/grasping/ros_display.py": "6b5fa590471778d9d999a8e929d72eb64ae63c88e387443f3cc298990b2292ab",
+      "src/mujoco_ros2_manipulation/grasping/static/ros_demo.html": "fdd75baf6942a3442edd2f1b1df14f0ee56df3bc944c237a967b12423b9168b2",
+      "src/mujoco_ros2_manipulation/grasping/static/ros_demo.css": "6284b84bb85774da168a3955f62e96b55c1771cbdcdf30c56bd9e438b4b55671",
+      "src/mujoco_ros2_manipulation/grasping/static/ros_demo.js": "433de6e4d81e2071ff4cbdff869c1afc24c26ac5f240e8e6be61894dad7aca66",
+      "native/grasp_scene_export.cpp": "78068de552d62e4c47a43abab1e6d00c7126fcf7cab0dce1507857120bb0b5ae"
+    },
+    "mobile_layout_archive": {
+      "previous_evidence": "ros-grasp-v3-verification.json",
+      "same_ui_source_sha256": true,
+      "archived_viewport": {
+        "width": 390,
+        "height": 844,
+        "page_scroll_width": 375,
+        "horizontal_overflow": false
+      },
+      "scope": "Unchanged six UI/export source hashes retain the prior responsive layout evidence. A new v4 mobile override returned desktop dimensions, so it is not counted as a new mobile run."
+    },
+    "normal": {
+      "run_id": "98a06b29aaf64c60b35d6174d0cffba2",
+      "original_result_sha256": "676a5cbdc494b119742de2dbbf8e00e227061ed8831a63fa8946278623f26669",
+      "status": "succeeded",
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "actions": [
+        {
+          "stage": "approach",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "place",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "open",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_stop_observed": true,
+      "native_exit_clean": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "cleanup_clean": true,
+      "owner_cleanup_clean": true,
+      "owner_receipt_sha256": "b3525c1605cd738cac80a73041baab859e2953be36be0c6f342d0865e5a5f786",
+      "automatic_detach_on_cancel": false,
+      "open_action_sent": true
+    },
+    "cancel_while_attached": {
+      "run_id": "854aa1e8624b4c38b6c98a209ac0f7fa",
+      "original_result_sha256": "ca0a5cd152b6e6603a50a498df0f126554646959f45e915b50068641f52cc327",
+      "status": "cancelled",
+      "physical_grasp": "unconfirmed",
+      "planning_attachment": "attached",
+      "actions": [
+        {
+          "stage": "approach",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_stop_observed": true,
+      "native_exit_clean": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "cleanup_clean": true,
+      "owner_cleanup_clean": true,
+      "owner_receipt_sha256": "b001486185c52fa79c70b0f17742e0a34f1148fc6f8947b52d2fc4248e8168c1",
+      "automatic_detach_on_cancel": false,
+      "open_action_sent": false
+    },
+    "screenshots": {
+      "v4-reviewed-native-grasp-holding-full-card.jpg": {
+        "sha256": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
+        "format": "JPEG",
+        "width": 1265,
+        "height": 712
+      },
+      "v4-reviewed-native-grasp-completed-full-card.jpg": {
+        "sha256": "c59f2747b52a86ca79cb9edf377e1cfb87816007c8d543cedac8fcb95c4eabb8",
+        "format": "JPEG",
+        "width": 1265,
+        "height": 712
+      },
+      "v4-reviewed-native-grasp-cancelled-desktop.jpg": {
+        "sha256": "58481135a592fcf7bdf3f0cdc301d7787b156b73dd61ac3cde73f08753ff4467",
+        "format": "JPEG",
+        "width": 1265,
+        "height": 712
+      }
+    },
+    "raster_note": "Actual JPEG raster dimensions differ from the measured CSS viewport; no pixels were edited."
+  },
+  "limitations": [
+    "합성 블록과 고정 환경의 대표 기능 검사입니다. 임의 형상, 실물 로봇이나 일반적인 성공률은 검증하지 않았습니다.",
+    "native 경로 검사는 JTC spline의 이산 표본을 사용합니다. 연속 시간 전체의 무충돌을 보장하는 결과는 아닙니다.",
+    "접촉력 시각은 native 직전 step의 명목값이며, 물리 정지 후 집기 유지를 새로 확인한 값이 아닙니다."
+  ],
+  "failure_lineage": [
+    {
+      "kind": "acm_representation",
+      "summary": "MoveIt이 생략한 전체 false 행을 내용 변경으로 판단했습니다. 실제 페어와 기본값은 같았고, 동작 목표는 전송하지 않았습니다.",
+      "original_result_sha256": "fe6fa4d490f5a6d398355ddaa041ac0f5b72982bd745a03948eb8b8b81dbe286",
+      "dispatched_action_count": 0,
+      "model_sha256": "8dd88eb683f4e3e209ff15b795a7bc603ab6c8923ec7492afb1df02fde423b58",
+      "manifest_sha256": "7ec7a82a60e3c2abe29893da08795ab2911b19642cec8632ab9a982db96ea7e3",
+      "source_sha256": {
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "0f63cb826078c48999101378d81e114485a15ed3074348fd23ddbb2a8f156e35",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "b0b60cbc5111094b854353777c0d5b534da6961ac5d5229ef354ba04b21f6ac9",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "requested_names": 22,
+      "confirmed_names": 20,
+      "effective_pair_changes": 0,
+      "dropped_default_rows": [
+        "fr5_grasp_table",
+        "fr5_grasp_tcp"
+      ],
+      "diagnostic_sha256": "5d1b1e9e441ea73f8aaba2faf0330263c39d7f8a73704acafa7f153908659533"
+    },
+    {
+      "kind": "tool_mount_self_contact",
+      "summary": "이전 장착 위치의 자기 접촉으로 충돌 검사를 켠 IK가 실패했습니다. 검사를 끈 IK는 원인 진단에만 사용했고 계획이나 실행에는 쓰지 않았습니다.",
+      "original_result_sha256": "54877b349db73a73373c7face61c06b2fd4a1bc2f1f55928ea6fb97ed8966d7b",
+      "dispatched_action_count": 0,
+      "model_sha256": "8dd88eb683f4e3e209ff15b795a7bc603ab6c8923ec7492afb1df02fde423b58",
+      "manifest_sha256": "7ec7a82a60e3c2abe29893da08795ab2911b19642cec8632ab9a982db96ea7e3",
+      "source_sha256": {
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "ed67599cc8416176dfbdf1c955850cd847461af5873087291aea3c550a5f33b3",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "ae381c6824ed4574bc01fc117da9d5929d3e8ce9f004d714ef7e1bba5b081296",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "diagnostic_unchecked_ik_used_for_dispatch": false,
+      "mount_offset_before_m": 0.045,
+      "mount_offset_after_m": 0.095,
+      "maximum_reported_tool_self_contact_depth_m": 0.01749745859414662,
+      "fix": "MJCF와 URDF에 같은 장착 변환을 적용하고, 접촉 제외를 추가하지 않고 그리퍼를 로봇에서 더 떨어뜨렸습니다.",
+      "diagnostic_sha256": "f6e8c3b10b88d341dcbc7473ce9fc13391acdb7f0aee66262a5efdfe72013118"
+    },
+    {
+      "kind": "observed_slide_roundoff",
+      "summary": "손가락 관측값 -8.4e-9 m를 IK/FK의 엄격한 하한 0 m가 거부했습니다. 관측값을 바꾸지 않고 상태 확인에서만 1 µm의 수치 오차를 허용합니다.",
+      "original_result_sha256": "70aa3a8f92edf0e96fac6884dda9c34b9f5e499d6504c4366d2af31e0845b050",
+      "dispatched_action_count": 0,
+      "model_sha256": "8dd88eb683f4e3e209ff15b795a7bc603ab6c8923ec7492afb1df02fde423b58",
+      "manifest_sha256": "7ec7a82a60e3c2abe29893da08795ab2911b19642cec8632ab9a982db96ea7e3",
+      "source_sha256": {
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "ed67599cc8416176dfbdf1c955850cd847461af5873087291aea3c550a5f33b3",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "0ac2d780aa41688c7a8edae633e44291fe5560fe44422cf5fc87418e09078589",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "kinematics_state_margin_m": 1e-06,
+      "observed_seed_clamped": false,
+      "commanded_finger_range_m": [
+        0.0,
+        0.034
+      ]
+    },
+    {
+      "kind": "attached_transfer_order",
+      "summary": "물리적으로 들어 올린 뒤 MoveIt Attached ADD가 이미 삭제한 world 객체에 REMOVE를 다시 보내 실패했습니다. 한 번의 이동 처리 뒤 world 부재와 부착 내용을 확인하도록 수정했습니다.",
+      "original_result_sha256": "3d0d13bdfc307a559f674b127bf8e28f60aa81324cf20015c634d58188de584d",
+      "dispatched_action_count": 3,
+      "model_sha256": "0270af485e0175be556f7d1fbcfd65de31382299b70366ba0ebc89812be6ece2",
+      "manifest_sha256": "b8a5487606cb9d4f9802c21c322df7a7c5baf205e1daf1c2d9c9b76e930d6f57",
+      "source_sha256": {
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "ed67599cc8416176dfbdf1c955850cd847461af5873087291aea3c550a5f33b3",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "1fd981f50bc06c9fff1d262dd3d89b8e2b04a10370dfe0e0f0edd0abe9aa7622",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "physical_grasp_had_been_confirmed": true,
+      "failure_planning_attachment": "unknown",
+      "fix": "MoveIt의 Attached ADD가 같은 world ID를 삭제하는 처리를 사용하고 중복 REMOVE를 없앴습니다."
+    },
+    {
+      "kind": "ci133_soft_contact_creep",
+      "summary": "접촉력은 양쪽 약20 N으로 유지됐지만 장시간 유지 중 상대 위치 오차가 원래 닫힘 기준5 mm를 넘었습니다. 배치 중단과 물리 slipped/MoveIt attached를 그대로 기록했습니다.",
+      "original_result_sha256": "42524cbd959b842a9407bf918dff5f3f73d6b4acb28a90fd4e97baa7544bf5ce",
+      "native_observations_sha256": "b0d99f943856bce6b28ec49bf7759224d8d3ebf5aea208415d924101fcb982b3",
+      "model_sha256": "a2e0f640a70fb1a8174af0fc3e182d061b3f32c3ee512d74ca709144585efd23",
+      "manifest_sha256": "5befca241ee4aac11c0e1cdfd16c0271a63c2fe72fc7e6944ba2571b8897ac82",
+      "source_sha256": {
+        "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5",
+        "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+        "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "b4116e80f79eec7710824e696347558ecfe339ba55937ad674eabb4c1adb6d99",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "action_statuses": [
+        {
+          "stage": "approach",
+          "controller": "left_controller",
+          "units": "rad",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "controller": "gripper_controller",
+          "units": "m",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "controller": "left_controller",
+          "units": "rad",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "controller": "left_controller",
+          "units": "rad",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "place",
+          "controller": "left_controller",
+          "units": "rad",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 5,
+          "terminal_error_code": 0
+        }
+      ],
+      "physical_grasp": "slipped",
+      "planning_attachment": "attached",
+      "cleanup": {
+        "clean": true,
+        "native_stop_observed": true,
+        "launch_started": true,
+        "launcher_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "automatic_release": false,
+        "automatic_detach": false,
+        "native_exit_observed": true,
+        "raw_child_failure_count": 0,
+        "expected_startup_spawner_interruptions": [],
+        "unexpected_child_failure_count": 0
+      },
+      "resolution": "집기 전용 artifact의 접촉 solver만 elliptic/impratio10으로 명시합니다. 마찰·힘·5 mm gate·원래 닫힘 기준을 바꾸지 않습니다."
+    },
+    {
+      "kind": "old_solver_explicit_hold_failure",
+      "summary": "이전 solver의 실제 ROS 유지 진단도 원래 기준 약5.014 mm에서 중단됐습니다. 이 실패를 새 결과로 덮어쓰지 않습니다.",
+      "original_result_sha256": "7fd934a6b92cbf10ad4ed87ad99a44eb1f00e223ad44487a1555f466e84bf66c",
+      "verification_result_sha256": "1c02609f0832f9a8857f074a47bf5f04dd10f9affdd1f8ccd13c4ba1b81e5c2a",
+      "model_sha256": "0270af485e0175be556f7d1fbcfd65de31382299b70366ba0ebc89812be6ece2",
+      "manifest_sha256": "b8a5487606cb9d4f9802c21c322df7a7c5baf205e1daf1c2d9c9b76e930d6f57",
+      "source_sha256": {
+        "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5",
+        "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+        "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "e1d73f2b0f211fd25ef1fa09a239d00148188d776bc31744b5f609e62e3ca2f9",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "physical_grasp": "slipped",
+      "planning_attachment": "attached",
+      "cleanup": {
+        "clean": true,
+        "native_stop_observed": true,
+        "launch_started": true,
+        "launcher_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "automatic_release": false,
+        "automatic_detach": false,
+        "native_exit_observed": true,
+        "raw_child_failure_count": 0,
+        "expected_startup_spawner_interruptions": [],
+        "unexpected_child_failure_count": 0
+      }
+    },
+    {
+      "kind": "startup_helper_sigint_classification",
+      "summary": "시작 취소 때 native와 launcher는 정상 종료했지만 launch의 SIGINT로 종료한 Python spawner를 모두 오류로 분류해 검사에 실패했습니다. 신호·순서·PID·정확한 helper 명령과 취소 전제 확인 후에만 별도 expected 항목으로 보존합니다.",
+      "original_result_sha256": "4d5dfb1989c5038a5815d5a064038c4933b31884ae7a7e31d8d02b196b7e7f8a",
+      "verification_result_sha256": "15f1b71b944b484d234297785c706e0dbbdc6a4696e0c7f57b1780da66b6eb01",
+      "dispatched_action_count": 0,
+      "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+      "manifest_sha256": "7ca0f858c5b0d74442e683160c9eb68f6736d05d89059ed679a778ba4aa69276",
+      "source_sha256": {
+        "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5",
+        "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+        "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+        "native/grasp_ros2_plugin/src/observation.cpp": "12653f6998a9c6c533dda680dabb1541a129cda69380d2391cfff8475968318b",
+        "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+        "src/mujoco_ros2_manipulation/grasping/contract.py": "8b29a6213acd8f81a42040679a33a520e1a186ee0626d556da1b39ea3726708e",
+        "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+        "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "d223705460b0bbcc3e965243c43084c61a62a8a0e80ae2ff04711ea54f8a154c",
+        "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "e1d73f2b0f211fd25ef1fa09a239d00148188d776bc31744b5f609e62e3ca2f9",
+        "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+        "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+        "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5"
+      },
+      "cleanup": {
+        "clean": false,
+        "native_stop_observed": true,
+        "launch_started": true,
+        "launcher_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "automatic_release": false,
+        "automatic_detach": false,
+        "native_exit_observed": true,
+        "raw_child_failure_count": 2,
+        "expected_startup_spawner_interruptions": [],
+        "unexpected_child_failure_count": 0
+      }
+    }
+  ],
+  "shutdown_lineage": {
+    "original_failure_log_sha256": "fb7180ea5a2963a2e3d0c837ebd9825322cd44e1609f63a725538d6a7bdfba43",
+    "observation": "native CallbackGroup destructor SIGSEGV; original launcher exit code alone did not prove native exit",
+    "candidate_cause": "Duplicate provider included an old observer library outside the control-plugin lifetime pin. Original selected-library map was not preserved, so this remains a supported cause candidate.",
+    "changes": [
+      "Require one exact provider/descriptor/library mapping",
+      "Require current observer, physics guard and ordered-shutdown binary identities",
+      "Keep the observer library under the existing control-plugin lifetime pin"
+    ],
+    "current_proof": "새 v4 정상·30초 유지·이동 취소·시작 취소는 native child, launcher 및 process group 종료를 각각 확인합니다."
+  },
+  "local_checks": {
+    "targeted_model_and_unit": 25,
+    "model_tests": 78,
+    "model_skipped": 3,
+    "repository_check": "passed",
+    "python_unit": 1297,
+    "python_skipped": 1,
+    "note": "원래 native force 시간은 명목 시간입니다. 실물·성능 인증이 아닙니다.",
+    "javascript_scripts": 16,
+    "package_build": "sdist and wheel passed; critical source/static bytes matched the final tree"
+  },
+  "physics_solver": {
+    "scope": "explicit_grasp_execution_target_only",
+    "cone": "elliptic",
+    "impratio": 10.0,
+    "base_option_attributes": {
+      "timestep": "0.002",
+      "integrator": "implicitfast"
+    },
+    "changed_option_attributes": [
+      "cone",
+      "impratio"
+    ],
+    "noslip_postprocessing_added": false,
+    "friction_coefficients_and_force_limits_changed": false
+  },
+  "normal_hold": {
+    "status": "succeeded",
+    "worker_exit_code": 0,
+    "action_statuses": [
+      {
+        "stage": "approach",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "close",
+        "controller": "gripper_controller",
+        "units": "m",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "verification_lift",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "transport",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "place",
+        "controller": "left_controller",
+        "units": "rad",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "open",
+        "controller": "gripper_controller",
+        "units": "m",
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      }
+    ],
+    "grasp_observed": {
+      "lift_m": 0.07579297373432536,
+      "stable_sec": 0.27000000000009017,
+      "relative_position_error_m": 0.0005513550533632657,
+      "relative_angle_error_rad": 0.001770599855698196,
+      "bilateral_fraction": 1.0
+    },
+    "grasp_required": {
+      "lift_m": 0.06,
+      "stable_sec": 0.2,
+      "relative_position_error_m_max": 0.005,
+      "relative_angle_error_rad_max": 0.15,
+      "bilateral_fraction_min": 0.95
+    },
+    "plans": [
+      {
+        "stage": "approach_plan",
+        "sample_count": 291,
+        "minimum_distance_m": 0.014626951917687148
+      },
+      {
+        "stage": "verification_lift_plan",
+        "sample_count": 300,
+        "minimum_distance_m": 0.010226021898012805
+      },
+      {
+        "stage": "transport_plan",
+        "sample_count": 332,
+        "minimum_distance_m": 0.016544821145820444
+      },
+      {
+        "stage": "place_plan",
+        "sample_count": 295,
+        "minimum_distance_m": 0.014605655402821549
+      }
+    ],
+    "planning_attachment_confirmed_before_transport": true,
+    "release_and_settle": {
+      "release_bilateral_contact_absent_sec": 0.2800000000003422,
+      "open_inner_face_gap_m_min": 0.06968867775960928,
+      "open_inner_face_gap_m_max": 0.06999999675773817,
+      "settle_contact_sec": 0.27000000000033,
+      "settle_position_error_m": 0.0010201243621602819,
+      "settle_speed_m_s_max": 2.822826847075677e-11
+    },
+    "final_physical_grasp": "released",
+    "final_planning_attachment": "world",
+    "cleanup": {
+      "clean": true,
+      "native_stop_observed": true,
+      "launch_started": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "forced": false,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "native_exit_observed": true,
+      "raw_child_failure_count": 0,
+      "expected_startup_spawner_interruptions": [],
+      "unexpected_child_failure_count": 0
+    },
+    "diagnostic_held_stability": {
+      "diagnostic_only": true,
+      "requested_simulation_sec": 30.0,
+      "observed_simulation_sec": 30.016000000002457,
+      "sample_count": 557,
+      "relative_position_error_m_max": 0.0013172183421610968,
+      "relative_angle_error_rad_max": 0.0017705285376229524,
+      "bilateral_fraction": 1.0,
+      "original_closed_reference_retained": true
+    }
+  },
+  "previous_evidence": {
+    "kind": "immutable_v3_historical_evidence",
+    "sha256": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
+    "included_in_current_results": false,
+    "file": "ros-grasp-v3-verification.json"
+  },
+  "causal_diagnostic": {
+    "kind": "offline_native_held_state_probe",
+    "native_version": "3.12.0",
+    "duration_simulation_sec": 60,
+    "original_closed_reference_sequence": 123,
+    "original_closed_reference_retained": true,
+    "current_force_timing_certified": false,
+    "live_state_writes": false,
+    "summary_sha256": "e33ea06e54abebfb706228eb469e1bdab854e5ca4f77c834d62b37579ca70575",
+    "probe_source_sha256": "adf3af57d75503b532ea7cbbb0b1f4b00f21cc299af4251f4557ca9a4e3b5c18",
+    "cases": {
+      "original": {
+        "cone": 0,
+        "impratio": 1,
+        "friction_scale": 1,
+        "finger_open_control": false,
+        "elapsed_sec": 60.00000000001709,
+        "max_relative_position_error_m": 0.08129730202467977,
+        "max_relative_angle_error_rad": 1.5740377784124406,
+        "first_position_gate_failure_sec": 7.500000000000783,
+        "first_contact_gate_failure_sec": 52.000000000030184,
+        "original_sha256": "1408814c2bbe100bd306f60960f38889bd9e43eb82dbbea653386e15e9359c13"
+      },
+      "elliptic5": {
+        "cone": 1,
+        "impratio": 5,
+        "friction_scale": 1,
+        "finger_open_control": false,
+        "elapsed_sec": 60.00000000001709,
+        "max_relative_position_error_m": 0.004229972725438235,
+        "max_relative_angle_error_rad": 0.0079407583833783,
+        "first_position_gate_failure_sec": -1,
+        "first_contact_gate_failure_sec": -1,
+        "original_sha256": "001300d7f3e7d0a75519c659659004e1c3c802f9e6001c2bad8b97da9089fff4"
+      },
+      "elliptic10": {
+        "cone": 1,
+        "impratio": 10,
+        "friction_scale": 1,
+        "finger_open_control": false,
+        "elapsed_sec": 60.00000000001709,
+        "max_relative_position_error_m": 0.001958858432347157,
+        "max_relative_angle_error_rad": 0.007941163406589624,
+        "first_position_gate_failure_sec": -1,
+        "first_contact_gate_failure_sec": -1,
+        "original_sha256": "6f5d33c9e55afd0c77ed4800ab2523f773f1acc937d8b8d313bb204c9622169d"
+      },
+      "low-friction10": {
+        "cone": 1,
+        "impratio": 10,
+        "friction_scale": 0.001,
+        "finger_open_control": false,
+        "elapsed_sec": 60.00000000001709,
+        "max_relative_position_error_m": 0.07571556560207089,
+        "max_relative_angle_error_rad": 2.581548869494933,
+        "first_position_gate_failure_sec": 0.2500000000000835,
+        "first_contact_gate_failure_sec": 0.2500000000000835,
+        "original_sha256": "fe61e66351d19a98094c2f1ee35a136982494a147e78ca1e57a04cf5748e7840"
+      },
+      "open-fingers10": {
+        "cone": 1,
+        "impratio": 10,
+        "friction_scale": 1,
+        "finger_open_control": true,
+        "elapsed_sec": 60.00000000001709,
+        "max_relative_position_error_m": 0.07550480064661842,
+        "max_relative_angle_error_rad": 0.0017100443286133563,
+        "first_position_gate_failure_sec": 0.2500000000000835,
+        "first_contact_gate_failure_sec": 0.2500000000000835,
+        "original_sha256": "b594fc548100de8d1b30e5051fc5c6e0c5b3138e7c9a12771fc85b6eff684391"
+      }
+    },
+    "limits": [
+      "CI 상태의 offline 재초기화이며 ROS 연속 실행이 아닙니다.",
+      "원본의 미기록 solver warmstart 상태는 복원하지 않아 CI의 bit-exact continuation은 아닙니다.",
+      "저마찰·개방 제어는 진단 negative이며 실제 생산 설정에는 적용하지 않습니다."
+    ],
+    "reference_documentation": "https://mujoco.readthedocs.io/en/stable/modeling.html#preventing-slip"
+  }
+}

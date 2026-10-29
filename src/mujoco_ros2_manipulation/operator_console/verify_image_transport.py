@@ -1,5 +1,6 @@
 """Actual ROS RGB8 -> console worker -> read-only HTTP functional verification."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import io
 import json
@@ -16,6 +17,37 @@ from ..paths import ROOT
 from ..verification.reports import atomic_json
 from ..workcells.motion_request import command
 from .diagnostic_image import pattern
+
+
+def http_request(base, path, payload=None, *, token=None, raw=False):
+    headers={} if payload is None else {"Content-Type":"application/json","Origin":base,"X-Operator-Token":token}
+    request=Request(base+path,data=None if payload is None else json.dumps(payload).encode(),headers=headers)
+    try:
+        with urlopen(request,timeout=3) as reply:
+            data=reply.read()
+            return data if raw else json.loads(data)
+    except HTTPError as error:
+        # A status alone cannot distinguish a correct freshness refusal from a
+        # transport or implementation failure. Keep the bounded server reason.
+        body=error.read(8193)
+        error.verification_detail=dict(path=path,status=error.code,
+            response=body[:8192].decode("utf-8",errors="replace"),response_truncated=len(body)>8192)
+        raise
+
+
+def request_while_pumping(operation, wait, label, seconds=15):
+    """Send once while the main thread keeps the owned ROS input advancing.
+
+    The operation retains its HTTP transport timeout. A wait timeout drains
+    that one request before the caller's console shutdown handles any late
+    capture; it must not retry a start whose outcome may be unknown.
+    """
+    with ThreadPoolExecutor(max_workers=1,thread_name_prefix="image-verification-http") as pool:
+        future=pool.submit(operation)
+        # Return the completed Future, rather than raising inside wait(), which
+        # deliberately tolerates transient OSError during read-only discovery.
+        wait(lambda:future if future.done() else None,label,seconds,frames=True)
+        return future.result()
 
 
 def main():
@@ -57,11 +89,7 @@ def main():
         "--image-topic","/diagnostic/image","--image-clock-domain","ros_simulation"],
         cwd=ROOT,env=os.environ.copy(),stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
     def http(path,payload=None,raw=False):
-        headers={} if payload is None else {"Content-Type":"application/json","Origin":base,"X-Operator-Token":token}
-        request=Request(base+path,data=None if payload is None else json.dumps(payload).encode(),headers=headers)
-        with urlopen(request,timeout=3) as reply:
-            data=reply.read()
-            return data if raw else json.loads(data)
+        return http_request(base,path,payload,token=token,raw=raw)
     sequence=0
     def publish(encoding="rgb8"):
         nonlocal sequence
@@ -99,7 +127,11 @@ def main():
         capture_id=None
         if args.synchronized:
             wait(lambda:http("/api/state")["view"].get("pose_ready"),"published 3D pose",30,frames=True)
-            capture_id=http("/api/sync-recordings/start",{})["id"]
+            # Reading and validating model assets can outlast the image source's
+            # freshness window. A real camera runs independently of HTTP; this
+            # diagnostic producer must also keep publishing during preparation.
+            capture_id=request_while_pumping(lambda:http("/api/sync-recordings/start",{}),
+                wait,"synchronized capture start")["id"]
             wait(lambda:http("/api/sync-recordings")["capture"]["image_count"]>=3,"initial synchronized image samples",frames=True)
             records.append(dict(name="synchronized_capture_started",id=capture_id))
         before=source["counters"]["rejected"]
@@ -176,6 +208,8 @@ def main():
         result.update(status="passed",image_snapshot=new)
     except BaseException as error:
         result.update(status="failed",error=dict(type=type(error).__name__,message=str(error)))
+        if getattr(error,"verification_detail",None) is not None:
+            result["http_failure"]=error.verification_detail
     finally:
         if process.poll() is None:
             process.send_signal(signal.SIGINT)

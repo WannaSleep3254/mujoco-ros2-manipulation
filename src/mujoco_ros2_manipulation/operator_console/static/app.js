@@ -447,6 +447,11 @@ function updateLiveFrames(data){
 async function boot(){
  const bootstrap=await request('/api/bootstrap');config=bootstrap.config;token=bootstrap.token;targets={...config.home_rad};demoCatalog=(bootstrap.demos||[]).filter(item=>['contact_comparison','timing_comparison'].includes(item.id));mountDemos();
  $('cell-label').textContent=config.label;$('domain').textContent='ROS DOMAIN '+config.domain;
+ if(config.ros_grasp_viewer_url){
+  try{const destination=new URL(config.ros_grasp_viewer_url);const link=$('ros-grasp-link'),card=$('ros-grasp-navigation');
+   if(link&&card&&destination.protocol==='http:'&&destination.hostname==='127.0.0.1'&&Number(destination.port)>=1024&&Number(destination.port)<=65535&&!destination.username&&!destination.password&&destination.pathname==='/'&&!destination.search&&!destination.hash){link.href=destination.href;card.hidden=false;}
+  }catch(_error){/* An unavailable navigation target never changes control admission. */}
+ }
  fields();
  if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('review',{focusTask:true}),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));

@@ -1,11 +1,146 @@
-# FR5 기본 집기 실험
+# FR5 집기 실험
+
+FR5에 검증용 평행 그리퍼를 추가하고 블록을 집어 옮기는 기능을 개발합니다.
+기존 독립 MuJoCo 실험과 새 ROS 2·MoveIt 실행을 구분합니다.
+두 경로 모두 로컬 시뮬레이션이며 실물 로봇이나 실제 그리퍼에 연결하지 않습니다.
+
+## ROS 2·MoveIt 실행
+
+새 경로는 기존 native MuJoCo 3.12.0 작업 환경에 그리퍼 제어기와 자유 블록을 추가합니다.
+FR5와 UR5e가 하나의 물리 환경과 시계를 공유합니다. 양팔 12개 회전 관절(rad)과
+손가락 2개 슬라이드 관절(m)을 ROS로 관측하며, 자유 블록은 위치와 회전을 포함한 전체 상태로 읽습니다.
+정해진 작업에서는 FR5만 움직이고 UR5e는 현재 자세를 유지합니다.
+
+MoveIt 2가 만든 경로를 native 모델로 검사한 뒤 ROS 궤적 제어기에 전달합니다.
+물리 집기를 먼저 확인하고 MoveIt 장면에 블록을 부착합니다. 실제 놓기를 확인한 뒤
+부착을 해제하고 관측한 위치의 작업공간 객체로 되돌립니다.
+블록은 접촉력으로 움직이며, 물체 자세를 덮어쓰거나 용접해서 운반하지 않습니다.
+
+### 모델 준비
+
+[설치와 런타임 빌드](setup.md)를 마치고 FR5·UR5e 기본 작업 환경을 준비합니다.
+현재 소스의 native 그리퍼 플러그인과 형상 내보내기 도구가 필요합니다.
+같은 모델을 사용하는 시뮬레이션을 실행한 상태에서 생성 파일을 바꾸지 않습니다.
+
+```bash
+PYTHONPATH=src .venv/bin/python build_workspace.py --component models --workcell fr5_ur5e
+PYTHONPATH=src .venv/bin/python - <<'PYTHON'
+from pathlib import Path
+from mujoco_ros2_manipulation.workcells.config import load_workcell
+from mujoco_ros2_manipulation.grasping.ros_model import build_model
+from mujoco_ros2_manipulation.model_build.integrity import file_sha256
+
+target = Path("runtime/grasp-ros/target-01")
+target.parent.mkdir(parents=True, exist_ok=True)
+build_model(load_workcell("fr5_ur5e"), target)
+print(file_sha256(target / "grasp.json"))
+PYTHON
+```
+
+`target-01`은 새 디렉터리여야 합니다. 생성 모델은 `grasp.json`의 SHA와 함께 선택합니다.
+소스나 기본 모델이 바뀌면 이전 대상을 덮어쓰지 말고 새 대상으로 생성합니다.
+합성 공구의 고정 위치는 FR5 `wrist3` 원점에서 로컬 +Z 방향 95 mm입니다.
+이 값은 이 시험 모델의 배치이며 실물 플랜지 치수나 보정한 TCP를 뜻하지 않습니다.
+
+### 전용 뷰어 실행
+
+일반 조작 화면과 다른 빈 ROS 도메인을 사용합니다. 다음 예시는 도메인 222와 포트 8930을 씁니다.
+사용 중이면 기존 프로세스를 종료하지 말고 다른 빈 번호를 명시합니다.
+
+```bash
+task_ros_grasp_target=runtime/grasp-ros/target-01
+task_ros_grasp_sha256="$(sha256sum "$task_ros_grasp_target/grasp.json" | cut -d ' ' -f 1)"
+source ./manipulation_env.sh
+python3 -m mujoco_ros2_manipulation.grasping.ros_demo_server \
+  --execution-environment "$task_ros_grasp_target" \
+  --manifest-sha256 "$task_ros_grasp_sha256" \
+  --domain 222 --output runtime/grasp-ros/viewer-01 --port 8930
+```
+
+설치형 CLI는 같은 인수를 받는 `manipulation-grasp-ros-viewer`입니다.
+`--output`도 새 디렉터리여야 합니다. 출력한 로컬 주소를 열고 **ROS 집기·운반·놓기 실행**을 누릅니다.
+서버를 여는 것만으로 ROS 작업을 시작하지 않습니다. 브라우저에서는 모델·목표·실행 파일을 바꿀 수 없습니다.
+
+실행 전 모델은 별도 표시 식별자로 보여줍니다. 첫 native 관측이 오면 실제 자세로 전환합니다.
+공통 `viewer.js`를 사용하지만, 이 경로의 49개 형상과 자세는 모두 native 3.12에서 가져옵니다.
+Python MuJoCo 3.14로 팔·손가락·자유 블록의 자세를 다시 계산하지 않습니다.
+드래그 회전, 휠 확대·축소, 오른쪽 드래그 이동과 **전체 맞춤·기본 시점·조작 감도**를 제공합니다.
+관측이 오래되거나 실행이 끝나면 마지막 자세를 현재의 새 관측과 구분합니다.
+
+화면에서는 다음 사실을 따로 확인합니다.
+
+- 물리 집기: 들어 올린 높이와 양쪽 접촉, 상대 자세 변화
+- MoveIt 부착: 장면을 변경한 뒤 다시 읽어 확인한 객체 상태
+- ROS Action: 현재 제출한 동작의 수락과 종료 결과
+- Native 정지 감시: 정지 사유와 양팔·그리퍼 제어기 3개의 비활성 상태
+- 프로세스 정리: native 정상 종료와 자체 소유 프로세스의 회수
+
+Action 성공만으로 집기를 확인하지 않습니다. 취소하면 새 작업 단계를 막고 제어기 정지와
+프로세스 정리를 확인합니다. 그리퍼를 자동으로 열거나 부착을 해제하거나 작업을 다시 실행하지 않습니다.
+취소 뒤 물리 시계가 멈춘 자세를 새로운 집기 유지 증거로 쓰지 않습니다.
+
+### 접촉 검사와 검증 범위
+
+이 명시적 모델에서만 블록–손가락 접촉을 닫기·인출·운반·배치·열기 단계에 허용합니다.
+블록–테이블 접촉은 준비·접근·닫기·인출·배치·열기·완료 단계에 허용하고 운반 중에는 막습니다.
+다른 접촉은 기존 native 정지 감시로 처리합니다. 기본 작업 환경의 전체 접촉 정지 정책은 그대로입니다.
+
+경로 검사에는 양팔과 손가락, 자유 블록과 고정 환경이 포함됩니다. 잡은 블록은 관측한 TCP와의
+상대 자세로 후보 경로의 형상을 계산합니다. 이 계산은 검사 전용이며 실제 물체를 움직이지 않습니다.
+제어기가 따르는 spline을 표본으로 검사하므로 연속 시간의 충돌 부재나 전역 최적 경로를 보장하지 않습니다.
+접촉력은 native 계산의 표본입니다. 자세와 정확히 같은 계산 시점이라는 검증은 하지 않았으며,
+시계가 멈추거나 정지 감시가 잠긴 표본으로 새 물리 집기를 확인하지 않습니다.
+
+현재 소스로 정상 완료·운반 중 취소·시작 중 취소의 실제 ROS 검사를 통과했습니다.
+집은 상태를 30초 더 유지한 뒤 운반·놓기를 완료하는 진단 검사도 통과했습니다.
+브라우저에서도 정상 실행과 부착 상태의 취소, 세 제어기의 정지와 소유 프로세스 정리를 확인했습니다.
+1280×720 화면에서 새 모델의 3D 카드 전체를 확인했습니다. 같은 UI 소스의 기존 390×844 검수 기록도 보존합니다.
+[소스 SHA와 대표 검증 근거](operator/system-direction-2026-10-27/ros-grasp-verification.json)에 실패 원본과 새 실행을 연결했습니다.
+첫 CI에서는 양쪽 접촉력이 유지되는 동안에도 물체가 서서히 처져 5 mm 기준을 넘었습니다.
+같은 현상을 움직이지 않고 잡아 둔 실제 ROS 실행에서도 재현했습니다.
+집기 전용 모델에만 `cone="elliptic"`, `impratio="10"`을 명시해 마찰 계산을 조정했습니다.
+기본 작업 환경 파일, 마찰계수·힘 제한, 처음 닫았을 때의 기준 자세와 기존 검사 한계는 유지합니다.
+NoSlip 후처리는 사용하지 않습니다. [MuJoCo의 느린 미끄럼 설명](https://mujoco.readthedocs.io/en/stable/modeling.html#preventing-slip)을 참고했습니다.
+격리된 60초 유지 진단과 실제 ROS의 30초 유지 후 전체 작업을 따로 확인했으며, 일반 집기 성공률이나 실물 성능을 뜻하지 않습니다.
+
+시작 중 취소로 ROS launch가 보낸 SIGINT에 Python spawner가 종료될 수 있습니다.
+이때는 취소 시점·목표 0개·프로세스 식별·신호 순서·native 정지를 모두 확인한 항목만 예상 중단으로 구분합니다.
+원래 자식 프로세스 오류는 보존하고, native 비정상 종료와 다른 오류는 계속 실패로 처리합니다.
+
+다음 명령은 기반 연결 검사이며 블록 집기 전체를 검증하는 명령이 아닙니다.
+
+```bash
+# 새 출력 디렉터리에서 빈 그리퍼 열기·닫기와 취소 정지를 검사합니다.
+python3 tests/integration/verify_ros_grasp_foundation.py \
+  --domain 223 --output runtime/grasp-ros/foundation-cancel-01 \
+  --execution-environment "$task_ros_grasp_target" \
+  --execution-manifest-sha256 "$task_ros_grasp_sha256" --stop-mode cancel
+# heartbeat 중단은 --stop-mode heartbeat와 별도의 새 output을 사용합니다.
+```
+
+전체 작업 검사는 `verify_ros_grasp_task.py`를 사용합니다. `normal`, `normal_hold`,
+`cancel_transport`, `cancel_startup`을 각각 새 출력 디렉터리와 빈 도메인에서 실행합니다.
+`normal_hold`만 30초 유지 진단을 명시적으로 추가하며, 뷰어에는 이 옵션을 노출하지 않습니다.
+
+```bash
+python3 tests/integration/verify_ros_grasp_task.py \
+  --domain 229 --target "$task_ros_grasp_target" --sha "$task_ros_grasp_sha256" \
+  --case normal_hold --output runtime/grasp-ros/held-task-01
+```
+
+전용 뷰어는 `runtime/grasp-ros/viewer-01/<job ID>/`에 원본 관측·계획·MoveIt 장면·결과와
+소유 프로세스 기록을 남깁니다. 실패한 시작 요청도 보존 개수에 포함합니다.
+일반 조작 화면에서 여는 방법은 [ROS 집기 뷰어 연결](operator_console.md#ros-집기-뷰어-연결)을 참고합니다.
+
+## 독립 MuJoCo 3.14 실험
 
 FR5에 검증용 평행 그리퍼를 추가해 블록에 접근하고, 들어 올려 운반한 뒤 내려놓는
 독립 MuJoCo 시뮬레이션입니다. 기존 ROS 조작 화면의 TCP Pose 계획과는 실행 경로가 다릅니다.
 이 실험은 Python MuJoCo 3.14.0과 로컬 site-Jacobian DLS를 사용합니다.
-기존 ROS native 3.12.0의 그리퍼 제어·MoveIt 장면 부착 연결은 후속 통합 항목입니다.
+독립 실험 당시에는 ROS native 3.12.0의 그리퍼 제어와 MoveIt 부착을 후속 항목으로 남겼습니다.
+아래 결과는 그 독립 실행의 기록이며, 위의 새 ROS 경로 검증으로 합산하지 않습니다.
 
-## 실행과 3D 관측
+### 실행과 3D 관측
 
 먼저 기존 FR5·UR5e 작업 환경의 모델을 생성합니다. `--source`는 이 작업 환경의
 생성 디렉터리이며, `--output`은 아직 존재하지 않는 새 디렉터리여야 합니다.
@@ -34,7 +169,7 @@ PYTHONPATH=src .venv/bin/python -m mujoco_ros2_manipulation.grasping.demo_server
 않으므로 프로세스가 종료됐다는 이유로 물리 정지가 확인됐다고 표시하지 않습니다.
 취소 후 자동 놓기나 자동 재개를 수행하지 않습니다. 서버를 종료하면 자체 소유한 작업만 정리합니다.
 
-## 집기와 부착 판정
+### 집기와 부착 판정
 
 실행 중인 물체는 자유 물체입니다. 물체를 손끝에 용접하거나, 매 스텝 물체 자세를 덮어써서
 집기를 표현하지 않습니다. 원래 FR5의 관절·관성·위치 서보·토크 제한을 복사한 별도 모델에서
@@ -53,7 +188,7 @@ PYTHONPATH=src .venv/bin/python -m mujoco_ros2_manipulation.grasping.demo_server
 나머지 관측 접촉은 다음 적분 전에 실패로 처리합니다. 기존 ROS 장면의 전체 접촉 정지 정책을
 이 실험 때문에 완화하지 않습니다.
 
-## 보존과 재생
+### 보존과 재생
 
 각 실행은 새 작업 디렉터리에 모델·메시 해시, 실행 소스 사본과 해시, 관측 프레임,
 단계·접촉·결과, 소유 프로세스 종료 기록을 보존합니다. 실패 결과도 덮어쓰지 않습니다.
@@ -65,7 +200,7 @@ PYTHONPATH=src .venv/bin/python -m mujoco_ros2_manipulation.grasping.demo_server
 기존 공통 표시 형식의 형상 변환을 사용하므로 손가락 이동이나 자유 물체를 가짜 회전 관절로
 만들지 않습니다. 결과를 일반 기록 뷰어에서 재생할 때는 새 물리 실행과 구분합니다.
 
-## 현재 확인한 범위
+### 독립 실험에서 확인한 범위
 
 독립 Cartesian 시험에서는 정상, 물체 없음, 한쪽 접촉, 미끄러짐, 취소, 예상 밖 접촉을
 검사했습니다. FR5 대표 사례에서는 접근·집기·인출·80 mm 운반·해제·안정화를 확인했습니다.

@@ -38,6 +38,8 @@ packages:
   mujoco_ros2_control:
     repository: mujoco_ros2_control
     path: mujoco_ros2_control
+  manipulation_grasp_plugin:
+    path: native/grasp_ros2_plugin
 runtime:
   repository: mujoco_ros2_control
   package: mujoco_ros2_control
@@ -45,6 +47,7 @@ runtime:
   clock_watchdog_patch: patches/mujoco_ros2_control-clock-watchdog.patch
   contact_stop_patch: patches/mujoco_ros2_control-contact-stop.patch
   monitor_patch: patches/mujoco_ros2_control-step-monitor.patch
+  grasp_policy_patch: patches/mujoco_ros2_control-grasp-policy.patch
   control_loop_shutdown_patch: patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch
   activation_shutdown_patch: patches/mujoco_ros2_control-0.1.2-activation-shutdown.patch
   debs:

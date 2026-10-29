@@ -5,10 +5,14 @@ from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 
 
 class ContactPolicy:
-    def __init__(self, controllers):
+    def __init__(self, controllers, *, gripper_controller=None):
         self.controllers = tuple(controllers)
         if len(self.controllers) != 2 or len(set(self.controllers)) != 2:
             raise ValueError("Expected two different arm controllers")
+        if gripper_controller is not None:
+            if gripper_controller != 'gripper_controller' or gripper_controller in self.controllers:
+                raise ValueError('Only the declared grasp gripper controller may extend the stop group')
+            self.controllers += (gripper_controller,)
         self.native_seen = False
         self.latched = False
 
