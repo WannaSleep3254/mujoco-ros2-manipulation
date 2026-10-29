@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15089,
-      "sha256": "b4c25dcc4b6838fc933362c52798d6401567d364e4d4ddb2e848a8bf12cbcb47"
+      "bytes": 15111,
+      "sha256": "e87c4f74da8a8c05e953eecbfd9d54f9e205e4d38db43f2343eed23b6808e2fc"
     },
     "operator-demos.json": {
-      "bytes": 4653,
-      "sha256": "d35729792c0c7aa67bc23548dcf99fa52a904e5e164b55dc98b26b6c447a2a4a"
+      "bytes": 4675,
+      "sha256": "e427dfbb8359912c1f5455954d6ed77ce348c026853d5e4ff27f64883e6d2196"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -380,16 +380,20 @@
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 81486,
-      "sha256": "19ed1967e20c54c118a7b9cbfc52038d574462c6d878ad0b2c2fc045b0f9b597"
+      "bytes": 83785,
+      "sha256": "bbd1e28a65a6d5791524b9d2058b9b0ba6df3be2a5279bbc448687bae0f6e6c6"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 2021,
-      "sha256": "24062f32e0d2dee3115b29fe93c10c3658b95d6adabaf55ee27bb20a3ba7dc0a"
+      "bytes": 2143,
+      "sha256": "2112118ac4ff9f548377862254ff2ca013d703041958010bc3427200710c07d4"
+    },
+    "operator/system-direction-2026-10-27/native-admission-reservation-verification.json": {
+      "bytes": 74063,
+      "sha256": "57a46e1b248f508f66a937e74600f36e8f2b6a5001d3158a63aaa06dc0e3083d"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 49319,
-      "sha256": "3587d1711a81ddf4178944920ae622cc407bf0e6e7f41b58891d282ecfc9c9ac"
+      "bytes": 51489,
+      "sha256": "31a41ce528cbe82751e9bd683e7b504aacf5eb7c1562dd2cbfd37680ad98a225"
     },
     "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,

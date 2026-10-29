@@ -454,13 +454,13 @@
   },
   "latest_update": {
     "date": "2026-10-29",
-    "document_edition": "1.10",
+    "document_edition": "1.11",
     "original_design_preserved": {
       "document_version": "1.1",
       "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
       "progress_update": "W01-W06 original update retained"
     },
-    "previous_edition": "1.9",
+    "previous_edition": "1.10",
     "previous_evidence_preserved": [
       "synchronized-replay.png",
       "synchronized-verification.json",
@@ -469,23 +469,28 @@
       "ros-grasp-v3.jpg",
       "ros-grasp-v3-verification.json",
       "self-clearance-verification.json",
-      "grasp-observation-verification.json"
+      "grasp-observation-verification.json",
+      "grasp-admission-verification.json",
+      "grasp-admission.jpg"
     ],
-    "grasp_admission": {
-      "evidence": "grasp-admission-verification.json",
-      "image": "grasp-admission.jpg",
-      "implementation_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
-      "source_phase": "actual local source; exact remote followup separate",
-      "original_ci143_preserved": true,
-      "original_delay_layer_unresolved": true,
-      "focused_tests": 47,
-      "python_unit": 1352,
+    "native_relative_reservation": {
+      "evidence": "native-admission-reservation-verification.json",
+      "implementation_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+      "original_ci146_preserved": true,
+      "original_stage_costs_unresolved": true,
+      "fresh_relative_preparation_before_first_reservation": true,
+      "original_one_second_lead_preserved": true,
+      "fixed_absolute_schedules_never_rebased": true,
+      "focused_checks": 50,
+      "python_unit": 1359,
       "python_skipped": 1,
-      "model_tests": 89,
+      "model_tests": 90,
       "model_skipped": 1,
-      "actual_formal_cases": 4,
-      "actual_gui_runs": 4,
-      "no_new_mobile_claim": true
+      "actual_cpu_views_with_demos": true,
+      "actual_prepare_baseline_timing": 3,
+      "actual_matched_comparison_modes": 4,
+      "native_admissions_minted_once": 13,
+      "grasp_sources_unchanged": 15
     },
     "remaining": [
       "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
@@ -862,6 +867,50 @@
       "new_performance_measurements": [],
       "public_data_policy": "Only synthetic geometry, reviewed image and reduced verification facts/source hashes; no private CAD, local paths, process IDs, raw logs or session identifiers.",
       "archived_as": "v1.7 original v3 implementation and local verification; not current v4 results"
+    },
+    {
+      "date": "2026-10-29",
+      "document_edition": "1.10",
+      "original_design_preserved": {
+        "document_version": "1.1",
+        "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
+        "progress_update": "W01-W06 original update retained"
+      },
+      "previous_edition": "1.9",
+      "previous_evidence_preserved": [
+        "synchronized-replay.png",
+        "synchronized-verification.json",
+        "ros-grasp.jpg",
+        "ros-grasp-verification.json",
+        "ros-grasp-v3.jpg",
+        "ros-grasp-v3-verification.json",
+        "self-clearance-verification.json",
+        "grasp-observation-verification.json"
+      ],
+      "grasp_admission": {
+        "evidence": "grasp-admission-verification.json",
+        "image": "grasp-admission.jpg",
+        "implementation_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
+        "source_phase": "actual local source; exact remote followup separate",
+        "original_ci143_preserved": true,
+        "original_delay_layer_unresolved": true,
+        "focused_tests": 47,
+        "python_unit": 1352,
+        "python_skipped": 1,
+        "model_tests": 89,
+        "model_skipped": 1,
+        "actual_formal_cases": 4,
+        "actual_gui_runs": 4,
+        "no_new_mobile_claim": true
+      },
+      "remaining": [
+        "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
+        "Other grippers and objects, general task editing/integration and wider repeated ROS grasp evaluation.",
+        "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
+      ],
+      "new_performance_measurements": [],
+      "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets.",
+      "archived_as": "1.10"
     }
   ]
 }

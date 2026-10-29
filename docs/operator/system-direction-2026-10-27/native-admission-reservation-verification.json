@@ -1,0 +1,1558 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "implementation_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+  "implementation_source_sha256": {
+    "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "9dce36fb7abb495f7f222ff0f196e387875f5e8ca3a0a440937b7271b6ae013e",
+    "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "27a3f401487c9c2a2febc6e70f57ca37bc4c2802a973619e44337322fc964a6e",
+    "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "9f0c88d43f63e5e8a6fe3b6c9290d26211b9504d4248f13e5d1ba104c1b8e40b"
+  },
+  "test_sha256": {
+    "tests/unit/test_self_legacy_dispatch.py": "a7df60a8bd68d0172eaed1d8f828b5ee14554ea7c3106d80352b514a9f72f888",
+    "tests/model/test_native_reservation_model.py": "011ac83085b409d6a80bc53291d1a7f81930ddf8fb35348f62fe5d2a6db1ed23"
+  },
+  "original_ci_evidence": {
+    "failed146": {
+      "original_files_sha256": {
+        "result.json": "fefb876b2dfb963c22da7f99d1be99fc69104eb1bc528b2fd6c888f280427340",
+        "trajectories.json": "325e7f148132aeaf2a4d313759e68bef06f6893ba62942cc3d218c5acea175aa",
+        "physics.json": "f2d91b9d992361f1fd1280cf3d5dabe4969815d4606ad56fe1607e9a12324728",
+        "launch.log": "05e8b9e1714a1642e3e1e8fb59fda2ff4546fc40e65eff6c7d8148074b71aad3"
+      },
+      "artifact_zip_sha256": "996d544c75717c2788e73c68b44c3eca2a99d063003a202ccce3fd80283c8b68",
+      "model_manifest_sha256": "150939e3b45d75caf4f42103c37ebb7b4b7a8bfc08781e778f12c0ca66fa4f19",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "relative_coordinated_curve_sha256": "19530b00826afcce7929ac3770d786a4fbc45d7e22b8b3e65792e01cbc72e133",
+      "status": "failed",
+      "failure_stage": "coordinated_avoidance_plan",
+      "error": {
+        "type": "RuntimeError",
+        "message": "Native self admission exhausted the original future start reservation"
+      },
+      "dispatch_admission": [
+        {
+          "status": "terminal",
+          "scheduled_start_sec": 2.168,
+          "dispatched_goals_before": 0,
+          "dispatched_goals_after": 2,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 797,
+            "sample_dt_max_sec": 0.009984229952920032,
+            "duration_sec": 5.301626105,
+            "minimum_same_arm_distance_m": 0.016556977226326753,
+            "minimum_cross_arm_distance_m": 0.02618000075103239
+          },
+          "actions": [
+            {
+              "arm": "left",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            },
+            {
+              "arm": "right",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            }
+          ]
+        },
+        {
+          "status": "pre_dispatch",
+          "scheduled_start_sec": 16.29,
+          "dispatched_goals_before": 2,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 3578,
+            "sample_dt_max_sec": 0.00999984837065071,
+            "duration_sec": 23.849638364,
+            "minimum_same_arm_distance_m": 0.016486535918168947,
+            "minimum_cross_arm_distance_m": 0.324947613340492
+          }
+        }
+      ],
+      "physics": {
+        "last_state_time_sec": 16.54200000000171,
+        "contact_steps": 0,
+        "contacts": 0,
+        "active_contacts": 0,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "stop_latched": false
+      },
+      "cleanup": {
+        "shutdown_clean": true,
+        "launch_return_code": 0,
+        "process_group_gone": true,
+        "shutdown_timed_out": false,
+        "cleanup_errors": [],
+        "shutdown_failures": []
+      },
+      "job_log_sha256": "6234169183042d642483ea6a9e719dae4a063f727b425756f2dbf20a6528f246"
+    },
+    "passed145": {
+      "original_files_sha256": {
+        "result.json": "e63120c5c17347817dba22afce0e85ebedaa9bd4d07cb2dca2ecb39e8cccc93e",
+        "trajectories.json": "7c02e1d9a88126606519ec7dee134bdb2e70040b8f3683139de32d9e6b57bdde",
+        "physics.json": "e6e6edc6e524b13ab4e3c3092c83e5c37ffc228c827b83b28fa81a0811e8ce6d",
+        "launch.log": "9266b25d30cd1c6166ad13fa237a070f9645d7a3913a0608c05f1fa2c64d7919"
+      },
+      "artifact_zip_sha256": "1405002e8e9dd42964c5785df197cf553a6b711b810b27ff2e4ad59e16833316",
+      "model_manifest_sha256": "150939e3b45d75caf4f42103c37ebb7b4b7a8bfc08781e778f12c0ca66fa4f19",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "relative_coordinated_curve_sha256": "00d0d093630212372e8db553fbc48af651763717367611fccfa2270052a73d1d",
+      "status": "passed",
+      "failure_stage": null,
+      "error": null,
+      "dispatch_admission": [
+        {
+          "status": "terminal",
+          "scheduled_start_sec": 1.592,
+          "dispatched_goals_before": 0,
+          "dispatched_goals_after": 2,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 795,
+            "sample_dt_max_sec": 0.009997246522642556,
+            "duration_sec": 5.298540657,
+            "minimum_same_arm_distance_m": 0.01656154808167397,
+            "minimum_cross_arm_distance_m": 0.025811408935001855
+          },
+          "actions": [
+            {
+              "arm": "left",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            },
+            {
+              "arm": "right",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            }
+          ]
+        },
+        {
+          "status": "terminal",
+          "scheduled_start_sec": 11.466,
+          "dispatched_goals_before": 2,
+          "dispatched_goals_after": 4,
+          "native_self_clearance": {
+            "complete": true,
+            "samples": 2679,
+            "sample_dt_max_sec": 0.009998182211088391,
+            "duration_sec": 17.856753429,
+            "minimum_same_arm_distance_m": 0.016555933424847364,
+            "minimum_cross_arm_distance_m": 0.2771264470769196
+          },
+          "actions": [
+            {
+              "arm": "left",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            },
+            {
+              "arm": "right",
+              "submission_started": true,
+              "sent": true,
+              "accepted": true,
+              "terminal_seen": true,
+              "terminal_status": 4,
+              "terminal_error_code": 0
+            }
+          ]
+        }
+      ],
+      "physics": {
+        "last_state_time_sec": 29.9139999999943,
+        "contact_steps": 0,
+        "contacts": 0,
+        "active_contacts": 0,
+        "invalid_values": 0,
+        "time_discontinuities": 0,
+        "pair_overflow": 0,
+        "stop_latched": false
+      },
+      "cleanup": {
+        "shutdown_clean": true,
+        "launch_return_code": 0,
+        "process_group_gone": true,
+        "shutdown_timed_out": false,
+        "cleanup_errors": [],
+        "shutdown_failures": []
+      }
+    }
+  },
+  "original_ci_links": {
+    "failed146": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40874617599",
+    "separate_success145": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/40874343013"
+  },
+  "diagnosis": {
+    "original146": "Two setup goals succeeded; avoidance geometry passed but no avoidance goals were submitted because the remaining original start lead was at most0.1 second. The original exact rejection clock and remaining margin were not recorded, so passage of the absolute start itself is not established. Original failure remains preserved.",
+    "ordering": "The old fresh caller minted clock_last +1 second before full native relative-spline evaluation, large evidence persistence and ready/current guards.",
+    "original146_exact_wall_layer": "Unresolved: no per-stage elapsed timing or final residual-margin trace was preserved.",
+    "comparison145": "Different selected relative curve,2679 samples versus3578 in146; not an identical-path retry or a performance comparison."
+  },
+  "unchanged_original_curve_replay": {
+    "evidence_sha256": "003e7861f9673f02bb76b032666b7eff2de1420155be12f0f3347c65321e5ebe",
+    "unchanged_relative_curve": true,
+    "samples": 3578,
+    "duration_sec": 23.849638364,
+    "minimum_same_arm_distance_m": 0.016486535918168947,
+    "minimum_cross_arm_distance_m": 0.324947613340492,
+    "ros_goals_sent": 0,
+    "scope": "Single offline diagnostic; elapsed time does not reconstruct original CI delay."
+  },
+  "implementation": {
+    "fresh_callers": [
+      "InterferenceVerification.execute_joint",
+      "TimingVerification.run baseline and timing",
+      "ComparisonVerification.run safe left/right/avoidance"
+    ],
+    "order": "Copy exact relative commands and initial state; full geometry, strict model validation and large evidence checkpoint; ready/current checks; reserve original1-second lead once; stamp only absolute headers; final identity/current/freshness/cancel/guard/remaining-start checks; one submission.",
+    "proof_binding": [
+      "arm and joint order",
+      "exact positions/velocities/accelerations/effort/time_from_start",
+      "commanded initial and observed anchor",
+      "policy and source hash",
+      "native components/library and compiled evaluator",
+      "model XML/manifest and declared asset stat identities"
+    ],
+    "reservation_authority": "Private owner-held immutable one-use seal; mutable diagnostic evidence cannot alter authority.",
+    "fixed_schedule": "Existing stamped absolute schedules expire without rebasing or retry.",
+    "intentional_negative_control": "Explicit collision comparison retains its original Action path.",
+    "diagnostics": "Bounded stage timings, receipt ages, observed start, mint count, remaining margin and goal counts, including pre-submission failures. Primary error survives persistence failure."
+  },
+  "focused_regression": {
+    "total_tests": 50,
+    "passed": 50,
+    "failed": 0,
+    "log_sha256": "72e35266743d331fb696aadc51088e4f9b4bd5099f48e5d5f3ee40713c419c3d",
+    "deterministic_slow_prepare": {
+      "geometry_sec": 1.5,
+      "checkpoint_sec": 0.75,
+      "total_before_mint_sec": 2.25,
+      "original_future_lead_sec": 1.0,
+      "mint_count": 1
+    },
+    "negative_checks": [
+      "Expired fixed schedule rejects zero new goals without rebase",
+      "Stale receipts reject before mint",
+      "Cancel/guard/model mutation/late final margin reject zero goals",
+      "Checkpoint input mutation cannot seal unchecked curve or initial",
+      "Mutable evidence cannot extend private reservation",
+      "Single-use token refuses second dispatch",
+      "Late goal observer policy/geometry/freshness checks retained"
+    ],
+    "exact_command_checks": [
+      "Fractional clock15.29 stamps16s290000000ns",
+      "Partial-arm delayed knots and held peer preserved without synthetic peer goal",
+      "Two-arm order, delays and all derivatives preserved"
+    ],
+    "real_generated_model_test": "Strict current workcell/model metadata and declared mesh assets bound; isolated asset replacement invalidates identity, production assets remain untouched."
+  },
+  "unchanged": {
+    "planning_min_self_distance_m": 0.01,
+    "observed_start_min_self_distance_m": 0.001,
+    "native_sample_dt_sec": 0.01,
+    "original_future_lead_sec": 1.0,
+    "minimum_final_start_margin_sec": 0.1,
+    "all_relative_spline_fields": true,
+    "no_automatic_rebase": true,
+    "no_command_retry": true,
+    "no_collision_filter_relaxation": true,
+    "grasp_sources_models_and_thresholds": true
+  },
+  "actual_new_source_validation": {
+    "schema_version": "native-reservation-actual-reduction-v1",
+    "date": "2026-10-29",
+    "implementation_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+    "source_snapshot_sha256": "c23a4f13e6849d1fef3eac3744dcf71888e47e78cb0b91dc3328bbff77ec925d",
+    "implementation_source_sha256": {
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "9dce36fb7abb495f7f222ff0f196e387875f5e8ca3a0a440937b7271b6ae013e",
+      "src/mujoco_ros2_manipulation/workcells/verify_timing.py": "27a3f401487c9c2a2febc6e70f57ca37bc4c2802a973619e44337322fc964a6e",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference_comparison.py": "9f0c88d43f63e5e8a6fe3b6c9290d26211b9504d4248f13e5d1ba104c1b8e40b"
+    },
+    "test_sha256": {
+      "tests/unit/test_self_legacy_dispatch.py": "a7df60a8bd68d0172eaed1d8f828b5ee14554ea7c3106d80352b514a9f72f888",
+      "tests/model/test_native_reservation_model.py": "011ac83085b409d6a80bc53291d1a7f81930ddf8fb35348f62fe5d2a6db1ed23"
+    },
+    "original_failure_and_focused_regression_summary_sha256": "c2107a8768749a91946ae930272b27fe135c579221a81a7f74a31d18651c81de",
+    "outer_cpu_views": {
+      "result_sha256": "4b237b11cea8a08caaa067e6a510c175affaabc3656d3f138e1c7e35b00ee90a",
+      "log_sha256": "d987b2987e389f323ebc2f5b7adee1583ea01395da705ccd00d544c041165d30",
+      "status": "passed",
+      "code_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "cpu_views_checked": true,
+      "demo_cpu_views_checked": true,
+      "saved_plan_read_only_checked": true,
+      "process_group_gone": true,
+      "launch_return_code": 0,
+      "egl_requested": false,
+      "jpeg_requested": false,
+      "browser_requested": false
+    },
+    "fresh_prepare_baseline_timing": [
+      {
+        "variant": "prepare",
+        "original_sha256": {
+          "result.json": "0397aa8794b1cfb3d2a3ab71eece01055674f121d2a711fbf57519849ad3c266",
+          "trajectories.json": "28ba58703589840761197e37999cdd55ce3875d09878d451ad3600e483ed2e8f",
+          "physics.json": "2884eb3d4672dd882640ff77bae01e1efcb3ccb532b0d3a8f128029ffedb25ea",
+          "launch.log": "e44e553e9c59bfc007a0ead2102f8abaa660e7907c39362413a0ae9b518f873a"
+        },
+        "status": "passed",
+        "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "dispatch_admission": [
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 1.764,
+            "reserved_from_clock_sec": 0.764,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.058547638,
+              "prepare_checkpoint": 0.008582486,
+              "prepare_total": 0.217631394
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.958495773,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 797,
+              "sample_dt_max_sec": 0.009985503905839188,
+              "duration_sec": 5.3023025740000005,
+              "minimum_same_arm_distance_m": 0.01656296449611603,
+              "minimum_cross_arm_distance_m": 0.02611494505690018
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 0,
+            "goals_after": 2,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 9,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+          },
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 12.024,
+            "reserved_from_clock_sec": 11.024,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.277610666,
+              "prepare_checkpoint": 0.149972511,
+              "prepare_total": 0.584733228
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.754742244,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 4497,
+              "sample_dt_max_sec": 0.00999907663296895,
+              "duration_sec": 29.967232669,
+              "minimum_same_arm_distance_m": 0.016513486527469808,
+              "minimum_cross_arm_distance_m": 0.23113774584725064
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 2,
+            "goals_after": 4,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 9,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+          }
+        ],
+        "timing": {},
+        "physics": {
+          "contacts": 0,
+          "contact_steps": 0,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "pair_overflow": 0,
+          "stop_latched": false
+        },
+        "cleanup": {
+          "shutdown_clean": true,
+          "launch_return_code": 0,
+          "process_group_gone": true,
+          "shutdown_timed_out": false,
+          "shutdown_failures": []
+        },
+        "retained_cpu_native_view_fresh_sequences": 400
+      },
+      {
+        "variant": "baseline",
+        "original_sha256": {
+          "result.json": "72c98f459d53f8ba25c66cdad68aa682268bdc5a417592ec59f092ee1335d505",
+          "trajectories.json": "1ef68c378c05637824762ecfe35189b1aa6c2f61f0015dfe48f26fb6df8e1278",
+          "physics.json": "9e558ff183d925034d1baa24746956ffa16a67743d0eed5f79764aea4e29cd94",
+          "launch.log": "3ce38ee771d1611fbf10bc646434910d575b446293a85af3efd6ec2c7525a77c"
+        },
+        "status": "passed",
+        "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "dispatch_admission": [
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 1.6,
+            "reserved_from_clock_sec": 0.6000000000000001,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.053634936,
+              "prepare_checkpoint": 0.000455128,
+              "prepare_total": 0.134766317
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.959332446,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 797,
+              "sample_dt_max_sec": 0.009985503905839188,
+              "duration_sec": 5.3023025740000005,
+              "minimum_same_arm_distance_m": 0.01656296449611603,
+              "minimum_cross_arm_distance_m": 0.02611494505690018
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 0,
+            "goals_after": 2,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 9,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+          },
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 9.785999999,
+            "reserved_from_clock_sec": 8.785999999,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.278332855,
+              "prepare_checkpoint": 0.000928739,
+              "prepare_total": 0.422650094
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.757959243,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 4497,
+              "sample_dt_max_sec": 0.00999907663296895,
+              "duration_sec": 29.967232669,
+              "minimum_same_arm_distance_m": 0.016513486527469808,
+              "minimum_cross_arm_distance_m": 0.23113774584725064
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 2,
+            "goals_after": 4,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 9,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+          }
+        ],
+        "timing": {
+          "timing_mode": "baseline",
+          "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+          "timing_plan_sha256": "50b71473a91fdf79bb42e2b67b2f2281b26a77ef781816587d0bea3bd6d0787b",
+          "delayed_arm": "left",
+          "departure_delay_sec": 2.2,
+          "motion_duration_sec": 29.967232669,
+          "goal_terminal_statuses": [
+            4,
+            4
+          ]
+        },
+        "physics": {
+          "contacts": 0,
+          "contact_steps": 0,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "pair_overflow": 0,
+          "stop_latched": false
+        },
+        "cleanup": {
+          "shutdown_clean": true,
+          "launch_return_code": 0,
+          "process_group_gone": true,
+          "shutdown_timed_out": false,
+          "shutdown_failures": []
+        },
+        "retained_cpu_native_view_fresh_sequences": 369
+      },
+      {
+        "variant": "timing",
+        "original_sha256": {
+          "result.json": "9fecc352193ba34b6b1e73eee8fa72918caa96a257b0322cf91242ded65f100c",
+          "trajectories.json": "d1a4d949a59d127e9b8b44250a55c7d1394ff14e97d51ed71b7bf1c3380867af",
+          "physics.json": "52c3fa4f966437d59815fbfb1826ffb21ffdbad9a9d3c7ca897042c061b7849b",
+          "launch.log": "b91f55fd3e0f3ba7cdf442a2fe3d376bc9b511695896356ca7ed1bf405a9ceee"
+        },
+        "status": "passed",
+        "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+        "motion_checks_passed": true,
+        "physics_checks_passed": true,
+        "dispatch_admission": [
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 1.626,
+            "reserved_from_clock_sec": 0.626,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.0573996,
+              "prepare_checkpoint": 0.000491688,
+              "prepare_total": 0.141954135
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.9533524399999999,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 797,
+              "sample_dt_max_sec": 0.009985503905839188,
+              "duration_sec": 5.3023025740000005,
+              "minimum_same_arm_distance_m": 0.01656296449611603,
+              "minimum_cross_arm_distance_m": 0.02611494505690018
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 0,
+            "goals_after": 2,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 9,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+          },
+          {
+            "status": "terminal",
+            "reservation_mint_count": 1,
+            "reservation_lead_sec": 1.0,
+            "scheduled_start_sec": 8.701999999,
+            "reserved_from_clock_sec": 7.701999999,
+            "prepare_stage_elapsed_sec": {
+              "native_full_scan": 0.090867394,
+              "prepare_checkpoint": 0.001098047,
+              "prepare_total": 0.195249957
+            },
+            "minimum_recorded_final_current_start_margin_sec": 0.929280472,
+            "native_self_clearance": {
+              "complete": true,
+              "samples": 1489,
+              "sample_dt_max_sec": 0.009990561714287693,
+              "duration_sec": 8.531939704,
+              "minimum_same_arm_distance_m": 0.01656296449611603,
+              "minimum_cross_arm_distance_m": 0.03051322197033167
+            },
+            "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+            "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+            "evaluator": {
+              "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+              "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+              "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+            },
+            "goals_before": 2,
+            "goals_after": 4,
+            "action_results": [
+              {
+                "arm": "left",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              },
+              {
+                "arm": "right",
+                "submission_started": true,
+                "sent": true,
+                "accepted": true,
+                "terminal_seen": true,
+                "terminal_status": 4,
+                "terminal_error_code": 0
+              }
+            ],
+            "recorded_boundary_count": 9,
+            "preparation_checkpoint_before_reservation_recorded": true,
+            "reservation_boundary_count": 1,
+            "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+          }
+        ],
+        "timing": {
+          "timing_mode": "timing",
+          "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+          "timing_plan_sha256": "50b71473a91fdf79bb42e2b67b2f2281b26a77ef781816587d0bea3bd6d0787b",
+          "delayed_arm": "left",
+          "departure_delay_sec": 2.2,
+          "motion_duration_sec": 8.531939704,
+          "goal_terminal_statuses": [
+            4,
+            4
+          ]
+        },
+        "physics": {
+          "contacts": 0,
+          "contact_steps": 0,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "pair_overflow": 0,
+          "stop_latched": false
+        },
+        "cleanup": {
+          "shutdown_clean": true,
+          "launch_return_code": 0,
+          "process_group_gone": true,
+          "shutdown_timed_out": false,
+          "shutdown_failures": []
+        },
+        "retained_cpu_native_view_fresh_sequences": 357
+      }
+    ],
+    "saved_relative_bundle": {
+      "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+      "timing_plan_sha256": "50b71473a91fdf79bb42e2b67b2f2281b26a77ef781816587d0bea3bd6d0787b",
+      "comparison_sha256": "bf5c10fe51df09796650f87504ad0f8d26c31e0e84517b1967f96872d5278628",
+      "relative_curve_sha256": {
+        "setup": "ad073c756cc21998420d1cc818eadc14120f4bab7894190a4f1f7b29b26a20a7",
+        "left": "bfe03817c2bc1fed5d197c26d6ecd37527a90a989dc92ad28b9fc46e6af48f89",
+        "right": "fe163a8fbe1871e684cf37c0b78b0d4cd7d147638ad618491da4af1be01ea70b",
+        "avoidance": "94c4f034fcd9705341c98011210d74b91b6017cce949c5028424b96056a6b2c5"
+      },
+      "timing_relative_curve_sha256": [
+        "9574fa89cf2f14e62b92f06030ee11ee6d9f61bf50e43f84b53b06b80d160658",
+        "fe163a8fbe1871e684cf37c0b78b0d4cd7d147638ad618491da4af1be01ea70b"
+      ],
+      "delayed_arm": "left",
+      "departure_delay_sec": 2.2,
+      "matched_report": true,
+      "scope": "All variants reuse the identified relative bundle/plan. Only headers are stamped; exact knot/derivative/delay/order preservation is separately unit-tested."
+    },
+    "comparison_four_modes": {
+      "index_sha256": "af81548bdb612923c178107f10f9d4dd11a2cedb1e92ffa29c44bb387608773f",
+      "matched_bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+      "all_command_hashes_equal_across_modes": true,
+      "runs": [
+        {
+          "variant": "left",
+          "original_sha256": {
+            "result.json": "1a56d8920206c2c82a81cc84287a6d82d4726297cba2724f4ccc26bf8657a771",
+            "trajectories.json": "dfd5783fefe8407a349273d0971297b18b754ab5e1af992437e8ae5d4caca24a",
+            "physics.json": "33d59b83dd4b4a66bfd0e957d4480afc509102d3c7feb2c0c287796cf6367dac",
+            "launch.log": "1075a35ffd0f4dd985bb840031f1ee5ed566d5e5e55d09d508868f148a3623c3"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.962,
+              "reserved_from_clock_sec": 1.9620000000000002,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.054805133,
+                "prepare_checkpoint": 0.000644063,
+                "prepare_total": 0.173568186
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.949654154,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.553999999,
+              "reserved_from_clock_sec": 8.553999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.058933828,
+                "prepare_checkpoint": 0.00086544,
+                "prepare_total": 0.146821746
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.976531898,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 951,
+                "sample_dt_max_sec": 0.00998728659936976,
+                "duration_sec": 6.331939704,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.05582802024605544
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 3,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 8,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "motion_duration_sec": 6.331939704,
+            "goal_terminal_statuses": [
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "2901b4b1e63df0b926573807a0f6c9e87eb814bc71729caf2faee3ae39c30709",
+          "matched_relative_commands": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "command_hashes": {
+              "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+              "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+              "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+              "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+            },
+            "motion_duration_sec": 6.331939704,
+            "comparison_duration_sec": 31.967232669,
+            "goal_terminal_statuses": [
+              4
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 4.5404393300696455e-07,
+            "post_stop_drift_rad": null
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": false,
+            "stop_reason": ""
+          },
+          "contact_guard": {
+            "latched": false,
+            "reason": "",
+            "phase": "ready",
+            "controllers": {
+              "left_controller": "active",
+              "joint_state_broadcaster": "active",
+              "right_controller": "active"
+            },
+            "deactivation_requests": 0,
+            "error": ""
+          },
+          "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+        },
+        {
+          "variant": "right",
+          "original_sha256": {
+            "result.json": "811a37b5b5324858b8318eadc4aa35ee3efe74f2421c09db132301ec99172431",
+            "trajectories.json": "18145df67054b60e84d277e181f89de30bb09906ac25b73be6bbc8e9e8207083",
+            "physics.json": "ee98fedf26d295289255b552a9ee1b18ff226b9ca9c2caab01d913f2384f10c2",
+            "launch.log": "efa7381b86c00d44c7877799a0b067e5e48c1f26aa19fef61f1cd2e9fd8e4051"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.934,
+              "reserved_from_clock_sec": 1.9340000000000002,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.052621039,
+                "prepare_checkpoint": 0.000641425,
+                "prepare_total": 0.158338593
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.949847034,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.527999999,
+              "reserved_from_clock_sec": 8.527999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.059119208,
+                "prepare_checkpoint": 0.001032195,
+                "prepare_total": 0.151533024
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.976446691,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 951,
+                "sample_dt_max_sec": 0.00998728659936976,
+                "duration_sec": 6.331939704,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.16187366986152785
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 3,
+              "action_results": [
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 8,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "motion_duration_sec": 6.331939704,
+            "goal_terminal_statuses": [
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "2b27a05f1117bd3fbcdbd6948dfdd1fe45b6ad8f2964936511552a8e8f104eac",
+          "matched_relative_commands": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "command_hashes": {
+              "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+              "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+              "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+              "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+            },
+            "motion_duration_sec": 6.331939704,
+            "comparison_duration_sec": 31.967232669,
+            "goal_terminal_statuses": [
+              4
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 1.6335699363212441e-06,
+            "post_stop_drift_rad": null
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": false,
+            "stop_reason": ""
+          },
+          "contact_guard": {
+            "latched": false,
+            "reason": "",
+            "phase": "ready",
+            "controllers": {
+              "joint_state_broadcaster": "active",
+              "right_controller": "active",
+              "left_controller": "active"
+            },
+            "deactivation_requests": 0,
+            "error": ""
+          },
+          "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+        },
+        {
+          "variant": "collision",
+          "original_sha256": {
+            "result.json": "bb80b1643bfca320106544d2e95050a63c3d0f3ac3cc80ef5480864c22523ba0",
+            "trajectories.json": "8b022cb02eb67e289e29bfdd9cdedbbe9f32eae9f9f9fad329efac4184d0f409",
+            "physics.json": "30b20cc083a0f166a6c1440b8f97fb8cff6515b1e736a3e3107affd958c2e24a",
+            "launch.log": "df6044949aa8b400bf79b372f4b9cfde0a3c2fe98009dcb5e45e45bf13377c78"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.928,
+              "reserved_from_clock_sec": 1.928,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.052506441,
+                "prepare_checkpoint": 0.000673573,
+                "prepare_total": 0.167447824
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.949184344,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "motion_duration_sec": 6.331939704,
+            "goal_terminal_statuses": [
+              5,
+              5
+            ]
+          },
+          "physics": {
+            "contacts": 3,
+            "contact_steps": 1,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": true
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "65d1eb4060a0708e818606fc061398d4ecd12ee757312428b876db866bda42e8",
+          "matched_relative_commands": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "command_hashes": {
+              "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+              "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+              "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+              "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+            },
+            "motion_duration_sec": 6.331939704,
+            "comparison_duration_sec": 31.967232669,
+            "goal_terminal_statuses": [
+              5,
+              5
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 0.0,
+            "post_stop_drift_rad": 0.0,
+            "native_remaining_motion_at_contact_sec": 3.2379397029991672
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": true,
+            "stop_reason": "contact"
+          },
+          "contact_guard": {
+            "latched": true,
+            "reason": "contact",
+            "phase": "stopped",
+            "controllers": {
+              "right_controller": "inactive",
+              "joint_state_broadcaster": "active",
+              "left_controller": "inactive"
+            },
+            "deactivation_requests": 1,
+            "error": ""
+          },
+          "meaning": "Explicit intentional inter-arm collision negative control. Only setup uses safe reservation admission; the existing deliberate collision commands bypass that safe path. Native physical contact stop and controller deactivation, not a new manual cancel/injection, stop the two goals."
+        },
+        {
+          "variant": "avoidance",
+          "original_sha256": {
+            "result.json": "7b52fa7512d7708c139317c7b4ac89a70f30e3b682c4c3413094535cf8116449",
+            "trajectories.json": "b12dc11d2d8ce9973ebabbe9fe8701c7b2cad6ab33948270dbb7c37f1a7438c8",
+            "physics.json": "64555aa10b25cb4172d32e34d155846977ceb2116d530076eb189f89379928a3",
+            "launch.log": "fead5ffe41edca77f891bca9ef9cf201f21dbf2bbb0c6897b1195e4341c539b3"
+          },
+          "status": "passed",
+          "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+          "motion_checks_passed": true,
+          "physics_checks_passed": true,
+          "dispatch_admission": [
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 2.97,
+              "reserved_from_clock_sec": 1.9700000000000002,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.05834728,
+                "prepare_checkpoint": 0.000815326,
+                "prepare_total": 0.176158322
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.946125642,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 797,
+                "sample_dt_max_sec": 0.009985503905839188,
+                "duration_sec": 5.3023025740000005,
+                "minimum_same_arm_distance_m": 0.01656296449611603,
+                "minimum_cross_arm_distance_m": 0.02611494505690018
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 0,
+              "goals_after": 2,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            },
+            {
+              "status": "terminal",
+              "reservation_mint_count": 1,
+              "reservation_lead_sec": 1.0,
+              "scheduled_start_sec": 9.859999999,
+              "reserved_from_clock_sec": 8.859999999,
+              "prepare_stage_elapsed_sec": {
+                "native_full_scan": 0.276897701,
+                "prepare_checkpoint": 0.000879846,
+                "prepare_total": 0.431565275
+              },
+              "minimum_recorded_final_current_start_margin_sec": 0.753576996,
+              "native_self_clearance": {
+                "complete": true,
+                "samples": 4497,
+                "sample_dt_max_sec": 0.00999907663296895,
+                "duration_sec": 29.967232669,
+                "minimum_same_arm_distance_m": 0.016513486527469808,
+                "minimum_cross_arm_distance_m": 0.23113774584725064
+              },
+              "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+              "model_manifest_sha256": "7f36287ef05095dd235b9d5afa3d13b23d71ae5aeb4479e6d2e8f37bc682dd8d",
+              "evaluator": {
+                "base_source_sha256": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+                "self_source_sha256": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+                "library_sha256": "fa8277fbbb4675a219fae4c4538b77971da79a7bc0812b1fad7f2df41523ecfc"
+              },
+              "goals_before": 2,
+              "goals_after": 4,
+              "action_results": [
+                {
+                  "arm": "left",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                },
+                {
+                  "arm": "right",
+                  "submission_started": true,
+                  "sent": true,
+                  "accepted": true,
+                  "terminal_seen": true,
+                  "terminal_status": 4,
+                  "terminal_error_code": 0
+                }
+              ],
+              "recorded_boundary_count": 9,
+              "preparation_checkpoint_before_reservation_recorded": true,
+              "reservation_boundary_count": 1,
+              "boundary_scope": "minimum_recorded_final_current_start_margin_sec is from recorded current-identity/geometry boundaries before goal submission. Negative post-completion terminal margins are not pre-submission admission failures."
+            }
+          ],
+          "timing": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "motion_duration_sec": 29.967232669,
+            "goal_terminal_statuses": [
+              4,
+              4
+            ]
+          },
+          "physics": {
+            "contacts": 0,
+            "contact_steps": 0,
+            "invalid_values": 0,
+            "time_discontinuities": 0,
+            "pair_overflow": 0,
+            "stop_latched": false
+          },
+          "cleanup": {
+            "shutdown_clean": true,
+            "launch_return_code": 0,
+            "process_group_gone": true,
+            "shutdown_timed_out": false,
+            "shutdown_failures": []
+          },
+          "verifier_log_sha256": "1d2a7c04db2bbfaeef86979cb9317e12858a10ad4d6b37dfc47992795b4f3779",
+          "matched_relative_commands": {
+            "bundle_sha256": "3b7508939fd6789d5e38e12de3653fbda63095f7a7fc70c00ae1865bc31c5962",
+            "command_hashes": {
+              "setup": "821cf8ffba9f58ba06620dbac6384506985d1a43f21d447e4b6d4ff2fb488c7a",
+              "left": "e1cdce01eb50e213cc67b6546f698da6297e169b4037a2edb609411212225fc6",
+              "right": "d94adf28e148144125599fd4d378f472df104f3a324d51edcdaaa10533071f22",
+              "avoidance": "5cc433a5d5fa32c9efd1eb210c92f08cb3588ef90e3c1c61c04df4face891dec"
+            },
+            "motion_duration_sec": 29.967232669,
+            "comparison_duration_sec": 31.967232669,
+            "goal_terminal_statuses": [
+              4,
+              4
+            ],
+            "verifier_cancel_requests": 0,
+            "contact_injection_requests": 0,
+            "stationary_peer_drift_rad": 0.0,
+            "post_stop_drift_rad": null
+          },
+          "native_stop": {
+            "stop_enabled": true,
+            "stop_latched": false,
+            "stop_reason": ""
+          },
+          "contact_guard": {
+            "latched": false,
+            "reason": "",
+            "phase": "ready",
+            "controllers": {
+              "right_controller": "active",
+              "left_controller": "active",
+              "joint_state_broadcaster": "active"
+            },
+            "deactivation_requests": 0,
+            "error": ""
+          },
+          "meaning": "Safe fresh-relative branch: one reservation per prepared command group, no retry/rebase."
+        }
+      ],
+      "scope": "Four modes share one relative bundle and command identities. No aggregate wall-time benchmark, success-rate or continuous-clearance guarantee is inferred."
+    },
+    "scope": "One new local actual ROS/CPU-view exercise on frozen source, separate from original CI145/146 and zero-goal offline replay. Timings/margins are diagnostics of these runs, not performance or reliability rates. Contact/control CPU demos are separate negative controls.",
+    "privacy": "Whitelisted facts and hashes only; public source paths are repository-relative. No host paths/process/job/session/run identifiers or full commands.",
+    "broad_checks": {
+      "unit": {
+        "run": 1359,
+        "skipped": 1,
+        "failures": 0,
+        "log_sha256": "999aeec52d89c832782cc7b31cfa744e3c9fabc0fec7dd391f128fb16f6818f6"
+      },
+      "model": {
+        "run": 90,
+        "skipped": 1,
+        "failures": 0,
+        "log_sha256": "b67572050c30d04c505355f6749e1a6dfab69fb89e8b7a1c2155e70cbdb91b21"
+      },
+      "package": {
+        "audit_sha256": "2639b27ac23a5d33cdd5af20f7e8d6ed11994825c830897b96900dfaf0eabc5f",
+        "source_commit": "70c03a867e389d92af99c249e21ca0c307939ca3",
+        "tracked_files": 200,
+        "working_tree_matches_source_commit": true,
+        "artifacts": {
+          "wheel": {
+            "filename": "mujoco_ros2_manipulation-0.2.0-py3-none-any.whl",
+            "sha256": "824d5d26050c7eb6dfadcd8898b7b8053e7cbbd89a5bb0197ccc7b5f7929982e",
+            "bytes": 1224176,
+            "matched": 200,
+            "missing": [],
+            "different": [],
+            "unexpected_package_files": []
+          },
+          "sdist": {
+            "filename": "mujoco_ros2_manipulation-0.2.0.tar.gz",
+            "sha256": "fd411b7cd147632ecb6a45371fe0287e0a62c3377ae85b244158f9b29d79c685",
+            "bytes": 1097968,
+            "matched": 200,
+            "missing": [],
+            "different": [],
+            "unexpected_package_files": []
+          }
+        },
+        "build_log_sha256": "02d9f11b5cb9529adab91580a419865bd24559960f942b11caba195616d3ee6c",
+        "scope": "Tracked Python/static package files in wheel/sdist only. Native binaries/config remain workspace resources."
+      }
+    }
+  },
+  "evidence_summary_sha256": {
+    "original_and_focused": "c2107a8768749a91946ae930272b27fe135c579221a81a7f74a31d18651c81de",
+    "actual_new_source": "3d998437b370011733cb775f0156fb011b67752b919494e1c2e4e942f06d4175"
+  },
+  "previous_evidence": {
+    "edition": "1.10",
+    "preserved_assets_sha256": {
+      "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
+      "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
+      "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
+      "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
+      "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
+      "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
+      "self-clearance-verification.json": "8b20e697c33d8afefba515276a9f25876ddd02c601f3818d2269363c15f93f2b",
+      "grasp-observation-verification.json": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275",
+      "grasp-admission-verification.json": "2f64bff5567d31cca36b106b3baff195b177fdd21b0f3746f41c2d0f958a5b25",
+      "grasp-admission.jpg": "49ebaf600673218433fb83fd12441d57682d2952dfd12fa4b25f235cbde8f7fa"
+    },
+    "grasp_source_files_unchanged": 15,
+    "scope": "Existing ROS-grasp/native/UI and synchronized-replay implementations and their previous actual proof remain unchanged. These earlier runs were not re-executed or aggregated as the new relative-reservation checks.",
+    "unchanged_formal_and_browser_grasp_source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_task.py": "72a99c9cc7d4e73266fc87cc87e4bb24386493f7eb40fa5507e6bf65e4941515",
+      "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e",
+      "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+      "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+      "src/mujoco_ros2_manipulation/grasping/ros_admission.py": "d7e612e4b006d0fe7473c726b8f07417333354ed58f7490e8f7056c5970d6278",
+      "src/mujoco_ros2_manipulation/grasping/contract.py": "549421dcb39266b30de2c75a94ee1791286f29236c4c396a562ee1c2256846ac",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+      "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+      "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+      "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+      "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+      "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5"
+    },
+    "additional_demo_server_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "10423fae3e60a54208bb1ecc31bf78f29e5cd177ea86b557414619ced8dfdd5b"
+    }
+  },
+  "limits": [
+    "The original exception identifies remaining estimated future-start lead at most 0.1 seconds; the exact original failure clock and stage costs were not recorded. It does not prove the absolute scheduled time had already passed at the exception.",
+    "The original saved admission checkpoint predates observed-start assignment. Missing observed-start details in that file do not mean its check was not reached.",
+    "Original CI145 chose a different relative curve than CI146. Its success is a separate observation, not a retry of the failed path or a performance comparison.",
+    "The original unchanged curve was re-evaluated offline with zero ROS goals. This is not an actual replay of the original dispatch or a reconstruction of its wall delay.",
+    "The 2.25-second injected preparation check is deterministic regression evidence. New actual stage durations and remaining margins are individual diagnostics, not a speedup, reliability rate, or original CI146 timing.",
+    "Planning 10 mm and observed-start 1 mm self-clearance thresholds are sampled experimental settings. They do not certify continuous-time clearance, physical hardware safety, exact FCL shape behavior, or unknown tracking errors.",
+    "Intentional collision comparison is a distinct negative control with its existing contact/cancel behavior. It is not counted as zero-contact safe execution.",
+    "Latest-head remote CI, protected merge, main followup and publication are recorded separately from these frozen local results."
+  ],
+  "status": "local_checks_and_actual_ros_passed_original_failure_preserved",
+  "publication_scope": "Reduced synthetic-case facts, repository-relative source paths and reviewed hashes; no raw logs, full curves, host paths, process/session/job identifiers, CAD or model assets.",
+  "publication_checks": {
+    "repository_check": {
+      "return_code": 0,
+      "log_sha256": "94bbaea21c33a6d14f5869dadeb8eaca98ba0660bbb8d7dbbcb913735f3882fa"
+    },
+    "report_schema_and_evidence_files": 130,
+    "report_validate_log_sha256": "dc5ccfd0469169c50cd4e7327fe00a891d5b90278d014f7fee6736e300978577",
+    "generated_report_files_checked": 21,
+    "generated_check_log_sha256": "6324b4e9db57764492028182637d67817e9ffef624850dbd5a58ddabad280978",
+    "diff_whitespace_check": "passed",
+    "scope": "Final local publication checks after the concrete evidence file was written. Latest remote checks/merges/publication remain separate."
+  }
+}
