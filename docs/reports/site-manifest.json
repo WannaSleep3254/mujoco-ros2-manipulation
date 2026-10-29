@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15078,
-      "sha256": "3fd1ed95f04a53f66050c36abe24e46d94cefda665eef8343e0c029a1287b82e"
+      "bytes": 15089,
+      "sha256": "b4c25dcc4b6838fc933362c52798d6401567d364e4d4ddb2e848a8bf12cbcb47"
     },
     "operator-demos.json": {
-      "bytes": 4642,
-      "sha256": "998b1bc67ccec9e066012bbb2241485d6fe2f1d37e9453dcb498ddbbf40c2b28"
+      "bytes": 4653,
+      "sha256": "d35729792c0c7aa67bc23548dcf99fa52a904e5e164b55dc98b26b6c447a2a4a"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -367,21 +367,29 @@
       "bytes": 42589,
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
+    "operator/system-direction-2026-10-27/grasp-admission-verification.json": {
+      "bytes": 42342,
+      "sha256": "2f64bff5567d31cca36b106b3baff195b177fdd21b0f3746f41c2d0f958a5b25"
+    },
+    "operator/system-direction-2026-10-27/grasp-admission.jpg": {
+      "bytes": 52134,
+      "sha256": "49ebaf600673218433fb83fd12441d57682d2952dfd12fa4b25f235cbde8f7fa"
+    },
     "operator/system-direction-2026-10-27/grasp-observation-verification.json": {
       "bytes": 26068,
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 78797,
-      "sha256": "f85c1227a4da392fd4f69d12b70b359ed2c8542c30b9e660e742f512efe26346"
+      "bytes": 81486,
+      "sha256": "19ed1967e20c54c118a7b9cbfc52038d574462c6d878ad0b2c2fc045b0f9b597"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 2703,
-      "sha256": "5b268e7242ef90d9139a5a96814f21440d4229009e5d31651cefea56e92ea857"
+      "bytes": 2021,
+      "sha256": "24062f32e0d2dee3115b29fe93c10c3658b95d6adabaf55ee27bb20a3ba7dc0a"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 47378,
-      "sha256": "8a54ea8c965f5cebbfc89d272f9aeb4495ac7fbc70c0a592014ed106db699c99"
+      "bytes": 49319,
+      "sha256": "3587d1711a81ddf4178944920ae622cc407bf0e6e7f41b58891d282ecfc9c9ac"
     },
     "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,

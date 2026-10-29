@@ -36,11 +36,13 @@ from .ros_observation import GraspObservationStore, ObservationUnavailable
 from .ros_planning_scene import RosGraspPlanningScene, _observed_pose, _relative, _pose_error, _rotate
 from .ros_runtime import check_grasp_runtime
 from .ros_target import load_ros_grasp_target
+from .ros_admission import AcceptedObservationRecorder, ReadOnlyAdmissionWorker, file_stats
 
 
 CONTROLLERS = ("left_controller", "right_controller", "gripper_controller")
 MAX_TASK_WALL_SEC = 240
 MAX_FRAME_BYTES = 64 * 1024 * 1024
+MAX_RECEIPT_BYTES = 2 * 1024 * 1024
 
 
 class RosGraspTaskError(RuntimeError):
@@ -54,6 +56,49 @@ class RosGraspCancelled(RosGraspTaskError):
 def _require(condition, message):
     if not condition:
         raise RosGraspTaskError(message)
+
+
+def identity_inventory(target, pinned_paths):
+    """The already checked target's files, assets and generated input manifests."""
+    paths = {Path(path).absolute() for path in pinned_paths}
+    manifest = target.manifest
+    paths.update(target.output/name for name in ("grasp.json", *manifest["outputs"]))
+    paths.update(Path(name) for name in manifest["dependencies"])
+    paths.update(Path(__file__).with_name(name) for name in manifest["inputs"]["producer_sha256"])
+    base = target.base
+    report = json.loads((base.output/"source.json").read_text())
+    paths.update(base.output/name for name in ("source.json", *report["outputs"]))
+    paths.update(base.root/name for name in report["inputs"])
+    paths.update((target.output, base.output))
+    for instance in base.instances:
+        profile = instance.profile
+        report = json.loads((profile.output/"source.json").read_text())
+        paths.add(profile.output/"source.json")
+        paths.add(profile.output)
+        paths.update(profile.root/name for name in report["integrity"]["inputs"]["files"])
+        paths.update(profile.output/name for name in report["integrity"]["outputs"])
+        git = profile.source_path("repository_path")/".git"
+        if git.is_dir():
+            paths.add(git)
+            paths.update(p for p in (git/"HEAD", git/"index", git/"packed-refs") if p.exists())
+            if (git/"refs").exists():
+                paths.add(git/"refs")
+            for index,p in enumerate((git/"refs").rglob("*")):
+                _require(index < 2048, "manufacturer Git reference inventory exceeds its bound")
+                paths.add(p)
+        elif git.exists():
+            raise ValueError("manufacturer Git indirection needs an explicit checked stat inventory")
+    _require(0 < len(paths) <= 2048, "immutable file inventory exceeds its admission bound")
+    return tuple(sorted(map(str, paths)))
+
+
+def verify_identity_proof(proof, *, manifest_sha256, expected_hashes, inventory, current_stats=file_stats):
+    """Owner verifies a read-only result and fast file identity after ROS work."""
+    _require(proof.get("manifest_sha256") == manifest_sha256 and proof.get("observed_sha256") == expected_hashes,
+             "task target/source/native binary changed before submission")
+    _require(set(proof.get("before", {})) == set(inventory) and proof.get("before") == proof.get("after"),
+             "task identity files changed during read-only validation")
+    _require(current_stats(inventory) == proof["after"], "task identity files changed after validation")
 
 
 def contact_evidence(value, reference=None):
@@ -322,17 +367,18 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
     record["diagnostic_hold"] = dict(requested_simulation_sec=diagnostic_hold_sec,
         enabled=diagnostic_hold_sec > 0, production_default_sec=0., gui_option=False,
         reference_policy="original closed-grasp reference is retained; no tolerance or contact gate change")
-    process = node = context = executor = target = evaluator = scene = life = frames = log_stream = timer = publisher = None
+    process = node = context = executor = target = evaluator = scene = life = frames = receipts = log_stream = timer = publisher = None
+    identity_worker = None
+    identity_paths = ()
     clients, pending, handles = {}, [], []
     phase = [0]
     store = None
     latest = dict(observation=None, observed_monotonic_ns=None, clock_progress_observed_monotonic_ns=None,
-                  guard=None, guard_observed_monotonic_ns=None, error=None)
+                  guard=None, guard_observed_monotonic_ns=None, accepted_context=None, error=None)
     ready = False
     baseline_right = None
     held_reference = None
     monitor_held = False
-    frames_bytes = 0
     start_wall = time.monotonic()
     ros = None
     source_hashes = {}
@@ -360,8 +406,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                     "current_hold_verification"):
             if key in saved:
                 public[key] = saved[key]
-        if "owned_process_group" in saved:
-            public["owned_process_group"] = saved["owned_process_group"]
+        for key in ("owned_process_group", "owned_validation_process_group"):
+            if key in saved:
+                public[key] = saved[key]
         public.update(phase=record["stage"], native_phase=phase[0],
                       actions=deepcopy(record["actions"][-8:]), check_count=len(record["checks"]))
         native = observation
@@ -385,6 +432,27 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
     def save():
         atomic_json(result_path, snapshot())
         emit()
+
+    def admission_context():
+        now = time.monotonic_ns()
+        observed = latest["accepted_context"]
+        if observed is None:
+            return dict(now_monotonic_ns=now, native_sequence=None)
+        return dict(now_monotonic_ns=now, **observed,
+            capture_age_sec=(now-observed["capture_monotonic_ns"])/1e9,
+            receipt_age_sec=(now-observed["received_monotonic_ns"])/1e9)
+
+    def timed_admission(admission, label, work):
+        row = dict(stage=label, before=admission_context())
+        admission["stages"].append(row)
+        started = time.monotonic()
+        try:
+            return work()
+        except BaseException as error:
+            row["error"] = dict(type=type(error).__name__, message=str(error)[:512])
+            raise
+        finally:
+            row.update(elapsed_sec=time.monotonic()-started, after=admission_context())
 
     def stage(name):
         record["stage"] = name
@@ -450,17 +518,19 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         return value
 
     def check_file_identity():
-        target.validate()
-        _require(all(file_sha256(Path(path)) == digest for path, digest in input_hashes.items()),
-                 "task source/native binary changed before submission")
+        _require(identity_worker is not None, "read-only admission worker is not ready")
+        proof = identity_worker.check(pump=spin, abort=abort)
+        verify_identity_proof(proof, manifest_sha256=manifest_sha256, expected_hashes=input_hashes, inventory=identity_paths)
+        return proof
 
     def scene_mutation_guard():
         abort()
-        check_file_identity()
+        proof = check_file_identity()
         if phase[0] == 6:
             evidence = contact_evidence(current().payload)
             _require(not evidence["bilateral_contact"] and .06 <= evidence["open_gap_m"] <= .08,
                      "physical release changed before MoveIt detachment")
+        verify_identity_proof(proof, manifest_sha256=manifest_sha256, expected_hashes=input_hashes, inventory=identity_paths)
         abort()
 
     def scene_observation():
@@ -482,16 +552,24 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         action = dict(stage=name, controller="gripper_controller" if gripper else "left_controller",
                       sent_monotonic_sec=None, submission_started=False, accepted=None, terminal_observed=False,
                       physical_grasp_claim=False, goal_tolerance=tolerance, units="m" if gripper else "rad")
+        admission = dict(schema_version=1, stages=[], goal_submission_count=0, automatic_retry=False)
+        action["admission"] = admission
         def prepare():
             record["actions"].append(action)
-            save()
+            timed_admission(admission, "prepare_checkpoint", save)
         def identity():
-            check_file_identity()
+            proof = timed_admission(admission, "target_file_binary_hash", check_file_identity)
             if expected_scene is not None:
-                _require(scene.review_identity() == expected_scene, "MoveIt scene changed before action submission")
+                def confirm_scene():
+                    _require(scene.review_identity() == expected_scene, "MoveIt scene changed before action submission")
+                timed_admission(admission, "scene_identity", confirm_scene)
             if geometry_guard is not None:
-                geometry_guard()
+                timed_admission(admission, "current_geometry", geometry_guard)
+            timed_admission(admission, "final_file_stat", lambda: verify_identity_proof(proof,
+                manifest_sha256=manifest_sha256, expected_hashes=input_hashes, inventory=identity_paths))
         def submit():
+            _require(admission["goal_submission_count"] == 0, "an admission can submit only one goal")
+            admission["goal_submission_count"] += 1
             action.update(submission_started=True, sent_monotonic_sec=time.monotonic())
             try:
                 future = client.send_goal_async(goal)
@@ -500,7 +578,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                 raise
             pending.append((future, action))
             return future
-        future = admitted_action_submission(abort, prepare, identity, submit)
+        future = admitted_action_submission(lambda: timed_admission(admission, "current_guard_cancel", abort),
+            prepare, identity, lambda: timed_admission(admission, "one_goal_submit", submit))
         handle = wait_result(future, 5., "grasp action acceptance")
         action["accepted"] = bool(handle.accepted)
         _require(handle.accepted, "trajectory action was rejected")
@@ -668,7 +747,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                       target_fingerprint=target.fingerprint, clearance=evaluator.metadata(),
                       plugin_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/observation.cpp"))
         source_paths = [Path(__file__), *[Path(__file__).with_name(name) for name in
-            ("ros_observation.py", "ros_planning_scene.py", "ros_distance.py", "contract.py")],
+            ("ros_observation.py", "ros_planning_scene.py", "ros_distance.py", "ros_admission.py", "contract.py")],
             *[ROOT/"src/mujoco_ros2_manipulation/workcells"/name for name in
               ("pose_adapter.py", "planning_adapter.py", "interference.py")],
             ROOT/"native/grasp_ros2_plugin/src/observation.cpp", ROOT/"native/grasp_policy.hpp",
@@ -682,6 +761,12 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             ROOT/"ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"]
         record["runtime_binary_sha256"] = {str(path): file_sha256(path) for path in binaries}
         input_hashes = dict(source_hashes, **record["runtime_binary_sha256"])
+        identity_paths = identity_inventory(target, input_hashes)
+        identity_worker = ReadOnlyAdmissionWorker(dict(target_directory=str(target.output),
+            manifest_sha256=manifest_sha256, input_hashes=input_hashes, inventory=list(identity_paths)),
+            output/"identity-worker")
+        record["owned_validation_process_group"] = identity_worker.process.pid
+        save()  # publish ownership before any request can start target/Git work
         store = GraspObservationStore(run_id=identifier, model_sha256=evaluator.model_sha256,
             plugin_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/observation.cpp"),
             fifo_source_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/ordered_fifo.hpp"),
@@ -727,33 +812,31 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         guard_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
                                durability=DurabilityPolicy.TRANSIENT_LOCAL)
         frames = (output/"native-observations.jsonl").open("wb")
+        receipts = (output/"native-receipts.jsonl").open("wb")
+        recorder = AcceptedObservationRecorder(frames, receipts, max_frame_bytes=MAX_FRAME_BYTES, max_receipt_bytes=MAX_RECEIPT_BYTES)
 
         def observation_callback(message):
-            nonlocal frames_bytes
             received_ns = time.monotonic_ns()
             accepted = store.ingest(message.data, receipt_sec=received_ns*1e-9)
             if not accepted.accepted:
                 if "duplicate or reordered" not in accepted.reason:
                     latest["error"] = accepted.reason
                 return
+            value = json.loads(message.data)  # already schema/identity checked
             try:
-                observation = store.snapshot(now_sec=time.monotonic())
-            except ObservationUnavailable:
-                # A stopped native clock is expected during cleanup. It cannot
-                # become physical evidence merely because publication repeats.
+                observation = recorder.record(value, received_ns=received_ns,
+                    eligible_snapshot=lambda: store.snapshot(now_sec=time.monotonic()))
+            finally:
+                latest["accepted_context"] = recorder.last_context
+            if observation is None:
+                # Raw accepted frame and its original receipt remain recorded;
+                # ineligible or stopped data never becomes physical authority.
                 return
             previous = latest["observation"]
             if previous is None or observation.time_sec > previous.time_sec:
                 latest["clock_progress_observed_monotonic_ns"] = received_ns
             latest["observation"] = observation
             latest["observed_monotonic_ns"] = received_ns
-            value = observation.payload
-            encoded = (json.dumps(value, separators=(",", ":"), allow_nan=False)+"\n").encode()
-            frames_bytes += len(encoded)
-            if frames_bytes > MAX_FRAME_BYTES:
-                latest["error"] = "native observation record limit exceeded"
-                return
-            frames.write(encoded)
             emit("observation", value)
 
         def guard_callback(message):
@@ -902,6 +985,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
     except BaseException as error:
         record.update(status="cancelled" if isinstance(error, RosGraspCancelled) else "failed",
                       failure_stage=record["stage"], error=dict(type=type(error).__name__, message=str(error)))
+        record["failure_observation_context"] = admission_context()
+        if identity_worker is not None:
+            record["validation_worker_at_failure"] = identity_worker.snapshot()
         if life is not None and life.stage not in ("succeeded", "cancelled", "failed"):
             if isinstance(error, RosGraspCancelled):
                 life.cancel()
@@ -993,6 +1079,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             evaluator.close()
         if frames is not None:
             frames.close()
+        if receipts is not None:
+            receipts.close()
         log = log_path.read_text(errors="replace")
         failures, native = process_failures(log), _native_exit_proof(log)
         interruptions = expected_startup_spawner_interruptions(log, startup_cancel=startup_cancel,
@@ -1011,17 +1099,36 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             record["status"] = "failed"
             record.setdefault("error", dict(type="NativeCleanupFailure", message="clean native shutdown was not observed"))
         try:
-            if target is not None:
-                target.validate()
-            _require(all(file_sha256(Path(path)) == digest for path, digest in input_hashes.items()),
-                     "task source/native binary changed during execution")
+            if identity_worker is not None:
+                if identity_worker.snapshot()["abandoned"]:
+                    record["final_source_validation"] = dict(status="unavailable",
+                        reason="validation generation was abandoned; late result cannot authorize a new check")
+                else:
+                    proof = identity_worker.check(pump=lambda: time.sleep(.005), abort=lambda: None)
+                    verify_identity_proof(proof, manifest_sha256=manifest_sha256,
+                        expected_hashes=input_hashes, inventory=identity_paths)
+                    record["final_source_validation"] = dict(status="passed", generation=proof["generation"])
+            else:
+                record["final_source_validation"] = dict(status="not_started", reason="native admission was not initialized")
         except Exception as error:
-            record["status"] = "failed"
+            if record["status"] == "succeeded":
+                record["status"] = "failed"
             record["final_identity_error"] = str(error)
+            record["final_source_validation"] = dict(status="failed", error=str(error)[:512])
+        finally:
+            if identity_worker is not None:
+                stopped_worker = identity_worker.close()
+                record["cleanup"].update(native_process_clean=clean, readonly_validation_worker=stopped_worker)
+                if not stopped_worker["quiescent"]:
+                    record["cleanup"]["clean"] = False
+                    record["status"] = "failed"
+                    record["cleanup_errors"].append("read-only validation worker did not become quiescent")
         record.update(stage="complete", completed_utc=utc_now(), wall_sec=time.monotonic()-start_wall,
                       launch_log_sha256=file_sha256(log_path))
         if (output/"native-observations.jsonl").exists():
             record["native_observations_sha256"] = file_sha256(output/"native-observations.jsonl")
+        if (output/"native-receipts.jsonl").exists():
+            record["native_receipts_sha256"] = file_sha256(output/"native-receipts.jsonl")
         if (output/"physics.json").exists():
             record["physics_sha256"] = file_sha256(output/"physics.json")
         save()
