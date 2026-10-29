@@ -24,6 +24,7 @@ from mujoco_ros2_manipulation.workcells.motion_diagnostics import measure_endpoi
 from mujoco_ros2_manipulation.workcells.planning_budget import PlanningBudget, PlanningBudgetExceeded
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 from mujoco_ros2_manipulation.workcells.environment_clearance import EnvironmentClearanceRejected
+from mujoco_ros2_manipulation.workcells.self_clearance import SelfClearanceRejected, require_self_clearance
 from mujoco_ros2_manipulation.workcells.operation_contract import describe_operation
 from mujoco_ros2_manipulation.workcells.execution_adapter import ExecutionLedger, ExecutionAttempt
 from mujoco_ros2_manipulation.workcells.pose_planning import PosePlanningMixin
@@ -58,7 +59,8 @@ def load_server():
         decode_message=decode_message,validate_command=validate_command,validate_cancel=validate_cancel,
         validate_approval=validate_approval,require=require,Spline=Spline,PlanningBudget=PlanningBudget,
         PlanningBudgetExceeded=PlanningBudgetExceeded,PlanCandidatesExhausted=type("Candidates",(RuntimeError,),{}),
-        EnvironmentClearanceRejected=EnvironmentClearanceRejected,file_sha256=file_sha256,
+        EnvironmentClearanceRejected=EnvironmentClearanceRejected, SelfClearanceRejected=SelfClearanceRejected,
+        require_self_clearance=require_self_clearance, file_sha256=file_sha256,
         describe_operation=describe_operation,
         TimingRejected=type("Timing",(RuntimeError,),{}),measure_endpoints=measure_endpoints,
         path_clearance_diagnostic=path_clearance_diagnostic,evaluate_path=evaluate_path,
@@ -94,6 +96,12 @@ class ReviewServerTests(unittest.TestCase):
         n.policy = dict(min_inter_arm_distance_m=.02,tracking_reserve_m=.01,sample_dt_sec=.01)
         n.environment_policy = dict(schema_version=1,min_environment_distance_m=.005,tracking_reserve_m=.01)
         n.environment_threshold_m = .015
+        n.self_policy = dict(schema_version=1,planning_min_self_distance_m=.01,
+            observed_start_min_self_distance_m=.001,sample_dt_sec=.01)
+        n.self_policy_path = n.directory/'self-policy.yaml'
+        n.self_policy_path.write_text('test self policy snapshot')
+        n.self_policy_sha256 = file_sha256(n.self_policy_path)
+        n._native_cache_provenance = Mock(return_value=dict(engine='MuJoCo 3.12.0',self_collision='test-native-component'))
         n.environment_policy_path = n.directory / "environment-policy.yaml"
         n.environment_policy_path.write_text("test policy snapshot")
         n.environment_policy_sha256 = file_sha256(n.environment_policy_path)
@@ -121,10 +129,13 @@ class ReviewServerTests(unittest.TestCase):
         n.quiet = Mock()
         n.get_logger = lambda:SimpleNamespace(warning=Mock())
         n.validity_of = Mock(return_value=SimpleNamespace(valid=True))
-        n.evaluator = SimpleNamespace(at=Mock(return_value=dict(distance_m=.1,tips_m=[[0,0,0],[1,0,0]],
+        n.evaluator = SimpleNamespace(self_collision_enabled=True, at=Mock(return_value=dict(distance_m=.1,tips_m=[[0,0,0],[1,0,0]],
             environment=dict(distance_m=.1,bodies=["left","fixture"],
                 nearest_points_m=[[0,0,0],[.1,0,0]],pair_count=2,
-                scope="moving_robot_vs_fixed_environment"))))
+                scope="moving_robot_vs_fixed_environment"),
+            self_collision=dict(distance_m=.02,geom_ids=[7,13],bodies=["left_forearm","left_wrist3"],
+                nearest_points_m=[[0.,0.,0.],[.02,0.,0.]],pair_count=24,scope="within_each_arm"))))
+        n.opened_self_identity = deepcopy(n._self_admission_identity())
         self.curve = Spline(["left","right"],[
             dict(t=0.0,p=[0.0,0.0],v=[],a=[]),dict(t=.1,p=[.1,.1],v=[],a=[])])
         n.coordinated_path = Mock(return_value=self.curve)

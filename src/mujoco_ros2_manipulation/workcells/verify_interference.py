@@ -29,6 +29,8 @@ from mujoco_ros2_manipulation.workcells.interference import (
     sampled_parallel,
 )
 from mujoco_ros2_manipulation.workcells.distance import DistanceEvaluator
+from .path_quality import evaluate_path
+from .self_clearance import (self_policy_snapshot, require_self_clearance, self_evaluator_identity, SelfClearanceRejected)
 from mujoco_ros2_manipulation.workcells.plan_selection import (
     MAX_PLAN_CANDIDATES,
     select_clearance_plan,
@@ -58,6 +60,7 @@ class ParallelPlanRejected(RuntimeError):
 
 class InterferenceVerification(WorkcellVerification):
     def __init__(self, cell, progress=None, case="dual_arm_crossing"):
+        self.self_policy_path, self.self_policy, self.self_policy_sha256 = self_policy_snapshot(cell)
         super().__init__(cell, progress)
         self.case_path, self.case = load_case(cell, case)
         self.case_sha256 = file_sha256(self.case_path)
@@ -78,6 +81,7 @@ class InterferenceVerification(WorkcellVerification):
                 initial_rad=self.initial,
                 assessments=self.assessments,
                 executions=self.executions,
+                self_policy=self.self_policy, self_policy_sha256=self.self_policy_sha256,
                 **self.evidence,
             ),
         )
@@ -119,7 +123,7 @@ class InterferenceVerification(WorkcellVerification):
             selection["candidates"] = candidates
             self.save_evidence("clearance_candidate_selection")
 
-        with DistanceEvaluator(self.cell) as evaluator:
+        with DistanceEvaluator(self.cell, self_collision=True) as evaluator:
             selection["evaluator"] = evaluator.metadata()
             return select_clearance_plan(
                 propose,
@@ -128,7 +132,7 @@ class InterferenceVerification(WorkcellVerification):
                 evaluator,
                 policy,
                 lambda curve: self.assess([curve], start),
-                save,
+                save, self_policy=self.self_policy,
             )
 
     def assess(self, curves, initial, *, complete=True):
@@ -193,6 +197,86 @@ class InterferenceVerification(WorkcellVerification):
         )
         self.dispatch(commands, scheduled_start=scheduled_start)
         return assessment
+
+    def dispatch(self, trajectories, *, inject_cancel_at=None, scheduled_start=None):
+        """Apply the native self gate to setup, generated and saved schedules.
+
+        Timing/Comparison inherit this boundary. The deliberately colliding
+        VisibleContactDemo inherits WorkcellVerification directly and does not.
+        """
+        commands = list(trajectories)
+        curves = [Spline.from_ros(trajectory) for _, trajectory in commands]
+        initial = dict(self.commanded)
+        # Independent saved comparison runs submit one arm only. Validate the
+        # other arm at its existing hold without sending it a synthetic goal.
+        names = {name for curve in curves for name in curve.names}
+        held = [name for name in initial if name not in names]
+        if held:
+            duration = max(curve.duration for curve in curves)
+            curves.append(Spline(held, [dict(t=t, p=[initial[name] for name in held], v=[], a=[])
+                for t in (0., duration)]))
+        require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
+                "Self-clearance policy changed; restart and replan")
+        with DistanceEvaluator(self.cell, self_collision=True) as evaluator:
+            identity = self_evaluator_identity(evaluator, self.cell.root)
+            result = evaluate_path(curves, initial, self.cell, evaluator,
+                dt=self.self_policy["sample_dt_sec"],
+                self_reject_below=self.self_policy["planning_min_self_distance_m"])
+            record = dict(scheduled_start_sec=scheduled_start,
+                initial_commanded_rad=initial, native_self_clearance=result,
+                evaluator=evaluator.metadata(), status="pre_dispatch", dispatched_goals_before=self.dispatched)
+            self.evidence.setdefault("dispatch_admission", []).append(record)
+            self.save_evidence("native_self_dispatch_gate")
+            if not result["complete"]:
+                record["status"] = "rejected"
+                self.save_evidence("native_self_dispatch_rejected")
+                raise SelfClearanceRejected("Native self-clearance rejected the legacy schedule before dispatch")
+            # Persistence and callbacks above must not authorize an old state.
+            self.ready_guard()
+            require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
+                    "Self-clearance policy changed before dispatch")
+            record["observed_start"] = require_self_clearance(evaluator, self.state(),
+                self.self_policy["observed_start_min_self_distance_m"])
+            require(scheduled_start is None or scheduled_start-self.clock_last > .1,
+                    "Native self admission exhausted the future start reservation; no goals dispatched")
+            previous_abort = getattr(self, "dispatch_abort", None)
+            def admission_abort():
+                if previous_abort is not None:
+                    previous_abort()
+                require(not self.contact_guard or not self.contact_guard["latched"], "Native contact guard latched")
+                ledger = getattr(self, "execution_ledger", None)
+                if ledger is not None and any(not item.submission_started for item in ledger.attempts):
+                    require(scheduled_start is None or scheduled_start-self.clock_last > .1,
+                            "Native self admission start reservation expired before submission")
+                    require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
+                            "Self-clearance policy changed before submission")
+                    require(self_evaluator_identity(evaluator, self.cell.root) == identity,
+                            "Native self-clearance implementation changed before submission")
+                    require_self_clearance(evaluator, self.state(), self.self_policy["observed_start_min_self_distance_m"])
+                if previous_abort is not None:
+                    previous_abort()
+            self.dispatch_abort = admission_abort
+            primary = None
+            try:
+                return super().dispatch(commands, inject_cancel_at=inject_cancel_at, scheduled_start=scheduled_start)
+            except BaseException as error:
+                primary = error
+                record["error"] = dict(type=type(error).__name__, message=str(error)[:2000])
+                raise
+            finally:
+                self.dispatch_abort = previous_abort
+                record.update(status="failed" if primary is not None else "terminal", dispatched_goals_after=self.dispatched,
+                    execution_transport=deepcopy(getattr(self, "execution_transport", None)),
+                    contact_guard=deepcopy(self.contact_guard))
+                try:
+                    self.save_evidence("dispatch_terminal")
+                except BaseException as error:
+                    record["persistence_error"] = dict(type=type(error).__name__, message=str(error)[:2000])
+                    # A diagnostic write must not replace the original action,
+                    # cancellation or native failure. Without a primary failure,
+                    # a missing terminal record remains a verification failure.
+                    if primary is None:
+                        raise
 
     def before_avoidance_execution(self):
         pass

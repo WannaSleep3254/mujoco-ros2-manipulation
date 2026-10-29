@@ -1,0 +1,5 @@
+schema_version: 1
+# Experimental sampled simulation margins; not tracking bounds or hardware safety.
+planning_min_self_distance_m: 0.010
+observed_start_min_self_distance_m: 0.001
+sample_dt_sec: 0.01

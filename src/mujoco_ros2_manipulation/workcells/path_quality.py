@@ -2,6 +2,7 @@
 import math
 from mujoco_ros2_manipulation.workcells.interference import finite
 from mujoco_ros2_manipulation.workcells.environment_clearance import require_environment_result
+from .self_clearance import require_self_result
 
 
 MAX_SCHEDULE_SAMPLES = 5000
@@ -76,12 +77,16 @@ def _sample_states(curves, initial, times):
 
 
 def evaluate_states(states, cell, evaluator, *, reject_below=None, checkpoint=None,
-                    environment_reject_below=None):
+                    environment_reject_below=None, self_reject_below=None):
     if environment_reject_below is not None and (
             type(environment_reject_below) not in (int, float)
             or not math.isfinite(environment_reject_below) or environment_reject_below <= 0):
         raise ValueError("Expected a positive finite environment threshold")
+    if self_reject_below is not None and (type(self_reject_below) not in (int, float)
+            or not math.isfinite(self_reject_below) or self_reject_below <= 0):
+        raise ValueError("Expected a positive finite self-clearance threshold")
     previous = None
+    self_minimum = None
     minimum = None
     environment_minimum = None
     count = 0
@@ -111,17 +116,31 @@ def evaluate_states(states, cell, evaluator, *, reject_below=None, checkpoint=No
             environment = require_environment_result(result.get("environment"))
             if environment_minimum is None or environment["distance_m"] < environment_minimum["distance_m"]:
                 environment_minimum = dict(time_sec=t, state_rad=state, **environment)
+        if "self_collision" in result or self_reject_below is not None:
+            own = require_self_result(result.get("self_collision"))
+            if self_minimum is None or own["distance_m"] < self_minimum["distance_m"]:
+                self_minimum = dict(time_sec=t, state_rad=state, **own)
+            if self_reject_below is not None and own["distance_m"] < self_reject_below:
+                partial = dict(complete=False, samples=count, minimum=minimum,
+                    self_minimum=self_minimum, rejection_kind="self_clearance")
+                if environment_minimum is not None:
+                    partial["environment_minimum"] = environment_minimum
+                return partial
         if reject_below is not None and result["distance_m"] < reject_below:
             partial = dict(complete=False, samples=count, minimum=minimum)
             if environment_minimum is not None:
                 partial.update(environment_minimum=environment_minimum,
                                rejection_kind="native_clearance")
+            if self_minimum is not None:
+                partial["self_minimum"] = self_minimum
             return partial
         if (environment_reject_below is not None
                 and environment["distance_m"] < environment_reject_below):
-            return dict(complete=False, samples=count, minimum=minimum,
-                        environment_minimum=environment_minimum,
-                        rejection_kind="environment_clearance")
+            partial = dict(complete=False, samples=count, minimum=minimum,
+                        environment_minimum=environment_minimum, rejection_kind="environment_clearance")
+            if self_minimum is not None:
+                partial["self_minimum"] = self_minimum
+            return partial
         if previous is not None:
             for n in travel:
                 travel[n] += abs(state[n] - previous[n])
@@ -145,14 +164,16 @@ def evaluate_states(states, cell, evaluator, *, reject_below=None, checkpoint=No
         minimum=minimum,
         distance_semantics="Signed closest collision-geometry distance, sampled; not continuous-time certified",
     )
+    if self_minimum is not None:
+        result["self_minimum"] = self_minimum
     if environment_minimum is not None:
         result["environment_minimum"] = environment_minimum
     return result
 
 
 def evaluate_path(curves, initial, cell, evaluator, *, dt=0.01, reject_below=None, checkpoint=None,
-                  environment_reject_below=None):
+                  environment_reject_below=None, self_reject_below=None):
     return evaluate_states(
         sample_schedule(curves, initial, dt), cell, evaluator, reject_below=reject_below,
-        checkpoint=checkpoint, environment_reject_below=environment_reject_below
+        checkpoint=checkpoint, environment_reject_below=environment_reject_below, self_reject_below=self_reject_below
     )
