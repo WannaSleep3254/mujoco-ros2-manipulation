@@ -104,6 +104,11 @@ def load_execution_target(base_cell, directory=None, manifest_sha256=None):
     if not candidate.is_dir() or candidate.is_symlink():
         raise ValueError("Execution environment must be an existing unlinked directory")
     directory = candidate.resolve(strict=True)
+    if (directory/'grasp.json').exists():
+        if (directory/'overlay.json').exists():
+            raise ValueError("Execution target cannot claim both fixed-environment and grasp artifacts")
+        from ..grasping.ros_target import load_ros_grasp_target
+        return load_ros_grasp_target(base_cell,directory,manifest_sha256)
     report = check_overlay_identity(directory, base_cell, expected_sha256=manifest_sha256)
     target = ExecutionTarget(base_cell, directory, manifest_sha256, canonical(report))
     _preflight(directory, base_cell, manifest_sha256, report)

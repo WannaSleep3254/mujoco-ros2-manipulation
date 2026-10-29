@@ -2,21 +2,28 @@
 from copy import deepcopy
 import math
 from .environment_clearance import require_environment_result
+from .self_clearance import require_self_result
 
 
 def measure_endpoints(initial, target, evaluator, threshold_m, *, checkpoint=None,
-                      environment_threshold_m=None):
+                      environment_threshold_m=None, self_threshold_m=None):
     """Use the injected evaluator at both complete named states, including failures."""
     if type(threshold_m) not in (int, float) or not math.isfinite(threshold_m) or threshold_m <= 0:
         raise ValueError("Expected a positive finite clearance threshold")
     if environment_threshold_m is not None and (type(environment_threshold_m) not in (int, float)
             or not math.isfinite(environment_threshold_m) or environment_threshold_m <= 0):
         raise ValueError("Expected a positive finite environment threshold")
+    if self_threshold_m is not None and (type(self_threshold_m) not in (int, float)
+            or not math.isfinite(self_threshold_m) or self_threshold_m <= 0):
+        raise ValueError("Expected positive self-clearance endpoint threshold")
     result = dict(threshold_m=threshold_m, endpoints={}, endpoint_violations=[],
                   scope="Sampled cross-arm geometry only; separate from MoveIt validity")
     if environment_threshold_m is not None:
         result.update(environment_threshold_m=environment_threshold_m,
                       scope="Sampled inter-arm and moving-robot/fixed-environment geometry; separate from MoveIt validity")
+    if self_threshold_m is not None:
+        result["self_threshold_m"] = self_threshold_m
+        result["scope"] += "; includes native within-each-arm self collision geometry"
     for name, state in (("start", initial), ("goal", target)):
         if checkpoint:
             checkpoint()
@@ -28,6 +35,10 @@ def measure_endpoints(initial, target, evaluator, threshold_m, *, checkpoint=Non
             environment = require_environment_result(value.get("environment"))
             value["environment_below_policy"] = environment["distance_m"] < environment_threshold_m
             value["below_policy"] |= value["environment_below_policy"]
+        if self_threshold_m is not None:
+            own = require_self_result(value.get("self_collision"))
+            value["self_below_policy"] = own["distance_m"] < self_threshold_m
+            value["below_policy"] |= value["self_below_policy"]
         result["endpoints"][name] = value
         if value["below_policy"]:
             result["endpoint_violations"].append(name)
@@ -40,6 +51,8 @@ def path_clearance_diagnostic(endpoints, evaluation, duration_sec):
     """Classify the first subthreshold sample, without claiming a full-path minimum."""
     witness = (evaluation["environment_minimum"] if evaluation.get("rejection_kind") == "environment_clearance"
                else evaluation["minimum"])
+    if evaluation.get("rejection_kind") == "self_clearance":
+        witness = evaluation["self_minimum"]
     location = None
     if not evaluation["complete"]:
         stamp = witness["time_sec"]
@@ -51,6 +64,8 @@ def path_clearance_diagnostic(endpoints, evaluation, duration_sec):
     if "environment_minimum" in evaluation:
         result.update(environment_witness=deepcopy(evaluation["environment_minimum"]),
                       violation_scope=evaluation.get("rejection_kind"))
+    if "self_minimum" in evaluation:
+        result.update(self_witness=deepcopy(evaluation["self_minimum"]), violation_scope=evaluation.get("rejection_kind"))
     return result
 
 

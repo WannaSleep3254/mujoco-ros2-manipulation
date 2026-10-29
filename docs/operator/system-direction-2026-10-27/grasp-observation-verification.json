@@ -1,0 +1,616 @@
+{
+  "schema_version": "ros-grasp-ordered-native-evidence-correction-v1",
+  "date": "2026-10-29",
+  "implementation_commit": "642a6b2c356b28a99084d288f79e830091d551d3",
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e",
+    "src/mujoco_ros2_manipulation/grasping/ros_task.py": "d07ab1e9e59d44e1aa7b2e61e1a1e29653d6ca0b2e767b7ab5f390b6ea50f3ba",
+    "src/mujoco_ros2_manipulation/grasping/ros_display.py": "6bc6e773a961a9a104866008ac87f2bae692001c0c0463ee0241ca7605ae5142",
+    "src/mujoco_ros2_manipulation/grasping/contract.py": "549421dcb39266b30de2c75a94ee1791286f29236c4c396a562ee1c2256846ac"
+  },
+  "original_ci140": {
+    "head": "b0cae7c",
+    "artifact_zip_sha256": "c0b7ba196c8e32f7a679b47e778ba5ce6aee76bc38e871b873b76d70c20c5c66",
+    "job_log_sha256": "82ba1217dd1925ed2b837720e8aade23a1b29ed081a0094ee39c3ffa65924df7",
+    "cases": {
+      "normal": {
+        "status": "succeeded",
+        "failure_stage": null,
+        "error": null,
+        "physical_grasp_original_record": "released",
+        "planning_attachment": "world",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "close",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "transport",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "place",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "open",
+            "status": 4,
+            "error_code": 0
+          }
+        ],
+        "original_sha256": {
+          "result.json": "ae2ef81afc9f4c8f6a678ddd75ca9e223f42f95bc5d56a0476fb6f76357376dd",
+          "worker/result.json": "ef3ecca97bda1e2e02f8f402dfd1106fb01c34aa39cd0bc9136be743105a9682",
+          "worker/native-observations.jsonl": "671546d0a3acd478b7f25ee63291cb6e3f4a3df7d3b796765ea753db7a7c792e",
+          "worker/physics.json": "9d67fe3b67dee664485a118adc5f70ddfcaccf0ba77a3e81758fd06c26d03da7",
+          "worker/launch.log": "e1ba6df0b7ce88ead04dc4128584c36bf039fcd5e393b4e20ce0c4ba52ad521b"
+        },
+        "cleanup": {
+          "clean": true,
+          "forced": false,
+          "process_group_gone": true,
+          "native_stop_observed": true,
+          "launcher_return_code": 0,
+          "automatic_release": false,
+          "automatic_detach": false
+        }
+      },
+      "normal_hold": {
+        "status": "failed",
+        "failure_stage": "diagnostic_hold",
+        "error": {
+          "type": "RosGraspTaskError",
+          "message": "native evidence has an observation gap"
+        },
+        "physical_grasp_original_record": "confirmed",
+        "planning_attachment": "attached",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "close",
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "status": 4,
+            "error_code": 0
+          }
+        ],
+        "original_sha256": {
+          "result.json": "11328d6893f3ed1c727f320bdce2b38dc868949fca123e6638443f71dd9b3d2a",
+          "worker/result.json": "94ac7b12b67afffba10b4318cc175359cd9a0837f5f15362bbd9024a740a7ecd",
+          "worker/native-observations.jsonl": "6df4a286ff0d5ac7cd178d6602e8754a4ae04981e8a2bec49d299a38667f100a",
+          "worker/physics.json": "7158195d192fd10c2e3dc70bf812ec39688e25a7f7b0b9574c72851a74930a1d",
+          "worker/launch.log": "78cab977c13f67892410b96f6ea9d43bdd5a3e96293b2c053a17baca415929f4"
+        },
+        "cleanup": {
+          "clean": true,
+          "forced": false,
+          "process_group_gone": true,
+          "native_stop_observed": true,
+          "launcher_return_code": 0,
+          "automatic_release": false,
+          "automatic_detach": false
+        },
+        "original_received_rows": 727,
+        "received_stream_gaps": [
+          {
+            "sequences": [
+              512,
+              515
+            ],
+            "stamps_ns": [
+              "27410000000",
+              "27580000000"
+            ],
+            "gap_ns": 170000000,
+            "phase": 4,
+            "missing_sequences": [
+              513,
+              514
+            ]
+          },
+          {
+            "sequences": [
+              550,
+              553
+            ],
+            "stamps_ns": [
+              "29410000000",
+              "29580000000"
+            ],
+            "gap_ns": 170000000,
+            "phase": 4,
+            "missing_sequences": [
+              551,
+              552
+            ]
+          }
+        ],
+        "cause_scope": "Genuine170ms gaps exist in the persisted accepted callback stream. The original latest-only native mailbox and best-effort depth1 transport could discard intermediate captures; layer-specific publish receipts were not retained, so this record alone cannot attribute each missing frame to a particular layer.",
+        "physical_scope": "Received hold samples retained bilateral contact. This does not establish the state during absent samples; the failed task is preserved as failed.",
+        "stopped_truth_scope": "The original failed cleanup retained an earlier physical confirmation. The corrected task separately records that historical fact and treats current holding as unconfirmed after observed native stop; known slip/release and planning attachment remain unchanged."
+      }
+    },
+    "outcome_relabelled": false,
+    "automatic_retry": false
+  },
+  "native_component_evidence": {
+    "file_sha256": "cf4cc1415ff4fc73528e49df51eabc24f8fd1bc21b1cff39adce2391adf125a5",
+    "implementation_commit": "a72a16c",
+    "header_sha256": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+    "plugin_sha256": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4"
+  },
+  "delivery": {
+    "mode": "bounded_ordered_fifo",
+    "capacity": 32,
+    "max_drain_per_callback": 8,
+    "observation_qos": "reliable KeepLast32",
+    "phase_heartbeat_qos": "unchanged best_effort KeepLast1",
+    "overflow": "fault; never overwrite or clear the evidence gap",
+    "capture_clock_semantics": "linux_CLOCK_MONOTONIC",
+    "maximum_source_age_ns": "500000000",
+    "original_receipt_and_capture_times_separate": true,
+    "current_age_can_not_be_refreshed_by_queueing_or_task_updates": true,
+    "source_age_checked_at_native_publish_and_python_ingest_and_snapshot": true,
+    "one_executor_handler_then_each_original_sample": true
+  },
+  "preserved": {
+    "maximum_evidence_gap_ns": 150000000,
+    "minimum_hold_diagnostic_sec": 30,
+    "original_closed_grasp_reference": true,
+    "physical_force_pose_thresholds": true,
+    "model_xml_and_solver": true,
+    "no_gap_reset": true,
+    "no_action_resend_or_automatic_retry": true,
+    "no_automatic_open_or_detach": true,
+    "force_evaluation_time_still_nominal_not_exact_ros": true
+  },
+  "checks": {
+    "focused_related_unit": 76,
+    "complete_unit": {
+      "run": 1337,
+      "skip": 1,
+      "failed": 0,
+      "errors": 0,
+      "wall_sec": 66.588,
+      "log_sha256": "340d8c73b11809b93642e38ef0b4277c1d02ce32b02b5b2372bf214bda321c7d"
+    },
+    "complete_model": {
+      "run": 88,
+      "skip": 1,
+      "failed": 0,
+      "errors": 0,
+      "wall_sec": 20.069,
+      "log_sha256": "26189938a0003ad97d492522e3e6091df0f1de87915c468a77581db633313eb1"
+    },
+    "first_model_failure_preserved": {
+      "reason": "New capture-clock check initially preceded permanent native-time reversal latch; model regression identified it and ordering was corrected before final freeze.",
+      "log_sha256": "717778bc0a4506435183660a93c60aab4acf618984fe7a57991e4930ec313112"
+    },
+    "boundary_regressions": [
+      "recent receipt of queued400ms-old capture expires at original500ms",
+      "capture age500ms+1ns rejected",
+      "capture1ns after receipt rejected",
+      "FIFO policy/source/overflow malformed rejected",
+      "native time and capture time simultaneous reversal stays permanently faulted",
+      "ordered burst retains all six individual callback samples",
+      "CI140 genuine170ms and evidence150ms+1ns remain rejected",
+      "stopped failed confirmation downgraded without changing original cause or attachment; known slip/release retained"
+    ],
+    "strict_model_v5_passed": true,
+    "installed_native_provider_and_header_source_pins_passed": true,
+    "repository_check_passed": true,
+    "source_read_only_cross_review": "no actionable findings after native reversal latch priority correction"
+  },
+  "model_v5": {
+    "manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275",
+    "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+    "geometry_and_physics_unchanged": true
+  },
+  "fresh_actual_validation": {
+    "status": "four formal cases and two representative browser cases passed on frozen source; separate from earlier-source records",
+    "formal_summary_sha256": "2038c277edec9a68af1e115b447151a70ff9e2869de5d9217b194fb909dae29a",
+    "formal": {
+      "schema_version": 1,
+      "source_commit": "642a6b2c356b28a99084d288f79e830091d551d3",
+      "cases": [
+        {
+          "case": "normal",
+          "outer_status": "passed",
+          "worker_status": "succeeded",
+          "physical_grasp": "released",
+          "planning_attachment": "world",
+          "actions": [
+            [
+              "approach",
+              4,
+              0
+            ],
+            [
+              "close",
+              4,
+              0
+            ],
+            [
+              "verification_lift",
+              4,
+              0
+            ],
+            [
+              "transport",
+              4,
+              0
+            ],
+            [
+              "place",
+              4,
+              0
+            ],
+            [
+              "open",
+              4,
+              0
+            ]
+          ],
+          "cleanup": {
+            "clean": true,
+            "forced": false,
+            "launcher_return_code": 0,
+            "process_group_gone": true,
+            "unexpected_child_process_failures": []
+          },
+          "native_exit": true,
+          "loaded_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+          "result_sha256": "2b0ef93d357a3e314b238f609dead7dc55663322f15a289e2247ee00c6806623",
+          "outer_result_sha256": "ca614542c11f6249e84ba80ba0d3f7a5c88a36885f6492cde27a26aee0a59ba0",
+          "loaded_provider_map_receipt_sha256": "26afcef161ee417e35cc8d486f501b0f7b52836be981de6749a8177e6e94ead7",
+          "source_snapshot_matches_declared": true
+        },
+        {
+          "case": "normal_hold",
+          "outer_status": "passed",
+          "worker_status": "succeeded",
+          "physical_grasp": "released",
+          "planning_attachment": "world",
+          "actions": [
+            [
+              "approach",
+              4,
+              0
+            ],
+            [
+              "close",
+              4,
+              0
+            ],
+            [
+              "verification_lift",
+              4,
+              0
+            ],
+            [
+              "transport",
+              4,
+              0
+            ],
+            [
+              "place",
+              4,
+              0
+            ],
+            [
+              "open",
+              4,
+              0
+            ]
+          ],
+          "cleanup": {
+            "clean": true,
+            "forced": false,
+            "launcher_return_code": 0,
+            "process_group_gone": true,
+            "unexpected_child_process_failures": []
+          },
+          "native_exit": true,
+          "loaded_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+          "result_sha256": "d8e0fd90a4591db19001e20ae15a5562b370f7a7f529cba89e5b2196714f8140",
+          "outer_result_sha256": "9590be490ee4159f423b0bab8c8eee9c9789714e6d9f3724dfe9c62235ff8152",
+          "hold": {
+            "observed_simulation_sec": 30.022,
+            "sample_count": 562,
+            "relative_position_error_m_max": 0.0012833003797082581,
+            "relative_angle_error_rad_max": 0.0018670329744938424,
+            "bilateral_fraction": 1.0,
+            "original_closed_reference_retained": true,
+            "max_native_gap_ns": 62000000,
+            "sequence_gaps": 0
+          },
+          "loaded_provider_map_receipt_sha256": "ce2b8d62bd3cdcc29dc3fdb4a35c628b323f38a7ec4d303877beb3d056daf5d7",
+          "source_snapshot_matches_declared": true
+        },
+        {
+          "case": "cancel_transport",
+          "outer_status": "passed",
+          "worker_status": "cancelled",
+          "physical_grasp": "unconfirmed",
+          "planning_attachment": "attached",
+          "actions": [
+            [
+              "approach",
+              4,
+              0
+            ],
+            [
+              "close",
+              4,
+              0
+            ],
+            [
+              "verification_lift",
+              4,
+              0
+            ],
+            [
+              "transport",
+              5,
+              0
+            ]
+          ],
+          "cleanup": {
+            "clean": true,
+            "forced": false,
+            "launcher_return_code": 0,
+            "process_group_gone": true,
+            "unexpected_child_process_failures": []
+          },
+          "native_exit": true,
+          "loaded_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+          "result_sha256": "1092c43179e5edf39a9e5e8daaf0d2a639fab1b6ad7b37b18dfa70bf4d4ced07",
+          "outer_result_sha256": "d3152c3c2184f6a334cd6e8e6f883d103b5e5ef405bdd601055f9ae37cbbf04f",
+          "loaded_provider_map_receipt_sha256": "66cfe99fe8bf6a43ce25054adf0b70ca9bca0757c205d72ac7e1a136cdc5e2a4",
+          "source_snapshot_matches_declared": true
+        },
+        {
+          "case": "cancel_startup",
+          "outer_status": "passed",
+          "worker_status": "cancelled",
+          "physical_grasp": "unconfirmed",
+          "planning_attachment": "uninitialized",
+          "actions": [],
+          "cleanup": {
+            "clean": true,
+            "forced": false,
+            "launcher_return_code": 0,
+            "process_group_gone": true,
+            "unexpected_child_process_failures": []
+          },
+          "native_exit": true,
+          "loaded_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+          "result_sha256": "dcb735ae224d9dd522b0e4c35b48805b48dbe81f38b2a23af4bdee505584ddf4",
+          "outer_result_sha256": "94d779cb3b5f8dd3131d920afeed8fbe9151de9b1c828bcfb2a168e2262d4152",
+          "loaded_provider_map_receipt_sha256": "aecccc17db615749220811e0e18bc781a6149304639de3f52728f01005f8ccee",
+          "source_snapshot_matches_declared": true
+        }
+      ],
+      "preflight_original": "Domain224 existing console rejected before launch; preserved separately, not counted as native/physical result."
+    },
+    "source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_task.py": "d07ab1e9e59d44e1aa7b2e61e1a1e29653d6ca0b2e767b7ab5f390b6ea50f3ba",
+      "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e",
+      "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+      "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+      "src/mujoco_ros2_manipulation/grasping/contract.py": "549421dcb39266b30de2c75a94ee1791286f29236c4c396a562ee1c2256846ac",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+      "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+      "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+      "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+      "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+      "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5"
+    },
+    "browser_cases": [
+      {
+        "case": "normal",
+        "status": "succeeded",
+        "physical_grasp": "released",
+        "physical_grasp_before_cancel": null,
+        "planning_attachment": "world",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "close",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "transport",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "place",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "open",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          }
+        ],
+        "cleanup": {
+          "clean": true,
+          "native_exit_observed": true,
+          "forced": false,
+          "process_group_gone": true,
+          "launcher_return_code": 0,
+          "owner_cleanup_clean": true,
+          "unexpected_failures": 0
+        },
+        "automatic_open": false,
+        "automatic_detach": false,
+        "automatic_retry": false,
+        "source_snapshot_matches_declared": true,
+        "result_sha256": "308af6d42d0c9c9fad8119fbc342bac8932815954dea7fafae428a73364d7888",
+        "owner_receipt_sha256": "e9930eccd12d0d0f25897f9dd087b5c30ca69be65a12aee423702bcc29a8bf95",
+        "model_xml_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275"
+      },
+      {
+        "case": "cancel_after_lift_before_transport_dispatch",
+        "status": "cancelled",
+        "physical_grasp": "unconfirmed",
+        "physical_grasp_before_cancel": "confirmed",
+        "planning_attachment": "attached",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "close",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "accepted": true,
+            "terminal_observed": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          }
+        ],
+        "cleanup": {
+          "clean": true,
+          "native_exit_observed": true,
+          "forced": false,
+          "process_group_gone": true,
+          "launcher_return_code": 0,
+          "owner_cleanup_clean": true,
+          "unexpected_failures": 0
+        },
+        "automatic_open": false,
+        "automatic_detach": false,
+        "automatic_retry": false,
+        "source_snapshot_matches_declared": true,
+        "result_sha256": "7e8aa3cad1e502aaf3e1b4e8122e004bc282710e70dd2a7c4bc26f9a9bb0feac",
+        "owner_receipt_sha256": "a98eec3400506e01f6d7d8fc9a6c60cb1e345f48965d0af882781865b58ff9ed",
+        "model_xml_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275"
+      }
+    ],
+    "new_mobile_validation_claimed": false,
+    "separate_preflight_refusal": {
+      "status": "refused before launch because an existing console occupied the isolated domain",
+      "native_or_physical_execution": false,
+      "included_in_four_formal_cases": false,
+      "result_sha256": "32e89a1697b2e9e949e6d047a9b57086c00301246086ba7d969a33faf956b89e",
+      "worker_result_sha256": "32400aacd95b2c59ab9638f820a8405bf2077af2da7876beb87a7cac6e907044"
+    }
+  },
+  "native_component_verification": {
+    "evidence_sha256": "cf4cc1415ff4fc73528e49df51eabc24f8fd1bc21b1cff39adce2391adf125a5",
+    "implementation_commit": "a72a16c",
+    "files_sha256": {
+      "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+      "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+      "native/grasp_ros2_plugin/CMakeLists.txt": "0649fbdd7e7ce12bce850c01eb45d3129feda82189cdfaa1fc87b62009ffa33b",
+      "src/mujoco_ros2_manipulation/grasping/ros_runtime.py": "427cadafbb4cfd7a351d2d6aa21e80f49db3ae19b927aa183237069a861ad30a",
+      "tests/unit/test_ros_grasp_fifo.py": "8d2ea78cb551f3d807cfdbd2a11b37fecd03bef62e167f6506c6cd2c15888984",
+      "tests/unit/test_ros_grasp_runtime.py": "0f0719e6b45d45e7e01c72f3e251b081f890df3d999dc2f6ad2ab928312bca4c",
+      "ros_ws/install/manipulation_grasp_plugin/lib/libmujoco_ros2_control_grasp_observer.so": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33"
+    },
+    "checks": {
+      "native_fifo_unit_tests": 5,
+      "provider_runtime_unit_tests": 10,
+      "current_unique_provider_and_both_source_pins": true,
+      "plugin_only_colcon_build": true
+    },
+    "scope": "Isolated native/provider tests; actual loaded-provider maps are separately hashed with the formal cases."
+  },
+  "package_verification": {
+    "schema_version": 1,
+    "kind": "final-ordered-fifo-package-byte-audit",
+    "source_commit": "642a6b2c356b28a99084d288f79e830091d551d3",
+    "tracked_package_files": 199,
+    "mismatches": [],
+    "scope": "Python/static tracked package files only; native/config require existing workspace checkout",
+    "artifacts": {
+      "mujoco_ros2_manipulation-0.2.0-py3-none-any.whl": "2534243471b9f8aab7de31c462c08cd1d6b9511739d2b3746d6b43e3c9350e07",
+      "mujoco_ros2_manipulation-0.2.0.tar.gz": "a0c1be7df53e7d627b31cea9e7eee83e880b2802347fe34b5ead372748c46cc5"
+    },
+    "build_log_sha256": "83bc6da528279bd20e663cc518ad973ba7fed963e48dafc752850b8bbca18e37",
+    "audit_sha256": "13181248e8104c35bc662e4e4df9d92ea571d7540f7cea0b7acd498ed588fcb1"
+  },
+  "limits": [
+    "Representative synthetic FR5/UR5e simulation only; no general success-rate, continuous-time safety or hardware guarantee.",
+    "The original accepted-stream gaps are established, but per-frame publication receipts are absent, so the exact historical loss layer is unresolved.",
+    "Capture age uses local Linux CLOCK_MONOTONIC; this is not cross-host or hardware sensor clock synchronization.",
+    "The 150ms gap gate, 30s hold, original closed reference, physical thresholds and solver/model are unchanged. Missing states are not inferred or reset to pass.",
+    "The formal four cases, browser cancellation before transport dispatch and prior during-open cancellation are different checks and remain separate.",
+    "Stopped physical holding is unconfirmed while prior confirmation and planning attachment are retained as separate facts. A process exit or stale force snapshot alone does not prove current holding.",
+    "Old v3/v4/v5/v6 images, physical evidence, CI failures and performance records remain separate. No new exact-head remote CI, merge or site deployment success is claimed by these local results."
+  ],
+  "data_policy": "Reduced public synthetic-case facts/source hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets.",
+  "viewer_capture_age_status": {
+    "implementation_commit": "0720dd75ea969a35f3c02533661268de75f3ee84",
+    "source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "7b61c8ad3e0492663121794f891e654448f2088dc158e8d8fe49e98abf7aad46",
+      "tests/unit/test_ros_grasp_demo_server.py": "a1be3bff4de99f3ca0d8efedec1dd0335e4e0f199bb26576f8ca63f26fa6606f"
+    },
+    "original_capture_receipt_retained": true,
+    "queued_render_or_status_poll_does_not_refresh_capture_age": true,
+    "unchanged_static_sources_from_390428d": {
+      "src/mujoco_ros2_manipulation/grasping/static/ros_demo.html": "fdd75baf6942a3442edd2f1b1df14f0ee56df3bc944c237a967b12423b9168b2",
+      "src/mujoco_ros2_manipulation/grasping/static/ros_demo.css": "6284b84bb85774da168a3955f62e96b55c1771cbdcdf30c56bd9e438b4b55671",
+      "src/mujoco_ros2_manipulation/grasping/static/ros_demo.js": "433de6e4d81e2071ff4cbdff869c1afc24c26ac5f240e8e6be61894dad7aca66"
+    }
+  }
+}

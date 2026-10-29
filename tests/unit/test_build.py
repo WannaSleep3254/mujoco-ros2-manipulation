@@ -8,20 +8,38 @@ from unittest.mock import patch
 import yaml
 from mujoco_ros2_manipulation.build import (ROOT, build_plan, load_manifest, local_path,
                                            resolve_source, verify_deb, prepare_debs, fetch_repository,
-                                           colcon, RUNTIME_PATCH_KEYS)
+                                           colcon, RUNTIME_PATCH_KEYS, native_distance_command)
 from mujoco_ros2_manipulation.profiles import load_profile
 
 
 class BuildTests(unittest.TestCase):
+    def test_native_distance_build_pins_each_scope_and_requires_new_sidecar(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);(root/'native').mkdir()
+            source_files=('path_distance.cpp','path_distance_environment.cpp','path_distance_self.cpp')
+            macros=('MANIPULATION_DISTANCE_SHA256','MANIPULATION_ENVIRONMENT_DISTANCE_SHA256',
+                    'MANIPULATION_SELF_DISTANCE_SHA256')
+            for name in source_files:(root/'native'/name).write_text('independent '+name)
+            vendor=root/'vendor';output=root/'path_distance.so'
+            command=native_distance_command(root,vendor,output)
+            for name,macro in zip(source_files,macros):
+                digest=hashlib.sha256((root/'native'/name).read_bytes()).hexdigest()
+                self.assertIn('-D'+macro+'="'+digest+'"',command)
+            self.assertIn(vendor/'lib/libmujoco.so.3.12.0',command)
+            self.assertIn(root/'native/path_distance_environment.cpp',command)
+            self.assertEqual(command[-2:],['-o',output])
+            (root/'native/path_distance_self.cpp').unlink()
+            with self.assertRaises(FileNotFoundError):native_distance_command(root,vendor,output)
+
     def test_both_shutdown_patches_are_required_confined_and_ordered_last(self):
         manifest=load_manifest()
         self.assertEqual(RUNTIME_PATCH_KEYS, ('patch','monitor_patch','contact_stop_patch',
-            'clock_watchdog_patch','control_loop_shutdown_patch','activation_shutdown_patch'))
+            'clock_watchdog_patch','control_loop_shutdown_patch','activation_shutdown_patch','grasp_policy_patch'))
         self.assertEqual(manifest['runtime']['control_loop_shutdown_patch'],
             'patches/mujoco_ros2_control-0.1.2-ordered-shutdown.patch')
         self.assertEqual(manifest['runtime']['activation_shutdown_patch'],
             'patches/mujoco_ros2_control-0.1.2-activation-shutdown.patch')
-        self.assertEqual(len(set(manifest['runtime'][key] for key in RUNTIME_PATCH_KEYS)),6)
+        self.assertEqual(len(set(manifest['runtime'][key] for key in RUNTIME_PATCH_KEYS)),7)
         for key in ('control_loop_shutdown_patch','activation_shutdown_patch'):
             for value in (None,'../outside.patch','/tmp/outside.patch'):
                 with self.subTest(key=key,value=value),tempfile.TemporaryDirectory() as temporary:
@@ -43,12 +61,15 @@ class BuildTests(unittest.TestCase):
             monitor=b'fixed monitor fixture\n';shutdown=b'fixed ordered shutdown fixture\n'
             (root/'native/step_monitor.hpp').write_bytes(monitor)
             (root/'native/control_loop_shutdown.hpp').write_bytes(shutdown)
+            policy=b'fixed grasp contact policy fixture\n'
+            (root/'native/grasp_policy.hpp').write_bytes(policy)
             with patch('mujoco_ros2_manipulation.build.run') as run:
                 colcon(root,[dict(name='mujoco_ros2_control',path=str(root/'source'))],runtime=True)
             command=run.call_args.args[0]
             self.assertIn('-DMANIPULATION_MONITOR_INCLUDE_DIR='+str(root/'native'),command)
             self.assertIn('-DMANIPULATION_SHUTDOWN_INCLUDE_DIR='+str(root/'native'),command)
             self.assertIn('-DMANIPULATION_MONITOR_SHA256='+hashlib.sha256(monitor).hexdigest(),command)
+            self.assertIn('-DMANIPULATION_GRASP_POLICY_SHA256='+hashlib.sha256(policy).hexdigest(),command)
             self.assertIn('-DMANIPULATION_SHUTDOWN_SHA256='+hashlib.sha256(shutdown).hexdigest(),command)
             self.assertIn('-DCMAKE_BUILD_TYPE=RelWithDebInfo',command)
             self.assertIn('-DBUILD_TESTING=OFF',command)

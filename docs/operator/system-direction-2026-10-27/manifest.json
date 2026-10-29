@@ -1,14 +1,20 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.6",
+  "document_version": "1.9",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "Original design baseline preserved; W07 independent grasp, W08 final fixed-input comparison and W09 representative local FR3 validation. Remote CI/merge/deployment tracked separately. Native shutdown teardown/update race diagnosis and local ordered-shutdown validation; historical W01 stall remains separate. Follow-up pending ControllerManager activation shutdown diagnosis, matched old/new regression and bounded sampling-capacity candidate rejection; original evidence remains unchanged. GUI workspace integration: purpose navigation, linked body/geom selection, collapsible responsive panels, separate request/Action/stop/terminal/process evidence, and one local plan-preview-approved-execution check on ROS domain 225 / port 8925. Synchronized sensor/3D history playback and ROS grasp integration remain outside this change.",
+  "scope": "Original v1.1 design, past performance, synchronized replay and archived v3/v4 grasp evidence/images preserved. Current update adds reduced CI136/137 native within-arm interference diagnosis, signed-distance admission, fixed-original rejection/acceptance, representative local CLI/HTTP/review and v5 grasp normal/held cancellation with clean ownership cleanup. Planning 10mm and observed-start 1mm are experimental sampled admission settings, not tracking-error bounds, continuous-time or hardware certification. Exact MoveIt/FCL cause is unproven; new remote CI/merge/deployment outcomes are separate. A later post-hash/pre-dispatch clock-age hardening has separate fake-clock (4 tests/6 injected subcases), 1322-unit and package proofs; prior actual CLI/HTTP/review runs are explicitly retained as pre-hardening. Grasp-v5 core/model/UI bytes remain unchanged. Original CI139 native evidence-window failure is preserved; a later integer-time correction keeps the 150ms gap gate, with 1325-unit proof and new-source normal/during-open cancellation browser receipts. Earlier v5 pre-transport cancellation is retained separately; XML/solver remain unchanged. A separate grasp-observation proof preserves CI140 normal success/genuine hold gap and records bounded ordered native delivery, original-capture age, stopped physical truth, frozen-source four formal cases and representative new browser cases; model/solver, 150ms gate and 30s hold remain unchanged. Exact prior loss layer is unresolved.",
   "assets": {
-    "index.html": "c165d4972fe40083f151c9c11a0e3ebd8c866d5f80b9df6090513d2a6b0d339d",
-    "review-data.json": "97e05e9e44178316745b72902f17333532661fd2a7d452478799665a52ee7af7",
+    "index.html": "f85c1227a4da392fd4f69d12b70b359ed2c8542c30b9e660e742f512efe26346",
+    "review-data.json": "8a54ea8c965f5cebbfc89d272f9aeb4495ac7fbc70c0a592014ed106db699c99",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
-    "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5"
+    "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
+    "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
+    "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
+    "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
+    "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
+    "self-clearance-verification.json": "8b20e697c33d8afefba515276a9f25876ddd02c601f3818d2269363c15f93f2b",
+    "grasp-observation-verification.json": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
   }
 }

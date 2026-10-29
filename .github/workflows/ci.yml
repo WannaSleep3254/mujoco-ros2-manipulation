@@ -60,6 +60,8 @@ jobs:
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-prepare-environment --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-verify-environment-views --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-grasp-ros --help
+          MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-grasp-ros-viewer --help
           MUJOCO_ROS2_WORKSPACE="$GITHUB_WORKSPACE" manipulation-benchmark-planner-cache --list > /tmp/planner-cache-declarations.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
@@ -158,6 +160,33 @@ jobs:
             tests.unit.test_grasp_demo_server -v
           PYTHONPATH=src .venv/bin/python tests/integration/verify_grasp_demo.py \
             --output runtime/validation/independent-fr5-grasp-ci
+      - name: Native ROS grasp, confirmed attachment and owned cancellation
+        if: matrix.robot == 'workcell'
+        run: |
+          PYTHONPATH=src .venv/bin/python - <<'PY'
+          from pathlib import Path
+          from mujoco_ros2_manipulation.grasping.ros_model import build_model
+          from mujoco_ros2_manipulation.workcells.config import load_workcell
+          folder = Path('runtime/validation/ros-grasp-target').absolute()
+          folder.parent.mkdir(parents=True, exist_ok=True)
+          build_model(load_workcell('fr5_ur5e'), folder)
+          PY
+          source ./manipulation_env.sh
+          python3 - <<'PY'
+          import hashlib, subprocess, sys
+          from pathlib import Path
+          target = Path('runtime/validation/ros-grasp-target')
+          digest = hashlib.sha256((target/'grasp.json').read_bytes()).hexdigest()
+          for domain, mode in ((223, 'cancel'), (224, 'heartbeat')):
+              subprocess.run([sys.executable, 'tests/integration/verify_ros_grasp_foundation.py',
+                  '--domain', str(domain), '--execution-environment', str(target),
+                  '--execution-manifest-sha256', digest, '--stop-mode', mode,
+                  '--output', 'runtime/validation/ros-grasp-foundation-'+mode], check=True)
+          for domain, case in ((226, 'normal'), (229, 'normal_hold'), (227, 'cancel_transport'), (228, 'cancel_startup')):
+              subprocess.run([sys.executable, 'tests/integration/verify_ros_grasp_task.py',
+                  '--domain', str(domain), '--target', str(target), '--sha', digest,
+                  '--case', case, '--output', 'runtime/validation/ros-grasp-task-'+case], check=True)
+          PY
       - name: Read-only allowlisted environment previews and blocked mutations
         if: matrix.robot == 'workcell'
         run: |

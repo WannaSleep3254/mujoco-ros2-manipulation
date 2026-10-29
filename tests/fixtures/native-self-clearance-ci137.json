@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "kind": "native-self-clearance-forensic-points-v1",
+  "workcell": "fr5_ur5e",
+  "joint_names": [
+    "left_j1",
+    "left_j2",
+    "left_j3",
+    "left_j4",
+    "left_j5",
+    "left_j6",
+    "right_shoulder_pan_joint",
+    "right_shoulder_lift_joint",
+    "right_elbow_joint",
+    "right_wrist_1_joint",
+    "right_wrist_2_joint",
+    "right_wrist_3_joint"
+  ],
+  "position_units": "rad",
+  "distance_units": "m",
+  "native_version": "3.12.0",
+  "reference_pair": {
+    "geom_ids": [
+      7,
+      13
+    ],
+    "body_names": [
+      "left_forearm_link",
+      "left_wrist3_link"
+    ],
+    "geom_ids_scope": "Reference IDs in the checked default workcell; body names and signed distance carry the assertion."
+  },
+  "sources": {
+    "failed": {
+      "github_run_id": 40833481187,
+      "workflow_run_number": 137,
+      "commit_sha": "94f5cba26d8978234d1c4ae5578f517fd8f4a152",
+      "verifier_run_id": "20261029T073312.509684Z-de3de486",
+      "domain": 127,
+      "status": "failed",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "model_manifest_sha256": "918a5c19638974772d99b26857bff13f9ae91f8bd8b349ecb6aa7cbaaa1fb76d",
+      "trajectory_file_sha256": "835c2c5081101048b834a9bd25da60eae9ccf6eaca60546dab97f258db2c963e",
+      "selected_curve_canonical_sha256": "b116ef9ac0b1c297e1caf5b53606fff1b49590c3d232cd90b1f08060be96c4e7",
+      "selected_curve_sorted_default_json_sha256": "22a73158313d79a3749b9ebdbc8acb4b73da32c49d4eb4825badcd382d7f5e91",
+      "selected_candidate": 2,
+      "knot_count": 1629,
+      "duration_sec": 32.555420687,
+      "native_cross_arm_path_minimum_m": 0.12861898746708772,
+      "moveit_validity_samples": 3256,
+      "moveit_invalid_samples": 0
+    },
+    "passed": {
+      "github_run_id": 40830332446,
+      "workflow_run_number": 136,
+      "commit_sha": "54ea938d4c697ee4c99f9e90521216682ab9f690",
+      "verifier_run_id": "20261029T070139.421849Z-e3ec789c",
+      "domain": 127,
+      "status": "passed",
+      "case_sha256": "67c36f4f15d1e6299967afed6d224618221967f725f9cc56020b946d4e2e4b11",
+      "model_manifest_sha256": "918a5c19638974772d99b26857bff13f9ae91f8bd8b349ecb6aa7cbaaa1fb76d",
+      "trajectory_file_sha256": "413f59d7a6102182b87b81e9a84206da0de1a615cb3c1df91e697a163f564abf",
+      "selected_curve_canonical_sha256": "75b877fa18283335cac450d9edc49325fa3c2b949c780a46686cd9f7cc4cf11a",
+      "selected_curve_sorted_default_json_sha256": "e90d9fd2c6598bb5a45374a442b6695e359999419e898c36913a3730ad6f5f14",
+      "selected_candidate": 1,
+      "knot_count": 508,
+      "duration_sec": 10.134262096,
+      "native_cross_arm_path_minimum_m": 0.054269453453476446,
+      "moveit_validity_samples": 1014,
+      "moveit_invalid_samples": 0
+    }
+  },
+  "interpolation": {
+    "kind": "position_velocity_acceleration_quintic_spline",
+    "source_sha256": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+    "canonical_curve_encoding": "UTF-8 JSON; sort_keys=True, separators=(comma,colon), ensure_ascii=False, allow_nan=False",
+    "independent_hermite_basis_check_tolerance_rad": 1e-12,
+    "independent_hermite_basis_observed_max_error_rad": 4.440892098500626e-16
+  },
+  "offline_reference": {
+    "model_xml_sha256": "733ec50f8464d94d3ac82cb47a620f456c1600466aeb05413c3ed22441cddb74",
+    "diagnostic_source_sha256": "9c900b929423e34869ff9e9dc8d8e9c6ae33fa3ed71caacf138b84b61344b0d6",
+    "diagnostic_summary_sha256": "dfdc9df19b84ee6a9a73d93d56ebf724522ccace22217c1cdf282fcf26d527cf",
+    "point_scope": "Static same-engine geometry with no physics steps or live ROS writes; local XML asset-path bytes may differ from the CI XML.",
+    "sample_dt_sec": 0.002,
+    "failed_sampled_nonpositive_interval_sec": [
+      14.16,
+      18.396
+    ],
+    "failed_nonpositive_sample_count": 2119,
+    "passed_curve_all_self_minimum_m": 0.016557333564892293,
+    "passed_reference_pair_path_minimum_m": 0.057059282762333276
+  },
+  "states": {
+    "home": {
+      "source": "checked_default_workcell_home",
+      "positions_rad": [
+        0.0,
+        -1.2,
+        1.2,
+        -1.5,
+        -1.5,
+        0.0,
+        0.0,
+        -1.5708,
+        1.5708,
+        -1.5708,
+        -1.5708,
+        0.0
+      ],
+      "expected_self_distance_m": 0.016569093680143143,
+      "expected_self_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist2_link"
+      ]
+    },
+    "case_start": {
+      "source": "fixed_interference_case_start",
+      "positions_rad": [
+        -0.7,
+        -1.1,
+        1.1,
+        -1.4,
+        -1.5,
+        0.1,
+        -0.7,
+        -1.45,
+        1.45,
+        -1.5,
+        -1.5708,
+        0.1
+      ],
+      "expected_self_distance_m": 0.016559713403637193,
+      "expected_self_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist2_link"
+      ]
+    },
+    "failed_curve_start": {
+      "source": "failed_selected_coordinated_spline",
+      "time_sec": 0.0,
+      "positions_rad": [
+        -0.6973710221331566,
+        -1.1019376554707996,
+        1.0987947661220097,
+        -1.3973702033972368,
+        -1.5004285537451505,
+        0.10242406297521667,
+        -0.6996541794808581,
+        -1.449854820739012,
+        1.4517656615641898,
+        -1.5009744585715235,
+        -1.57046142634023,
+        0.10029908838728444
+      ],
+      "expected_self_distance_m": 0.016555320374748633,
+      "expected_self_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist2_link"
+      ]
+    },
+    "failed_first_nonpositive": {
+      "source": "failed_selected_coordinated_spline",
+      "time_sec": 14.16,
+      "positions_rad": [
+        -1.4970679044466226,
+        -2.152640748522322,
+        1.0840308227935598,
+        0.4525017253352556,
+        -1.6120779423034566,
+        -1.4929599841017,
+        -0.7391017434679313,
+        -0.7974819355126221,
+        -0.7379001494073872,
+        -0.8181189409967558,
+        2.331086228595346,
+        -0.06202954146229009
+      ],
+      "expected_self_distance_m": -3.036471397915418e-07,
+      "expected_pair_distance_m": -3.036471397915418e-07,
+      "expected_self_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist3_link"
+      ]
+    },
+    "failed_minimum": {
+      "source": "failed_selected_coordinated_spline",
+      "time_sec": 16.286,
+      "positions_rad": [
+        -1.5424994948019792,
+        -2.2124638345836645,
+        1.0831905830274708,
+        0.5578263061460259,
+        -1.6184346028012164,
+        -1.5837950474334375,
+        -0.7412472597224442,
+        -0.7603382795029312,
+        -0.8625712838851487,
+        -0.779239404068846,
+        2.5532254566122656,
+        -0.07127189636903168
+      ],
+      "expected_self_distance_m": -0.002352902178110215,
+      "expected_pair_distance_m": -0.002352902178110215,
+      "expected_self_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist3_link"
+      ]
+    },
+    "passed_curve_start": {
+      "source": "passed_selected_coordinated_spline",
+      "time_sec": 0.0,
+      "positions_rad": [
+        -0.6997420721286908,
+        -1.0996299304813149,
+        1.0978830926558005,
+        -1.3971095616500824,
+        -1.4973678835225293,
+        0.09767739558313042,
+        -0.7023337909663095,
+        -1.4528721811915746,
+        1.4488419884946198,
+        -1.5009452247046866,
+        -1.5685528534764424,
+        0.0980515609132126
+      ],
+      "expected_self_distance_m": 0.016557333564892293,
+      "expected_self_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist2_link"
+      ]
+    },
+    "passed_minimum": {
+      "source": "passed_selected_coordinated_spline",
+      "time_sec": 10.134262096,
+      "positions_rad": [
+        0.3017631489546037,
+        -1.1026918843854219,
+        1.1009396999799645,
+        -1.3990673510879277,
+        -1.499001521330327,
+        0.09938618001388386,
+        0.3014953358201309,
+        -1.4499463570434599,
+        1.4503909118836744,
+        -1.4981509309569374,
+        -1.5725800263483076,
+        0.10024799142125988
+      ],
+      "expected_pair_distance_m": 0.057059282762333276,
+      "expected_pair_body_names": [
+        "left_forearm_link",
+        "left_wrist3_link"
+      ],
+      "expected_self_distance_lower_bound_m": 0.005,
+      "reference_scope": "The 7/13 minimum along the passing curve, not the minimum over all within-arm pairs."
+    }
+  },
+  "limitations": [
+    "These are nominal saved-spline states and safe static inputs, not a motion replay, actual displacement or tracking-error reproduction.",
+    "The failed nominal minimum was not reached by the interrupted actual execution; native stopped at the first reported contact.",
+    "The passing curve pair 7/13 minimum of 57.059mm is not its all-self minimum (about 16.557mm).",
+    "No continuous-time clearance claim; the reference sweep used 2ms sampling.",
+    "MoveIt/FCL versus native convex geometry or allowed-collision differences are not established by this point fixture."
+  ]
+}

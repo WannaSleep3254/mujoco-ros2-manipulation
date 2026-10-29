@@ -42,6 +42,26 @@ class ContactPolicyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 ContactPolicy(names)
 
+    def test_explicit_grasp_stop_waits_for_both_arms_and_gripper(self):
+        policy = ContactPolicy(["left", "right"], gripper_controller="gripper_controller")
+        states = dict(left="active", right="active", gripper_controller="inactive")
+        policy.observe(False)
+        self.assertEqual(policy.phase(states), "waiting")
+        states["gripper_controller"] = "active"
+        self.assertEqual(policy.phase(states), "ready")
+        policy.observe(True)
+        self.assertEqual(policy.targets(states), ["left", "right", "gripper_controller"])
+        states.update(left="inactive", right="inactive")
+        self.assertEqual(policy.phase(states), "stopping")
+        self.assertEqual(policy.targets(states), ["gripper_controller"])
+        states["gripper_controller"] = "inactive"
+        self.assertEqual(policy.phase(states), "stopped")
+
+    def test_arbitrary_auxiliary_controller_cannot_extend_grasp_stop(self):
+        for gripper in ("other_controller", "left", "", True):
+            with self.subTest(gripper=gripper), self.assertRaises(ValueError):
+                ContactPolicy(["left", "right"], gripper_controller=gripper)
+
     def test_fixture_is_separate_and_restricted_to_run_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -14,6 +14,8 @@
 #error MANIPULATION_ENVIRONMENT_DISTANCE_SHA256 is required
 #endif
 
+#include "path_distance_self.cpp"
+
 namespace {
 constexpr size_t max_environment_pairs = 4096;
 struct EnvironmentContext {
@@ -52,15 +54,24 @@ const char* path_distance_environment_source() {
 int path_distance_eval(void* handle, const double* q, int count, double* output, int* pair) {
   const auto environment = environment_context(handle);
   if (environment) environment->state_ready = false;
+  self_state_ready(handle, false);
+  if (!handle || !q || !output || !pair) return 0;
   const int result = path_distance_base_eval(handle, q, count, output, pair);
   if (environment) environment->state_ready = result != 0;
+  self_state_ready(handle, result != 0);
   return result;
+}
+void path_distance_extensions_invalidate(void* handle) {
+  const auto environment = environment_context(handle);
+  if (environment) environment->state_ready = false;
+  self_state_ready(handle, false);
 }
 void path_distance_close(void* handle) {
   {
     const std::lock_guard<std::mutex> lock(environment_contexts_mutex);
     environment_contexts.erase(handle);
   }
+  self_forget(handle);
   path_distance_base_close(handle);
 }
 

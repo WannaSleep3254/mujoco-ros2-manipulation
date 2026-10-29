@@ -209,12 +209,13 @@ test('incomplete terminal summary retries are bounded and complete data stops th
  h.api.cache(PLAN,full,2000);await h.api.loadRequest(PLAN,{expected:ready});assert.equal(count,3);
 });
 
-test('failure guidance distinguishes computation budgets, candidate exhaustion, endpoints and environment clearance',()=>{
+test('failure guidance distinguishes budgets, candidates, endpoints, environment and within-arm clearance',()=>{
  const h=harness(()=>reply({}));
  const cases={budget_exhausted:['계산 시간 초과','계산 시간'],candidate_exhausted:['계획 후보 검사 종료','도달 불가능하다는 판정은 아닙니다'],
   invalid_start:['시작 자세 조건 위반','시작 자세'],invalid_goal:['목표 자세 조건 위반','목표 자세'],
   execution_environment_changed:['설치 환경 변경','기존 계획'],
-  environment_clearance:['설비 간격 조건 위반','시뮬레이션 정책']};
+  environment_clearance:['설비 간격 조건 위반','시뮬레이션 정책'],
+  self_clearance:['팔 내부 간격 부족','같은 팔의 링크 사이 간격']};
  for(const [failure_kind,[title,description]] of Object.entries(cases)){
   const record={status:'failed',failure_kind,failure_stage:'safety_checks',error:{message:'original diagnostic'}};
   assert.equal(h.api.requestGuidance(record).title,title);assert.ok(h.api.guidanceText(record).includes(description));

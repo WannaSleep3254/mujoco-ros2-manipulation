@@ -50,6 +50,8 @@ manipulation-verify-environment = "mujoco_ros2_manipulation.workcells.verify_env
 manipulation-verify-environment-views = "mujoco_ros2_manipulation.operator_console.verify_environment_views:main"
 manipulation-grasp-demo = "mujoco_ros2_manipulation.grasping.demo_server:main"
 manipulation-grasp-export = "mujoco_ros2_manipulation.grasping.display_export:main"
+manipulation-grasp-ros = "mujoco_ros2_manipulation.grasping.ros_task:main"
+manipulation-grasp-ros-viewer = "mujoco_ros2_manipulation.grasping.ros_demo_server:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

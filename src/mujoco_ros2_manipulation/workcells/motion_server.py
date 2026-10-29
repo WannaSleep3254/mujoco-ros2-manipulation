@@ -33,6 +33,8 @@ from mujoco_ros2_manipulation.workcells.distance import DistanceEvaluator
 from mujoco_ros2_manipulation.workcells.environment_clearance import (
     EnvironmentClearanceRejected, environment_policy_snapshot, required_environment_distance,
 )
+from mujoco_ros2_manipulation.workcells.self_clearance import (
+    SelfClearanceRejected, self_policy_snapshot, require_self_clearance, require_self_result)
 from mujoco_ros2_manipulation.workcells.interference import Spline, stretch
 from mujoco_ros2_manipulation.workcells.path_quality import evaluate_path, evaluate_states, sample_schedule
 from mujoco_ros2_manipulation.workcells.timing import choose_delay, load_policy, TimingRejected
@@ -64,7 +66,7 @@ from mujoco_ros2_manipulation.workcells.cache_dynamics import validate_reanchore
 
 PLANNING_SOURCE_FILES = ("motion_server.py", "motion_client.py", "motion_request.py", "motion_review.py",
     "request_trace.py", "verify.py", "planning_adapter.py", "execution_adapter.py", "execution_target.py",
-    "operation_contract.py", "environment_clearance.py", "timing.py", "path_quality.py", "planning_budget.py",
+    "operation_contract.py", "environment_clearance.py", "self_clearance.py", "timing.py", "path_quality.py", "planning_budget.py",
     "contracts.py", "motion_diagnostics.py", "plan_selection.py", "spatial_candidates.py", "pose_goal.py",
     "pose_adapter.py", "pose_tools.py", "pose_planning.py", "planning_config.py", "trajectory_cache.py",
     "cache_dynamics.py", "prepare.py", "interference.py", "distance.py", "verify_interference.py",
@@ -132,6 +134,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         (self.environment_policy_path, self.environment_policy,
          self.environment_policy_sha256) = environment_policy_snapshot(cell)
         self.environment_threshold_m = required_environment_distance(self.environment_policy)
+        self.self_policy_path, self.self_policy, self.self_policy_sha256 = self_policy_snapshot(cell)
         self.directory = Path(output).resolve()
         # The optional internal root is used by isolated verification workspaces;
         # it is never accepted from command messages, HTTP or the public CLI.
@@ -154,7 +157,8 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         self.configure_planning(planner_id=planner_id, trajectory_cache=trajectory_cache,
                                 cache_start_tolerance_rad=cache_start_tolerance_rad)
         self.planning_source_sha256 = self._planning_source_sha256()
-        self.evaluator = DistanceEvaluator(execution_target or cell, environment=True)
+        self.evaluator = DistanceEvaluator(execution_target or cell, environment=True, self_collision=True)
+        self.opened_self_identity = self._self_admission_identity()
         self.publisher = self.create_publisher(String, STATUS_TOPIC, status_qos())
         self.command_subscription = self.create_subscription(String, COMMAND_TOPIC, self.receive, 10)
         self.create_subscription(String, PLAN_TOPIC, self.receive_plan, 10)
@@ -167,12 +171,13 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
             PlanningBudgetExceeded, MotionStateChanged, MotionEnvironmentChanged))
         self.create_timer(1.0, self.heartbeat)
         self.dispatch_observer = self.action_event
-        self.dispatch_abort = self.check_abort
+        self.dispatch_abort = self._dispatch_self_abort
         implementation_root = Path(__file__).resolve().parents[3]
         code_root = implementation_root if (implementation_root / ".git").exists() else cell.root
         session = dict(schema_version=1, session_id=self.session_id,
             workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
             policy_name=policy_name, policy_sha256=file_sha256(policy_path),
+            self_policy=self.self_policy, self_policy_sha256=self.self_policy_sha256,
             environment_policy=self.environment_policy,
             environment_policy_sha256=self.environment_policy_sha256,
             evaluator=self.evaluator.metadata(), motion_threshold_rad=0.001, host=host_info(),
@@ -242,14 +247,24 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
     def _native_cache_provenance(self):
         opened = self.evaluator.metadata()
         files = {name: file_sha256(self.cell.root / name) for name in (
-            "native/path_distance.cpp", "native/path_distance_environment.cpp", "runtime/native/path_distance.so")}
+            "native/path_distance.cpp", "native/path_distance_environment.cpp", "native/path_distance_self.cpp", "runtime/native/path_distance.so")}
         if (opened.get("source_sha256") != files["native/path_distance.cpp"]
                 or opened.get("library_sha256") != files["runtime/native/path_distance.so"]
                 or opened.get("environment", {}).get("source_sha256") != files["native/path_distance_environment.cpp"]
+                or opened.get("self_collision", {}).get("source_sha256") != files["native/path_distance_self.cpp"]
                 or opened.get("engine") != "MuJoCo 3.12.0"):
             raise ReviewRejected("Native evaluator files/engine differ from the opened implementation; restart")
         return dict(opened=opened, files_sha256=files,
             scope="Opened evaluator metadata plus current helper binary/source SHA; transitive runtime libraries are not attested")
+
+    def _self_admission_identity(self):
+        require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
+                "Self-clearance policy changed; restart and replan")
+        native = self._native_cache_provenance()
+        value = dict(policy_sha256=self.self_policy_sha256, native=native)
+        if getattr(self, "opened_self_identity", value) != value:
+            raise SelfClearanceRejected("Native self-clearance implementation changed; restart and replan")
+        return value
 
     def _cache_runtime_context(self, trace):
         started = time.monotonic()
@@ -265,7 +280,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
             configuration = self.planning_configuration
             identity = trajectory_cache_identity(runtime,
                 source_sha256=canonical_sha256(dict(implementation=current_source, native=native_provenance)),
-                policy=dict(timing=self.policy, environment=self.environment_policy,
+                policy=dict(timing=self.policy, environment=self.environment_policy, self_clearance=self.self_policy,
                     goal_tolerance_rad=self.goal_tolerance_rad, joint_limits=self.metadata["joint_limits"],
                     max_plan_candidates=self.max_plan_candidates,
                     cache_start_tolerance_rad=configuration["cache_start_tolerance_rad"]),
@@ -320,18 +335,22 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
     def validate_motion_path(self, curves, initial, trace):
         """The same complete native and MoveIt gates for fresh and cached paths."""
         threshold = self.policy["min_inter_arm_distance_m"] + self.policy["tracking_reserve_m"]
-        planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=self.policy["sample_dt_sec"],
+        sampling_dt = min(self.policy["sample_dt_sec"], self.self_policy["sample_dt_sec"])
+        planned = evaluate_path(curves, initial, self.cell, self.evaluator, dt=sampling_dt,
             reject_below=threshold, checkpoint=self.compute_checkpoint,
-            environment_reject_below=self.environment_threshold_m)
+            environment_reject_below=self.environment_threshold_m,
+            self_reject_below=self.self_policy["planning_min_self_distance_m"])
         trace.data["planned_clearance"] = planned
         trace.data["clearance_diagnostic"] = path_clearance_diagnostic(trace.data["clearance_endpoints"],
             planned, max(c.duration for c in curves))
         if not planned["complete"]:
+            if planned.get("rejection_kind") == "self_clearance":
+                raise SelfClearanceRejected("Planned native self-clearance below policy")
             if planned.get("rejection_kind") == "environment_clearance":
                 raise EnvironmentClearanceRejected("Planned fixed-environment clearance below policy")
             raise MotionPathRejected("Planned inter-arm clearance below policy")
         samples = 0
-        for _, state in sample_schedule(curves, initial, self.policy["sample_dt_sec"]):
+        for _, state in sample_schedule(curves, initial, sampling_dt):
             self.compute_checkpoint()
             if not self.validity_of(state).valid:
                 raise MotionPathRejected("MoveIt rejected interpolated schedule")
@@ -417,6 +436,23 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         if self.active:
             self.active.event(name, simulation_sec=self.clock_last, **details)
             self.persist(self.active)
+
+    def _dispatch_self_abort(self):
+        # ExecutionAdapter calls this after goal observers, immediately before
+        # each send, and again while waiting. Only new submissions need a fresh
+        # start/identity gate; moving trajectories must not be compared to start.
+        self.check_abort()
+        ledger = self.execution_ledger
+        if ledger is not None and any(not item.submission_started for item in ledger.attempts):
+            self.confirm_start_unchanged(self.active.data["initial_state_rad"])
+            # Hashing/native geometry above can block without pumping ROS.
+            # Keep the original clock receipt age; it must consume reservation
+            # headroom rather than make a cached simulation stamp look current.
+            now = self.fresh()
+            clock_age_sec = (now-self.clock_received_ns)/1e9
+            require(self.motion_start is not None and self.motion_start-self.clock_last-clock_age_sec > .1,
+                    "Self admission exhausted the future execution reservation; no later goal is allowed")
+        self.check_abort()
 
     def check_abort(self):
         if self.cancel_requested or self.stop_requested:
@@ -569,9 +605,10 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
 
     def fresh(self):
         now = time.monotonic_ns()
-        require(self.state_received_ns is not None and (now - self.state_received_ns) / 1e9 <= 0.3, "Joint state is stale")
-        require(self.clock_received_ns is not None and (now - self.clock_received_ns) / 1e9 <= 0.3, "Simulation clock is stale")
+        require(self.state_received_ns is not None and 0 <= (now - self.state_received_ns) / 1e9 <= 0.3, "Joint state is stale")
+        require(self.clock_received_ns is not None and 0 <= (now - self.clock_received_ns) / 1e9 <= 0.3, "Simulation clock is stale")
         require(not self.clock_backwards, "Simulation clock moved backwards")
+        return now
 
     def quiet(self, *, cancellable=True):
         seen, consecutive = [self.joint_count], [0]
@@ -740,7 +777,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
                 trajectory = select_clearance_plan(propose, initial, self.cell, self.evaluator, self.policy,
                     moveit_check, save, max_candidates=self.max_plan_candidates,
                     checkpoint=self.compute_checkpoint, diagnostics=selection,
-                    validate_curve=validate_curve, environment_policy=self.environment_policy)
+                    validate_curve=validate_curve, environment_policy=self.environment_policy, self_policy=self.self_policy)
             except (CommandCancelled, PlanningBudgetExceeded):
                 # A production checkpoint may also interrupt inside a ROS callback
                 # supplied to the engine-independent selector.
@@ -752,8 +789,12 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
 
     def confirm_start_unchanged(self, initial):
         self.fresh()
+        self._self_admission_identity()
+        require_self_clearance(self.evaluator, self.state(), self.self_policy["observed_start_min_self_distance_m"])
         if max(abs(self.state()[n] - initial[n]) for n in self.joint_names) >= 0.002:
             raise MotionStateChanged("Robot moved while planning; stale plan refused")
+        self.check_abort()
+        self.fresh()
 
     def _review_build_identity(self):
         """Rehash the current generated model, environment, limits and policy."""
@@ -762,7 +803,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
             require(metadata == self.metadata, "Validated workcell changed; restart and replan")
             require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
                     "Environment clearance policy changed; restart and replan")
-            identity = dict(workcell_sha256=self.cell.fingerprint,
+            identity = dict(self_clearance=self._self_admission_identity(), workcell_sha256=self.cell.fingerprint,
                         outputs_sha256=metadata["outputs"],
                         policy_sha256=file_sha256(self.policy_path),
                         environment_policy_sha256=self.environment_policy_sha256)
@@ -965,6 +1006,8 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
                 initial = deepcopy(approved_plan["initial_state_rad"])
                 trace.data["initial_state_rad"] = initial
             self.compute_budget = PlanningBudget(self.compute_budget_sec)
+            trace.data["self_policy"] = deepcopy(self.self_policy)
+            trace.data["self_clearance_identity"] = self._self_admission_identity()
             trace.data["environment_policy"] = deepcopy(self.environment_policy)
             trace.data["environment_policy_sha256"] = self.environment_policy_sha256
             require(file_sha256(self.environment_policy_path) == self.environment_policy_sha256,
@@ -985,7 +1028,8 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
             self.event("endpoint_clearance")
             with trace.span("endpoint_clearance"):
                 trace.data["clearance_endpoints"] = measure_endpoints(initial, target, self.evaluator, threshold,
-                    checkpoint=self.compute_checkpoint, environment_threshold_m=self.environment_threshold_m)
+                    checkpoint=self.compute_checkpoint, environment_threshold_m=self.environment_threshold_m,
+                    self_threshold_m=self.self_policy["planning_min_self_distance_m"])
             at_goal = (trace.data["pose_kinematics"]["already_at_goal"] if "goal_context" in trace.data
                        and approved_plan is None else max(abs(target[n] - initial[n]) for n in self.joint_names) <= 0.001)
             if ((approved_plan is None and at_goal)
@@ -1060,7 +1104,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
                 trace.data["departure_search"] = {}
                 with trace.span("departure_search"):
                     chosen = choose_delay(source, initial, self.cell, self.evaluator, self.policy,
-                        diagnostics=trace.data["departure_search"], checkpoint=self.compute_checkpoint)
+                        diagnostics=trace.data["departure_search"], checkpoint=self.compute_checkpoint, self_policy=self.self_policy)
                 trace.data["departure_search"] = {k: v for k, v in chosen.items() if k != "curves"}
                 curves = [Spline(**record) for record in chosen["curves"]]
             trace.data["planned_trajectories"] = [c.record() for c in curves]
@@ -1075,7 +1119,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
                             [curve.record() for curve in curves], self.metadata["joint_limits"],
                             max_acceleration=1.0)
                     self.validate_motion_path(curves, initial, trace)
-                except (MotionPathRejected, EnvironmentClearanceRejected, CacheDynamicsRejected) as error:
+                except (MotionPathRejected, EnvironmentClearanceRejected, SelfClearanceRejected, CacheDynamicsRejected) as error:
                     if not cache_hit:
                         raise
                     cache_record["full_revalidation_wall_sec"] = time.monotonic() - validation_started
@@ -1162,6 +1206,8 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
                     observed = evaluate_states(((s["simulation_sec"], s["state_rad"]) for s in self.observations), self.cell, self.evaluator)
                     trace.data["observed_clearance"] = observed
                     require(observed["minimum"]["distance_m"] >= self.policy["min_inter_arm_distance_m"], "Observed clearance below 20mm policy")
+                    if observed["self_minimum"]["distance_m"] < self.self_policy["observed_start_min_self_distance_m"]:
+                        raise SelfClearanceRejected("Observed native self-clearance below policy")
                     if observed["environment_minimum"]["distance_m"] < self.environment_policy["min_environment_distance_m"]:
                         raise EnvironmentClearanceRejected("Observed fixed-environment clearance below policy")
             if "goal_context" in trace.data:
@@ -1180,6 +1226,8 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
                 trace.data["failure_kind"] = "departure_exhausted"
             elif isinstance(error, InvalidMotionEndpoint):
                 trace.data["failure_kind"] = "invalid_" + error.role
+            elif isinstance(error, SelfClearanceRejected):
+                trace.data["failure_kind"] = "self_clearance"
             elif isinstance(error, EnvironmentClearanceRejected):
                 trace.data["failure_kind"] = "environment_clearance"
             elif isinstance(error, MotionPlanningFailed):
