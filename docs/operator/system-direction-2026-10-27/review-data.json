@@ -454,83 +454,126 @@
   },
   "latest_update": {
     "date": "2026-10-29",
-    "document_edition": "1.9",
+    "document_edition": "1.10",
     "original_design_preserved": {
       "document_version": "1.1",
       "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
       "progress_update": "W01-W06 original update retained"
     },
-    "previous_edition_evidence_preserved": {
-      "ros_grasp": "ros-grasp-verification.json",
-      "image": "ros-grasp.jpg",
-      "previous_v3_evidence": "ros-grasp-v3-verification.json",
-      "synchronized_replay": "synchronized-verification.json"
+    "previous_edition": "1.9",
+    "previous_evidence_preserved": [
+      "synchronized-replay.png",
+      "synchronized-verification.json",
+      "ros-grasp.jpg",
+      "ros-grasp-verification.json",
+      "ros-grasp-v3.jpg",
+      "ros-grasp-v3-verification.json",
+      "self-clearance-verification.json",
+      "grasp-observation-verification.json"
+    ],
+    "grasp_admission": {
+      "evidence": "grasp-admission-verification.json",
+      "image": "grasp-admission.jpg",
+      "implementation_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
+      "source_phase": "actual local source; exact remote followup separate",
+      "original_ci143_preserved": true,
+      "original_delay_layer_unresolved": true,
+      "focused_tests": 47,
+      "python_unit": 1352,
+      "python_skipped": 1,
+      "model_tests": 89,
+      "model_skipped": 1,
+      "actual_formal_cases": 4,
+      "actual_gui_runs": 4,
+      "no_new_mobile_claim": true
     },
-    "native_self_clearance": {
-      "evidence": "self-clearance-verification.json",
-      "status": "fixed_original_and_representative_local_ros_verified",
-      "policy": {
-        "schema_version": 1,
-        "planning_min_self_distance_m": 0.01,
-        "observed_start_min_self_distance_m": 0.001,
-        "sample_dt_sec": 0.01
-      },
-      "simulation_only": true,
-      "new_remote_ci_merge_deployment": "Separate release workflow; not claimed by local checks.",
-      "later_admission_recency_hardening": {
-        "implementation_commit": "1b19cfebff34f56a98065e97a3c8f057c71f2413",
-        "evidence": "self-clearance-verification.json",
-        "tests": 4,
-        "injected_subcases": 6,
-        "python_unit": 1322,
-        "python_skipped": 1,
-        "scope": "Pure fake-monotonic boundary regression; no new native or ROS execution and no measured real-ROS failure.",
-        "previous_actual_runs_not_relabelled": true,
-        "grasp_v5_sources_unchanged": true
-      },
-      "later_native_time_window_correction": {
-        "implementation_commit": "215afa26dc7565e883eaa20e41598d248e30c483",
-        "evidence": "self-clearance-verification.json",
-        "maximum_gap_ns_unchanged": 150000000,
-        "python_unit": 1325,
-        "python_skipped": 1,
-        "current_browser_cases": [
-          "normal six Actions",
-          "cancel during open after transport and place"
-        ],
-        "old_v5_pre_transport_cancellation_preserved": true,
-        "model_xml_and_solver_unchanged": true
-      },
-      "ordered_observation_followup": {
-        "evidence": "grasp-observation-verification.json",
-        "implementation_commit": "642a6b2c356b28a99084d288f79e830091d551d3",
-        "native_implementation_commit": "a72a16c",
-        "formal_cases": [
-          "normal",
-          "normal_hold",
-          "cancel_transport",
-          "cancel_startup"
-        ],
-        "current_browser_cases": [
-          "normal",
-          "cancel_after_lift_before_transport_dispatch"
-        ],
-        "python_unit": 1337,
-        "python_skipped": 1,
-        "model_tests": 88,
-        "model_skipped": 1,
-        "prior_sources_and_failures_preserved": true
-      }
-    },
-    "new_performance_measurements": [],
     "remaining": [
       "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
       "Other grippers and objects, general task editing/integration and wider repeated ROS grasp evaluation.",
       "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
     ],
+    "new_performance_measurements": [],
     "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
   },
   "previous_updates": [
+    {
+      "date": "2026-10-29",
+      "document_edition": "1.9",
+      "original_design_preserved": {
+        "document_version": "1.1",
+        "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
+        "progress_update": "W01-W06 original update retained"
+      },
+      "previous_edition_evidence_preserved": {
+        "ros_grasp": "ros-grasp-verification.json",
+        "image": "ros-grasp.jpg",
+        "previous_v3_evidence": "ros-grasp-v3-verification.json",
+        "synchronized_replay": "synchronized-verification.json"
+      },
+      "native_self_clearance": {
+        "evidence": "self-clearance-verification.json",
+        "status": "fixed_original_and_representative_local_ros_verified",
+        "policy": {
+          "schema_version": 1,
+          "planning_min_self_distance_m": 0.01,
+          "observed_start_min_self_distance_m": 0.001,
+          "sample_dt_sec": 0.01
+        },
+        "simulation_only": true,
+        "new_remote_ci_merge_deployment": "Separate release workflow; not claimed by local checks.",
+        "later_admission_recency_hardening": {
+          "implementation_commit": "1b19cfebff34f56a98065e97a3c8f057c71f2413",
+          "evidence": "self-clearance-verification.json",
+          "tests": 4,
+          "injected_subcases": 6,
+          "python_unit": 1322,
+          "python_skipped": 1,
+          "scope": "Pure fake-monotonic boundary regression; no new native or ROS execution and no measured real-ROS failure.",
+          "previous_actual_runs_not_relabelled": true,
+          "grasp_v5_sources_unchanged": true
+        },
+        "later_native_time_window_correction": {
+          "implementation_commit": "215afa26dc7565e883eaa20e41598d248e30c483",
+          "evidence": "self-clearance-verification.json",
+          "maximum_gap_ns_unchanged": 150000000,
+          "python_unit": 1325,
+          "python_skipped": 1,
+          "current_browser_cases": [
+            "normal six Actions",
+            "cancel during open after transport and place"
+          ],
+          "old_v5_pre_transport_cancellation_preserved": true,
+          "model_xml_and_solver_unchanged": true
+        },
+        "ordered_observation_followup": {
+          "evidence": "grasp-observation-verification.json",
+          "implementation_commit": "642a6b2c356b28a99084d288f79e830091d551d3",
+          "native_implementation_commit": "a72a16c",
+          "formal_cases": [
+            "normal",
+            "normal_hold",
+            "cancel_transport",
+            "cancel_startup"
+          ],
+          "current_browser_cases": [
+            "normal",
+            "cancel_after_lift_before_transport_dispatch"
+          ],
+          "python_unit": 1337,
+          "python_skipped": 1,
+          "model_tests": 88,
+          "model_skipped": 1,
+          "prior_sources_and_failures_preserved": true
+        }
+      },
+      "new_performance_measurements": [],
+      "remaining": [
+        "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
+        "Other grippers and objects, general task editing/integration and wider repeated ROS grasp evaluation.",
+        "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
+      ],
+      "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
+    },
     {
       "date": "2026-10-29",
       "document_edition": "1.8",
