@@ -1,0 +1,970 @@
+{
+  "schema_version": "ros-grasp-pumped-admission-source-validation-v1",
+  "date": "2026-10-29",
+  "implementation_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/grasping/ros_task.py": "72a99c9cc7d4e73266fc87cc87e4bb24386493f7eb40fa5507e6bf65e4941515",
+    "src/mujoco_ros2_manipulation/grasping/ros_admission.py": "d7e612e4b006d0fe7473c726b8f07417333354ed58f7490e8f7056c5970d6278",
+    "src/mujoco_ros2_manipulation/grasping/ros_demo_server.py": "10423fae3e60a54208bb1ecc31bf78f29e5cd177ea86b557414619ced8dfdd5b"
+  },
+  "test_sha256": {
+    "tests/unit/test_ros_grasp_admission.py": "53f8cb22f934abf56680712da20c1ef07cd4511ae66a1fa87a3cec093ac666d0",
+    "tests/model/test_ros_grasp_admission.py": "f3fd38f749c2c57091e4402938fd37618172fe4548f0c9d33e980595157380ee"
+  },
+  "original_ci143": {
+    "source_commit": "78f51713df49d4eb74930388721b25fcf419d225",
+    "outcome": "failed; preserved without relabelling or automatic retry",
+    "artifact_zip_sha256": "52943863472320f431ec1cae6efa8d24ee882fb14f61769321f9aa9ecc006fbb",
+    "job_log_sha256": "890995f299d15d758eb5a6e65d0c065d43de1eaf17b60c3f6e77fbe28b23a837",
+    "original_sha256": {
+      "result.json": "49f75db4e416133f9bebd4aff9f3b776c31dbeb3f845cfe887f8f13d7e3b7378",
+      "native-observations.jsonl": "d0fa2d3377f8cdcbfd0483b63052b2107cd2b0fd3a597c6ad39a6e622d629935",
+      "physics.json": "d8c166da5d621a3431161b355fd106e3262d0620974d5a42088fd7e906c675eb",
+      "launch.log": "0bfb299d71ed7627e18673f4439e90c2983b9d36e3dca48e4b7a073499e83d9d",
+      "latest.json": "23972ed4f1926e999e5116ce6ad19c214b17e7c1678e5f9f3aa4152fdfba525b"
+    },
+    "failure_stage": "close",
+    "error": {
+      "type": "ObservationUnavailable",
+      "message": "native source capture is stale or in the future"
+    },
+    "physical_grasp": "unconfirmed",
+    "planning_attachment": "world",
+    "actions": [
+      {
+        "stage": "approach",
+        "submission_started": true,
+        "accepted": true,
+        "terminal_observed": true,
+        "terminal_status": 4,
+        "terminal_error_code": 0
+      },
+      {
+        "stage": "close",
+        "submission_started": false,
+        "accepted": null,
+        "terminal_observed": false,
+        "terminal_status": null,
+        "terminal_error_code": null
+      }
+    ],
+    "cleanup": {
+      "clean": true,
+      "forced": false,
+      "native_stop_observed": true,
+      "launcher_return_code": 0,
+      "process_group_gone": true,
+      "automatic_release": false,
+      "automatic_detach": false
+    },
+    "classification": "Original capture age exceeded500ms before CLOSE submission. Ingest had already established capture<=receipt; snapshot checked now>=receipt before the source-age error, ruling out its future-time branch for this path.",
+    "exact_delay_layer": "unresolved: the original lacks per-callback receipts and per-admission timing. Upstream delay, local validation, checkpoint work or a combination cannot be distinguished retrospectively.",
+    "native_scope": "No native transport-fault/overflow marker or physics clock/invalid-value failure; shutdown remained clean. JSONL absence of94 does not prove transport loss because the old callback could accept then omit an ineligible frame.",
+    "original_jsonl_rows": 106,
+    "missing_from_original_jsonl_sequences": [
+      94
+    ]
+  },
+  "reproduced_risk": {
+    "scope": "Deterministic unit injection demonstrates an admission starvation path; it does not prove the exact original CI143 delay layer.",
+    "simulated_blocking_validation_sec": 0.6,
+    "before": "synchronous validation ages original capture past500ms; zero goals",
+    "after": "owned validation process while owner pumps genuinely new native captures; exactly one goal after final checks",
+    "no_new_capture": "still rejected with zero goals",
+    "cancel_before_or_during": "zero goal; abandoned generation never reused",
+    "nested_child": "real read-only fixture child interrupted/reaped with owned validator group gone",
+    "source_changes": "changed digest, after-hash file stat mutation and wrong generation reject before submission"
+  },
+  "implementation": {
+    "fixed_worker": "one persistent trusted-module subprocess/session; at most one active generation",
+    "source_checks": "full target/manufacturer Git/file/binary checks retained; GIT_OPTIONAL_LOCKS=0 confined to validator environment",
+    "proof_binding": "owner verifies generation/token/manifest/full digest map/before-after stats and final current stats after scene/geometry",
+    "ownership": "leader PID/starttime/session/group and retained member identities checked before group signals; observed-gone groups permanently retired; parent watchdog is backup",
+    "cleanup": "bounded SIGINT then TERM/KILL, leader reap and process-group disappearance required; no unproven clean cleanup",
+    "cancelled_final_source": "abandoned generation stays unavailable; no late proof authorizes a new check and original cancel/error is retained",
+    "receipt_evidence": "every schema/identity-accepted raw frame is logged before snapshot eligibility; separate bounded receipt/age eligibility trace never claims physical authority",
+    "admission_evidence": "bounded prepare/hash/scene/geometry/final-stat/current-guard/one-submit timings with original sequence/capture/receipt ages",
+    "subprocess_group_published_before_first_git_request": true,
+    "worker_can_execute_arbitrary_commands": false
+  },
+  "unchanged": {
+    "maximum_source_age_ns": 500000000,
+    "maximum_evidence_gap_ns": 150000000,
+    "diagnostic_hold_sec": 30,
+    "original_closed_reference": true,
+    "physical_force_pose_thresholds": true,
+    "model_and_solver": true,
+    "phase_heartbeat_qos": true,
+    "native_fifo": true,
+    "no_automatic_command_retry": true,
+    "no_gap_reset": true,
+    "no_automatic_open_or_detach": true
+  },
+  "focused_checks": {
+    "run": 47,
+    "failures": 0,
+    "errors": 0,
+    "wall_sec": 1.597,
+    "log_sha256": "3702cfc7882f1ac6d44862f40209b8f87201a1c812f292579aad628c619ffe62",
+    "independent_review": "process lifetime/PID reuse/nested child/timeout boundaries reviewed without blocking findings"
+  },
+  "complete_unit_model_and_actual_ros": {
+    "complete_unit": {
+      "run": 1352,
+      "skip": 1,
+      "passed": true,
+      "log_sha256": "4f325565616e52d20dd58f443d03681ac11c056a2d4c7a299ace2a0d5fd9f9a1"
+    },
+    "complete_model": {
+      "run": 89,
+      "skip": 1,
+      "passed": true,
+      "log_sha256": "87bfd005e575ff1043d2b0893cbaffc705724290cf867c49085c13205c271b3e"
+    },
+    "strict_model_v5_passed": true,
+    "actual_ros_status": "four formal cases and four GUI runs passed on declared source; no new remote CI success claimed"
+  },
+  "limits": [
+    "Known delayed synchronous-admission risk is reproduced; original CI143 exact delay layer remains unproven.",
+    "Representative synthetic simulation and discrete observations only; no continuous-time, hardware or general success-rate claim.",
+    "Fast stat binding checks identity/size/mtime/ctime/inode and full target inputs; it is not a global atomic filesystem or adversarial kernel guarantee.",
+    "Current manufacturer Git directories are supported; Git indirection without an explicit checked metadata inventory fails closed.",
+    "Three extra normal GUI captures and the before-transport GUI cancellation are separate from moving-cancellation formal validation. Old v1.9 FIFO/self/physical/performance records remain unchanged."
+  ],
+  "actual_formal_validation": {
+    "summary_sha256": "7fc31450ac549db6558447eff3949df1ff6b48329a05573a6d0f08a5cfba62a7",
+    "schema_version": "ros-grasp-owned-validation-formal-four-v1",
+    "source_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
+    "source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_task.py": "72a99c9cc7d4e73266fc87cc87e4bb24386493f7eb40fa5507e6bf65e4941515",
+      "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e",
+      "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+      "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+      "src/mujoco_ros2_manipulation/grasping/ros_admission.py": "d7e612e4b006d0fe7473c726b8f07417333354ed58f7490e8f7056c5970d6278",
+      "src/mujoco_ros2_manipulation/grasping/contract.py": "549421dcb39266b30de2c75a94ee1791286f29236c4c396a562ee1c2256846ac",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+      "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+      "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+      "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+      "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+      "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5"
+    },
+    "cases": [
+      {
+        "case": "normal",
+        "outer_status": "passed",
+        "worker_status": "succeeded",
+        "physical_grasp": "released",
+        "planning_attachment": "world",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "close",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "verification_lift",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "transport",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "place",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "open",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          }
+        ],
+        "source_matches_declared": true,
+        "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275",
+        "cleanup": {
+          "clean": true,
+          "native_process_clean": true,
+          "forced": false,
+          "native_stop_observed": true,
+          "launcher_return_code": 0,
+          "process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false
+        },
+        "readonly_validator_cleanup": {
+          "generation": 11,
+          "process_alive": false,
+          "closed": true,
+          "abandoned": false,
+          "pending": false,
+          "late_completion_ignored": false,
+          "queue_capacity": 1,
+          "automatic_retry": false,
+          "ownership_error": null,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "forced": false,
+          "quiescent": true
+        },
+        "final_source_validation": {
+          "status": "passed",
+          "generation": 11
+        },
+        "receipt_diagnostics": {
+          "raw_frames": 352,
+          "receipt_rows": 352,
+          "raw_and_receipt_sequences_match": true,
+          "original_capture_timestamps_match": true,
+          "observation_snapshot_eligible": 352,
+          "ineligible": 0,
+          "physical_authority_claimed": false
+        },
+        "original_sha256": {
+          "result.json": "7bc7d2394d253a4be3fc2bbeafc45604dc1a9925d884de20c2462dbb9b15351a",
+          "worker/result.json": "64db0269538c523b97703286165cf7abb6698648fbf5b3c7510d4c87157e74c9",
+          "worker/native-observations.jsonl": "52e601a197e1602bd9a540bf576bb84fc0d972d466e501190a4bcfb00f1b5796",
+          "worker/native-receipts.jsonl": "1fb814f8dd099fd201110d2738883d4ee668c694f136a8cf0f5f78b6590af11a",
+          "worker/physics.json": "09654fd05dfbda028c584ff86406ac26cedc18784c80899f171aea1385df45ac",
+          "worker/launch.log": "293a93c70a08f397bbae19239db822e2d528e0466231e865f059e62895a79987"
+        },
+        "loaded_provider_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+        "loaded_provider_map_sha256": "7deb0fd3cd50d9de28fb4769553ffab08a1b5148e8d4032da5e187e8819b3a5c",
+        "loaded_provider_record_sha256": "314fcc3a74e36dd8e0963146ba788d69d7e8d2b4c5b35de03dce3e030457af60",
+        "single_close_admission_diagnostic": {
+          "scope": "One representative observation; not a performance result or proof of the exact CI143 delay layer.",
+          "goal_submission_count": 1,
+          "stages": [
+            {
+              "stage": "current_guard_cancel",
+              "elapsed_sec": 0.0005655379500240088,
+              "native_sequence_before": 82,
+              "native_sequence_after": 82,
+              "capture_age_before_sec": 0.032900821,
+              "capture_age_after_sec": 0.033469812,
+              "receipt_age_after_sec": 0.025867598
+            },
+            {
+              "stage": "prepare_checkpoint",
+              "elapsed_sec": 0.005435511004179716,
+              "native_sequence_before": 82,
+              "native_sequence_after": 82,
+              "capture_age_before_sec": 0.033473422,
+              "capture_age_after_sec": 0.038910701,
+              "receipt_age_after_sec": 0.031308487
+            },
+            {
+              "stage": "current_guard_cancel",
+              "elapsed_sec": 0.0004001939669251442,
+              "native_sequence_before": 82,
+              "native_sequence_after": 82,
+              "capture_age_before_sec": 0.038916086,
+              "capture_age_after_sec": 0.039317936,
+              "receipt_age_after_sec": 0.031715722
+            },
+            {
+              "stage": "target_file_binary_hash",
+              "elapsed_sec": 0.14649636298418045,
+              "native_sequence_before": 82,
+              "native_sequence_after": 84,
+              "capture_age_before_sec": 0.039319757,
+              "capture_age_after_sec": 0.075948913,
+              "receipt_age_after_sec": 0.025647037
+            },
+            {
+              "stage": "scene_identity",
+              "elapsed_sec": 0.002200104994699359,
+              "native_sequence_before": 84,
+              "native_sequence_after": 84,
+              "capture_age_before_sec": 0.075953646,
+              "capture_age_after_sec": 0.078155458,
+              "receipt_age_after_sec": 0.027853582
+            },
+            {
+              "stage": "current_geometry",
+              "elapsed_sec": 0.0005274349823594093,
+              "native_sequence_before": 84,
+              "native_sequence_after": 84,
+              "capture_age_before_sec": 0.078158324,
+              "capture_age_after_sec": 0.0786869,
+              "receipt_age_after_sec": 0.028385024
+            },
+            {
+              "stage": "final_file_stat",
+              "elapsed_sec": 0.0014440009836107492,
+              "native_sequence_before": 84,
+              "native_sequence_after": 84,
+              "capture_age_before_sec": 0.078688646,
+              "capture_age_after_sec": 0.080133682,
+              "receipt_age_after_sec": 0.029831806
+            },
+            {
+              "stage": "current_guard_cancel",
+              "elapsed_sec": 0.00042441394180059433,
+              "native_sequence_before": 84,
+              "native_sequence_after": 84,
+              "capture_age_before_sec": 0.080164831,
+              "capture_age_after_sec": 0.080590445,
+              "receipt_age_after_sec": 0.030288569
+            },
+            {
+              "stage": "one_goal_submit",
+              "elapsed_sec": 0.0001812879927456379,
+              "native_sequence_before": 84,
+              "native_sequence_after": 84,
+              "capture_age_before_sec": 0.080593161,
+              "capture_age_after_sec": 0.080775556,
+              "receipt_age_after_sec": 0.03047368
+            }
+          ]
+        },
+        "physical_grasp_before_cancel": null
+      },
+      {
+        "case": "normal_hold",
+        "outer_status": "passed",
+        "worker_status": "succeeded",
+        "physical_grasp": "released",
+        "planning_attachment": "world",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "close",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "verification_lift",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "transport",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "place",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "open",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          }
+        ],
+        "source_matches_declared": true,
+        "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275",
+        "cleanup": {
+          "clean": true,
+          "native_process_clean": true,
+          "forced": false,
+          "native_stop_observed": true,
+          "launcher_return_code": 0,
+          "process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false
+        },
+        "readonly_validator_cleanup": {
+          "generation": 11,
+          "process_alive": false,
+          "closed": true,
+          "abandoned": false,
+          "pending": false,
+          "late_completion_ignored": false,
+          "queue_capacity": 1,
+          "automatic_retry": false,
+          "ownership_error": null,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "forced": false,
+          "quiescent": true
+        },
+        "final_source_validation": {
+          "status": "passed",
+          "generation": 11
+        },
+        "receipt_diagnostics": {
+          "raw_frames": 931,
+          "receipt_rows": 931,
+          "raw_and_receipt_sequences_match": true,
+          "original_capture_timestamps_match": true,
+          "observation_snapshot_eligible": 931,
+          "ineligible": 0,
+          "physical_authority_claimed": false
+        },
+        "original_sha256": {
+          "result.json": "582354e3c17608f60ff717ffd898ddf67daee49b5ecf51704613e89485d00a5c",
+          "worker/result.json": "c95814985a9a8f9dec41e0a8cbbd380ec7231a7f0efc65b705d3a2fb5a1ab5ac",
+          "worker/native-observations.jsonl": "cb0c2baad745839d8dabe98010c619b4fc6d464cab68bb084007a4674c1b08ee",
+          "worker/native-receipts.jsonl": "9e270deb695265237e2bddbf203966c3c46bdef32d8fb7706b1117f33a4aa649",
+          "worker/physics.json": "23532cd267312311c338205a69165b966876d763d4e1659a30ef74ecdb6d2226",
+          "worker/launch.log": "cc3252aeaaa0f8d9400918d02fbbd9b4d165e128d106353b3c6d35b7f18a4499"
+        },
+        "loaded_provider_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+        "loaded_provider_map_sha256": "af7aa43c04c2c5500fb6aa06ee85d352e62171dc8237d1b9a4686ef6826bca9a",
+        "loaded_provider_record_sha256": "c499c5dbdc575e92eeaa258b0acc179122d049ce9bb5d30110167af3f8260b11",
+        "hold": {
+          "requested_simulation_sec": 30.0,
+          "observed_simulation_sec": 30.022,
+          "sample_count": 567,
+          "relative_position_error_m_max": 0.0011600334155170242,
+          "relative_angle_error_rad_max": 0.0018351615342068481,
+          "bilateral_fraction": 1.0,
+          "original_closed_reference_retained": true,
+          "max_native_gap_ns": 60000000,
+          "sequence_gaps": 0
+        },
+        "physical_grasp_before_cancel": null
+      },
+      {
+        "case": "cancel_transport",
+        "outer_status": "passed",
+        "worker_status": "cancelled",
+        "physical_grasp": "unconfirmed",
+        "planning_attachment": "attached",
+        "action_terminals": [
+          {
+            "stage": "approach",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "close",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "verification_lift",
+            "status": 4,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          },
+          {
+            "stage": "transport",
+            "status": 5,
+            "error_code": 0,
+            "submission_started": true,
+            "accepted": true
+          }
+        ],
+        "source_matches_declared": true,
+        "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275",
+        "cleanup": {
+          "clean": true,
+          "native_process_clean": true,
+          "forced": false,
+          "native_stop_observed": true,
+          "launcher_return_code": 0,
+          "process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false
+        },
+        "readonly_validator_cleanup": {
+          "generation": 8,
+          "process_alive": false,
+          "closed": true,
+          "abandoned": false,
+          "pending": false,
+          "late_completion_ignored": false,
+          "queue_capacity": 1,
+          "automatic_retry": false,
+          "ownership_error": null,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "forced": false,
+          "quiescent": true
+        },
+        "final_source_validation": {
+          "status": "passed",
+          "generation": 8
+        },
+        "receipt_diagnostics": {
+          "raw_frames": 200,
+          "receipt_rows": 200,
+          "raw_and_receipt_sequences_match": true,
+          "original_capture_timestamps_match": true,
+          "observation_snapshot_eligible": 200,
+          "ineligible": 0,
+          "physical_authority_claimed": false
+        },
+        "original_sha256": {
+          "result.json": "35c703dfd7f9ee92544440960b6fafc008ccda892daa3465376ec7bc0fa938ad",
+          "worker/result.json": "1702c42a1d9fed327b5d40d033de7736db96bb14c1559afb08b78e1a71e4e987",
+          "worker/native-observations.jsonl": "871f3fa2037db4ec3be61af3369b6b4435818dd659bbb040ad348ad723846dd7",
+          "worker/native-receipts.jsonl": "c17e7223ba70ddc05eab4ca3b351918db6d7a2ef4c7d7d8df808370284337336",
+          "worker/physics.json": "df52ca4b87b657e9cc3e45b6921178aa66bd519e803aafa955faaef3e4196595",
+          "worker/launch.log": "55d8706f8a9e35a0596b0da2b212bb03051ba65efeacf4971d0e65f24623bb9d"
+        },
+        "loaded_provider_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+        "loaded_provider_map_sha256": "554b268ec61e3ea8bcd459069888b9f5264bfcdb7e9046c73f6fa65b0b7352c0",
+        "loaded_provider_record_sha256": "bcb947c9dffe723adb867b93d5a517d2534cc76db0ab946f2d7bdc904db94873",
+        "moving_before_cancel": {
+          "signal_sent": true,
+          "observed_motion_m": 0.005097288090723059,
+          "signal_boundary": "accepted moving transport"
+        },
+        "physical_grasp_before_cancel": "confirmed"
+      },
+      {
+        "case": "cancel_startup",
+        "outer_status": "passed",
+        "worker_status": "cancelled",
+        "physical_grasp": "unconfirmed",
+        "planning_attachment": "uninitialized",
+        "action_terminals": [],
+        "source_matches_declared": true,
+        "model_sha256": "348f4d31d86fa8bc1486f51fc078454705f63d563421e97050e6ea4f039d45a1",
+        "execution_manifest_sha256": "693a826c488ecf9b8e154902d2b74029df65f5c3561bc35a83fb868416b1a275",
+        "cleanup": {
+          "clean": true,
+          "native_process_clean": true,
+          "forced": false,
+          "native_stop_observed": true,
+          "launcher_return_code": 0,
+          "process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false
+        },
+        "readonly_validator_cleanup": {
+          "generation": 1,
+          "process_alive": false,
+          "closed": true,
+          "abandoned": false,
+          "pending": false,
+          "late_completion_ignored": false,
+          "queue_capacity": 1,
+          "automatic_retry": false,
+          "ownership_error": null,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "forced": false,
+          "quiescent": true
+        },
+        "final_source_validation": {
+          "status": "passed",
+          "generation": 1
+        },
+        "receipt_diagnostics": {
+          "raw_frames": 8,
+          "receipt_rows": 8,
+          "raw_and_receipt_sequences_match": true,
+          "original_capture_timestamps_match": true,
+          "observation_snapshot_eligible": 8,
+          "ineligible": 0,
+          "physical_authority_claimed": false
+        },
+        "original_sha256": {
+          "result.json": "9f58b605afc34267e5512c74b526eaa826e87ceeb599771244ddf9b15f8fc75d",
+          "worker/result.json": "4faf0b10e426a44115fecdfd37fb68d20ff1b5991e8c5cea001b6d7c46cfcbd7",
+          "worker/native-observations.jsonl": "38a309fecb43ef9830dfdc3c3f13e7ab34860b06e0c94fb81ef5fbd4c588aa68",
+          "worker/native-receipts.jsonl": "63c65553f3a0b79e4aecf8159ee63e6909ca90fd454613efeb282b7950797edd",
+          "worker/physics.json": "d96e60e51cedbc450dde33ec84f3069d0a91c0efead5e7232f0a4780ddcfdfa5",
+          "worker/launch.log": "f351ad89836162cd16eec99bb712fc51d515175ee97a91d1a228d5864a81389e"
+        },
+        "loaded_provider_library_sha256": "480b8b19375dbcd69d66ff80ee303db9d1edbc0b23680ce6bd381e805e40ef33",
+        "loaded_provider_map_sha256": "fc9da1a36b60d3ed44fe260e088696be43bce4ba89781b6035c243d49e9534f5",
+        "loaded_provider_record_sha256": "efa4cb45c8e7d5582bae83ca29d7a733fc25ea754f22bfc8012014859588393e",
+        "physical_grasp_before_cancel": "unconfirmed"
+      }
+    ],
+    "scope": "Four parent-owned formal ROS cases, separate from previous FIFO and CI measurements.",
+    "automatic_retry": false
+  },
+  "status": "frozen_source_focused_full_and_actual_local_verification_passed_remote_followup_separate",
+  "evidence_draft_sha256": "93ddc756e1570e4a5cafcaa91213c6a36cdf1c77e64fbfead76d7f90284711cd",
+  "formal_summary_sha256": "7fc31450ac549db6558447eff3949df1ff6b48329a05573a6d0f08a5cfba62a7",
+  "actual_browser_validation": {
+    "source_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
+    "source_sha256": {
+      "src/mujoco_ros2_manipulation/grasping/ros_task.py": "72a99c9cc7d4e73266fc87cc87e4bb24386493f7eb40fa5507e6bf65e4941515",
+      "src/mujoco_ros2_manipulation/grasping/ros_observation.py": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e",
+      "src/mujoco_ros2_manipulation/grasping/ros_planning_scene.py": "7c96b70b57253a7dba81a06d287d5a54352e447a9fa8fde818845ef55e7779bc",
+      "src/mujoco_ros2_manipulation/grasping/ros_distance.py": "eca0a571d132e1b2fb402048e91d7bfdf6b69354bf85f92a3357e57902906487",
+      "src/mujoco_ros2_manipulation/grasping/ros_admission.py": "d7e612e4b006d0fe7473c726b8f07417333354ed58f7490e8f7056c5970d6278",
+      "src/mujoco_ros2_manipulation/grasping/contract.py": "549421dcb39266b30de2c75a94ee1791286f29236c4c396a562ee1c2256846ac",
+      "src/mujoco_ros2_manipulation/workcells/pose_adapter.py": "16ac8841123aedddbf39e014874daca27fe2087db68c8016b0eacb01ce64a6c5",
+      "src/mujoco_ros2_manipulation/workcells/planning_adapter.py": "4da0fbdb0041655a16e600a9ae808dd596aff00f9dea72a1ad78cf1b9237cbe3",
+      "src/mujoco_ros2_manipulation/workcells/interference.py": "49382ddf2db8f6e1e6bd445fe59f7234cc868ab6fe86eccd5174962da3465b00",
+      "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+      "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+      "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+      "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+      "native/step_monitor.hpp": "fcac6f8e6cc73dbacf116989b57678504b643ab20c55095ba72d765a07e0913f",
+      "native/control_loop_shutdown.hpp": "db81e17b56fdc9ead4be415fd2bff7e7c2db39e48e7bd2c3ab2a43abc5af48c5"
+    },
+    "scope": "Local actual ROS GUI, independent from formal four cases. Extra normal runs captured uncropped proof only; no failed work was rerun.",
+    "cases": [
+      {
+        "status": "succeeded",
+        "physical_grasp": "released",
+        "planning_attachment": "world",
+        "actions": [
+          {
+            "stage": "approach",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "close",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "transport",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "place",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "open",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          }
+        ],
+        "cleanup_clean": true,
+        "owner_cleanup_clean": true,
+        "validation_worker": {
+          "generation": 11,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "quiescent": true,
+          "forced": false
+        },
+        "owner_receipt_sha256": "cd0a82f0a32c417099d47ed56dfb8a0c1da96d46d72a415fd54cabc8dee1a5c3",
+        "worker_result_sha256": "adb29587c763c86d6e0a48966ce857b4488f76a0f94c73d49173d23f26b21f50",
+        "source_matches_declared": true,
+        "case": "normal_1"
+      },
+      {
+        "status": "cancelled",
+        "physical_grasp": "unconfirmed",
+        "planning_attachment": "attached",
+        "actions": [
+          {
+            "stage": "approach",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "close",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          }
+        ],
+        "cleanup_clean": true,
+        "owner_cleanup_clean": true,
+        "validation_worker": {
+          "generation": 7,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "quiescent": true,
+          "forced": false
+        },
+        "owner_receipt_sha256": "240c5cc2b69189c7883a7312140e5e9ea13c590d5eff75ebb8ede4f0bdc50bc9",
+        "worker_result_sha256": "43743e126d334df3d3efe340b3c93edac05af56327a25654a2b2d0d02adf71b4",
+        "source_matches_declared": true,
+        "case": "cancel_after_lift_before_transport_submission"
+      },
+      {
+        "status": "succeeded",
+        "physical_grasp": "released",
+        "planning_attachment": "world",
+        "actions": [
+          {
+            "stage": "approach",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "close",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "transport",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "place",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "open",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          }
+        ],
+        "cleanup_clean": true,
+        "owner_cleanup_clean": true,
+        "validation_worker": {
+          "generation": 11,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "quiescent": true,
+          "forced": false
+        },
+        "owner_receipt_sha256": "504f5f580de9552972953ba181de3db058cf587dfb6b1ef5c584d361cb9cdcc8",
+        "worker_result_sha256": "bfec14febc54871e429eb36725fa1cd2d6d9afc51242f99780ddc7f7c6aee972",
+        "source_matches_declared": true,
+        "case": "normal_2"
+      },
+      {
+        "status": "succeeded",
+        "physical_grasp": "released",
+        "planning_attachment": "world",
+        "actions": [
+          {
+            "stage": "approach",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "close",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "verification_lift",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "transport",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "place",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          },
+          {
+            "stage": "open",
+            "submission_started": true,
+            "accepted": true,
+            "terminal_status": 4,
+            "terminal_error_code": 0
+          }
+        ],
+        "cleanup_clean": true,
+        "owner_cleanup_clean": true,
+        "validation_worker": {
+          "generation": 11,
+          "leader_return_code": 0,
+          "process_group_gone": true,
+          "quiescent": true,
+          "forced": false
+        },
+        "owner_receipt_sha256": "f396253103f7a6ae62c72a0da3c23454fbc45c05e9e6e685efc9fc242616a656",
+        "worker_result_sha256": "c3b52b82a4bc02f2f033ce4fc9df74d4a13b8b171870d8d06b8915a947dd5515",
+        "source_matches_declared": true,
+        "case": "normal_3"
+      }
+    ],
+    "raw_reduced_summary_sha256": "1c3cd7608fbc84d6e258f4288c4b73de3e367071a97e50781684342d846625bc",
+    "desktop_viewport": {
+      "width": 1280,
+      "height": 720,
+      "actual_image_width": 1265,
+      "scroll_y": 245
+    },
+    "new_mobile_run_claimed": false,
+    "image": {
+      "file": "grasp-admission.jpg",
+      "sha256": "49ebaf600673218433fb83fd12441d57682d2952dfd12fa4b25f235cbde8f7fa",
+      "scope": "Current desktop 3D card after physical-grasp confirmation; task stage is labelled carrying with separate physical-grasp and MoveIt attachment labels. Exact transport-goal timing is not asserted."
+    }
+  },
+  "package_build_snapshot": {
+    "schema_version": 1,
+    "status": "package_bytes_verified_repository_links_pending",
+    "source_commit": "beccfd2713592d0e2603a7cc425e77593213466a",
+    "tracked_package_files": 200,
+    "working_tree_matches_source_commit": true,
+    "artifacts": {
+      "wheel": {
+        "filename": "mujoco_ros2_manipulation-0.2.0-py3-none-any.whl",
+        "sha256": "a3ea5befdac6b86f5094e52df1960ab0f5c6923b800232872a2104290d19b7dc",
+        "bytes": 1221746,
+        "matched": 200,
+        "absent": [],
+        "different": [],
+        "unexpected_package_files": []
+      },
+      "sdist": {
+        "filename": "mujoco_ros2_manipulation-0.2.0.tar.gz",
+        "sha256": "0c4792ee51b4766d0f4e52726ee9788bfa22f54df4af0e1feb134fd22c2f6244",
+        "bytes": 1095147,
+        "matched": 200,
+        "absent": [],
+        "different": [],
+        "unexpected_package_files": []
+      }
+    },
+    "workspace_resources": {
+      "contract": "Native sources, binaries and runtime configuration require the checked repository workspace; the existing wheel/sdist package Python and static assets.",
+      "files_sha256": {
+        "native/path_distance.cpp": "31f95dbec670468baa054a0b41efc2e54a3c4e7b09893a1d15e1c9ca3a1bb30b",
+        "native/path_distance_environment.cpp": "31f35d635084d4bbf0c95c499b2b98c75d0d69a2f13ce6ecd0c6477fabd59368",
+        "native/path_distance_self.cpp": "a6b3f7194975446bc67993366a36674f72f9b4ad5ebed9e9c666a5bb17fde475",
+        "native/grasp_distance.cpp": "f6365f85d4d20094097f5abf556b19711b4b04ce4cf001c9bd26336870930e4e",
+        "native/grasp_policy.hpp": "c710b535da3965b96b9aa9c31d8df65c2f7fba34afb1e0a87690e8cd7bee9150",
+        "native/grasp_scene_export.cpp": "78068de552d62e4c47a43abab1e6d00c7126fcf7cab0dce1507857120bb0b5ae",
+        "native/grasp_ros2_plugin/src/observation.cpp": "318a5920e6535f7b9717af1187d70ea01de1e170cadda9ec3dd04ffaa7eb84f4",
+        "native/grasp_ros2_plugin/src/ordered_fifo.hpp": "c617f7b3c93382d4cf6e90c72d02185c33c6719e62797427a211c335d3ba7997",
+        "config/planning/self_clearance.yaml": "cbda2515d2fa31d087215543f05869a6e8bdb49636793ab40aeb8a3cf555337c"
+      }
+    },
+    "repository_check": {
+      "return_code": 1,
+      "errors": [
+        "docs/grasping.md: missing link operator/system-direction-2026-10-27/grasp-admission-verification.json",
+        "docs/operator_console.md: missing link operator/system-direction-2026-10-27/grasp-admission-verification.json"
+      ]
+    },
+    "build": {
+      "return_code": 0,
+      "new_dependencies_installed": false,
+      "network_used": false
+    },
+    "audit_sha256": "c094dbd38168f67bc2889b60c0bc477df174d743cefd3ffa084706ff840a74e2",
+    "scope_note": "Full package bytes were verified before documentation links existed. The historical missing-link check stays separate from final publication checks."
+  },
+  "publication_scope": {
+    "document_version": "1.10",
+    "layout_baseline": "1.9",
+    "preserved_v19_assets_sha256": {
+      "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
+      "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
+      "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
+      "ros-grasp-verification.json": "29973460c037e8651bb442d6cc03e825ac24814d56035fda5271295580357c25",
+      "ros-grasp-v3.jpg": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599",
+      "ros-grasp-v3-verification.json": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b",
+      "self-clearance-verification.json": "8b20e697c33d8afefba515276a9f25876ddd02c601f3818d2269363c15f93f2b",
+      "grasp-observation-verification.json": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
+    },
+    "no_new_performance_measurements": true,
+    "remote_ci_merge_and_deployment": "Not claimed by these local facts; track the exact hotfix and followup runs separately."
+  },
+  "publication_checks": {
+    "repository_check": {
+      "passed": true,
+      "return_code": 0,
+      "log_sha256": "94bbaea21c33a6d14f5869dadeb8eaca98ba0660bbb8d7dbbcb913735f3882fa"
+    },
+    "report_schema_and_evidence_files": 129,
+    "generated_report_files_checked": 21,
+    "diff_whitespace_check": "passed",
+    "scope": "Local publication checks after the real evidence/image were added. Earlier package-audit missing-link snapshot remains historical."
+  }
+}
