@@ -61,7 +61,7 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "Three.js 작업실과 센서·3D 공통 재생, ROS 집기의 현재 구현을 정리합니다. 물체 처짐과 같은 팔 내부 간섭의 원본 진단·수정·로컬 회귀를 연결하고 남은 개발 순서를 제시합니다.",
-      "manifest_sha256": "60e94be828be672a1621fd1c524b44ce0ac47550866661566754e5bf7c5b4680"
+      "manifest_sha256": "5153204f9c90e670a53c8d5cbf383f4da2dcdee0dffc4229c50462b15b6dea30"
     },
     {
       "id": "planner-cache-2026-10-28",

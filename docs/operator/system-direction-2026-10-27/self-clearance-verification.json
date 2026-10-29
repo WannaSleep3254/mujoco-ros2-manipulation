@@ -31,7 +31,8 @@
       "tests/unit/test_pose_server.py": "1cc4cba71764cd0ed88d341261b69d47e6ccd2101641cc9f9f6ebbe870e757d6",
       "tests/unit/test_spatial_proposal_contract.py": "759d50b4ddb42f3d4651172b98e0935671b9a2660ef99da404a9e00b9d5c01f1"
     },
-    "fixture_sha256": "723046dd8b4a757d34fd64853d91507417cacf0b5020cf97ec82164baec3dfaa"
+    "fixture_sha256": "723046dd8b4a757d34fd64853d91507417cacf0b5020cf97ec82164baec3dfaa",
+    "source_phase": "Native within-arm integration before later_admission_recency_hardening; preserved actual-run source hashes below are not relabelled as followup runs."
   },
   "original_ci": {
     "same_source_tree_sha": "6b0b70e05b603622718ff4cb4b7a31df5063e11d",
@@ -185,7 +186,7 @@
       "shutdown_clean": true,
       "contact_steps": 0,
       "renderer_checked": false,
-      "source_scope": "Backend/native hashes match final implementation; later app.js Korean status text mapping was not part of this HTTP run."
+      "source_scope": "Backend/native hashes matched the pre-hardening self-clearance implementation; later app.js Korean text mapping and later admission-recency hardening were not part of this HTTP run."
     },
     "review": {
       "status": "passed",
@@ -194,7 +195,8 @@
       "physics_checks_passed": true,
       "shutdown_clean": true,
       "process_group_gone": true
-    }
+    },
+    "source_phase": "CLI216/HTTP215/review217 preceded the post-hash/pre-dispatch clock-age hardening."
   },
   "current_grasp_browser": {
     "cases": [
@@ -291,7 +293,89 @@
     "MoveIt/FCL versus native geometry/allowed-collision differences are not isolated by these tests; no exact FCL or engine defect cause is claimed.",
     "Passed-curve reference pair 7/13 minimum 57.059mm differs from all-within-arm minimum 16.557mm.",
     "Original pass/fail input case and source tree match, but observed start states and selected trajectories differ. Rerun success alone does not establish a fix.",
-    "Old v3/v4 grasp, hold, mobile and performance records remain separate. New remote CI, merge and deployment results are not claimed by local verification."
+    "Old v3/v4 grasp, hold, mobile and performance records remain separate. New remote CI, merge and deployment results are not claimed by local verification.",
+    "The final post-hash clock-age hardening has separate fake-clock regression and full unit/package proof. Earlier CLI/HTTP/review executions precede that followup; native and grasp-v5 core/model/UI source bytes are unchanged. New exact-head CI remains separate."
   ],
-  "data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
+  "data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets.",
+  "later_admission_recency_hardening": {
+    "schema_version": 1,
+    "date": "2026-10-29",
+    "kind": "post-physical-verification-admission-recency-hardening",
+    "implementation_commit": "1b19cfebff34f56a98065e97a3c8f057c71f2413",
+    "previous_source_commit": "cb9566f",
+    "source_sha256": {
+      "src/mujoco_ros2_manipulation/workcells/motion_server.py": "796cf34502469c9441d9d2c0960c2eba7ec35a449e722ac9cefe8071bb173ada",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "e9ba615274fd0968fcfa691d56be16cec0530be2237a4c56752f82681025530c",
+      "tests/unit/test_self_path_gate.py": "f575c3a77b54107b754e8a82337378228254270a3e46ee74c7a9f1ffea408073",
+      "tests/unit/test_self_legacy_dispatch.py": "cef79cf25853749e97f112477bea68508abe47d8c37b332770c5b13ec55ce735"
+    },
+    "previous_source_sha256": {
+      "src/mujoco_ros2_manipulation/workcells/motion_server.py": "8bb2a525d6410de16e07f22f74829d8187473abf060127e71b36217f560268be",
+      "src/mujoco_ros2_manipulation/workcells/verify_interference.py": "470b705c500729ee5bf5098ce2a5900edecba7dabffd35678d0724c51567e5e3"
+    },
+    "scope": "Pure fake-monotonic boundary regression; no new native or ROS execution and no measured real-ROS failure.",
+    "original_reproduction": {
+      "tests": 4,
+      "failing_subcases": 5,
+      "status": "failed as expected on previous source",
+      "log_sha256": "18f3860326f45aa45f45e97378d55fb490b0ce74e4952ab5071d72d462f89527"
+    },
+    "final_boundary_regression": {
+      "tests": 4,
+      "injected_subcases": 6,
+      "status": "passed",
+      "cases": [
+        "Production hash stalls 2 seconds without callbacks",
+        "Production geometry stalls 2 seconds without callbacks",
+        "Production 200ms original clock receipt consumes a 250ms start reservation",
+        "Legacy final hash stalls 2 seconds without callbacks",
+        "Legacy final geometry stalls 2 seconds without callbacks",
+        "Legacy 200ms original clock receipt consumes a 250ms start reservation"
+      ]
+    },
+    "final_full_unit": {
+      "run": 1322,
+      "skipped": 1,
+      "status": "passed",
+      "log_sha256": "fd96dd41fd88cd2c113ce3ee8535cd1f1449ecdb8492a35658f7a6738643857b"
+    },
+    "fix": {
+      "max_state_clock_age_wall_sec": 0.3,
+      "minimum_remaining_start_sec": 0.1,
+      "original_receipt_times_retained": true,
+      "expensive_checks_followed_by_recency": true,
+      "each_new_submission_rechecks_recency": true,
+      "stale_clock_age_consumes_reservation_headroom": true,
+      "cancel_and_owned_cleanup_unchanged": true,
+      "trajectory_positions_velocities_accelerations_unchanged": true,
+      "contact_interlock_unchanged": true
+    },
+    "provenance": {
+      "previous_actual_runs_before_this_followup": [
+        "CLI216",
+        "HTTP215",
+        "plan review217"
+      ],
+      "previous_native_actuals_not_relabelled_as_new_source": true,
+      "physical_ros_tests_rerun": false,
+      "grasp_v5_core_native_model_ui_sources_changed": false
+    },
+    "limits": [
+      "A fake-clock test is not a new ROS or physical execution test.",
+      "This does not certify a continuous collision margin or a hardware tracking bound."
+    ],
+    "evidence_sha256": "6ca31eb2c9f6d3af3415641f86ca339dd55edaf0be1311baeffd16f0b1461c37",
+    "current_package_build": {
+      "status": "passed",
+      "build_log_sha256": "7f01a9a8c2229f1d07b39c084b48c40c47098d11a9a904809b6c4ff8336af2db",
+      "audit_sha256": "f6f1f8dd9ad4419222cb5c7b118e996d138a59b4bd711adf7da2fc8c82f1f5ea",
+      "tracked_package_files": 199,
+      "mismatches": [],
+      "artifacts": {
+        "mujoco_ros2_manipulation-0.2.0-py3-none-any.whl": "830c2952ab73a6b1d9fdd74b94db0bdfb413682611e90d106a337b5839b78331",
+        "mujoco_ros2_manipulation-0.2.0.tar.gz": "7405f3af7ebdfd7d89b8e317809f11f0e86ff24ae82c74e6c7f685e749455df7"
+      },
+      "scope": "Python/static tracked package files only; native/config require existing workspace checkout"
+    }
+  }
 }

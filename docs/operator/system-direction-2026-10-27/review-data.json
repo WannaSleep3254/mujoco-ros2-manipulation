@@ -476,7 +476,18 @@
         "sample_dt_sec": 0.01
       },
       "simulation_only": true,
-      "new_remote_ci_merge_deployment": "Separate release workflow; not claimed by local checks."
+      "new_remote_ci_merge_deployment": "Separate release workflow; not claimed by local checks.",
+      "later_admission_recency_hardening": {
+        "implementation_commit": "1b19cfebff34f56a98065e97a3c8f057c71f2413",
+        "evidence": "self-clearance-verification.json",
+        "tests": 4,
+        "injected_subcases": 6,
+        "python_unit": 1322,
+        "python_skipped": 1,
+        "scope": "Pure fake-monotonic boundary regression; no new native or ROS execution and no measured real-ROS failure.",
+        "previous_actual_runs_not_relabelled": true,
+        "grasp_v5_sources_unchanged": true
+      }
     },
     "new_performance_measurements": [],
     "remaining": [
