@@ -445,7 +445,12 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         ledger = self.execution_ledger
         if ledger is not None and any(not item.submission_started for item in ledger.attempts):
             self.confirm_start_unchanged(self.active.data["initial_state_rad"])
-            require(self.motion_start is not None and self.motion_start-self.clock_last > .1,
+            # Hashing/native geometry above can block without pumping ROS.
+            # Keep the original clock receipt age; it must consume reservation
+            # headroom rather than make a cached simulation stamp look current.
+            now = self.fresh()
+            clock_age_sec = (now-self.clock_received_ns)/1e9
+            require(self.motion_start is not None and self.motion_start-self.clock_last-clock_age_sec > .1,
                     "Self admission exhausted the future execution reservation; no later goal is allowed")
         self.check_abort()
 
@@ -600,9 +605,10 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
 
     def fresh(self):
         now = time.monotonic_ns()
-        require(self.state_received_ns is not None and (now - self.state_received_ns) / 1e9 <= 0.3, "Joint state is stale")
-        require(self.clock_received_ns is not None and (now - self.clock_received_ns) / 1e9 <= 0.3, "Simulation clock is stale")
+        require(self.state_received_ns is not None and 0 <= (now - self.state_received_ns) / 1e9 <= 0.3, "Joint state is stale")
+        require(self.clock_received_ns is not None and 0 <= (now - self.clock_received_ns) / 1e9 <= 0.3, "Simulation clock is stale")
         require(not self.clock_backwards, "Simulation clock moved backwards")
+        return now
 
     def quiet(self, *, cancellable=True):
         seen, consecutive = [self.joint_count], [0]
@@ -787,6 +793,8 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         require_self_clearance(self.evaluator, self.state(), self.self_policy["observed_start_min_self_distance_m"])
         if max(abs(self.state()[n] - initial[n]) for n in self.joint_names) >= 0.002:
             raise MotionStateChanged("Robot moved while planning; stale plan refused")
+        self.check_abort()
+        self.fresh()
 
     def _review_build_identity(self):
         """Rehash the current generated model, environment, limits and policy."""

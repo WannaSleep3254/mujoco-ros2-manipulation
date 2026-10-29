@@ -3,6 +3,7 @@
 import argparse
 from copy import deepcopy
 import json
+import time
 from pathlib import Path
 
 import rclpy
@@ -61,6 +62,7 @@ class ParallelPlanRejected(RuntimeError):
 class InterferenceVerification(WorkcellVerification):
     def __init__(self, cell, progress=None, case="dual_arm_crossing"):
         self.self_policy_path, self.self_policy, self.self_policy_sha256 = self_policy_snapshot(cell)
+        self._self_clock_received_ns = self._self_state_received_ns = None
         super().__init__(cell, progress)
         self.case_path, self.case = load_case(cell, case)
         self.case_sha256 = file_sha256(self.case_path)
@@ -68,6 +70,29 @@ class InterferenceVerification(WorkcellVerification):
         self.initial = None
         self.assessments = {}
         self.executions = []
+
+    def clock(self, message):
+        received = time.monotonic_ns()
+        super().clock(message)
+        self._self_clock_received_ns = received
+
+    def joints(self, message):
+        received = time.monotonic_ns()
+        previous = self.joint_count
+        super().joints(message)
+        if self.joint_count != previous:
+            self._self_state_received_ns = received
+
+    def _self_dispatch_fresh(self, scheduled_start):
+        now = time.monotonic_ns()
+        require(self._self_state_received_ns is not None
+                and 0 <= (now-self._self_state_received_ns)/1e9 <= .3, "Joint state is stale at native self admission")
+        require(self._self_clock_received_ns is not None
+                and 0 <= (now-self._self_clock_received_ns)/1e9 <= .3, "Simulation clock is stale at native self admission")
+        require(not self.clock_backwards, "Simulation clock moved backwards")
+        clock_age_sec = (now-self._self_clock_received_ns)/1e9
+        require(scheduled_start is None or scheduled_start-self.clock_last-clock_age_sec > .1,
+                "Native self admission exhausted the original future start reservation")
 
     def save_evidence(self, stage):
         path = self.launch_log_path.parent / "trajectories.json"
@@ -237,15 +262,15 @@ class InterferenceVerification(WorkcellVerification):
                     "Self-clearance policy changed before dispatch")
             record["observed_start"] = require_self_clearance(evaluator, self.state(),
                 self.self_policy["observed_start_min_self_distance_m"])
-            require(scheduled_start is None or scheduled_start-self.clock_last > .1,
-                    "Native self admission exhausted the future start reservation; no goals dispatched")
+            self._self_dispatch_fresh(scheduled_start)
             previous_abort = getattr(self, "dispatch_abort", None)
             def admission_abort():
                 if previous_abort is not None:
                     previous_abort()
                 require(not self.contact_guard or not self.contact_guard["latched"], "Native contact guard latched")
                 ledger = getattr(self, "execution_ledger", None)
-                if ledger is not None and any(not item.submission_started for item in ledger.attempts):
+                new_submission = ledger is not None and any(not item.submission_started for item in ledger.attempts)
+                if new_submission:
                     require(scheduled_start is None or scheduled_start-self.clock_last > .1,
                             "Native self admission start reservation expired before submission")
                     require(file_sha256(self.self_policy_path) == self.self_policy_sha256,
@@ -255,6 +280,8 @@ class InterferenceVerification(WorkcellVerification):
                     require_self_clearance(evaluator, self.state(), self.self_policy["observed_start_min_self_distance_m"])
                 if previous_abort is not None:
                     previous_abort()
+                if new_submission:
+                    self._self_dispatch_fresh(scheduled_start)
             self.dispatch_abort = admission_abort
             primary = None
             try:

@@ -137,6 +137,36 @@ class SelfProductionTests(unittest.TestCase):
             self.node._dispatch_self_abort()
         self.node.dispatch.assert_not_called()
 
+    def test_slow_identity_or_geometry_cannot_use_precheck_recency(self):
+        identity = deepcopy(self.node._native_cache_provenance.return_value)
+        original_geometry = self.node.evaluator.at.return_value
+        self.node.execution_ledger = NS(attempts=[NS(submission_started=False)])
+        self.node.active = NS(data={'initial_state_rad':dict(self.node.actual)})
+        self.node.motion_start = self.node.clock_last+1.
+        for stage in ('identity','geometry'):
+            with self.subTest(stage=stage):
+                self.node.state_received_ns = self.node.clock_received_ns = self.fixture.wall_ns
+                def slow_identity():
+                    self.fixture.wall_ns += 2_000_000_000
+                    return identity
+                def slow_geometry(_):
+                    self.fixture.wall_ns += 2_000_000_000
+                    return original_geometry
+                self.node._native_cache_provenance.side_effect = slow_identity if stage == 'identity' else None
+                self.node.evaluator.at.side_effect = slow_geometry if stage == 'geometry' else None
+                with self.assertRaisesRegex(RuntimeError, 'stale'):
+                    self.node._dispatch_self_abort()
+                self.node.dispatch.assert_not_called()
+
+    def test_fresh_but_aged_clock_cannot_overstate_future_start_margin(self):
+        self.node.execution_ledger = NS(attempts=[NS(submission_started=False)])
+        self.node.active = NS(data={'initial_state_rad':dict(self.node.actual)})
+        self.node.motion_start = self.node.clock_last+.25
+        self.fixture.wall_ns += 200_000_000  # still within the 300-ms recency gate
+        with self.assertRaisesRegex(RuntimeError, 'reservation'):
+            self.node._dispatch_self_abort()
+        self.node.dispatch.assert_not_called()
+
     def test_native_and_policy_identity_change_after_planning_never_dispatches(self):
         for change in ('policy','native'):
             with self.subTest(change=change):

@@ -30,7 +30,7 @@ class Base:
 def load_dispatch():
     path=Path(__file__).resolve().parents[2]/'src/mujoco_ros2_manipulation/workcells/verify_interference.py'
     tree=ast.parse(path.read_text());cls=next(v for v in tree.body if isinstance(v,ast.ClassDef) and v.name=='InterferenceVerification')
-    cls.body=[v for v in cls.body if isinstance(v,ast.FunctionDef) and v.name=='dispatch'];cls.bases=[ast.Name(id='Base',ctx=ast.Load())]
+    cls.body=[v for v in cls.body if isinstance(v,ast.FunctionDef) and v.name in ('dispatch','_self_dispatch_fresh')];cls.bases=[ast.Name(id='Base',ctx=ast.Load())]
     namespace=dict(Base=Base,require=require,Spline=Spline,file_sha256=file_sha256,evaluate_path=evaluate_path,
         require_self_clearance=require_self_clearance,self_evaluator_identity=Mock(return_value={"pinned":"native"}),SelfClearanceRejected=SelfClearanceRejected,deepcopy=deepcopy)
     exec(compile(ast.fix_missing_locations(ast.Module(body=[cls],type_ignores=[])),str(path),'exec'),namespace)
@@ -44,6 +44,10 @@ class LegacySelfDispatchTests(unittest.TestCase):
         n.self_policy_path.write_text('checked policy');n.self_policy_sha256=file_sha256(n.self_policy_path)
         n.commanded=dict(left=0.,right=0.);n.cell=NS(root=Path(self.folder.name),joints=list(n.commanded),instances=[NS(id=x,joints=[x]) for x in n.commanded])
         n.dispatched=0;n.evidence={};n.sent=[];n.action_failure=False;n.goal_observer=Mock();n.clock_last=49.;n.contact_guard=dict(latched=False)
+        self.wall_ns = 9_000_000_000
+        self.namespace['time'] = NS(monotonic_ns=lambda:self.wall_ns)
+        n._self_clock_received_ns = n._self_state_received_ns = self.wall_ns
+        n.clock_backwards = False
         n.ready_guard=Mock();n.state=lambda:dict(n.commanded);n.save_evidence=Mock()
         self.ev=evaluator(.02);self.ev.metadata=lambda:{'self_collision':{'pair_count':24}}
         self.ev.__enter__=lambda:self.ev
@@ -100,6 +104,33 @@ class LegacySelfDispatchTests(unittest.TestCase):
         self.node.self_policy_path.write_text('checked policy')
         self.node.goal_observer.side_effect=lambda:setattr(self.node,'clock_last',49.95)
         with self.assertRaisesRegex(RuntimeError,'reservation'):self.node.dispatch(self.commands(),scheduled_start=50.)
+        self.assertEqual(self.node.sent,[])
+
+    def test_slow_final_identity_or_geometry_cannot_send_with_held_clock_receipts(self):
+        ordinary = self.ev.at.side_effect
+        for stage in ('identity','geometry'):
+            with self.subTest(stage=stage):
+                self.node._self_clock_received_ns = self.node._self_state_received_ns = self.wall_ns
+                calls = [0]
+                def identity(*_):
+                    calls[0] += 1
+                    if stage == 'identity' and calls[0] == 2:
+                        self.wall_ns += 2_000_000_000
+                    return {'pinned':'native'}
+                self.namespace['self_evaluator_identity'].side_effect = identity
+                def slow_geometry(q):
+                    self.wall_ns += 2_000_000_000
+                    return ordinary(q)
+                self.node.goal_observer.side_effect = (lambda:setattr(self.ev.at,'side_effect',slow_geometry)) if stage == 'geometry' else None
+                self.ev.at.side_effect = ordinary
+                with self.assertRaisesRegex(RuntimeError,'stale'):
+                    self.node.dispatch(self.commands(),scheduled_start=50.)
+                self.assertEqual(self.node.sent,[])
+
+    def test_fresh_aged_clock_does_not_extend_the_original_reservation(self):
+        self.node.goal_observer.side_effect=lambda:setattr(self,'wall_ns',self.wall_ns+200_000_000)
+        with self.assertRaisesRegex(RuntimeError,'reservation'):
+            self.node.dispatch(self.commands(),scheduled_start=49.25)
         self.assertEqual(self.node.sent,[])
 
     def test_terminal_save_error_preserves_primary_but_successful_transport_still_fails_missing_record(self):
