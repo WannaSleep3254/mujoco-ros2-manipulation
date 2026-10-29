@@ -159,6 +159,9 @@ class RosJob:
     native_group: object = None
     native_leader_start: object = None
     native_members: dict = field(default_factory=dict)
+    validation_group: object = None
+    validation_leader_start: object = None
+    validation_members: dict = field(default_factory=dict)
     members_checked: float = 0.
     owner_cleanup_clean: object = None
     owner_errors: list = field(default_factory=list)
@@ -283,30 +286,49 @@ class RosDemoApplication:
             pass
 
     def _bind_native_group(self, job, group):
+        self._bind_owned_group(job, group, 'native')
+
+    def _bind_validation_group(self, job, group):
+        self._bind_owned_group(job, group, 'validation')
+
+    def _bind_owned_group(self, job, group, kind):
         if group is None:
             return
-        _require(type(group) is int and group > 1, 'Invalid native process-group identity')
-        if job.native_group is not None:
-            _require(job.native_group == group, 'Native process group changed within one run')
+        _require(kind in ('native', 'validation'), 'Unknown owned subgroup kind')
+        _require(type(group) is int and group > 1 and group != job.process.pid,
+                 'Invalid ' + kind + ' process-group identity')
+        other = 'validation' if kind == 'native' else 'native'
+        _require(group != getattr(job, other + '_group'), 'Owned subgroup identities must be distinct')
+        bound = getattr(job, kind + '_group')
+        if bound is not None:
+            _require(bound == group, kind + ' process group changed within one run')
             return
         identity = _proc_identity(group)
         if identity is not None and identity['ppid'] == job.process.pid and identity['group'] == group and identity['session'] == group:
-            job.native_group, job.native_leader_start = group, identity['start']
-            job.native_members.update(_members(group))
+            setattr(job, kind + '_group', group)
+            setattr(job, kind + '_leader_start', identity['start'])
+            getattr(job, kind + '_members').update(_members(group))
 
     def _signal_native_group(self, job, sig):
-        if job.native_group is None or _group_gone(job.native_group):
+        self._signal_owned_group(job, sig, 'native')
+
+    def _signal_validation_group(self, job, sig):
+        self._signal_owned_group(job, sig, 'validation')
+
+    def _signal_owned_group(self, job, sig, kind):
+        group = getattr(job, kind + '_group')
+        if group is None or _group_gone(group):
             return
-        leader = _proc_identity(job.native_group)
-        bound = (leader is not None and leader['start'] == job.native_leader_start
-                 and leader['group'] == leader['session'] == job.native_group)
+        leader = _proc_identity(group)
+        bound = (leader is not None and leader['start'] == getattr(job, kind + '_leader_start')
+                 and leader['group'] == leader['session'] == group)
         if not bound:
             bound = any((identity := _proc_identity(pid)) is not None and identity['start'] == started
-                        and identity['group'] == identity['session'] == job.native_group
-                        for pid, started in job.native_members.items())
-        _require(bound, 'Refusing to signal a native group without retained process-instance ownership')
+                        and identity['group'] == identity['session'] == group
+                        for pid, started in getattr(job, kind + '_members').items())
+        _require(bound, 'Refusing to signal a ' + kind + ' group without retained process-instance ownership')
         try:
-            os.killpg(job.native_group, sig)
+            os.killpg(group, sig)
         except ProcessLookupError:
             pass
 
@@ -358,8 +380,9 @@ class RosDemoApplication:
         if 'actions' in task:
             _require(type(task['actions']) is list and len(task['actions']) <= 128
                      and all(type(item) is dict for item in task['actions']), 'ROS Action 목록 형식이 다릅니다.')
-        group = task.get('owned_process_group')
-        _require(group is None or (type(group) is int and group > 1), 'ROS 소유 프로세스 그룹 형식이 다릅니다.')
+        for name in ('owned_process_group', 'owned_validation_process_group'):
+            group = task.get(name)
+            _require(group is None or (type(group) is int and group > 1), '소유 프로세스 그룹 형식이 다릅니다: ' + name)
 
     @staticmethod
     def _checked_guard(guard):
@@ -411,6 +434,7 @@ class RosDemoApplication:
                          '서로 다른 ROS 상태가 같은 순번을 사용했습니다.')
                 return
             self._bind_native_group(job, task.get('owned_process_group'))
+            self._bind_validation_group(job, task.get('owned_validation_process_group'))
             if native is not None:
                 observed, progressed = value.get('observed_monotonic_ns'), value.get('clock_progress_observed_monotonic_ns')
                 now = time.monotonic_ns()
@@ -458,6 +482,7 @@ class RosDemoApplication:
                 self._checked_task(result)
                 self._checked_guard(result.get('cleanup', {}).get('guard'))
                 self._bind_native_group(job, result.get('owned_process_group'))
+                self._bind_validation_group(job, result.get('owned_validation_process_group'))
                 job.result, job.result_sha256 = result, _sha(raw)
                 job.status = result['status']
                 if result['status'] == 'cancelled':
@@ -468,11 +493,16 @@ class RosDemoApplication:
         else:
             job.status, job.error = 'failed', dict(type='MissingWorkerResult', message='ROS 작업 프로세스의 최종 결과를 확인하지 못했습니다.')
         native_group = (job.result or {}).get('owned_process_group')
-        if job.native_group is not None and not _group_gone(job.native_group):
-            self._begin_cancel(job, reason='ROS 작업 종료 후 소유 시뮬레이션 프로세스를 정리하고 있습니다.')
-            job.status = 'cancelling'
-            return
-        unknown_live_group = native_group is not None and job.native_group is None and not _group_gone(native_group)
+        validation_group = (job.result or {}).get('owned_validation_process_group')
+        for kind in ('native', 'validation'):
+            group = getattr(job, kind + '_group')
+            if group is not None and not _group_gone(group):
+                self._begin_cancel(job, reason='ROS 작업 종료 후 소유 하위 프로세스를 정리하고 있습니다.')
+                job.status = 'cancelling'
+                return
+        unknown_live_group = any(reported is not None and getattr(job, kind + '_group') is None
+                                 and not _group_gone(reported)
+                                 for kind, reported in (('native', native_group), ('validation', validation_group)))
         clean = bool(not unknown_live_group and _group_gone(job.process.pid) and job.escalation == 0
                      and (job.result or {}).get('cleanup', {}).get('clean') is True)
         job.owner_cleanup_clean = clean
@@ -504,6 +534,7 @@ class RosDemoApplication:
         # A failed native ownership check must not prevent signalling the
         # separately owned worker. Never signal an unproved native process.
         for label, send in (('native escalation', self._signal_native_group),
+                            ('validation escalation', self._signal_validation_group),
                             ('worker escalation', self._signal_worker)):
             try:
                 send(job, sig)
@@ -517,10 +548,13 @@ class RosDemoApplication:
             return
         try:
             self._read_update(job)
-            if job.native_group is not None and self.clock() - job.members_checked >= .5:
-                leader = _proc_identity(job.native_group)
-                if leader is not None and leader['start'] == job.native_leader_start:
-                    job.native_members.update(_members(job.native_group))
+            if self.clock() - job.members_checked >= .5:
+                for kind in ('native', 'validation'):
+                    group = getattr(job, kind + '_group')
+                    if group is not None:
+                        leader = _proc_identity(group)
+                        if leader is not None and leader['start'] == getattr(job, kind + '_leader_start'):
+                            getattr(job, kind + '_members').update(_members(group))
                 job.members_checked = self.clock()
             if job.process is not None and job.process.poll() is not None:
                 self._finish(job)
@@ -595,6 +629,7 @@ class RosDemoApplication:
             worker_result_observed=job.result is not None, worker_result_sha256=job.result_sha256,
             process_exit_code=None if job.process is None else job.process.poll(),
             process_group_gone=None if not job.finished else job.process is None or _group_gone(job.process.pid),
+            validation_process_group_gone=(None if job.validation_group is None else _group_gone(job.validation_group)),
             automatic_release=False, automatic_detach=False, automatic_retry=False)
 
     @staticmethod
@@ -609,6 +644,7 @@ class RosDemoApplication:
         atomic_json(job.directory / 'owner-receipt.json', dict(schema_version=1, kind='owned-ros-grasp-viewer-v1',
             source=deepcopy(self.source), job=self._snapshot_job(job),
             native_group=job.native_group, native_leader_start=job.native_leader_start,
+            validation_group=job.validation_group, validation_leader_start=job.validation_leader_start,
             physical_stop_inferred_from_process_exit=False, stdout_truncated=bool(job.output and job.output.overflow),
             owner_errors=list(job.owner_errors)))
 

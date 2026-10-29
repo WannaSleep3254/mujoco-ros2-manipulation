@@ -58,6 +58,7 @@ def verify(args):
                   source_sha256=file_sha256(Path(__file__)), cleanup_errors=[])
     process = None
     inner = None
+    validator = None
     stream = None
     previous_sequence = 0
     lift_anchor = None
@@ -100,6 +101,19 @@ def verify(args):
                         inner = candidate
                         record["owned_inner_group_identity"] = inner
                         save()
+                validation_group = task.get("owned_validation_process_group")
+                if validation_group is not None:
+                    require(type(validation_group) is int and validation_group > 1,
+                            "read-only validator process-group identity is invalid")
+                    if validator is not None:
+                        require(validation_group == validator["pgrp"],
+                                "read-only validator process group changed within one task")
+                    else:
+                        candidate = process_identity(validation_group)
+                        if candidate and candidate["ppid"] == process.pid and candidate["pgrp"] == candidate["session"] == validation_group:
+                            validator = candidate
+                            record["owned_validation_group_identity"] = validator
+                            save()
                 native = value.get("native_observation")
                 if args.case == "cancel_startup" and inner is not None and not record["signal_sent"]:
                     record.update(signal_sent=True, signal_monotonic_ns=time.monotonic_ns(), signal_boundary="owned native launch created",
@@ -137,6 +151,17 @@ def verify(args):
                 "native child/launcher/group cleanup was not confirmed")
         require(not result["cleanup"]["automatic_release"] and not result["cleanup"]["automatic_detach"],
                 "cleanup must never automatically release or detach")
+        validation_group = result.get("owned_validation_process_group")
+        if validation_group is not None:
+            require(validator is not None and validation_group == validator["pgrp"],
+                    "validator ownership was not observed while its leader was an actual worker child")
+            validation_cleanup = result["cleanup"].get("readonly_validation_worker", {})
+            require(validation_cleanup.get("quiescent") is True
+                    and validation_cleanup.get("process_group_gone") is True
+                    and validation_cleanup.get("leader_return_code") is not None
+                    and group_gone(validation_group), "read-only validator or its Git descendants remain")
+        elif args.case != "cancel_startup":
+            require(False, "task never initialized its owned read-only admission validator")
         actions = result["actions"]
         expected_interruptions = result["cleanup"].get("expected_startup_spawner_interruptions", [])
         if expected_interruptions:
@@ -205,12 +230,14 @@ def verify(args):
                 record["cleanup_errors"].append("owned worker graceful stop: "+str(error))
                 # The inner group was bound while its leader was a direct child
                 # and PID/PGID/session/start-time matched. Recheck before signal.
-                if inner is not None:
-                    current = process_identity(inner["pid"])
-                    if current and all(current[key] == inner[key] for key in ("pid", "pgrp", "session", "starttime")):
+                for owned in (inner, validator):
+                    if owned is None:
+                        continue
+                    current = process_identity(owned["pid"])
+                    if current and all(current[key] == owned[key] for key in ("pid", "pgrp", "session", "starttime")):
                         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):
                             try:
-                                os.killpg(inner["pgrp"], sig)
+                                os.killpg(owned["pgrp"], sig)
                             except ProcessLookupError:
                                 break
                             time.sleep(.2)
@@ -223,7 +250,8 @@ def verify(args):
         if stream is not None:
             stream.close()
         record.update(completed_utc=utc_now(), latest_ipc_sequence=previous_sequence,
-                      worker_process_group_gone=process is None or group_gone(process.pid))
+                      worker_process_group_gone=process is None or group_gone(process.pid),
+                      validation_process_group_gone=validator is None or group_gone(validator["pgrp"]))
         if (output/"worker.log").exists():
             record["worker_log_sha256"] = file_sha256(output/"worker.log")
         save()

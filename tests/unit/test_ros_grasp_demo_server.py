@@ -401,6 +401,79 @@ class RosOwnedJobTests(unittest.TestCase):
             kill.assert_not_called()
         job.native_group = None
 
+    def test_validation_binding_retains_one_actual_worker_child_instance(self):
+        self.start()
+        job = self.app.current
+        wrong = dict(ppid=1234, group=123, session=123, start=9)
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._proc_identity', return_value=wrong):
+            self.app._bind_validation_group(job, 123)
+        self.assertIsNone(job.validation_group)
+        correct = dict(wrong, ppid=job.process.pid)
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._proc_identity', return_value=correct), \
+             patch('mujoco_ros2_manipulation.grasping.ros_demo_server._members', return_value={123:9}):
+            self.app._bind_validation_group(job, 123)
+        self.assertEqual(job.validation_group, 123)
+        with self.assertRaises(ValueError):
+            self.app._bind_validation_group(job, 456)
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._group_gone', return_value=False), \
+             patch('mujoco_ros2_manipulation.grasping.ros_demo_server._proc_identity', return_value=dict(correct, start=10)), \
+             patch('mujoco_ros2_manipulation.grasping.ros_demo_server.os.killpg') as kill:
+            with self.assertRaises(ValueError):
+                self.app._signal_validation_group(job, signal.SIGTERM)
+            kill.assert_not_called()
+        job.validation_group = None
+
+    def test_live_validation_group_prevents_cleanup_success_after_worker_exit(self):
+        self.start()
+        job = self.app.current
+        job.validation_group, job.validation_leader_start = 123, 9
+        self.terminal(status='cancelled', clean=True)
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._group_gone', side_effect=lambda group: group != 123):
+            state = self.app.snapshot()['job']
+            self.assertFalse(state['finished'])
+            self.assertIsNone(state['owner_cleanup_clean'])
+            self.assertIs(state['validation_process_group_gone'], False)
+        state = self.app.snapshot()['job']
+        self.assertTrue(state['finished'])
+        self.assertTrue(state['owner_cleanup_clean'])
+        self.assertIs(state['validation_process_group_gone'], True)
+
+    def test_unproved_reported_validation_group_cannot_be_signalled_or_declared_clean(self):
+        self.start()
+        job = self.app.current
+        self.terminal(clean=True)
+        result_path = job.directory/'run/result.json'
+        result = json.loads(result_path.read_text())
+        result['owned_validation_process_group'] = 123
+        atomic_json(result_path, result)
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._proc_identity', return_value=None), \
+             patch('mujoco_ros2_manipulation.grasping.ros_demo_server._group_gone', side_effect=lambda group: group != 123), \
+             patch('mujoco_ros2_manipulation.grasping.ros_demo_server.os.killpg') as kill:
+            state = self.app.snapshot()['job']
+            self.app._signal_validation_group(job, signal.SIGTERM)
+            self.assertEqual(state['status'], 'failed')
+            self.assertFalse(state['owner_cleanup_clean'])
+            kill.assert_not_called()
+
+    def test_unproved_validation_group_does_not_disable_owned_worker_escalation(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier,generation=job.generation,model_sha256=MODEL))
+        with patch.object(self.app, '_signal_validation_group', side_effect=ValueError('unproved validator instance')):
+            self.now = 50.
+            self.app.snapshot()
+            self.assertEqual(self.signals.call_args.args, (job.process.pid,signal.SIGTERM))
+        self.assertTrue(any('validation escalation' in error for error in job.owner_errors))
+
+    def test_validator_ownership_is_readonly_metadata_with_strict_identity_type(self):
+        self.start()
+        value = self.update()
+        value['task']['owned_validation_process_group'] = True
+        atomic_json(self.app.current.directory/'run/latest.json',value)
+        state = self.app.snapshot()['job']
+        self.assertTrue(state['cancel_requested'])
+        self.assertIsNone(self.app.current.validation_group)
+
 
 class HandlerFixture:
     def __init__(self):
