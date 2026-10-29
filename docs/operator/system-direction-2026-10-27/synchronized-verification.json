@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "kind": "synchronized-replay-functional-verification",
+  "tested_date": "2026-10-29",
+  "baseline_commit": "275b8dd9a1d936a53d54d7f08158745dddb57a19",
+  "status": "passed",
+  "domain": 228,
+  "recording": {
+    "name": "synchronized_capture_and_readonly_replay",
+    "id": "25fcf23bcdb94a4285975f97f23a599c",
+    "recording_sha256": "e037dc6d57a6dc616132df560db09d557de51daf46559c00adcb43126e69dc71",
+    "pose_count": 41,
+    "image_count": 18,
+    "gap_count": 1,
+    "chosen_cursor_ns": "3593999999",
+    "pose_stamp_ns": "3565999999",
+    "image_stamp_ns": "3593999999",
+    "no_command_replay": true
+  },
+  "cleanup_clean": true,
+  "source_note": "Actual ROS joint state and synthetic RGB8 diagnostic input; no camera calibration, hardware synchronization or native-step accuracy claim",
+  "result_sha256": "a43eec1191f619259581e4d8901267390fd27df457b908660cd8b6715faebbcf",
+  "first_failure": {
+    "result_sha256": "8f75607531681494c2eebd4e5cc52341cf4ce5fb36a63db4728a66ac3912ea39",
+    "cause": "The test paused images before enough pre-gap images had been captured. The preserved recording therefore had a leading missing interval instead of the internal gap asserted by the test. The test now retains initial images and waits for a full one-second image gap."
+  },
+  "source_sha256": {
+    "src/mujoco_ros2_manipulation/operator_console/synchronized_capture.py": "40b4261b802e39c766f0902ee85ed4ec295a6e6b6871c74cc85b3733e07695d1",
+    "src/mujoco_ros2_manipulation/operator_console/synchronized_recording.py": "52756137460e680f201144ec19d2243684fc68ec2ee2c948bf78dd4dbb5e59a0",
+    "src/mujoco_ros2_manipulation/operator_console/synchronized_server.py": "5dc0814ec90ed6483906e9691131ebc13ce37d27449dd2fdcac839b99bc68523"
+  },
+  "browser_checks": [
+    "common playback reaches EOF",
+    "seek 1.35s shows missing image; pose remains available",
+    "seek 3.5s shows pose+image from one cursor",
+    "390px stacked layout and transport controls"
+  ],
+  "screenshots": [
+    "synchronized-replay.png"
+  ],
+  "final_revalidation": {
+    "status": "passed",
+    "cleanup_clean": true,
+    "result_sha256": "acb4635be21a521eeeef07cfd9017c7eeb270e3595a658c4c5346b3bdd59f908",
+    "recording": {
+      "name": "synchronized_capture_and_readonly_replay",
+      "id": "266521b2bd244355ba0edea3ae8f80ef",
+      "recording_sha256": "d60ff7dfe4dba97ebe57404b318b6b7edc7e95e9123636711590f37c264b6ff2",
+      "pose_count": 40,
+      "image_count": 17,
+      "gap_count": 1,
+      "chosen_cursor_ns": "3959999999",
+      "pose_stamp_ns": "3933999999",
+      "image_stamp_ns": "3959999999",
+      "no_command_replay": true
+    }
+  },
+  "tests": {
+    "python": 1199,
+    "python_skipped": 1,
+    "javascript": 228
+  }
+}

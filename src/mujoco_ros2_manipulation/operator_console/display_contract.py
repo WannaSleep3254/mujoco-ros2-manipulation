@@ -165,6 +165,15 @@ class DisplayHostAdapter:
             value["pose"] = from_compiled_pose(value["pose"], manifest)
             return value
 
+    def capture_sample(self, identifier):
+        with self.host.lock:
+            value = self.host.capture_sample(identifier)
+            if value is None:
+                return None
+            manifest, _ = self._current(identifier)
+            value["pose"] = from_compiled_pose(value["pose"], manifest)
+            return value
+
     def hierarchy_bytes(self, identifier):
         """Map exact geometry/body IDs to the adapted current display digest."""
         with self.host.lock:

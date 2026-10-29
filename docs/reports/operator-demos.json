@@ -61,7 +61,7 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "현재 구현과 남은 문제를 정리하고, 모듈 분리와 센서·설치 환경·작업 기능의 개발 순서를 제시합니다. 레퍼런스의 제안을 반영하는 방법과 시스템 변경이 큰 기능의 착수 조건을 설명합니다.",
-      "manifest_sha256": "77ebe6874a1373bf4549d9d4348a29cb7a536f4fea7bfd113ad696a8746381c2"
+      "manifest_sha256": "3ebc05f84a88baea060f39270e5255f0d968b746b25f27f4553a38e35103dfb0"
     },
     {
       "id": "planner-cache-2026-10-28",

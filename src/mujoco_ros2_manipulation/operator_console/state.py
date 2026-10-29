@@ -22,6 +22,7 @@ class ConsoleState:
         self.joint_at = self.clock_at = self.clock_advanced_at = None
         self.simulation_sec = None
         self.joint_state_stamp_simulation_sec = None
+        self.joint_state_stamp_ns = None
         self.clock_backwards = False
         self.graph = dict(clock=0, joints=0, status=0, commands=0, guards=0)
         self.identity = False
@@ -37,7 +38,7 @@ class ConsoleState:
         self.pending_plan = None
         self.review_at = None
 
-    def joints(self, names, positions, velocities, *, source_stamp=None):
+    def joints(self, names, positions, velocities, *, source_stamp=None, source_stamp_ns=None):
         with self.lock:
             if len(names) != len(set(names)) or set(names) != set(self.config["home_rad"]) or len(positions) != len(names):
                 return
@@ -48,6 +49,11 @@ class ConsoleState:
             self.joint_at = self.clock()
             self.joint_state_stamp_simulation_sec = (source_stamp
                 if type(source_stamp) in (int, float) and math.isfinite(source_stamp) and source_stamp >= 0
+                else None)
+            # Recording metadata must never change live admission. Keep exact
+            # ROS nanoseconds separately; legacy float stamps cannot recover it.
+            self.joint_state_stamp_ns = (source_stamp_ns
+                if type(source_stamp_ns) is int and 0 <= source_stamp_ns <= 2**63 - 1
                 else None)
 
     def tick(self, stamp):

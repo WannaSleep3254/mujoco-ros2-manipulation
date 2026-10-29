@@ -285,7 +285,8 @@ class SceneHost:
             self.wake.set()
         return identifier
 
-    def submit(self, positions, source_received_monotonic=None, simulation_sec=None, preview_time_sec=None):
+    def submit(self, positions, source_received_monotonic=None, simulation_sec=None, preview_time_sec=None,
+               source_stamp_ns=None):
         with self.lock:
             _require(not self.closed and self.binding is not None and self.status in ("preparing", "ready"), "No active scene source")
             state = _state(positions, self.source.joint_names)
@@ -303,7 +304,10 @@ class SceneHost:
             else:
                 _require(preview_time_sec is None, "Only plan preview accepts playback time")
             sample = dict(source_received_monotonic=source_received_monotonic,
-                          simulation_sec=simulation_sec, preview_time_sec=preview_time_sec)
+                          simulation_sec=simulation_sec, preview_time_sec=preview_time_sec,
+                          source_stamp_ns=(source_stamp_ns if mode == "live"
+                              and type(source_stamp_ns) is int and 0 <= source_stamp_ns <= 2**63 - 1 else None),
+                          positions_rad=deepcopy(state))
             current = (state, sample)
             if self._last_submission == current:
                 return self._sequence
@@ -363,6 +367,23 @@ class SceneHost:
             age = None if self.binding["mode"] != "live" else max(0., self.clock() - sample["source_received_monotonic"])
             return envelope(self.binding, pose, sequence, source_state_age_sec=age,
                             simulation_sec=sample["simulation_sec"], preview_time_sec=sample["preview_time_sec"])
+
+    def capture_sample(self, binding_id):
+        """Freeze one published pose with its own input, never the newest state.
+
+        Decimal timestamp strings retain nanosecond precision across JSON/JS.
+        Missing or invalid exact stamps remain None for legacy display callers.
+        """
+        with self.lock:
+            self._ready(binding_id)
+            if self._pose is None:
+                return None
+            sequence, pose, sample = self._pose
+            stamp = sample["source_stamp_ns"]
+            return deepcopy(dict(sequence=sequence,
+                source_stamp_ns=None if stamp is None else str(stamp),
+                source_received_monotonic=sample["source_received_monotonic"],
+                positions_rad=sample["positions_rad"], pose=pose))
 
     def _fail(self, revision, code):
         # Never forward local exception strings, CLI paths or worker error.json.

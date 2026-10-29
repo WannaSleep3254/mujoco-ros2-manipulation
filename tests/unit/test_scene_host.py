@@ -157,6 +157,74 @@ class SceneHostTests(unittest.TestCase):
         self.clock.advance(1)
         self.assertEqual(self.host.pose_envelope(identifier)["source_state_age_sec"], 6.5)
 
+    def test_capture_pairs_delayed_pose_with_its_exact_source_sample(self):
+        identifier, process = self.ready()
+        stamp = 1_793_234_567_123_456_789
+        positions = {"j1": .2}
+        first = self.host.submit(positions, source_received_monotonic=99.,
+                                 simulation_sec=12., source_stamp_ns=stamp)
+        self.host._step()
+        positions["j1"] = .9
+        second = self.host.submit({"j1": .4}, source_received_monotonic=99.5,
+                                  simulation_sec=12.5, source_stamp_ns=stamp + 1)
+        self.host._step()
+        self.assertIsNone(self.host.capture_sample(identifier))
+        self.clock.advance(5)
+        process.reply(first, processed=self.clock()); self.host._step()
+        capture = self.host.capture_sample(identifier)
+        self.assertEqual(capture, dict(sequence=first, source_stamp_ns=str(stamp),
+            source_received_monotonic=99., positions_rad={"j1": .2},
+            pose=self.host.pose_envelope(identifier)["pose"]))
+        self.assertEqual(json.loads(json.dumps(capture))["source_stamp_ns"], str(stamp))
+        capture["positions_rad"]["j1"] = 2.
+        capture["pose"]["geoms"][0]["position"][0] = 99.
+        self.assertEqual(self.host.capture_sample(identifier)["positions_rad"], {"j1": .2})
+        self.assertEqual(self.host.capture_sample(identifier)["pose"]["geoms"][0]["position"], [1., 2., 3.])
+        process.reply(second, processed=self.clock()); self.host._step()
+        self.assertEqual(self.host.capture_sample(identifier)["source_stamp_ns"], str(stamp + 1))
+        self.assertEqual(self.host.capture_sample(identifier)["positions_rad"], {"j1": .4})
+        envelope = self.host.pose_envelope(identifier)
+        self.assertEqual(envelope["simulation_sec"], 12.5)
+        self.assertNotIn("source_stamp_ns", envelope)
+        self.assertNotIn("positions_rad", envelope)
+
+    def test_capture_keeps_published_sample_after_pending_metadata_eviction(self):
+        identifier, process = self.ready()
+        first = self.host.submit({"j1": .1}, source_received_monotonic=99., source_stamp_ns=123)
+        self.host._step(); process.reply(first, processed=self.clock()); self.host._step()
+        original = self.host.capture_sample(identifier)
+        for index in (1, 2, 3):
+            self.host.submit({"j1": index / 10}, source_received_monotonic=99. + index / 10,
+                             source_stamp_ns=123 + index)
+        self.assertNotIn(first, self.host._samples)
+        self.assertEqual(self.host.capture_sample(identifier), original)
+
+    def test_missing_invalid_and_backward_exact_stamps_do_not_break_live_display(self):
+        identifier, process = self.ready()
+        stamps = [100, 99, None, True, -1, 1.5, "100", 2**63]
+        for index, stamp in enumerate(stamps):
+            with self.subTest(stamp=stamp):
+                seq = self.host.submit({"j1": .2}, source_received_monotonic=99. + index / 10,
+                                       simulation_sec=12., source_stamp_ns=stamp)
+                self.host._step(); process.reply(seq, processed=self.clock()); self.host._step()
+                captured = self.host.capture_sample(identifier)
+                self.assertEqual(captured["sequence"], seq)
+                self.assertEqual(captured["source_stamp_ns"], str(stamp) if index < 2 else None)
+                self.assertEqual(self.host.pose_envelope(identifier)["simulation_sec"], 12.)
+
+    def test_capture_rejects_old_binding_and_keeps_preview_without_live_stamp(self):
+        identifier, process = self.ready("model_preview")
+        process.reply(1, processed=self.clock()); self.host._step()
+        captured = self.host.capture_sample(identifier)
+        self.assertIsNone(captured["source_stamp_ns"])
+        self.assertIsNone(captured["source_received_monotonic"])
+        self.assertEqual(captured["positions_rad"], self.source.home)
+        current = self.host.activate(binding(2), self.source)
+        with self.assertRaises(ValueError):
+            self.host.capture_sample(identifier)
+        self.host._step()
+        self.assertIsNone(self.host.capture_sample(current))
+
     def test_binding_change_clears_every_cache_before_old_process_is_stopped(self):
         old_id, old = self.ready()
         seq = self.host.submit({"j1": .1}, source_received_monotonic=99.)

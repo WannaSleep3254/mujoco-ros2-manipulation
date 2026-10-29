@@ -43,6 +43,25 @@ ROS 콜백은 입력 검사와 최신 원본 교체만 수행합니다. JPEG 변
 
 객체 계층은 화면을 만든 같은 MuJoCo 컴파일 결과의 `body_parentid`와 `geom_bodyid`에서 가져옵니다. 로봇 소유권은 명시한 정확한 root body의 하위 트리로 정합니다. 공구·TCP·센서 역할은 이름으로 추측하지 않고 `unknown`으로 남깁니다. 모델·binding 변경 시 이전 객체 선택을 무효화합니다.
 
+## 센서·3D 기록의 공통 시간축 재생
+
+`기록 분석`의 **동기 기록 시작**으로 현재 실행의 관측을 수집하고, **기록 종료** 후 목록에서 재생 화면을 엽니다. 센서는 `--image-topic`과 `--image-clock-domain ros_simulation`으로 명시적으로 등록해야 합니다. 갱신 중인 관절 자세와 시계, 단일 이미지 발행자가 확인된 실시간 3D 보기에서 시작합니다.
+
+재생 화면은 공통 시간축과 재생·일시정지·이전/다음 프레임·속도(0.25·0.5·1·2배)를 제공합니다. 한 응답에서 두 트랙을 선택하고 이미지의 해시·길이·해상도·디코드가 확인된 뒤 3D와 함께 표시합니다. 각 트랙은 선택 시각보다 앞선 0.5초 이내 표본을 사용하며, 해당 표본이 없으면 빈 패널로 표시합니다. 자세를 보간하거나 미래 이미지를 가져오지 않습니다.
+
+관절 원천 시각과 이미지 acquisition stamp는 정수 나노초 문자열로 보존합니다. 같은 실행 세션, 표시 binding·모델·장면, 이미지 세대와 발행자 discovery 식별을 함께 저장합니다. 실행·모델·센서 공급원이 바뀌거나 시계가 역행하면 그 기록을 종료합니다. `ros_simulation`은 입력 시계의 선언과 관측 연결이며, 카메라 보정·하드웨어 동기화나 동일한 native step을 증명하지 않습니다.
+
+기록 하나의 상한은 120초(벽시계 대기 180초), 자세 2,400개, 이미지 600개, 자산·문서·영상 합계 64 MiB입니다. 이 콘솔은 최대 8개·512 MiB를 보존하고 자동으로 오래된 기록을 삭제하지 않습니다. 같은 이미지 바이트는 해시로 한 번만 저장합니다. 불완전한 기록은 진단 자료로 남기며 재생 목록에는 넣지 않습니다.
+
+완료된 번들은 콘솔 실행 디렉터리의 `synchronized/<id>/recording.json`과 인접 `assets/`, `images/`에 보존됩니다. 콘솔 목록은 해당 실행에서 만든 기록만 보여줍니다. 다시 열 때는 명시한 파일을 읽기 전용 서버에 지정합니다.
+
+```bash
+PYTHONPATH=src .venv/bin/python -m mujoco_ros2_manipulation.operator_console.synchronized_server \
+  --recording runtime/operator/<session>/synchronized/<id>/recording.json --port 8929
+```
+
+이 서버는 ROS나 시뮬레이터를 실행하지 않으며, 선택한 기록의 재생 조작만 받습니다. 기록 선택·탐색·속도 변경으로 로봇 명령을 전송하지 않습니다. 기존 실시간 분석 패널의 이미지 수신 순번 선택은 독립 관측으로 유지합니다.
+
 ## 검증과 현재 범위
 
 `verify_image_transport`는 별도 도메인에서 진단 패턴을 실제 ROS Image로 발행하고, 콘솔의 수신·JPEG 변환·HTTP 조회를 확인합니다. 잘못된 인코딩 거부, 발행자가 남아 있는 상태의 stale, 실제 시뮬레이션 명령과 요청 분석, 발행자 재연결 후 세대 변경·이전 이미지 거부·명령 재전송 없음을 검사합니다. 소유한 콘솔·시뮬레이션을 종료하고 정리 결과도 별도로 기록합니다.
@@ -50,7 +69,7 @@ ROS 콜백은 입력 검사와 최신 원본 교체만 수행합니다. JPEG 변
 ```bash
 source ./manipulation_env.sh
 python3 -m mujoco_ros2_manipulation.operator_console.verify_image_transport \
-  --domain 221 --port 8915 --output runtime/image-transport-new
+  --domain 221 --port 8915 --output runtime/image-transport-new --synchronized
 ```
 
 비어 있는 도메인과 사용하지 않는 포트, 존재하지 않는 출력 디렉터리가 필요합니다. 진단용 합성 이미지의 전송 검사이며 실제 카메라, 보정·센서 정확도, 하드웨어 시간 동기화, 장시간 부하 성능을 검증한 결과는 아닙니다. 점군·프로파일 입력과 공구 의미 정보는 후속 확장입니다.

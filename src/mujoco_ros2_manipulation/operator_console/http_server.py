@@ -100,6 +100,23 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(dict(config=app.state.config, reports=catalog["reports"], demos=describe_scenarios(), token=self.server.token))
             if path == "/api/state":
                 return self.respond(app.snapshot())
+            if path == "/api/sync-recordings":
+                return self.respond(dict(app.sync_recordings.snapshot(), token=self.server.token))
+            matched = re.fullmatch(r"/api/sync-recordings/([0-9a-f]{32})(?:/(.*))?", path)
+            if matched:
+                host = app.sync_recordings.get(matched[1])
+                resource = matched[2]
+                if resource is None:
+                    return self.respond(dict(view=host.snapshot(), token=self.server.token))
+                if resource == "manifest":
+                    return self.respond(host.manifest_bytes(_view_binding_query(self.path)))
+                asset = re.fullmatch(r"assets/([0-9a-f]{64})", resource)
+                if asset:
+                    return self.respond(host.asset_bytes(asset[1]), mime="application/octet-stream")
+                image = re.fullmatch(r"images/([0-9a-f]{64})\.jpg", resource)
+                if image:
+                    return self.respond(host.image_bytes(image[1]), mime="image/jpeg")
+                return self.respond(dict(error="기록 자료를 찾을 수 없습니다."), 404)
             if path == "/api/image-source":
                 image = getattr(app.bridge, "image_source", None)
                 return self.respond(None if image is None else image.snapshot())
@@ -163,6 +180,7 @@ class Handler(BaseHTTPRequestHandler):
                         logs.append(dict(name=source.name, text=reader.read().decode(errors="replace")))
                 return self.respond(dict(logs=logs))
             assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js", "/inspector.js":"inspector.js",
+                "/synchronized":"synchronized.html", "/synchronized.css":"synchronized.css", "/synchronized.js":"synchronized.js",
                 "/workspace.css":"workspace.css", "/workspace.js":"workspace.js", "/workspace_status.mjs":"workspace_status.mjs",
                 "/viewer.js":"viewer.js", "/viewer_contract.mjs":"viewer_contract.mjs", "/scene_app.js":"scene_app.js",
                 "/vendor/three.module.js":"vendor/three.module.js", "/vendor/three.core.js":"vendor/three.core.js",
@@ -198,7 +216,16 @@ class Handler(BaseHTTPRequestHandler):
             payload = decode_message(self.rfile.read(length).decode("utf-8"))
             path = urlsplit(self.path).path
             app = self.server.application
-            if path == "/api/view/select":
+            if path == "/api/sync-recordings/start" and payload == {}:
+                result = app.sync_recordings.start()
+            elif path == "/api/sync-recordings/stop" and set(payload) == {"id"}:
+                result = app.sync_recordings.stop(payload["id"])
+            elif re.fullmatch(r"/api/sync-recordings/[0-9a-f]{32}/control", path):
+                if set(payload) not in ({"action"}, {"action", "time_sec"}, {"action", "speed"}):
+                    raise ValueError("재생 동작과 시각 또는 속도만 지정하세요.")
+                result = app.sync_recordings.get(path.split("/")[3]).control(
+                    payload["action"], position=payload.get("time_sec"), speed=payload.get("speed"))
+            elif path == "/api/view/select":
                 result = app.views.select(payload)
             elif path == "/api/view/plan" and set(payload) == {"request_id"}:
                 result = app.views.select_plan(payload["request_id"])

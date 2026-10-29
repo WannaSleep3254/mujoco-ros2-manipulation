@@ -17,6 +17,7 @@ from ..workcells.motion_request import request_id, validate_approval
 from .demo_jobs import DemoJobs
 from .console_views import ConsoleViews
 from .review_summary import summarize_review
+from .synchronized_capture import CaptureLibrary
 
 
 class ConsoleApplication:
@@ -45,6 +46,7 @@ class ConsoleApplication:
         self.display_mode = "web3d"
         self.image_render_enabled = False
         self.views = ConsoleViews(self, enabled=render,extra_sources=view_sources)
+        self.sync_recordings = CaptureLibrary(self)
         self.audit("console_started")
         self.monitor = threading.Thread(target=self.watch, daemon=True)
         self.monitor.start()
@@ -387,6 +389,7 @@ class ConsoleApplication:
             self.state.clock_backwards = False
             self.state.simulation_sec = self.state.clock_at = self.state.clock_advanced_at = None
             self.state.joint_state_stamp_simulation_sec = None
+            self.state.joint_state_stamp_ns = None
             self.state.positions = self.state.joint_at = self.state.guard = self.state.server = None
             self.state.identity = False
             self.state.observed_model_path = None
@@ -514,6 +517,7 @@ class ConsoleApplication:
 
     def close(self):
         self.closing.set()
+        self.sync_recordings.close()
         self.suspend_dispatch()
         if self.worker and self.worker is not threading.current_thread():
             self.worker.join(timeout=1)
