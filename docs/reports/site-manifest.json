@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15099,
-      "sha256": "cfab69b236cdd699f7afaf6bbc75118864070f1620b37895c332e63a4dc96296"
+      "bytes": 15059,
+      "sha256": "9dd4687bf390d47059ef5710d847ebd11d96e6b48e7e9f4740afa27a1723f417"
     },
     "operator-demos.json": {
-      "bytes": 4663,
-      "sha256": "f088c818b8ccee578e0891ed225b32865e33e78c9a04f6973571ac282a5f42ac"
+      "bytes": 4623,
+      "sha256": "d5997cbea6dd6b2d10aeba3292f1733340677ee1a1d1e8bd460efac104d150a4"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -368,16 +368,24 @@
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 68306,
-      "sha256": "c165d4972fe40083f151c9c11a0e3ebd8c866d5f80b9df6090513d2a6b0d339d"
+      "bytes": 71666,
+      "sha256": "04fbcb16b6ea3f7560d7cc541380988543148ad6a22b537e640527c28830531a"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 1429,
-      "sha256": "a83f2b478e174e7afbc90c2fb31d437875316e00542a7a6d4d2ae6c2f2bc26fb"
+      "bytes": 1418,
+      "sha256": "09afe0298ca53b967b2d1e6a25c9c069084998ea21f5b76ea0296a6257b41349"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 25904,
-      "sha256": "97e05e9e44178316745b72902f17333532661fd2a7d452478799665a52ee7af7"
+      "bytes": 32714,
+      "sha256": "4c4f5aea369c1a084ecffc038752243387da92c256297f887c7abd155fd254f7"
+    },
+    "operator/system-direction-2026-10-27/ros-grasp-verification.json": {
+      "bytes": 23926,
+      "sha256": "c5b4084e0ca7d302c122fd0ae018150d41654da4144ef1264fbcd8d94617295b"
+    },
+    "operator/system-direction-2026-10-27/ros-grasp.jpg": {
+      "bytes": 52729,
+      "sha256": "ef3dea75ee7020366e73b5eb4feca40ce5cf2cbc1efb0cdd4945dc0018609599"
     },
     "operator/system-direction-2026-10-27/synchronized-replay.png": {
       "bytes": 57714,
