@@ -1,0 +1,395 @@
+{
+  "schema_version": 1,
+  "document_type": "viewer_screen_capture_evidence",
+  "capture_date_kst": "2026-10-30",
+  "method": "CUA 브라우저 원본 화면을 실제 간격으로 수집한 뒤 H.264/yuv420p MP4로 인코딩했습니다. 전체 화면을 유지하고 짝수 크기를 맞추는 우측·하단 1 px 패딩만 적용했습니다.",
+  "timing_scope": "24 fps는 반복 프레임을 포함하는 인코딩 설정입니다. 실제 뷰어 FPS·입력 지연·로봇 성능 비교가 아닙니다. 각 영상은 서로 다른 입력과 모드입니다.",
+  "clips": [
+    {
+      "port": 8897,
+      "duration_sec": 11.5,
+      "source_sample_count": 336,
+      "encoded_frame_count": 276,
+      "source_size": [
+        1265,
+        1265
+      ],
+      "encoded_size": [
+        1266,
+        1266
+      ],
+      "encoding_fps": 24,
+      "mp4": {
+        "file": "media/viewer-8897.mp4",
+        "bytes": 240824,
+        "sha256": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207"
+      },
+      "poster": {
+        "file": "media/viewer-8897.jpg",
+        "bytes": 127089,
+        "sha256": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
+        "selection": {
+          "kind": "exact-decoded-clip-frame",
+          "zero_based_frame_index": 138,
+          "elapsed_sec": 5.75,
+          "source_mp4_sha256": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
+          "crop_applied": false,
+          "resize_applied": false,
+          "annotation_applied": false
+        }
+      },
+      "crop_applied": false,
+      "even_padding_applied": true,
+      "poster_size": [
+        1266,
+        1266
+      ],
+      "description": "홈 계획 미리보기 0.25배속, 실행 승인 없음",
+      "recorded_at": "2026-10-30T02:41:26.328Z",
+      "raw_capture_metadata_sha256": "91c3e8f4b5824d7bbd396dc1c9b54cd3b316b289888240b065c42684d2edaef7",
+      "source_elapsed_sec": 11.512,
+      "sample_interval_sec": {
+        "min": 0.01699999999999946,
+        "median": 0.03300000000000036,
+        "max": 0.518
+      },
+      "recording_events": [],
+      "full_video_decode_passed": true,
+      "first_middle_last_visual_review_passed": true,
+      "whole_3d_canvas_visible": true,
+      "performance_measurement": false
+    },
+    {
+      "port": 8923,
+      "duration_sec": 9.75,
+      "source_sample_count": 272,
+      "encoded_frame_count": 234,
+      "source_size": [
+        1265,
+        1265
+      ],
+      "encoded_size": [
+        1266,
+        1266
+      ],
+      "encoding_fps": 24,
+      "mp4": {
+        "file": "media/viewer-8923.mp4",
+        "bytes": 115816,
+        "sha256": "6d7efc530285a8912a3116fdc8ac393cb05e2d1d808f3ba588b2d629562d7300"
+      },
+      "poster": {
+        "file": "media/viewer-8923.jpg",
+        "bytes": 109756,
+        "sha256": "74973663095a4b68f1cbe732fc42a06c1851a7c72fcf7e2de7de46a1dcf517e2",
+        "selection": {
+          "kind": "exact-decoded-clip-frame",
+          "zero_based_frame_index": 117,
+          "elapsed_sec": 4.875,
+          "source_mp4_sha256": "6d7efc530285a8912a3116fdc8ac393cb05e2d1d808f3ba588b2d629562d7300",
+          "crop_applied": false,
+          "resize_applied": false,
+          "annotation_applied": false
+        }
+      },
+      "crop_applied": false,
+      "even_padding_applied": true,
+      "poster_size": [
+        1266,
+        1266
+      ],
+      "description": "ROS 시뮬레이션 정지 상태의 FR3 모델·시점·TCP 입력 패널",
+      "recorded_at": "2026-10-30T02:43:16.781Z",
+      "raw_capture_metadata_sha256": "5e02560481011cf3f7734df3f8936dcca4ad462a7c9c01ced17b79554d759d26",
+      "source_elapsed_sec": 9.762,
+      "sample_interval_sec": {
+        "min": 0.018999999999999906,
+        "median": 0.03300000000000036,
+        "max": 0.3680000000000001
+      },
+      "recording_events": [],
+      "full_video_decode_passed": true,
+      "first_middle_last_visual_review_passed": true,
+      "whole_3d_canvas_visible": true,
+      "performance_measurement": false
+    },
+    {
+      "port": 8924,
+      "duration_sec": 18.33,
+      "source_sample_count": 589,
+      "encoded_frame_count": 440,
+      "source_size": [
+        1265,
+        1265
+      ],
+      "encoded_size": [
+        1266,
+        1266
+      ],
+      "encoding_fps": 24,
+      "mp4": {
+        "file": "media/viewer-8924.mp4",
+        "bytes": 363630,
+        "sha256": "e798a21cf4332457c8c2e732af54bd068a68d658062e95a766b95b6d6956cb93"
+      },
+      "poster": {
+        "file": "media/viewer-8924.jpg",
+        "bytes": 102702,
+        "sha256": "3a2d1327a86c67bcccf1de5b830446a95bcdb084072e6b95d6d96cf1d404fa3b",
+        "selection": {
+          "kind": "exact-decoded-clip-frame",
+          "zero_based_frame_index": 220,
+          "elapsed_sec": 9.166666666666666,
+          "source_mp4_sha256": "e798a21cf4332457c8c2e732af54bd068a68d658062e95a766b95b6d6956cb93",
+          "crop_applied": false,
+          "resize_applied": false,
+          "annotation_applied": false
+        }
+      },
+      "crop_applied": false,
+      "even_padding_applied": true,
+      "poster_size": [
+        1266,
+        1266
+      ],
+      "description": "MuJoCo 3.14·로컬 DLS의 새 물리 집기 실행",
+      "recorded_at": "2026-10-30T02:39:36.821Z",
+      "raw_capture_metadata_sha256": "293b8e65daabf6bcb1d1cce1b6b7fa3c75df95c9e31810c4415544ebcc81592e",
+      "source_elapsed_sec": 18.349,
+      "sample_interval_sec": {
+        "min": 0.015000000000000568,
+        "median": 0.03200000000000003,
+        "max": 0.361
+      },
+      "recording_events": [],
+      "full_video_decode_passed": true,
+      "first_middle_last_visual_review_passed": true,
+      "whole_3d_canvas_visible": true,
+      "performance_measurement": false
+    },
+    {
+      "port": 8925,
+      "duration_sec": 11.58,
+      "source_sample_count": 328,
+      "encoded_frame_count": 278,
+      "source_size": [
+        1265,
+        1265
+      ],
+      "encoded_size": [
+        1266,
+        1266
+      ],
+      "encoding_fps": 24,
+      "mp4": {
+        "file": "media/viewer-8925.mp4",
+        "bytes": 368912,
+        "sha256": "f16bcbc8024046a71baf20562f7dae020a2ff01ccdc3bab90fed90d3f119d485"
+      },
+      "poster": {
+        "file": "media/viewer-8925.jpg",
+        "bytes": 163589,
+        "sha256": "66b89b60379ce4bee5fdf4278c395f71556675eacc8bd5da0b97714c51c666d2",
+        "selection": {
+          "kind": "exact-decoded-clip-frame",
+          "zero_based_frame_index": 139,
+          "elapsed_sec": 5.791666666666667,
+          "source_mp4_sha256": "f16bcbc8024046a71baf20562f7dae020a2ff01ccdc3bab90fed90d3f119d485",
+          "crop_applied": false,
+          "resize_applied": false,
+          "annotation_applied": false
+        }
+      },
+      "crop_applied": false,
+      "even_padding_applied": true,
+      "poster_size": [
+        1266,
+        1266
+      ],
+      "description": "동작 예제 계획 미리보기 0.25배속, 실행 승인 없음",
+      "recorded_at": "2026-10-30T02:42:27.676Z",
+      "raw_capture_metadata_sha256": "7a4716cb663592104ffd8b90bb16a1a91400c5f74996f777daaca400bcfb73b8",
+      "source_elapsed_sec": 11.595,
+      "sample_interval_sec": {
+        "min": 0.0259999999999998,
+        "median": 0.03300000000000125,
+        "max": 0.5990000000000001
+      },
+      "recording_events": [],
+      "full_video_decode_passed": true,
+      "first_middle_last_visual_review_passed": true,
+      "whole_3d_canvas_visible": true,
+      "performance_measurement": false
+    },
+    {
+      "port": 8929,
+      "duration_sec": 10.95,
+      "source_sample_count": 294,
+      "encoded_frame_count": 263,
+      "source_size": [
+        1265,
+        1087
+      ],
+      "encoded_size": [
+        1266,
+        1088
+      ],
+      "encoding_fps": 24,
+      "mp4": {
+        "file": "media/viewer-8929.mp4",
+        "bytes": 283225,
+        "sha256": "09c0aabc355fe9af19385e4fa87de9cb6f8cb8d614955b97c0627f69e9e11eb7"
+      },
+      "poster": {
+        "file": "media/viewer-8929.jpg",
+        "bytes": 100718,
+        "sha256": "98aed3bfbb776ce1aaa9674c0934ae0e48de6a8c117480c3fdac21f19c0d7c62",
+        "selection": {
+          "kind": "exact-decoded-clip-frame",
+          "zero_based_frame_index": 131,
+          "elapsed_sec": 5.458333333333333,
+          "source_mp4_sha256": "09c0aabc355fe9af19385e4fa87de9cb6f8cb8d614955b97c0627f69e9e11eb7",
+          "crop_applied": false,
+          "resize_applied": false,
+          "annotation_applied": false
+        }
+      },
+      "crop_applied": false,
+      "even_padding_applied": true,
+      "poster_size": [
+        1266,
+        1088
+      ],
+      "description": "합성 RGB 진단 이미지와 3D 기록의 재생 및 프레임 탐색",
+      "recorded_at": "2026-10-30T02:44:20.723Z",
+      "raw_capture_metadata_sha256": "cd7c849000fbf9ce2ae8e5b822b90034306f1a06d388220bd8032ab85bf73d78",
+      "source_elapsed_sec": 10.956,
+      "sample_interval_sec": {
+        "min": 0.015000000000000568,
+        "median": 0.03300000000000036,
+        "max": 0.3380000000000001
+      },
+      "recording_events": [],
+      "full_video_decode_passed": true,
+      "first_middle_last_visual_review_passed": true,
+      "whole_3d_canvas_visible": true,
+      "performance_measurement": false
+    },
+    {
+      "port": 8930,
+      "duration_sec": 33.33,
+      "source_sample_count": 955,
+      "encoded_frame_count": 800,
+      "source_size": [
+        1265,
+        1265
+      ],
+      "encoded_size": [
+        1266,
+        1266
+      ],
+      "encoding_fps": 24,
+      "mp4": {
+        "file": "media/viewer-8930.mp4",
+        "bytes": 967069,
+        "sha256": "f8189f6ef4e0c7eb0243d118e5130895ed078247101c42b52ee63a728f5ce661"
+      },
+      "poster": {
+        "file": "media/viewer-8930.jpg",
+        "bytes": 90403,
+        "sha256": "a7249ca1f0d77c6ddea371d9ab3e1830baed14d09c5d769e35e88c41384a8cb1",
+        "selection": {
+          "kind": "exact-decoded-clip-frame",
+          "zero_based_frame_index": 400,
+          "elapsed_sec": 16.666666666666668,
+          "source_mp4_sha256": "f8189f6ef4e0c7eb0243d118e5130895ed078247101c42b52ee63a728f5ce661",
+          "crop_applied": false,
+          "resize_applied": false,
+          "annotation_applied": false
+        }
+      },
+      "crop_applied": false,
+      "even_padding_applied": true,
+      "poster_size": [
+        1266,
+        1266
+      ],
+      "description": "native MuJoCo 3.12·ROS 2·MoveIt 2의 새 집기·운반·놓기 실행",
+      "recorded_at": "2026-10-30T02:38:01.401Z",
+      "raw_capture_metadata_sha256": "3d938a1914eccc6ae7f76c5b87fd82bb89dde939cb3f0dff5b08f3d98d2d190b",
+      "source_elapsed_sec": 33.349,
+      "sample_interval_sec": {
+        "min": 0.016,
+        "median": 0.03399999999999892,
+        "max": 0.3520000000000001
+      },
+      "recording_events": [],
+      "full_video_decode_passed": true,
+      "first_middle_last_visual_review_passed": true,
+      "whole_3d_canvas_visible": true,
+      "performance_measurement": false
+    }
+  ],
+  "after_capture_checked_at_kst": "2026-10-30T11:46:22.740400+09:00",
+  "after_capture_states": [
+    {
+      "port": 8897,
+      "phase": "running",
+      "active_request": false,
+      "can_submit": true,
+      "view_mode": "live"
+    },
+    {
+      "port": 8923,
+      "phase": "idle",
+      "active_request": false,
+      "can_submit": false,
+      "view_mode": "model_preview"
+    },
+    {
+      "port": 8925,
+      "phase": "running",
+      "active_request": false,
+      "can_submit": true,
+      "view_mode": "live"
+    },
+    {
+      "port": 8924,
+      "status": "succeeded",
+      "process_running": false,
+      "finished": null,
+      "physical_grasp": "released",
+      "planning_attachment": "world"
+    },
+    {
+      "port": 8930,
+      "status": "succeeded",
+      "process_running": false,
+      "finished": true,
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "cleanup": {
+        "status": "complete",
+        "clean": true,
+        "process_group_gone": true,
+        "native_process_clean": true
+      },
+      "owner_cleanup_clean": true,
+      "validation_process_group_gone": true
+    }
+  ],
+  "commands": "8897·8925는 계획 생성·미리보기만 하고 촬영용 계획을 폐기한 뒤 live로 복귀했습니다. 8923은 모델 표시만 바꾸고 ROS 실행을 시작하지 않았습니다. 8924·8930은 각각 새 고정 집기 작업을 완료했습니다.",
+  "synchronized_recording": {
+    "poses": 41,
+    "images": 18,
+    "duration_sec": 4.302,
+    "image_content": "합성 RGB 진단 이미지",
+    "hardware_camera_synchronization_verified": false,
+    "command_replay": false
+  },
+  "limits": [
+    "영상으로 일반 성공률·장시간 안정성·실물 안전을 판정하지 않습니다.",
+    "기존 통합 UI 안의 집기 실행·상태·취소 통합은 완료되지 않았습니다.",
+    "원본 실행 기록과 과거 측정 자료는 교체하지 않습니다."
+  ]
+}
