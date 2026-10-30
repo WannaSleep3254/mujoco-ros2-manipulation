@@ -221,6 +221,8 @@ class RosOwnedJobTests(unittest.TestCase):
 
     def test_cancel_is_exact_job_generation_model_and_never_adds_open_detach_or_retry(self):
         first = self.start()
+        self.update()
+        self.app.snapshot()  # IPC proves the cooperative handler is installed.
         job = first['job']
         for change in ({'job_id': '2' * 32}, {'generation': True}, {'model_sha256': '0' * 64}):
             body = dict(job_id=job['job_id'], generation=job['generation'], model_sha256=MODEL)
@@ -233,6 +235,55 @@ class RosOwnedJobTests(unittest.TestCase):
         self.assertEqual(len(self.calls), 1)
         self.assertFalse(self.app.snapshot()['job']['automatic_release'])
         self.assertFalse(self.app.snapshot()['job']['automatic_detach'])
+
+    def test_immediate_cancel_is_reserved_without_signal_until_valid_worker_ipc_then_delivered_once(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.assertTrue(job.cancel_requested)
+        self.assertEqual(job.cancel_delivery, 'waiting_for_worker')
+        self.signals.assert_not_called()
+        self.update(native=False)  # Task IPC alone is sufficient; native launch is not required.
+        self.app.snapshot()
+        self.assertEqual(job.cancel_delivery, 'worker_signal_sent')
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.app.snapshot()
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_no_ipc_immediate_cancel_keeps_original_escalation_deadline(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.now = 49.
+        self.app.snapshot()
+        self.signals.assert_not_called()
+        self.now = 50.
+        self.app.snapshot()
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGTERM)
+        self.now = 57.
+        self.app.snapshot()
+        self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGKILL))
+        self.assertEqual(job.escalation, 2)
+        self.assertFalse(job.finished)
+        self.assertIsNone(job.owner_cleanup_clean)
+
+    def test_malformed_first_ipc_cannot_unblock_a_pending_cooperative_cancel(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        invalid = self.update(native=False)
+        invalid['run_id'] = 'f' * 32
+        atomic_json(job.directory/'run/latest.json', invalid)
+        self.app.snapshot()
+        self.assertIsNone(job.update)
+        self.assertIsNotNone(job.display_error)
+        self.assertEqual(job.cancel_delivery, 'waiting_for_worker')
+        self.signals.assert_not_called()
+        self.now = 50.
+        self.app.snapshot()
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGTERM)
 
     def test_success_requires_worker_result_exit_and_separate_native_cleanup_evidence(self):
         self.start()
@@ -262,6 +313,8 @@ class RosOwnedJobTests(unittest.TestCase):
 
     def test_cancel_grace_allows_real_worker_cleanup_before_escalation(self):
         self.start()
+        self.update()
+        self.app.snapshot()
         job = self.app.current
         self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
         self.now = 49.
@@ -360,7 +413,8 @@ class RosOwnedJobTests(unittest.TestCase):
         self.assertFalse(job.finished)
         self.assertIsNone(job.owner_cleanup_clean)
         self.assertTrue(job.cancel_requested)
-        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.assertEqual(job.cancel_delivery, 'waiting_for_worker')
+        self.signals.assert_not_called()
         with self.assertRaises(RuntimeError): self.start('2' * 32)
         self.start()  # This is an observation, never another spawn.
         self.assertEqual(len(self.calls), 1)

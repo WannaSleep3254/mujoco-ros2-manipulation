@@ -62,8 +62,8 @@ export class SceneControls {
   updateRecoveryControls(){
     const failed=!this.isImage()&&Boolean(this.data?.enabled)&&(!this.viewer||Boolean(this.viewer.sceneError)||this.viewer.contextLost||this.recoveryFailed||this.recovering);
     if($('scene-recovery'))$('scene-recovery').hidden=!failed;
-    for(const id of ['scene-restart','scene-fallback'])if($(id)){$(id).hidden=!failed;$(id).disabled=this.destroyed||this.recovering||!this.data?.enabled;}
-    if($('scene-recovery-status'))$('scene-recovery-status').textContent=this.recovering?'3D를 다시 준비하고 현재 자세를 확인하고 있습니다. 실행 승인은 대기합니다.':'표시만 다시 시작합니다. 서버 이미지 선택 시 실시간 보기로 돌아오며 로봇 명령은 보내지 않습니다.';
+    for(const id of ['scene-restart','scene-fallback'])if($(id)){const unsupported=id==='scene-fallback'&&this.data?.task_selected==='grasp';$(id).hidden=!failed||unsupported;$(id).disabled=unsupported||this.destroyed||this.recovering||!this.data?.enabled;}
+    if($('scene-recovery-status'))$('scene-recovery-status').textContent=this.data?.task_selected==='grasp'?'집기 모델은 로컬 3D로 표시합니다. 표시를 다시 시작해도 로봇 명령은 보내지 않습니다.':this.recovering?'3D를 다시 준비하고 현재 자세를 확인하고 있습니다. 실행 승인은 대기합니다.':'표시만 다시 시작합니다. 서버 이미지 선택 시 실시간 보기로 돌아오며 로봇 명령은 보내지 않습니다.';
   }
   async restartScene(){
     if(this.destroyed||this.recovering||!this.data?.enabled||this.isImage())return false;
@@ -92,10 +92,14 @@ export class SceneControls {
   async useServerImage(){
     if(this.destroyed||this.recovering||!this.data?.enabled)return false;
     this.pause();this._clearPendingSeek();
+    if(this.data.task_selected==='grasp')return false;
     if(this.data.preview_active){if(!this.data.config_source_id||!await this.action('/api/view/select',{mode:'live',source_id:this.data.config_source_id}))return false;}
     return Boolean(await this.action('/api/view/display',{mode:'image'}));
   }
   isImage(){return this.data?.display_mode==='image';}
+  invalidateTask(message='작업을 전환하고 있습니다.'){this.pause();this._clearPendingSeek();this.resetPosePolling();this.viewer?.loadController?.abort();this.viewer?.clearBinding(message);this.expected=this.loadedBinding=this.loading=null;this.data=null;this.updateCameraControls();}
+  nativeNotCurrent(){return this.data?.task_selected==='grasp'&&this.taskJob&&(this.taskJob.finished||this.taskJob.cancel_requested||this.taskJob.native_guard?.latched||this.taskJob.freshness!=='fresh');}
+  markNativeLast(){if(this.nativeNotCurrent())this.viewer?.markStale(this.taskJob.finished?'집기 작업 종료 · 마지막 수신 자세':'집기 정지·관측 확인 중 · 마지막 수신 자세');}
   async action(path,payload){if(this.destroyed)return null;try{return await this.request(path,payload);}catch(error){if(!this.destroyed)this.notify(error.message);return null;}}
   async select(mode,source_id){if(this.selecting||!source_id)return;this.selecting=true;this.pause();try{await this.action('/api/view/select',{mode,source_id});}finally{this.selecting=false;}}
   async previewRequest(request_id){if(this.selecting)return;this.selecting=true;this.pause();try{const result=await this.action('/api/view/plan',{request_id});if(result)this.showOperate();}finally{this.selecting=false;}}
@@ -268,7 +272,7 @@ export class SceneControls {
     const current=()=>!this.destroyed&&viewer===this.viewer&&id===this.expected&&epoch===this.poseEpoch;
     const accept=envelope=>current()&&(mode!=='plan_preview'||(target===this.poseTarget&&target.serial===this.seekSerial&&target.epoch===this.seekEpoch&&Number.isFinite(envelope.preview_time_sec)&&Math.abs(envelope.preview_time_sec-target.time)<1e-8));
     const pending=viewer.pollPose('/api/view/pose?binding_id='+id,{accept})
-      .then(applied=>{if(applied&&current()){this._restoreCamera(id);this.renderPlanTime();this.updateCameraControls();this.onAvailabilityChange();}})
+      .then(applied=>{if(applied&&current()){this.markNativeLast();this._restoreCamera(id);this.renderPlanTime();this.updateCameraControls();this.onAvailabilityChange();}})
       .catch(()=>{})
       .finally(()=>{if(this.poseRead===pending){this.poseRead=null;this.syncPosePolling();}});
     this.poseRead=pending;
@@ -280,7 +284,7 @@ export class SceneControls {
   }
   update(state){
     if(this.destroyed)return;
-    const data=state.view;if(data?.binding&&this.data?.binding&&data.binding.operator_session_id===this.data.binding.operator_session_id&&data.binding.generation<this.data.binding.generation)return;
+    this.taskJob=state.task?.grasp?.job;const data=state.view;if(data?.binding&&this.data?.binding&&data.binding.operator_session_id===this.data.binding.operator_session_id&&data.binding.generation<this.data.binding.generation)return;
     if(this.recovering&&data?.binding_id!==this.expected){this.recoveryEpoch++;this.recovering=false;this.viewer?.clearBinding('표시 대상이 바뀌었습니다');this.pendingCamera=null;this.expected=this.loadedBinding=this.loading=null;}
     // Inspector ignores local selection notifications while observations are
     // lost. Republish once after the next accepted state, even if the canvas
@@ -299,8 +303,8 @@ export class SceneControls {
     else if(rebuild)select.value=catalog.some(item=>item.id===draft&&item.available)?draft:selected||'';
     this.appliedSource=selected;
     const modelOnly=data.mode==='model_preview';$('view-arm-labels').hidden=modelOnly;$('view-source-label').hidden=!modelOnly;$('view-source-label').textContent=modelOnly?(data.source?.label||catalog.find(item=>item.id===selected)?.label||'모델 미리보기'):'';
-    $('view-method').textContent=image?'ROS 관절 상태 → 서버 이미지':'관절 상태 → 로컬 3D 표시';$('display-mode').value=data.display_mode||'web3d';$('display-mode').disabled=data.preview_active;
-    const busy=Boolean(state.active_request_id)||['starting','stopping','demo'].includes(state.lifecycle.phase)||['starting','running','cancel_requested'].includes(state.demo?.current?.status);
+    $('view-method').textContent=image?'ROS 관절 상태 → 서버 이미지':'관절 상태 → 로컬 3D 표시';$('display-mode').value=data.display_mode||'web3d';$('display-mode').disabled=data.preview_active||data.task_selected==='grasp';
+    const busy=data.task_selected==='grasp'||Boolean(state.active_request_id)||['starting','stopping','demo'].includes(state.lifecycle.phase)||['starting','running','cancel_requested'].includes(state.demo?.current?.status);
     $('scene-model').disabled=$('scene-live').disabled=busy||this.selecting||image||!data.enabled;
     $('scene-source').disabled=busy||this.selecting||image||!data.enabled;
     $('scene-mode').textContent=data.mode==='plan_preview'?(data.review_plan?'실행 전 계획 검토 · 아직 실행하지 않음':'저장된 계획 · 읽기 전용'):data.mode==='model_preview'?'모델 미리보기 · 실행 연결 없음':'실시간 관절 상태';
@@ -311,6 +315,7 @@ export class SceneControls {
     if($('plan-clearance-seek'))$('plan-clearance-seek').disabled=!planReady||!Number.isFinite(data.clearance_minimum_time_sec)||data.clearance_minimum_time_sec<0||data.clearance_minimum_time_sec>data.duration_sec;
     if(planReady){$('plan-seek').max=String(data.duration_sec);if(!this.playing&&!this.ownsSeek(data.binding_id)&&document.activeElement!==$('plan-seek'))$('plan-seek').value=String(this.poseTarget?.time??data.preview_time_sec??0);this.renderPlanTime();}
     else {this.pause();$('plan-time').textContent=data.mode==='plan_preview'?'계획 표시 대기':'';}
+    if(data.task_selected==='grasp'){$('view-arm-labels').hidden=true;$('view-source-label').hidden=false;$('view-source-label').textContent=data.source?.label||'ROS 집기 모델';$('view-method').textContent='Native ROS 실제 팔·손가락·블록 자세';$('scene-mode').textContent=data.mode==='model_preview'?'집기 실행 전 모델 · 실시간 관측 아님':this.nativeNotCurrent()?'집기 작업의 마지막 관측':'집기 작업의 실제 관측';this.markNativeLast();}
     if(!this.viewer||this.recovering)return;
     if(failed){if(!previousError||this.expected!==null)this.viewer.clearBinding('3D 표시 오류 · 실시간/모델 보기를 다시 선택하세요.');this.expected=null;this.loadedBinding=null;this.loading=null;return;}
     const id=data.binding_id;

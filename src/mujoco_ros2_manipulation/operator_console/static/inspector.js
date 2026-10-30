@@ -144,18 +144,19 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
 })();
 
 
-// Capture controls preserve observations only. Playback links open immutable
-// recordings explicitly; selecting a sensor frame above remains independent.
+// Capture controls preserve observations only. Explicit playback selection
+// mounts an immutable record inside analysis; live sensor frames stay separate.
 (()=>{
  const get=id=>document.getElementById(id),panel=get('analysis'),start=get('sync-capture-start'),stop=get('sync-capture-stop');
  if(!panel||!start||!stop)return;
- let token=null,capture=null,pending=false,changing=false,closed=false,readAt=0,serial=0;
+ let token=null,capture=null,pending=false,changing=false,closed=false,readAt=0,serial=0,selectionId=null,selectionRequired=false;
  const identifier=value=>typeof value==='string'&&/^[0-9a-f]{32}$/.test(value);
  const reason=value=>({user_stop:'요청에 따라 종료',source_changed:'실행 또는 센서 공급원 변경',source_unavailable:'관측 연결 종료',clock_reversed:'원천 시계 역행',duration_limit:'기록 시간 상한 도달',byte_or_sample_limit:'기록 용량 또는 표본 상한 도달',insufficient_or_invalid_capture:'필수 표본이나 기록 식별을 확인하지 못했습니다'}[value]||value);
  const allowed=()=>!closed&&!document.hidden&&!panel.hidden;
  function enable(){const active=capture?.status==='recording',busy=changing||['preparing','saving','stopping'].includes(capture?.status);
-  start.disabled=closed||busy||!token||active||capture?.can_start===false;
-  stop.disabled=closed||busy||!token||!active||!identifier(capture?.id);
+  const currentSelection=!selectionRequired||identifier(selectionId);
+  start.disabled=closed||busy||!token||!currentSelection||active||capture?.can_start===false;
+  stop.disabled=closed||busy||!token||!currentSelection||!active||!identifier(capture?.id);
  }
  function render(data){
   capture=data.capture;token=data.token;
@@ -165,10 +166,12 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
   const list=get('sync-capture-list');list.replaceChildren();
   for(const item of (data.recordings||[]).slice(-8).reverse()){
    if(!identifier(item.id))continue;
-   const row=document.createElement('li'),link=document.createElement('a'),note=document.createElement('p');
-   link.href='/synchronized?id='+item.id;link.target='_blank';link.rel='noopener';link.textContent=item.label||'동기 기록';
+   const row=document.createElement('li'),link=document.createElement('a'),button=document.createElement('button'),note=document.createElement('p');
+   link.href='/synchronized?id='+item.id;link.target='_blank';link.rel='noopener';link.textContent='별도 화면';
+   button.type='button';button.className='workspace-replay-open';button.textContent=(item.label||'동기 기록')+' · 작업실에서 재생';
+   button.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('workspace-replay-open',{detail:{id:item.id}})));
    note.className='help';note.textContent=(Number.isFinite(item.duration_sec)?item.duration_sec.toFixed(2)+' s':'길이 미확인')+(item.ended_reason?' · '+reason(item.ended_reason):'');
-   row.append(link,note);list.append(row);
+   row.append(button,link,note);list.append(row);
   }
   get('sync-capture-empty').hidden=list.childElementCount>0;enable();
  }
@@ -181,18 +184,21 @@ function observationTime(value, suffix=' s') {return typeof value==='number'&&Nu
   finally{clearTimeout(timer);pending=false;}
  }
  async function change(action){
-  if(closed||changing||!token)return;
+  if(closed||changing||!token||selectionRequired&&!identifier(selectionId))return;
   if(action==='stop'&&!identifier(capture?.id))return;
   changing=true;enable();get('sync-capture-error').textContent='';
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
   try{const payload=action==='start'?{}:{id:capture.id};
-   const reply=await fetch('/api/sync-recordings/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Operator-Token':token},body:JSON.stringify(payload),signal:controller.signal});
+   const headers={'Content-Type':'application/json','X-Operator-Token':token};
+   if(identifier(selectionId))headers['X-Workspace-Selection']=selectionId;
+   const reply=await fetch('/api/sync-recordings/'+action,{method:'POST',headers,body:JSON.stringify(payload),signal:controller.signal});
    const data=await reply.json();if(!reply.ok)throw Error(data.error||'기록 조작을 적용하지 못했습니다.');
   }catch(error){if(!closed)get('sync-capture-error').textContent=error.name==='AbortError'?'기록 조작 응답이 지연되었습니다. 상태를 확인한 후 다시 조작하세요.':error.message;}
   finally{clearTimeout(timer);changing=false;enable();void refresh(true);}
  }
  start.addEventListener('click',()=>void change('start'));stop.addEventListener('click',()=>void change('stop'));
- window.addEventListener('console-observation',()=>void refresh());
+ window.addEventListener('console-observation',event=>{selectionId=event?.detail?.task?.selection_id??null;selectionRequired=Boolean(event?.detail?.task?.grasp);enable();void refresh();});
+ window.addEventListener('console-observation-lost',()=>{selectionId=null;token=null;enable();});
  document.querySelectorAll('[data-view="analysis"]').forEach(button=>button.addEventListener('click',()=>setTimeout(()=>void refresh(true),0)));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh(true);});
  window.addEventListener('pagehide',()=>{closed=true;++serial;token=null;enable();});

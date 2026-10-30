@@ -1,4 +1,5 @@
 """Loopback HTTP API with bounded JSON, exact origins and fixed file routes."""
+from contextlib import nullcontext
 import hmac
 import base64
 import re
@@ -56,6 +57,18 @@ def _view_binding_query(path):
     return query['binding_id'][0]
 
 
+def _selected_view_host(app):
+    tasks = getattr(app, 'tasks', None)
+    return tasks if tasks is not None and tasks.selected == 'grasp' else app.views.host
+
+
+_NORMAL_TASK_POSTS = frozenset((
+    '/api/start', '/api/attach', '/api/stop', '/api/command', '/api/plan', '/api/pose/plan',
+    '/api/plan/execute', '/api/plan/discard', '/api/target', '/api/cancel', '/api/camera',
+    '/api/view/select', '/api/view/plan', '/api/view/review', '/api/view/seek', '/api/view/display',
+    '/api/demos/start', '/api/demos/stop', '/api/sync-recordings/start', '/api/sync-recordings/stop'))
+
+
 class ConsoleHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
@@ -97,7 +110,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/api/bootstrap":
                 catalog = json.loads((app.cell.root/"docs/reports/catalog.json").read_text())
-                return self.respond(dict(config=app.state.config, reports=catalog["reports"], demos=describe_scenarios(), token=self.server.token))
+                return self.respond(dict(config=app.state.config, reports=catalog["reports"], demos=describe_scenarios(), token=self.server.token,
+                    task=app.task_snapshot() if hasattr(app, "task_snapshot") else None))
             if path == "/api/state":
                 return self.respond(app.snapshot())
             if path == "/api/sync-recordings":
@@ -136,21 +150,21 @@ class Handler(BaseHTTPRequestHandler):
             if path.startswith("/api/analysis/"):
                 return self.respond(app.analysis(path.removeprefix("/api/analysis/")))
             if path == "/api/view/hierarchy":
-                reader = getattr(app.views.host, "hierarchy_bytes", None)
+                reader = getattr(_selected_view_host(app), "hierarchy_bytes", None)
                 binding = _view_binding_query(self.path)
                 value = reader(binding) if callable(reader) else None
                 return self.respond(b"",204) if value is None else self.respond(value,mime="application/json; charset=utf-8")
             if path == "/api/view/manifest":
-                value = app.views.host.manifest_bytes(_view_binding_query(self.path)) if app.views.host else None
+                value = _selected_view_host(app).manifest_bytes(_view_binding_query(self.path)) if _selected_view_host(app) else None
                 return self.respond(b"",204) if value is None else self.respond(value,mime="application/json; charset=utf-8")
             if path == "/api/view/pose":
-                value = app.views.host.pose_envelope(_view_binding_query(self.path)) if app.views.host else None
+                value = _selected_view_host(app).pose_envelope(_view_binding_query(self.path)) if _selected_view_host(app) else None
                 return self.respond(b"",204) if value is None else self.respond(value)
             if path.startswith("/api/view/assets/"):
                 digest = path.removeprefix("/api/view/assets/")
                 if not re.fullmatch('[0-9a-f]{64}',digest):
                     raise ValueError('올바른 3D 자산 식별자가 필요합니다.')
-                value = app.views.host.asset_bytes(digest) if app.views.host else None
+                value = _selected_view_host(app).asset_bytes(digest) if _selected_view_host(app) else None
                 return self.respond(dict(error="현재 표시 대상의 자산이 아닙니다."),404) if value is None else self.respond(value,mime="application/octet-stream")
             if path.startswith("/api/requests/"):
                 return self.respond(app.request_details(path.removeprefix("/api/requests/")))
@@ -182,6 +196,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(dict(logs=logs))
             assets = {"/":"index.html", "/index.html":"index.html", "/style.css":"style.css", "/app.js":"app.js", "/inspector.js":"inspector.js",
                 "/synchronized":"synchronized.html", "/synchronized.css":"synchronized.css", "/synchronized.js":"synchronized.js",
+                "/task_controls.mjs":"task_controls.mjs",
+                "/workspace_replay.js":"workspace_replay.js", "/workspace_replay.css":"workspace_replay.css",
                 "/workspace.css":"workspace.css", "/workspace.js":"workspace.js", "/workspace_status.mjs":"workspace_status.mjs",
                 "/viewer.js":"viewer.js", "/viewer_contract.mjs":"viewer_contract.mjs", "/scene_app.js":"scene_app.js",
                 "/vendor/three.module.js":"vendor/three.module.js", "/vendor/three.core.js":"vendor/three.core.js",
@@ -217,59 +233,69 @@ class Handler(BaseHTTPRequestHandler):
             payload = decode_message(self.rfile.read(length).decode("utf-8"))
             path = urlsplit(self.path).path
             app = self.server.application
-            if path == "/api/sync-recordings/start" and payload == {}:
-                result = app.sync_recordings.start()
-            elif path == "/api/sync-recordings/stop" and set(payload) == {"id"}:
-                result = app.sync_recordings.stop(payload["id"])
-            elif re.fullmatch(r"/api/sync-recordings/[0-9a-f]{32}/control", path):
-                if set(payload) not in ({"action"}, {"action", "time_sec"}, {"action", "speed"}):
-                    raise ValueError("재생 동작과 시각 또는 속도만 지정하세요.")
-                result = app.sync_recordings.get(path.split("/")[3]).control(
-                    payload["action"], position=payload.get("time_sec"), speed=payload.get("speed"))
-            elif path == "/api/view/select":
-                result = app.views.select(payload)
-            elif path == "/api/view/plan" and set(payload) == {"request_id"}:
-                result = app.views.select_plan(payload["request_id"])
-            elif path == "/api/view/review" and set(payload) == {"request_id"}:
-                result = app.views.select_review_plan(payload["request_id"])
-            elif path == "/api/view/seek" and set(payload) == {"time_sec","binding_id"}:
-                result = app.views.seek(payload["time_sec"],binding_id=payload["binding_id"])
-            elif path == "/api/view/display" and set(payload) == {"mode"}:
-                result = app.set_display(payload["mode"])
-            elif path == "/api/demos/start":
-                result = app.demos.start(payload)
-            elif path == "/api/demos/stop" and set(payload) == {"job_id"}:
-                result = app.demos.request_stop(payload["job_id"])
-            elif path == "/api/start":
-                result = app.start(payload)
-            elif path == "/api/attach":
-                if payload:
-                    raise ValueError("추가 인자가 필요하지 않습니다.")
-                result = app.start(dict(native_gui=False, planning_case="none"), attach=True)
-            elif path == "/api/stop":
-                if payload:
-                    raise ValueError("추가 인자가 필요하지 않습니다.")
-                result = app.stop_async()
-            elif path == "/api/command":
-                result = app.submit(payload)
-            elif path == "/api/plan":
-                result = app.create_plan(payload)
-            elif path == "/api/pose/plan":
-                result = app.create_pose_plan(payload)
-            elif path == "/api/plan/execute":
-                result = app.execute_plan(payload)
-            elif path == "/api/plan/discard" and set(payload) == {"request_id"}:
-                result = app.discard_plan(payload["request_id"])
-            elif path == "/api/target" and set(payload) == {"text"} and isinstance(payload["text"], str):
-                target = decode_message(payload["text"])
-                validate_command(command(target), app.state.config["joint_limits"])
-                result = dict(target_rad=target)
-            elif path == "/api/cancel" and set(payload) == {"request_id"}:
-                result = app.cancel(payload["request_id"])
-            elif path == "/api/camera" and set(payload) == {"view"}:
-                result = app.camera(payload["view"])
-            else:
-                return self.respond(dict(error="지원하지 않는 요청입니다."), 404)
+            tasks = getattr(app, 'tasks', None)
+            scope = (tasks.motion_request(self.headers.get_all('X-Workspace-Selection', []))
+                     if tasks is not None and path in _NORMAL_TASK_POSTS else nullcontext())
+            with scope:
+                if path == "/api/task/select":
+                    result = app.tasks.select(payload)
+                elif path == "/api/task/grasp/start":
+                    result = app.tasks.start_grasp(payload)
+                elif path == "/api/task/grasp/cancel":
+                    result = app.tasks.cancel_grasp(payload)
+                elif path == "/api/sync-recordings/start" and payload == {}:
+                    result = app.sync_recordings.start()
+                elif path == "/api/sync-recordings/stop" and set(payload) == {"id"}:
+                    result = app.sync_recordings.stop(payload["id"])
+                elif re.fullmatch(r"/api/sync-recordings/[0-9a-f]{32}/control", path):
+                    if set(payload) not in ({"action"}, {"action", "time_sec"}, {"action", "speed"}):
+                        raise ValueError("재생 동작과 시각 또는 속도만 지정하세요.")
+                    result = app.sync_recordings.get(path.split("/")[3]).control(
+                        payload["action"], position=payload.get("time_sec"), speed=payload.get("speed"))
+                elif path == "/api/view/select":
+                    result = app.views.select(payload)
+                elif path == "/api/view/plan" and set(payload) == {"request_id"}:
+                    result = app.views.select_plan(payload["request_id"])
+                elif path == "/api/view/review" and set(payload) == {"request_id"}:
+                    result = app.views.select_review_plan(payload["request_id"])
+                elif path == "/api/view/seek" and set(payload) == {"time_sec","binding_id"}:
+                    result = app.views.seek(payload["time_sec"],binding_id=payload["binding_id"])
+                elif path == "/api/view/display" and set(payload) == {"mode"}:
+                    result = app.set_display(payload["mode"])
+                elif path == "/api/demos/start":
+                    result = app.demos.start(payload)
+                elif path == "/api/demos/stop" and set(payload) == {"job_id"}:
+                    result = app.demos.request_stop(payload["job_id"])
+                elif path == "/api/start":
+                    result = app.start(payload)
+                elif path == "/api/attach":
+                    if payload:
+                        raise ValueError("추가 인자가 필요하지 않습니다.")
+                    result = app.start(dict(native_gui=False, planning_case="none"), attach=True)
+                elif path == "/api/stop":
+                    if payload:
+                        raise ValueError("추가 인자가 필요하지 않습니다.")
+                    result = app.stop_async()
+                elif path == "/api/command":
+                    result = app.submit(payload)
+                elif path == "/api/plan":
+                    result = app.create_plan(payload)
+                elif path == "/api/pose/plan":
+                    result = app.create_pose_plan(payload)
+                elif path == "/api/plan/execute":
+                    result = app.execute_plan(payload)
+                elif path == "/api/plan/discard" and set(payload) == {"request_id"}:
+                    result = app.discard_plan(payload["request_id"])
+                elif path == "/api/target" and set(payload) == {"text"} and isinstance(payload["text"], str):
+                    target = decode_message(payload["text"])
+                    validate_command(command(target), app.state.config["joint_limits"])
+                    result = dict(target_rad=target)
+                elif path == "/api/cancel" and set(payload) == {"request_id"}:
+                    result = app.cancel(payload["request_id"])
+                elif path == "/api/camera" and set(payload) == {"view"}:
+                    result = app.camera(payload["view"])
+                else:
+                    return self.respond(dict(error="지원하지 않는 요청입니다."), 404)
             self.respond(result, 202)
         except (ValueError, UnicodeError, TypeError, KeyError) as error:
             self.respond(dict(error=str(error)), 400)

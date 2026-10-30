@@ -4,12 +4,13 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
 const source=readFileSync(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/app.js',import.meta.url),'utf8');
+const taskHelpers=source.slice(source.indexOf('function graspSelected('),source.indexOf('let config,'));
 const helperSource=source.slice(source.indexOf('function goalKind()'),source.indexOf('function strategyLabel('));
 assert.ok(helperSource.includes('function goalMatchesPayload('),'Pose input helpers must be present');
 function fixture(){
  const elements=Object.fromEntries(Object.entries({'goal-kind':'pose','pose-arm':'left','pose-x':'0.1','pose-y':'0.2','pose-z':'0.3','pose-qx':'0','pose-qy':'0','pose-qz':'0','pose-qw':'1','strategy':'coordinated'}).map(([id,value])=>[id,{value}]));
- const context={config:{pose_tools:[{arm_id:'left',tool:{id:'left_flange_reference',parent_tip:'left_tip',sha256:'c'.repeat(64)}}]},targets:{l:.1,r:0},state:null,$:id=>elements[id]||null,validTargets:()=>true};
- vm.createContext(context);vm.runInContext(helperSource,context);
+ const context={config:{pose_tools:[{arm_id:'left',tool:{id:'left_flange_reference',parent_tip:'left_tip',sha256:'c'.repeat(64)}}]},targets:{l:.1,r:0},state:null,taskControls:null,taskCommandBusy:false,$:id=>elements[id]||null,validTargets:()=>true};
+ vm.createContext(context);vm.runInContext(taskHelpers+helperSource,context);
  return {context,elements};
 }
 let checks=0;
@@ -42,5 +43,8 @@ check('switching goal kind cannot approve the other kind of reviewed input',()=>
 });
 check('Pose planning requires the dedicated server capability',()=>{
  const {context,elements}=fixture();assert.equal(context.canPlanGoal({can_plan:true,can_pose_plan:false}),false);assert.equal(context.canPlanGoal({can_plan:false,can_pose_plan:true}),true);elements['goal-kind'].value='joint';assert.equal(context.canPlanGoal({can_plan:true,can_pose_plan:false}),true);
+});
+check('native task selection and uncertain task changes block both normal planning modes',()=>{
+ const {context,elements}=fixture();for(const kind of ['joint','pose']){elements['goal-kind'].value=kind;assert.equal(context.canPlanGoal({can_plan:true,can_pose_plan:true,task:{selected:'grasp'}}),false);context.taskCommandBusy=true;assert.equal(context.canPlanGoal({can_plan:true,can_pose_plan:true}),false);context.taskCommandBusy=false;context.taskControls={unconfirmed:{action:'select'}};assert.equal(context.canPlanGoal({can_plan:true,can_pose_plan:true}),false);context.taskControls=null;}
 });
 console.log(`${checks} Pose console input scenarios passed`);

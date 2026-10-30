@@ -169,6 +169,9 @@ class ConsoleViews:
 
     def _idle(self):
         app = self.app
+        guard = getattr(app, 'require_motion_task', None)
+        if callable(guard):
+            guard()
         if app.closing.is_set() or app.demos.busy or app.state.active or app.phase in ('starting','stopping','demo'):
             raise RuntimeError('현재 요청이나 시연이 끝난 뒤 미리보기를 선택하세요.')
         if not self.enabled:

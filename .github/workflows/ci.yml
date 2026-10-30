@@ -71,7 +71,8 @@ jobs:
     name: ROS Humble (${{ matrix.robot }}, ${{ matrix.scene }})
     runs-on: ubuntu-22.04
     container: ros:humble-ros-base-jammy
-    timeout-minutes: 40
+    # The workcell includes native task ownership and all three shared-UI cases.
+    timeout-minutes: ${{ matrix.robot == 'workcell' && 50 || 40 }}
     strategy:
       fail-fast: false
       matrix:
@@ -187,6 +188,17 @@ jobs:
                   '--domain', str(domain), '--target', str(target), '--sha', digest,
                   '--case', case, '--output', 'runtime/validation/ros-grasp-task-'+case], check=True)
           PY
+      - name: Shared workspace native grasp, early and moving cancel, ordinary task return
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          task_workspace_sha="$(sha256sum runtime/validation/ros-grasp-target/grasp.json | cut -d ' ' -f 1)"
+          for task_workspace_case in normal cancel_startup cancel_transport; do
+            python3 tests/integration/verify_workspace_grasp.py \
+              --target runtime/validation/ros-grasp-target --sha "$task_workspace_sha" \
+              --domain 216 --grasp-domain 217 --port 8934 --case "$task_workspace_case" \
+              --output "runtime/validation/workspace-grasp-$task_workspace_case"
+          done
       - name: Read-only allowlisted environment previews and blocked mutations
         if: matrix.robot == 'workcell'
         run: |

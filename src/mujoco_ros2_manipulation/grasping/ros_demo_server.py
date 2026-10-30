@@ -143,6 +143,7 @@ class RosJob:
     cancel_requested: bool = False
     cancel_at: object = None
     cancel_delivery: str = 'not_requested'
+    cancel_signal_sent: bool = False
     escalation: int = 0
     timed_out: bool = False
     update_digest: object = None
@@ -277,13 +278,14 @@ class RosDemoApplication:
 
     def _signal_worker(self, job, sig):
         if job.process is None or job.process.poll() is not None:
-            return
+            return False
         try:
             # SIGINT targets the worker's cancellation handler. Its ROS launch
             # is a separate owned session and must be allowed to stop in order.
             os.kill(job.process.pid, sig)
+            return True
         except ProcessLookupError:
-            pass
+            return False
 
     def _bind_native_group(self, job, group):
         self._bind_owned_group(job, group, 'native')
@@ -352,14 +354,29 @@ class RosDemoApplication:
         job.timed_out = job.timed_out or timeout
         if not job.cancel_requested:
             job.cancel_requested, job.cancel_at = True, self.clock()
-            job.cancel_delivery, job.status = 'worker_signal_sent', 'cancelling'
+            job.cancel_delivery, job.status = 'waiting_for_worker', 'cancelling'
             if reason is not None and job.error is None:
                 job.error = dict(type='OwnerStop', message=reason)
-            try:
-                self._signal_worker(job, signal.SIGINT)
-            except Exception as error:
-                self._owner_error(job, 'worker cancel signal', error)
+            self._deliver_cancel(job)
             self._checkpoint(job)
+
+    def _deliver_cancel(self, job):
+        # Popen can return while bash/Python imports still use SIGINT's default
+        # action. The first accepted IPC record is emitted only after main()
+        # installs the cooperative cancellation handler. Reserve the user's
+        # request immediately, then deliver once that exact worker is ready.
+        # Invalid IPC is never a readiness proof. The original 50/57-second
+        # escalation remains independent and still stops a worker with no IPC.
+        if (not job.cancel_requested or job.cancel_signal_sent or job.update is None
+                or job.cancel_delivery == 'worker_observed' or job.escalation != 0):
+            return
+        try:
+            if self._signal_worker(job, signal.SIGINT):
+                job.cancel_signal_sent = True
+                job.cancel_delivery = 'worker_signal_sent'
+                self._checkpoint(job)
+        except Exception as error:
+            self._owner_error(job, 'worker cancel signal', error)
 
     @staticmethod
     def _checked_task(task):
@@ -548,6 +565,7 @@ class RosDemoApplication:
             return
         try:
             self._read_update(job)
+            self._deliver_cancel(job)
             if self.clock() - job.members_checked >= .5:
                 for kind in ('native', 'validation'):
                     group = getattr(job, kind + '_group')
