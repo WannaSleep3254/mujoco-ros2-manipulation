@@ -1,7 +1,7 @@
 {
   "document_type": "design_review",
   "document_schema_version": 1,
-  "document_version": "1.10",
+  "document_version": "1.11",
   "id": "viewer-direction-2026-10-22",
   "title": "뷰어 개발 방향성",
   "reviewed_date": "2026-10-22",
@@ -185,5 +185,20 @@
     "scope": "Related viewer operating-status report and future UI integration links only; original 2026-10-22 implementation, evidence and performance assumptions preserved.",
     "related_report": "../viewer-status-2026-10-30/index.html",
     "new_performance_measurements": false
+  },
+  "workspace_integration_update": {
+    "date": "2026-10-30",
+    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "evidence": "../viewer-status-2026-10-30/integration-verification.json",
+    "integrated_entry_port": 8933,
+    "actual_ros_cases": [
+      "normal",
+      "cancel_startup",
+      "cancel_transport"
+    ],
+    "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
+    "rendered_browser_qa": "Not performed; browser access disabled.",
+    "original_six_viewers_and_evidence_preserved": true
   }
 }

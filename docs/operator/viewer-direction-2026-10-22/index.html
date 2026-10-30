@@ -153,7 +153,7 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <p class="eyebrow">개발 사례 · 2026-10-22</p>
 <h1>뷰어 개발 방향성</h1>
 <p class="lead">이기종 복수 로봇의 시뮬레이션 조작을 하나의 웹 화면으로 통합<br/>구현 상태와 기술 선택의 근거, 범용 조작 환경으로의 확장 방향</p>
-<div class="meta"><span>기반: MuJoCo·ROS 2</span><span>현재 구현·검증: FR5·UR5e</span><span>기준 코드: <b>7a71402</b></span><span>문서 v1.10 · 개발 사례와 확장 방향</span></div>
+<div class="meta"><span>기반: MuJoCo·ROS 2</span><span>현재 구현·검증: FR5·UR5e</span><span>기준 코드: <b>7a71402</b></span><span>문서 v1.11 · 개발 사례와 확장 방향</span></div>
 </header>
 <div class="topbar"><nav aria-label="문서 목차" class="nav"><a href="#decision">개발 요약</a><a href="#current">1. 현재 구성</a><a href="#alternatives">2. 대안 비교</a><a href="#roadmap">3. 개선 방향</a><a href="#evaluation">검증 기준</a><a href="#review">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
 <main>
@@ -177,7 +177,7 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 </div>
 <div class="legend"><span class="tag">현재 사실</span><span>코드·PR·검증 기록</span><span class="tag proposed">확장안</span><span>후속 설계</span><span class="tag unmeasured">미측정</span><span>대안 간 성능 비교</span></div>
 <p class="small">이 문서는 구현과 설계 판단을 소개하는 개발 사례입니다. 비교표와 확장 계획의 제안 사항은 현재 구현·검증 결과와 구분합니다.</p>
-<div class="note"><p><strong>2026-10-30 운영 현황:</strong> 이 문서의 구현 설명은 10월 22일 기준으로 보존합니다. 이후의 통합 작업실, 독립 집기·ROS 집기, 센서·3D 기록 재생은 <a href="../viewer-status-2026-10-30/index.html#inventory">현재 뷰어 목록</a>과 <a href="../viewer-status-2026-10-30/index.html#recordings">각 화면의 동작 영상</a>에서 비교할 수 있습니다.</p><p>공통 표시부를 유지하면서 작업 종류와 실행 상태를 연결하는 후속 순서는 <a href="../viewer-status-2026-10-30/index.html#roadmap">뷰어 통합 계획</a>에 정리했습니다. 별도 집기 화면의 구현과 통합 조작 화면 내부의 집기 실행은 구분합니다.</p></div>
+<div class="note"><p><strong>2026-10-30 운영 현황:</strong> 이 문서의 구현 설명은 10월 22일 기준으로 보존합니다. 이후의 통합 작업실, 독립 집기·ROS 집기, 센서·3D 기록 재생은 <a href="../viewer-status-2026-10-30/index.html#inventory">현재 뷰어 목록</a>과 <a href="../viewer-status-2026-10-30/index.html#recordings">각 화면의 동작 영상</a>에서 비교할 수 있습니다.</p><p><strong>같은 작업실 연결:</strong> 구현 <a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/688dd4b05e62c8ac6a8351da0207cbb0ea707732">688dd4b</a>는 8933 작업실의 선택·실행·상태·취소와 shared Three.js 표시를 연결합니다. 관절·TCP 조작과 고정된 ROS 집기 작업의 소유권·도메인·모델을 분리하고, 이전 표시나 명령을 새 선택에 재사용하지 않습니다. 실제 HTTP 세 조건은 소스 732413f에서 확인했습니다. 후속 변경은 종료된 취소 레이블과 JavaScript 검사입니다.</p><p>같은 분석 패널의 공통 시간축은 기존 41자세·18합성 RGB 보존 기록을 재생합니다. 새 집기 RGB나 실제 카메라 동기화·브라우저 렌더 성능을 검증한 것으로 합산하지 않습니다. <a href="../viewer-status-2026-10-30/index.html#integrated-workspace">새 통합의 범위</a> · <a href="../viewer-status-2026-10-30/integration-verification.json">정상·취소·조회 검증</a> · <a href="../viewer-status-2026-10-30/index.html#roadmap">남은 연결·평가 순서</a></p></div>
 </section>
 <section id="current">
 <span class="section-no">01 / Implementation &amp; decisions</span><h2>현재 구현과 기술 선택</h2>
@@ -324,7 +324,7 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <p class="small">구현 사실은 고정된 저장소 커밋과 검증 기록에, 외부 도구의 기능은 공식 기술 문서에 근거합니다. 기술 선택과 단계별 개선안은 이 근거를 바탕으로 한 설계 판단이며, 후속 비교 평가 결과에 따라 갱신합니다.</p>
 <p class="small">2026-10-27 후속 정리: <a href="../system-direction-2026-10-27/index.html">시스템 개발 방향성과 통합 작업순서</a>에서 현재 구현, 남은 진단과 단계별 확장 조건을 확인할 수 있습니다.</p>
 </section>
-<div class="footer"><a href="../viewer-history-2026-10-27/index.html">WebGL 확장 단계별 비교</a><span class="review-origin">문서 v1.10 · 이기종 복수 로봇의 통합 조작 방향과 현재 구현 사례 구분</span><span>문서 유형: 개발 사례 / 기술 설계</span><span>대안 비교 상태: 평가 설계</span><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation">프로젝트 저장소</a><a href="#decision">처음으로 ↑</a></div>
+<div class="footer"><a href="../viewer-history-2026-10-27/index.html">WebGL 확장 단계별 비교</a><span class="review-origin">문서 v1.11 · 이기종 복수 로봇의 통합 조작 방향과 현재 구현 사례 구분</span><span>문서 유형: 개발 사례 / 기술 설계</span><span>대안 비교 상태: 평가 설계</span><a href="https://github.com/WannaSleep3254/mujoco-ros2-manipulation">프로젝트 저장소</a><a href="#decision">처음으로 ↑</a></div>
 </main>
 <script>document.getElementById('print').addEventListener('click',()=>window.print());</script>
 <script id="report-media-script">

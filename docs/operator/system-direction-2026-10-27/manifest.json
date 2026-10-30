@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.12",
+  "document_version": "1.13",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
   "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim.",
   "assets": {
-    "index.html": "1d522ce86264750a13507b3689eba049028545fccca080a9d14b48ccb97b5fe9",
-    "review-data.json": "f0ddc0444a4e94c25fa1e98259ce772958230a5169aa82529b80cd6eae29e6b0",
+    "index.html": "24462d6aa0b7e1c2d5b51f4c68e7c21281bda8145586ac3f9f378ccfa5f7cf91",
+    "review-data.json": "9a46ba34d2901f2377ddd30f958d7ca930d5ff6429fa39e917075446a5a5e85a",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
     "ros-grasp.jpg": "bb47900773e2b70856a72d639e7928dbc958c14aa78feb5898d0df037a8cd390",
@@ -24,5 +24,20 @@
     "date": "2026-10-30",
     "related_report": "../viewer-status-2026-10-30/index.html",
     "scope": "Related status-report links and explicit separate-task versus integrated-UI scope; original media, measurement inputs and verification evidence unchanged."
+  },
+  "workspace_integration_update": {
+    "date": "2026-10-30",
+    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "evidence": "../viewer-status-2026-10-30/integration-verification.json",
+    "integrated_entry_port": 8933,
+    "actual_ros_cases": [
+      "normal",
+      "cancel_startup",
+      "cancel_transport"
+    ],
+    "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
+    "rendered_browser_qa": "Not performed; browser access disabled.",
+    "original_six_viewers_and_evidence_preserved": true
   }
 }

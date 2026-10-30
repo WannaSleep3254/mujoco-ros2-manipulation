@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15561,
-      "sha256": "9ecb5bec380ef4d386981347eecb818bb6e816caf1bad1d3a89e89d10f6722da"
+      "bytes": 15587,
+      "sha256": "313c633d3e85b748b59d38afc8ab09c09ee8f1c1b092f955ca2cdc8de6be7436"
     },
     "operator-demos.json": {
-      "bytes": 5545,
-      "sha256": "b92c811bbff0c7af2a47c68d57fc997dbcdb20ad2430f6bfec08f0f0cc61560e"
+      "bytes": 5571,
+      "sha256": "eea9d1e08ce560be7b165dda62fb3e6ff7003391dd37a7a6b6903f94ba11b58c"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -380,20 +380,20 @@
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 85539,
-      "sha256": "1d522ce86264750a13507b3689eba049028545fccca080a9d14b48ccb97b5fe9"
+      "bytes": 87051,
+      "sha256": "24462d6aa0b7e1c2d5b51f4c68e7c21281bda8145586ac3f9f378ccfa5f7cf91"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 2433,
-      "sha256": "97e925723741023dd417c4e531246e724da49c59dad4c49371ebecd984d8be4c"
+      "bytes": 3123,
+      "sha256": "2bfc0199d94a23f87631d12b97060ac99a553ffa8f4e4860435c7d180a4d71fe"
     },
     "operator/system-direction-2026-10-27/native-admission-reservation-verification.json": {
       "bytes": 193037,
       "sha256": "93a71a8af303af99a1d00d426ede001f9393167b2c87e1facc0379a22dc7c6b0"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 52302,
-      "sha256": "f0ddc0444a4e94c25fa1e98259ce772958230a5169aa82529b80cd6eae29e6b0"
+      "bytes": 53802,
+      "sha256": "9a46ba34d2901f2377ddd30f958d7ca930d5ff6429fa39e917075446a5a5e85a"
     },
     "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,
@@ -428,16 +428,16 @@
       "sha256": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87"
     },
     "operator/viewer-direction-2026-10-22/index.html": {
-      "bytes": 65778,
-      "sha256": "dbbb68e08c03d408d551f43ad347c033808852cb73df6ce429ae9080a41f028a"
+      "bytes": 66590,
+      "sha256": "d819eca1fc150664dbb3b2bac1fcf48c272a5dd9b176e712feec6b0471c96469"
     },
     "operator/viewer-direction-2026-10-22/manifest.json": {
-      "bytes": 3135,
-      "sha256": "36b6388374ea45ca9b7adaa8c85aa27406e6c8ef790583ee48eef009612f382a"
+      "bytes": 3825,
+      "sha256": "994054adbdc5aa0bfc0ede1f8b825fde472ee1cbae7a0cf48faebecc2b2469fc"
     },
     "operator/viewer-direction-2026-10-22/review-data.json": {
-      "bytes": 6246,
-      "sha256": "f910ab9c564c6cdca50c446e91112b55d36f7b160391a0f1d6ea79c4c012b43f"
+      "bytes": 6936,
+      "sha256": "2260f5dd7926e1bef5f74989037cfb55790a670d9c5cfca3321e211eccc6da9b"
     },
     "operator/viewer-direction-2026-10-22/review-notes.json": {
       "bytes": 19157,
@@ -564,16 +564,20 @@
       "sha256": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a"
     },
     "operator/viewer-status-2026-10-30/index.html": {
-      "bytes": 45847,
-      "sha256": "a97f3e89a50bf06a5eafc63cf995ff4d69a24ad8c90df97d84b223e68e84efcc"
+      "bytes": 53499,
+      "sha256": "920a884924c1378f4dc83aa89ff52b8f0666487cf783c2597b36e22da0de0549"
+    },
+    "operator/viewer-status-2026-10-30/integration-verification.json": {
+      "bytes": 9696,
+      "sha256": "1278f515914a98143cfd37b3e53980efa8dc09eee99ffce76e5ad381d2f39781"
     },
     "operator/viewer-status-2026-10-30/inventory.json": {
       "bytes": 3063,
       "sha256": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db"
     },
     "operator/viewer-status-2026-10-30/manifest.json": {
-      "bytes": 1841,
-      "sha256": "b79809133f0b6862994f919dd249ea0515f7c01be59ac0b5452ea152c8185b55"
+      "bytes": 2746,
+      "sha256": "29769405e37cb2049d09f82c207701305c8eb21a3c43f441b745dd06f7005acb"
     },
     "operator/viewer-status-2026-10-30/media/viewer-8897.jpg": {
       "bytes": 127089,

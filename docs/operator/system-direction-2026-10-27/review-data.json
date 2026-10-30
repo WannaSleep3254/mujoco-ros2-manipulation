@@ -1,7 +1,7 @@
 {
   "document_type": "design_review",
   "document_schema_version": 1,
-  "document_version": "1.1",
+  "document_version": "1.13",
   "id": "system-direction-2026-10-27",
   "title": "로봇 시뮬레이션 시스템 개발 방향",
   "reviewed_date": "2026-10-27",
@@ -453,56 +453,20 @@
     "worklist_edition": "2026-10-27 1.2"
   },
   "latest_update": {
-    "date": "2026-10-29",
-    "document_edition": "1.11",
-    "original_design_preserved": {
-      "document_version": "1.1",
-      "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-      "progress_update": "W01-W06 original update retained"
-    },
-    "previous_edition": "1.10",
-    "previous_evidence_preserved": [
-      "synchronized-replay.png",
-      "synchronized-verification.json",
-      "ros-grasp.jpg",
-      "ros-grasp-verification.json",
-      "ros-grasp-v3.jpg",
-      "ros-grasp-v3-verification.json",
-      "self-clearance-verification.json",
-      "grasp-observation-verification.json",
-      "grasp-admission-verification.json",
-      "grasp-admission.jpg"
+    "kind": "same_workspace_grasp_and_replay",
+    "date": "2026-10-30",
+    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "evidence": "../viewer-status-2026-10-30/integration-verification.json",
+    "integrated_entry_port": 8933,
+    "actual_ros_cases": [
+      "normal",
+      "cancel_startup",
+      "cancel_transport"
     ],
-    "native_relative_reservation": {
-      "evidence": "native-admission-reservation-verification.json",
-      "implementation_commit": "b1ec3707c1284d54e534c0f7e1c6c7dce3cfd69b",
-      "original_ci146_preserved": true,
-      "original_stage_costs_unresolved": true,
-      "fresh_relative_preparation_before_first_reservation": true,
-      "original_one_second_lead_preserved": true,
-      "fixed_absolute_schedules_never_rebased": true,
-      "focused_checks": 57,
-      "python_unit": 1365,
-      "python_skipped": 1,
-      "model_tests": 91,
-      "model_skipped": 1,
-      "actual_cpu_views_with_demos": true,
-      "actual_prepare_baseline_timing": 3,
-      "actual_matched_comparison_modes": 4,
-      "native_admissions_minted_once": 13,
-      "grasp_sources_unchanged": 15,
-      "original_ci147_preserved": true,
-      "source70_local_success_preserved_separately": true,
-      "genuine_joint_and_clock_progress_required": true,
-      "original_individual_operation_costs_unresolved": true
-    },
-    "remaining": [
-      "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
-      "Other grippers and objects, general task editing/integration and wider repeated ROS grasp evaluation.",
-      "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
-    ],
-    "new_performance_measurements": [],
-    "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
+    "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
+    "rendered_browser_qa": "Not performed; browser access disabled.",
+    "original_six_viewers_and_evidence_preserved": true
   },
   "previous_updates": [
     {
@@ -915,6 +879,58 @@
       "new_performance_measurements": [],
       "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets.",
       "archived_as": "1.10"
+    },
+    {
+      "date": "2026-10-29",
+      "document_edition": "1.11",
+      "original_design_preserved": {
+        "document_version": "1.1",
+        "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
+        "progress_update": "W01-W06 original update retained"
+      },
+      "previous_edition": "1.10",
+      "previous_evidence_preserved": [
+        "synchronized-replay.png",
+        "synchronized-verification.json",
+        "ros-grasp.jpg",
+        "ros-grasp-verification.json",
+        "ros-grasp-v3.jpg",
+        "ros-grasp-v3-verification.json",
+        "self-clearance-verification.json",
+        "grasp-observation-verification.json",
+        "grasp-admission-verification.json",
+        "grasp-admission.jpg"
+      ],
+      "native_relative_reservation": {
+        "evidence": "native-admission-reservation-verification.json",
+        "implementation_commit": "b1ec3707c1284d54e534c0f7e1c6c7dce3cfd69b",
+        "original_ci146_preserved": true,
+        "original_stage_costs_unresolved": true,
+        "fresh_relative_preparation_before_first_reservation": true,
+        "original_one_second_lead_preserved": true,
+        "fixed_absolute_schedules_never_rebased": true,
+        "focused_checks": 57,
+        "python_unit": 1365,
+        "python_skipped": 1,
+        "model_tests": 91,
+        "model_skipped": 1,
+        "actual_cpu_views_with_demos": true,
+        "actual_prepare_baseline_timing": 3,
+        "actual_matched_comparison_modes": 4,
+        "native_admissions_minted_once": 13,
+        "grasp_sources_unchanged": 15,
+        "original_ci147_preserved": true,
+        "source70_local_success_preserved_separately": true,
+        "genuine_joint_and_clock_progress_required": true,
+        "original_individual_operation_costs_unresolved": true
+      },
+      "remaining": [
+        "Historical W01 intermittent cleanup delay remains a separate unresolved case.",
+        "Other grippers and objects, general task editing/integration and wider repeated ROS grasp evaluation.",
+        "Real-camera calibration/time synchronization, other sensors, complex CAD and real robot operation."
+      ],
+      "new_performance_measurements": [],
+      "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
     }
   ],
   "navigation_update": {
@@ -928,5 +944,20 @@
     "running_integrated_viewers_have_grasp_link": false,
     "latest_code_optional_new_tab_link": true,
     "new_performance_measurements": false
+  },
+  "workspace_integration_update": {
+    "date": "2026-10-30",
+    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "evidence": "../viewer-status-2026-10-30/integration-verification.json",
+    "integrated_entry_port": 8933,
+    "actual_ros_cases": [
+      "normal",
+      "cancel_startup",
+      "cancel_transport"
+    ],
+    "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
+    "rendered_browser_qa": "Not performed; browser access disabled.",
+    "original_six_viewers_and_evidence_preserved": true
   }
 }
