@@ -21,7 +21,7 @@ import uuid
 from mujoco_ros2_manipulation.paths import ROOT
 from mujoco_ros2_manipulation.verification.reports import atomic_json, utc_now
 from mujoco_ros2_manipulation.workcells.verify_motion_reproduction import require_unused_domain
-from mujoco_ros2_manipulation.workcells.motion_request import command
+from mujoco_ros2_manipulation.workcells.motion_request import command as motion_command
 
 
 def require(ok, message):
@@ -30,7 +30,7 @@ def require(ok, message):
 
 
 def verify(args):
-    output=args.output.absolute()
+    output=args.output.resolve()
     require(output.is_relative_to(ROOT/'runtime') and not output.exists(), 'Select a new retained runtime output')
     require(args.domain != args.grasp_domain, 'Use distinct unused domains')
     require_unused_domain(args.domain); require_unused_domain(args.grasp_domain)
@@ -141,10 +141,27 @@ def verify(args):
             if last['finished']:break
             time.sleep(.15)
         require(last and last['finished'],'Job did not finish')
+        match=re.search(r'OPERATOR_READY .* session=(.+)',(output/'console.log').read_text())
+        require(match is not None,'Owned session receipt missing')
+        session=Path(match.group(1)).absolute()
+        require(session.is_relative_to(ROOT/'runtime/operator'),'Unexpected owned session root')
+        raw_result=session.with_name(session.name+'-grasp')/jid/'run/result.json'
+        raw=raw_result.read_bytes();proof=json.loads(raw)
+        require(proof.get('kind')=='ros-grasp-task-v1' and proof.get('run_id')==jid
+                and proof.get('domain')==args.grasp_domain and proof.get('model_sha256')==model
+                and proof.get('execution_manifest_sha256')==args.sha
+                and hashlib.sha256(raw).hexdigest()==last.get('worker_result_sha256'),
+                'Final HTTP result does not match the exact retained native worker result')
+        guard=last.get('native_guard') or {}
+        stopped=(guard.get('latched') is True and guard.get('phase')=='stopped'
+                 and all(guard.get('controllers',{}).get(name)=='inactive'
+                         for name in ('left_controller','right_controller','gripper_controller')))
         expected='succeeded' if args.case=='normal' else 'cancelled'
         require(last['status']==expected,f'Unexpected task result: {last}')
         require(last['owner_cleanup_clean'] is True and last['process_group_gone'] is True and not last['process_running'],'Owned process cleanup incomplete')
-        require(last['cleanup'].get('clean') is True and last['cleanup'].get('process_group_gone') is True,'Native cleanup incomplete')
+        require(last['cleanup'].get('clean') is True and last['cleanup'].get('process_group_gone') is True
+                and last['cleanup'].get('native_process_clean') is True
+                and last.get('validation_process_group_gone') is True,'Native or validation-worker cleanup incomplete')
         require(not last['automatic_release'] and not last['automatic_detach'] and not last['automatic_retry'],'Cancellation changed object or restarted task')
         if args.case=='normal':
             require(last['task']['physical_grasp']=='released' and last['task']['planning_attachment']=='world','Physical release/world-object state missing')
@@ -152,22 +169,17 @@ def verify(args):
         else:
             require(cancelled,'Cancellation was never issued')
             if args.case=='cancel_transport':require(moving,'Cancel occurred before observed transport motion')
-            if (last.get('native_guard') or {}).get('phase')!='stopped':
-                require(args.case=='cancel_startup','Controller stop was not observed')
-                match=re.search(r'OPERATOR_READY .* session=(.+)',(output/'console.log').read_text())
-                require(match is not None,'Owned session receipt missing')
-                session=Path(match.group(1)).absolute()
-                require(session.is_relative_to(ROOT/'runtime/operator'),'Unexpected owned session root')
-                raw_result=session.with_name(session.name+'-grasp')/jid/'run/result.json'
-                proof=json.loads(raw_result.read_text())
-                require(proof.get('run_id')==jid and proof.get('status')=='cancelled'
-                        and proof.get('owned_process_group') is None and proof.get('actions')==[]
+            if args.case=='cancel_startup':
+                require(proof.get('actions')==[],'Startup cancellation dispatched a robot Action')
+            if not stopped:
+                require(args.case=='cancel_startup','Three inactive controllers with latched stop were not observed')
+                require(proof.get('owned_process_group') is None and proof.get('actions')==[]
                         and proof.get('cleanup',{}).get('launch_started') is False
                         and proof.get('cleanup',{}).get('native_process_clean') is True
                         and last.get('validation_process_group_gone') is True,
                         'No proof that cancellation preceded every native launch/action')
                 note('startup_cancel_preceded_native_launch_not_physical_stop',
-                     worker_result_sha256=hashlib.sha256(raw_result.read_bytes()).hexdigest())
+                     worker_result_sha256=hashlib.sha256(raw).hexdigest())
         note('native_result_and_owned_cleanup',job=last)
         returned=until(lambda:(s if (s:=state())['task']['can_select'] else None),12,'post-job task switch')
         api('/api/task/select',{'task':'motion','selection_id':returned['task']['selection_id']})
@@ -180,9 +192,9 @@ def verify(args):
             api('/api/start',{'native_gui':False,'planning_case':'none'})
             ready=until(lambda:(s if (s:=state())['can_submit'] else None),70,'ordinary motion after grasp')
             api('/api/task/select',{'task':'grasp','selection_id':ready['task']['selection_id']},expect=(409,))
-            request=command(bootstrap['config']['targets']['sample'])
+            request=motion_command(bootstrap['config']['targets']['sample'])
             api('/api/plan',request)
-            review=until(lambda:(s['pending_plan'] if ((s:=state()).get('pending_plan') or {}).get('state')=='awaiting_approval' else None),60,'ordinary plan review after grasp')
+            review=until(lambda:(s['pending_plan'] if ((s:=state()).get('pending_plan') or {}).get('state')=='awaiting_approval' and not s.get('active_request_id') else None),60,'ordinary plan review after grasp')
             require(review['plan_request_id']==request['request_id'],'Review belongs to another request')
             api('/api/plan/discard',{'request_id':request['request_id']})
             api('/api/stop',{})
