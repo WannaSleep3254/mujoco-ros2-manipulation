@@ -35,7 +35,7 @@ UI이며, 물체·목표·실행 파일을 브라우저에서 바꾸거나 집�
 작업실의 센서·3D 보존 기록 재생은 집기 실행과 별개입니다. 자세 41개·합성 RGB 이미지 18개의 기존
 진단 기록을 가져와 분석하며, 새 집기 작업에 RGB 센서를 연결한 것으로 표시하지 않습니다.
 
-통합 소스 [732413f](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/732413f5ff8bfdc30a7aada09b7c1acaf37560bb)의
+통합 소스 [fd6cebc](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/fd6cebc28e98337361e7224921785f96ec8cc79c)의
 실제 HTTP 정상·시작 중 취소·운반 중 취소와 정리 결과는
 [작업실 통합 검증](operator/viewer-status-2026-10-30/integration-verification.json)에 남깁니다.
 시작 중 취소는 native 실행 전 목표 0개를 확인한 조건이며 제어기의 물리 정지 관측과 구분합니다.

@@ -217,7 +217,7 @@
     },
     "operator-demos.json": {
       "bytes": 5571,
-      "sha256": "eea9d1e08ce560be7b165dda62fb3e6ff7003391dd37a7a6b6903f94ba11b58c"
+      "sha256": "0663a818b8dfecdee5864a9d23be4d9de51ce2c760ab31778e600e267a230862"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -380,20 +380,20 @@
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 87051,
-      "sha256": "24462d6aa0b7e1c2d5b51f4c68e7c21281bda8145586ac3f9f378ccfa5f7cf91"
+      "bytes": 87141,
+      "sha256": "2757cb12536e58b4757a85beacd7fcf84cde9fbedf0e63e6043247149e3d5ec1"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 3123,
-      "sha256": "2bfc0199d94a23f87631d12b97060ac99a553ffa8f4e4860435c7d180a4d71fe"
+      "bytes": 3273,
+      "sha256": "fa5598065a7a989b579ea52e1b86aad778b6fb04c2395093d3d6890d2ab53192"
     },
     "operator/system-direction-2026-10-27/native-admission-reservation-verification.json": {
       "bytes": 193037,
       "sha256": "93a71a8af303af99a1d00d426ede001f9393167b2c87e1facc0379a22dc7c6b0"
     },
     "operator/system-direction-2026-10-27/review-data.json": {
-      "bytes": 53802,
-      "sha256": "9a46ba34d2901f2377ddd30f958d7ca930d5ff6429fa39e917075446a5a5e85a"
+      "bytes": 55557,
+      "sha256": "350fcd6106eaa2e222b93996788e3dacc6b74a7fcc20c066ea64e807f033f477"
     },
     "operator/system-direction-2026-10-27/ros-grasp-v3-verification.json": {
       "bytes": 23926,
@@ -428,16 +428,16 @@
       "sha256": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87"
     },
     "operator/viewer-direction-2026-10-22/index.html": {
-      "bytes": 66590,
-      "sha256": "d819eca1fc150664dbb3b2bac1fcf48c272a5dd9b176e712feec6b0471c96469"
+      "bytes": 66713,
+      "sha256": "8392509181596aad8bda15c0c370897b5b717a7ade3253d4e6381651ef1f2a6b"
     },
     "operator/viewer-direction-2026-10-22/manifest.json": {
-      "bytes": 3825,
-      "sha256": "994054adbdc5aa0bfc0ede1f8b825fde472ee1cbae7a0cf48faebecc2b2469fc"
+      "bytes": 3975,
+      "sha256": "d95079f19b6b0e089aec81e5baf6b6593090e25e61e2b4fdb72a83a52661f737"
     },
     "operator/viewer-direction-2026-10-22/review-data.json": {
-      "bytes": 6936,
-      "sha256": "2260f5dd7926e1bef5f74989037cfb55790a670d9c5cfca3321e211eccc6da9b"
+      "bytes": 7814,
+      "sha256": "47c06ef7d08f2bdfaf22c125654d74a0c48bcbcb72fe43ab0028a0fbc1100f5d"
     },
     "operator/viewer-direction-2026-10-22/review-notes.json": {
       "bytes": 19157,
@@ -564,20 +564,20 @@
       "sha256": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a"
     },
     "operator/viewer-status-2026-10-30/index.html": {
-      "bytes": 53499,
-      "sha256": "920a884924c1378f4dc83aa89ff52b8f0666487cf783c2597b36e22da0de0549"
+      "bytes": 54471,
+      "sha256": "ab4663b5d85cba5c2ecf249f1201927317a10975ca9c7b8f2b65996a9a0aa331"
     },
     "operator/viewer-status-2026-10-30/integration-verification.json": {
-      "bytes": 9696,
-      "sha256": "1278f515914a98143cfd37b3e53980efa8dc09eee99ffce76e5ad381d2f39781"
+      "bytes": 17393,
+      "sha256": "93cc00997bfb2d51daf3c84eeb8f51473124a9526bd14210470d1450c432bdb5"
     },
     "operator/viewer-status-2026-10-30/inventory.json": {
       "bytes": 3063,
       "sha256": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db"
     },
     "operator/viewer-status-2026-10-30/manifest.json": {
-      "bytes": 2746,
-      "sha256": "29769405e37cb2049d09f82c207701305c8eb21a3c43f441b745dd06f7005acb"
+      "bytes": 2896,
+      "sha256": "f82d1a05347f25c5e28ecd34efb96d32d6cc1c0a1b1802c2e9ee02bd31de8090"
     },
     "operator/viewer-status-2026-10-30/media/viewer-8897.jpg": {
       "bytes": 127089,

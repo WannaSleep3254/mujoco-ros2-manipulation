@@ -21,7 +21,7 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "2026-10-22 당시의 FR5·UR5e 통합 조작과 렌더링 대안·단계별 계획입니다. 현재 구현과 Three.js 유지·확장 이유는 2026-10-26 후속 기록에서 확인합니다.",
-      "manifest_sha256": "994054adbdc5aa0bfc0ede1f8b825fde472ee1cbae7a0cf48faebecc2b2469fc"
+      "manifest_sha256": "d95079f19b6b0e089aec81e5baf6b6593090e25e61e2b4fdb72a83a52661f737"
     },
     {
       "id": "motion-planning-direction-2026-10-22",
@@ -61,7 +61,7 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "Three.js 작업실과 센서·3D 재생, ROS 집기의 현재 구현을 정리합니다. 충돌·관측·실행 전 파일 확인과 시작 시각 확정의 진단·수정, 서로 다른 소스의 실제 검증을 연결하고 남은 개발 순서를 제시합니다.",
-      "manifest_sha256": "2bfc0199d94a23f87631d12b97060ac99a553ffa8f4e4860435c7d180a4d71fe"
+      "manifest_sha256": "fa5598065a7a989b579ea52e1b86aad778b6fb04c2395093d3d6890d2ab53192"
     },
     {
       "id": "planner-cache-2026-10-28",
@@ -77,7 +77,7 @@
       "published_date": "2026-10-30",
       "document_type": "design_review",
       "overview": "통합 작업실 8933에서 작업 선택·공유 3D·ROS 집기 실행과 취소·기록 분석을 연결했습니다. 기존 6개 화면·영상은 보존하고, 실제 정상·취소 검증과 남은 센서·브라우저 검수 범위를 구분합니다.",
-      "manifest_sha256": "29769405e37cb2049d09f82c207701305c8eb21a3c43f441b745dd06f7005acb",
+      "manifest_sha256": "f82d1a05347f25c5e28ecd34efb96d32d6cc1c0a1b1802c2e9ee02bd31de8090",
       "preview": {
         "image": "media/viewer-8925.jpg",
         "alt": "객체 목록과 3D 경로 미리보기, 계획 검토 패널을 표시하는 새 작업실 GUI",

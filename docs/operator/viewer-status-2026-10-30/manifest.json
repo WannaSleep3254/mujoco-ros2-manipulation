@@ -7,7 +7,7 @@
   "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "920a884924c1378f4dc83aa89ff52b8f0666487cf783c2597b36e22da0de0549",
+    "index.html": "ab4663b5d85cba5c2ecf249f1201927317a10975ca9c7b8f2b65996a9a0aa331",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -21,12 +21,12 @@
     "media/viewer-8929.mp4": "09c0aabc355fe9af19385e4fa87de9cb6f8cb8d614955b97c0627f69e9e11eb7",
     "media/viewer-8930.jpg": "a7249ca1f0d77c6ddea371d9ab3e1830baed14d09c5d769e35e88c41384a8cb1",
     "media/viewer-8930.mp4": "f8189f6ef4e0c7eb0243d118e5130895ed078247101c42b52ee63a728f5ce661",
-    "integration-verification.json": "1278f515914a98143cfd37b3e53980efa8dc09eee99ffce76e5ad381d2f39781"
+    "integration-verification.json": "93cc00997bfb2d51daf3c84eeb8f51473124a9526bd14210470d1450c432bdb5"
   },
   "workspace_integration_update": {
     "date": "2026-10-30",
-    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
-    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "implementation_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+    "actual_ros_case_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
     "evidence": "integration-verification.json",
     "integrated_entry_port": 8933,
     "actual_ros_cases": [
@@ -36,6 +36,7 @@
     ],
     "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
     "rendered_browser_qa": "Not performed; browser access disabled.",
-    "original_six_viewers_and_evidence_preserved": true
+    "original_six_viewers_and_evidence_preserved": true,
+    "fatal_stop_followup": "Fatal owned abort bypasses graceful readiness wait; targeted tests and final actual three-case acceptance are separate."
   }
 }

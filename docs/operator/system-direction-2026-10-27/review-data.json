@@ -455,8 +455,8 @@
   "latest_update": {
     "kind": "same_workspace_grasp_and_replay",
     "date": "2026-10-30",
-    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
-    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "implementation_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+    "actual_ros_case_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
     "evidence": "../viewer-status-2026-10-30/integration-verification.json",
     "integrated_entry_port": 8933,
     "actual_ros_cases": [
@@ -466,7 +466,8 @@
     ],
     "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
     "rendered_browser_qa": "Not performed; browser access disabled.",
-    "original_six_viewers_and_evidence_preserved": true
+    "original_six_viewers_and_evidence_preserved": true,
+    "fatal_stop_followup": "Immediate owned fatal abort before valid IPC; targeted unit proof distinct from actual user-cancel ROS cases."
   },
   "previous_updates": [
     {
@@ -931,6 +932,22 @@
       ],
       "new_performance_measurements": [],
       "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets."
+    },
+    {
+      "kind": "same_workspace_grasp_and_replay",
+      "date": "2026-10-30",
+      "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+      "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+      "evidence": "../viewer-status-2026-10-30/integration-verification.json",
+      "integrated_entry_port": 8933,
+      "actual_ros_cases": [
+        "normal",
+        "cancel_startup",
+        "cancel_transport"
+      ],
+      "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
+      "rendered_browser_qa": "Not performed; browser access disabled.",
+      "original_six_viewers_and_evidence_preserved": true
     }
   ],
   "navigation_update": {
@@ -947,8 +964,8 @@
   },
   "workspace_integration_update": {
     "date": "2026-10-30",
-    "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
-    "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+    "implementation_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+    "actual_ros_case_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
     "evidence": "../viewer-status-2026-10-30/integration-verification.json",
     "integrated_entry_port": 8933,
     "actual_ros_cases": [
@@ -958,6 +975,24 @@
     ],
     "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
     "rendered_browser_qa": "Not performed; browser access disabled.",
-    "original_six_viewers_and_evidence_preserved": true
-  }
+    "original_six_viewers_and_evidence_preserved": true,
+    "fatal_stop_followup": "Immediate owned fatal abort before valid IPC; targeted unit proof distinct from actual user-cancel ROS cases."
+  },
+  "previous_workspace_integration_updates": [
+    {
+      "date": "2026-10-30",
+      "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+      "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+      "evidence": "../viewer-status-2026-10-30/integration-verification.json",
+      "integrated_entry_port": 8933,
+      "actual_ros_cases": [
+        "normal",
+        "cancel_startup",
+        "cancel_transport"
+      ],
+      "readonly_replay": "Explicitly imported 41-pose/18-synthetic-image acquisition record, same analysis panel; no grasp RGB acquisition.",
+      "rendered_browser_qa": "Not performed; browser access disabled.",
+      "original_six_viewers_and_evidence_preserved": true
+    }
+  ]
 }

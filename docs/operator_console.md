@@ -83,10 +83,13 @@ python3 operator_console.py --domain 218 --port 8933 \
 시작 준비 중 취소는 먼저 요청을 보존하고, 작업 프로세스가 취소를 처리할 준비를 확인한 뒤 한 번 전달합니다.
 native 실행이 시작되기 전에 취소됐다면 물리 정지를 관측했다고 표시하지 않고,
 실행 미시작·목표 전송 없음과 소유 프로세스 정리를 구분해 확인합니다.
+잘못된 IPC, 출력·보존 한도, 소유자 감시 오류와 시간 초과는 이 준비 대기를 건너뛰고 소유 작업자를
+즉시 중단합니다. 잘못된 IPC를 준비 완료로 받아들이거나 신호를 중복 전송하지 않으며, 원래 취소 시한을
+다시 시작하지 않습니다. 결과 누락·정리 미확인인 오류 종료는 정상 취소 완료로 표시하지 않습니다.
 
 ### 이번 통합에서 확인한 범위
 
-[통합 소스 732413f](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/732413f5ff8bfdc30a7aada09b7c1acaf37560bb)에서
+[통합 소스 fd6cebc](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/fd6cebc28e98337361e7224921785f96ec8cc79c)에서
 실제 HTTP 정상·시작 중 취소·운반 중 취소를 순차 검증했습니다. 정상에서는 물리 해제와 MoveIt
 world 객체 복귀를, 운반 중 취소에서는 5 mm 이상 실제 물체 이동 뒤 세 제어기의 비활성과 정리를
 확인했습니다. 시작 중 취소는 native 실행 전 Action 목표 0개와 검사 프로세스 정리를 확인한
