@@ -4,10 +4,10 @@
   "document_version": "1.2",
   "layout_baseline": "1.9",
   "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
-  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence.",
+  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "2543728013d620cc1ddcc3f5aa32cea67cddbe1af133970db0824a5fc72d45a7",
+    "index.html": "9a5a90d12ef599d806a280bcd945c3ad3f84e555521601ccc06b6392f377ef07",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -21,7 +21,7 @@
     "media/viewer-8929.mp4": "09c0aabc355fe9af19385e4fa87de9cb6f8cb8d614955b97c0627f69e9e11eb7",
     "media/viewer-8930.jpg": "a7249ca1f0d77c6ddea371d9ab3e1830baed14d09c5d769e35e88c41384a8cb1",
     "media/viewer-8930.mp4": "f8189f6ef4e0c7eb0243d118e5130895ed078247101c42b52ee63a728f5ce661",
-    "integration-verification.json": "ca38460f20f9fa38cdf223eff8932431635166bf5183c44b973a7e7d469b2eb5"
+    "integration-verification.json": "e8a17c552f3399593339e50f16e15d23f97fd3b083a304f77885dfc372fd4c65"
   },
   "workspace_integration_update": {
     "date": "2026-10-30",
@@ -49,5 +49,17 @@
     "product_admission_changed": false,
     "local_actual_ros_diagnostic": "passed",
     "historical_integration_and_original_assets_preserved": true
+  },
+  "demo_cancel_readiness_update": {
+    "date": "2026-10-30",
+    "source_commit": "46093a432de48bcb76ad01bb72937ad9104c5c40",
+    "evidence": "integration-verification.json",
+    "evidence_section": "demo_cancel_readiness_followup",
+    "original_ci_failure_retained": true,
+    "product_cancel_or_stop_changed": false,
+    "unclean_child_exit_classification_changed": false,
+    "local_prepared_active_approach_cancel": "passed",
+    "arbitrary_initialization_time_cancel": "unresolved",
+    "historical_integration_rgb_followup_and_original_assets_preserved": true
   }
 }
