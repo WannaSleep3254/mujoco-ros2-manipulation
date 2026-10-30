@@ -28,7 +28,7 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p class="eyebrow">뷰어 개선 기록 · 2026-10-26</p>
 <h1>WebGL 뷰어 개선과 표시 성능</h1>
 <p class="lead">관절 상태 수신과 카메라 표시를 분리한 로컬 3D 뷰어<br/>JPEG 방식과의 정지 상태 비교, Three.js 유지·확장 이유와 다음 계획</p>
-<div class="meta"><span>대상: FR5·UR5e 공동 작업 환경</span><span>정지 측정 코드: 1a44f19</span><span>문서 v1.3 · 양식 v1.9</span><span>개정: 2026-10-27 · 3D 화면 탐색과 대기 렌더링 보완</span></div>
+<div class="meta"><span>대상: FR5·UR5e 공동 작업 환경</span><span>정지 측정 코드: 1a44f19</span><span>문서 v1.4 · 양식 v1.9</span><span>개정: 2026-10-27 · 3D 화면 탐색과 대기 렌더링 보완</span></div>
 </header>
 <div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="#overview">개선 요약</a><a href="#rationale">채택 이유</a><a href="#implementation">표시 구조</a><a href="#measurement">측정 결과</a><a href="#next">카메라 조작</a><a href="#review-operations">계획 검토·복구</a><a href="#navigation-idle">3D 화면 탐색·대기</a><a href="#progress">기존 계획과 진행</a><a href="#roadmap">다음 확장</a><a href="#scope">검토 범위</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
 <main>
@@ -37,6 +37,7 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 <p>기존 서버 JPEG 방식에 로컬 WebGL 표시를 추가했습니다. 브라우저는 준비된 형상과 관절 자세를 받아 3D 화면을 그리고, 수신 주기와 별개로 카메라를 조작합니다. 물리 계산과 로봇 명령은 기존 실행 계층이 담당합니다.</p>
 <div class="note"><p><strong>이번 비교의 결론:</strong> 정지 상태에서 WebGL은 약 60 fps로 렌더링했지만 수신 자세 적용은 약 4회/s였습니다. HTTP 응답 본문량과 서버 합산 RSS는 낮았고, 평가 서버 프로세스 CPU 합계는 비슷한 수준이었습니다.</p></div>
 <p class="small">이 페이지는 <a href="../viewer-direction-2026-10-22/index.html">2026-10-22 뷰어 개발 방향성</a>의 후속 기록입니다. 당시 JPEG 구성과 미측정 항목은 과거 기록으로 보존합니다.</p>
+<p class="small"><strong>2026-10-30 운영 현황:</strong> 새 작업실 GUI와 독립 집기·ROS 집기, 센서·3D 동기 재생의 역할은 <a href="../viewer-status-2026-10-30/index.html#compare">현재 뷰어 기능 비교</a>에서 확인합니다. <a href="../viewer-status-2026-10-30/index.html#recordings">화면별 동작 영상</a>은 기능을 설명하는 기록이며, 이 페이지의 고정 조건 성능 측정과 합산하지 않습니다.</p>
 </section>
 <section id="rationale">
 <span class="section-no">01 / Current design decision</span><h2>Three.js를 유지하고 확장하는 이유</h2>
@@ -154,6 +155,6 @@ h1,h2,h3,p,li,td,th{word-break:keep-all;overflow-wrap:break-word}
 </ol>
 <p class="small">2026-10-27 후속 정리: <a href="../system-direction-2026-10-27/index.html">시스템 개발 방향성과 통합 작업순서</a>에서 현재 구현, 남은 진단과 단계별 확장 조건을 확인할 수 있습니다.</p>
 </section>
-<div class="footer"><a href="../viewer-history-2026-10-27/index.html">WebGL 확장 단계별 비교</a><span>문서 v1.3 · 2026-10-27 3D 화면 탐색과 대기 렌더링 보완</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
+<div class="footer"><a href="../viewer-history-2026-10-27/index.html">WebGL 확장 단계별 비교</a><span>문서 v1.4 · 기존 측정 보존과 2026-10-30 운영 현황 연계</span><span>줌·감도 조정: 읽기 전용 브라우저 검증 완료</span><a href="../../index.html">사이트 홈</a><a href="../project-overview-2026-10-23/index.html">프로젝트 소개</a><a href="#overview">처음으로 ↑</a></div>
 </main><script>document.getElementById("print").addEventListener("click",()=>window.print());</script>
 </body></html>

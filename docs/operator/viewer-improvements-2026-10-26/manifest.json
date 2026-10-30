@@ -3,7 +3,7 @@
   "document_type": "design_review",
   "baseline_commit": "1a44f19d4caf374b62f5c4d8df86e213a8177b60",
   "assets": {
-    "index.html": "1d943f7e895e6f5398ac4c98f8644ea2763b61e599a7d81095564fef6e9fe229",
+    "index.html": "2bde418b76006f44adb3d7429e9ff8f8ad6f54e4bdf68c3cd10590951a550bbc",
     "camera-controls.png": "dc474a0c5731ef24702b5af0db4155b2d0c28ed91bcbdb3f9a01e148c9dce766",
     "review-notes.json": "d9b7eb66f02478c16654c95a1d2e1c318bffc526b2cfb6df7d1a57ad092f8de3",
     "plan-review.png": "1209f19346f4f98f2415968523a9750c23b550af36d749ff51d55b64276f2281",
@@ -20,7 +20,7 @@
     "src/mujoco_ros2_manipulation/operator_console/static/index.html": "ca90e9c851ee55e79d98ed60c054d65ac483a2d28d25ef93973692afb7dbec8a",
     "src/mujoco_ros2_manipulation/operator_console/static/style.css": "e5d0e52bc94705c34204adf591beae1b6733f9ba99901193817b039cde7e3321"
   },
-  "document_version": "1.3",
+  "document_version": "1.4",
   "implementation_review_commit": "591384ec9dda48e6bfde76d2b674dca3b4086ca1",
   "usability_source_sha256": {
     "src/mujoco_ros2_manipulation/operator_console/static/app.js": "19127ba8c86351b2906d21c0659777b43baf16223269c6aa3f3b1fa7f9074d50",
@@ -44,5 +44,10 @@
     "src/mujoco_ros2_manipulation/operator_console/static/recording.js": "b9894d6993648a274689e6b4031c386b1bd34566802076d01d50f8588b8c1917",
     "src/mujoco_ros2_manipulation/operator_console/static/recording.html": "7dcd1857db0e0fb530db61b62386586f1b9b90bc30fd85bd680fb55300f6663e"
   },
-  "editorial_revision": "2026-10-27 terminology and approved browser comments"
+  "editorial_revision": "2026-10-27 terminology and approved browser comments",
+  "navigation_update": {
+    "date": "2026-10-30",
+    "related_report": "../viewer-status-2026-10-30/index.html",
+    "scope": "Related status-report links and explicit separate-task versus integrated-UI scope; original media, measurement inputs and verification evidence unchanged."
+  }
 }

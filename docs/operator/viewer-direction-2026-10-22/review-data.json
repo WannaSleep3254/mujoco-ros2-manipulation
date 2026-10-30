@@ -1,7 +1,7 @@
 {
   "document_type": "design_review",
   "document_schema_version": 1,
-  "document_version": "1.9",
+  "document_version": "1.10",
   "id": "viewer-direction-2026-10-22",
   "title": "뷰어 개발 방향성",
   "reviewed_date": "2026-10-22",
@@ -179,5 +179,11 @@
     "target": "Unified web operation for heterogeneous multiple robot simulations",
     "implemented_example": "Shared FR5 and UR5e scene with 12 joint goals",
     "generalized_model_and_robot_count_support": "future_work"
+  },
+  "navigation_update": {
+    "date": "2026-10-30",
+    "scope": "Related viewer operating-status report and future UI integration links only; original 2026-10-22 implementation, evidence and performance assumptions preserved.",
+    "related_report": "../viewer-status-2026-10-30/index.html",
+    "new_performance_measurements": false
   }
 }
