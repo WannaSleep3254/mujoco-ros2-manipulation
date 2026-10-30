@@ -136,11 +136,12 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 @media(max-width:1000px){.stage-grid{grid-template-columns:1fr}.stage-card figure{max-width:800px;margin:16px auto}.stage-card{padding:18px}.media-player{max-height:none}}
 @media print{video{display:none!important}.stage-grid{display:block}.stage-card{margin-bottom:18px;break-inside:avoid}.stage-card figure{max-width:100mm}.comparison-table,.metric-table,.runtime-table{min-width:0}.comparison-table th[scope=row]{min-width:0}.provenance{break-inside:avoid}.media-links{display:block}}
 </style></head><body>
-<header><p class="eyebrow">개발 이력 · 운영 정리 · 2026-10-27</p><h1>3D 뷰어 전환 과정 및 운영 보존 기록</h1><p class="lead">서버 2D 이미지 스트리밍, 초기 WebGL, 현행 WebGL을 화면과 영상으로 비교합니다.<br>구형 서버는 실행 환경 대신 소스 코드와 자료 형태로 보존합니다.</p><div class="meta"><span>대상: FR5 + UR5e 뷰어</span><span>현행 : main (a095f44)</span><span>보존 문서: v1.6 (양식 v1.9)</span></div></header>
+<header><p class="eyebrow">개발 이력 · 운영 정리 · 2026-10-27</p><h1>3D 뷰어 전환 과정 및 운영 보존 기록</h1><p class="lead">서버 2D 이미지 스트리밍, 초기 WebGL, 현행 WebGL을 화면과 영상으로 비교합니다.<br>구형 서버는 실행 환경 대신 소스 코드와 자료 형태로 보존합니다.</p><div class="meta"><span>대상: FR5 + UR5e 뷰어</span><span>촬영 기준: main (a095f44)</span><span>보존 문서: v1.7 (양식 v1.9)</span></div></header>
 <div class="topbar"><nav class="nav" aria-label="문서 목차"><a href="../../index.html">자료 모음</a><a href="#summary">요약</a><a href="#screens">화면·영상</a><a href="#features">기능 비교</a><a href="#measurements">기존 측정</a><a href="#cleanup">서버 정리</a><a href="#sources">근거</a><button id="print" type="button">인쇄 / PDF 저장</button></nav></div>
 <main>
 <section id="summary"><span class="section-no">Overview / What changed</span><h2>단순 출력 화면에 조작·검토 기능 추가</h2><p class="callout">서버의 2D 이미지 스트리밍 화면에서, 브라우저가 3D 모델을 직접 렌더링하고 계획을 확인하는 화면으로 확장되었습니다.</p><p>초기 WebGL에서는 시점을 직접 조작할 수 있게 했습니다.<br>현행 버전은 표시할 모델과 실행 대상을 구분하고, 계획 검토·승인·이력 연결과 형상 탐색을 지원합니다.</p>
 <div class="note warn"><p><strong>포트 번호는 개발 버전이 아닙니다.</strong></p></div>
+<p class="small"><strong>현재 운영 상태와 구분:</strong> 아래 화면과 서버 정리는 10월 27일의 기록입니다. 10월 30일 조사한 여섯 뷰어의 역할·실행 상태와 새 동작 영상은 <a href="../viewer-status-2026-10-30/index.html#inventory">현재 뷰어 상태 리포트</a>에서 확인합니다. 기존 영상을 새 구현이나 같은 조건의 성능 비교로 바꾸어 해석하지 않습니다.</p>
 <dl class="report-list"><div><dt>A · 이미지</dt><dd>10월 22일 원본 시연은 촬영 코드 <code>50b549b</code>로 확인됩니다. 8765의 새 촬영본은 별도의 현재 운영 기록입니다.</dd></div><div><dt>B · 초기 3D</dt><dd>원본 저장소 화면 코드 <code>9b390ef</code>를 기준으로 설명합니다. 8890의 적재된 Python 코드 전체 버전은 확정하지 않습니다.</dd></div><div><dt>C · 현행 3D</dt><dd>main <code>a095f44</code>를 기준으로 합니다. 8897은 촬영 당시 로컬 main 뷰어의 포트이며, 8902 개발 환경은 비교 당시 같은 화면 기능을 갖습니다.</dd></div></dl>
 <div class="evidence-links"><a href="evidence/capture-summary.json">촬영 방법과 영상 해시</a><a href="evidence/publication-notes.json">공개 범위와 기준 코드</a><a href="../viewer-improvements-2026-10-26/index.html">WebGL 뷰어 개선과 표시 성능</a><a href="../viewer-direction-2026-10-22/index.html">뷰어 개발 방향성</a></div></section>
 <section id="screens"><span class="section-no">01 / Screens &amp; recordings</span><h2>WebGL 확장 단계</h2>
@@ -183,5 +184,5 @@ table caption.visual-title{padding:12px 14px;text-align:left}
 <li><a href="evidence/cleanup-summary.json">로컬 서버 정리 결과 요약</a><span>당시 종료·유지한 포트만 공개하며, 원본 로그·프로세스 목록·파일 경로는 포함하지 않습니다.</span></li>
 <li><a href="evidence/publication-notes.json">공개 범위·고정 코드·영상 출처</a><span>로컬 원본의 공개용 요약입니다. 실행 로그, 소스 압축본과 전체 보관 ZIP은 공개 자산에 포함하지 않습니다.</span></li>
 <li><a href="manifest.json">공개 파일 목록과 SHA-256</a><span>이 페이지와 검토한 사진·영상·요약 근거만 게시합니다.</span></li></ol></section>
-<div class="footer"><span>개발 이력·운영 정리 · 2026-10-27</span><span>새 로봇 동작 요청 없음</span><a href="#summary">처음으로 ↑</a></div></main>
+<div class="footer"><span>개발 이력·운영 정리 · 2026-10-27</span><span>10-27 촬영: 새 로봇 동작 요청 없음</span><a href="../viewer-status-2026-10-30/index.html#recordings">10-30 화면별 동작 영상</a><a href="#summary">처음으로 ↑</a></div></main>
 <script>document.getElementById('print').addEventListener('click',()=>window.print());</script></body></html>

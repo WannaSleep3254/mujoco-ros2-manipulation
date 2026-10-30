@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "document_type": "viewer_operational_snapshot",
+  "checked_at_kst": "2026-10-30T11:25:06.510909+09:00",
+  "scope": "실제 로컬 HTTP 응답과 실행 설정의 시점별 관측. 포트는 버전 번호가 아닙니다. 외부에서 로컬 서버에 연결할 수 있는 공개 서비스 목록이 아닙니다.",
+  "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
+  "web_services": [
+    {
+      "port": 8897,
+      "role": "이전 통합 뷰어",
+      "domain": 164,
+      "function": "양팔 관절 목표, 계획 검토·승인·실행·취소, 접촉·출발 지연 비교",
+      "current": "웹 서버와 ROS 시뮬레이션 실행 중; 진행 중 요청 없음",
+      "local_address": "http://127.0.0.1:8897/",
+      "ros_grasp_link_registered": false
+    },
+    {
+      "port": 8923,
+      "role": "개발 검증용 통합 뷰어",
+      "domain": 224,
+      "function": "통합 조작·계획·시연",
+      "current": "웹 서버 대기; ROS 시뮬레이션 정지",
+      "local_address": "http://127.0.0.1:8923/",
+      "ros_grasp_link_registered": false
+    },
+    {
+      "port": 8924,
+      "role": "독립 집기 실험",
+      "domain": null,
+      "function": "ROS 없는 MuJoCo 물리 집기 시연",
+      "current": "웹 서버 대기; 최근 실행 성공; 작업 프로세스 없음",
+      "local_address": "http://127.0.0.1:8924/",
+      "ros_grasp_link_registered": null
+    },
+    {
+      "port": 8925,
+      "role": "새 작업실 GUI 통합 뷰어",
+      "domain": 225,
+      "function": "객체 목록·중앙3D·작업패널, 관절/TCP 목표, 계획 검토·실행·취소, 기록 분석",
+      "current": "웹 서버와 ROS 시뮬레이션 실행 중; 진행 중 요청 없음",
+      "local_address": "http://127.0.0.1:8925/",
+      "ros_grasp_link_registered": false
+    },
+    {
+      "port": 8929,
+      "role": "센서·3D 동기 기록 재생",
+      "domain": null,
+      "function": "같은 시간축의 읽기 전용 이미지·3D 재생; 명령 재실행 없음",
+      "current": "웹 서버 실행 중",
+      "local_address": "http://127.0.0.1:8929/",
+      "ros_grasp_link_registered": null
+    },
+    {
+      "port": 8930,
+      "role": "ROS 집기 전용 뷰어",
+      "domain": 222,
+      "function": "FR5 집기·운반·놓기·취소; 물리 관측과 MoveIt 부착",
+      "current": "웹 서버 대기; 최근 실행 성공·종료; 작업 프로세스 없음",
+      "local_address": "http://127.0.0.1:8930/",
+      "ros_grasp_link_registered": null
+    }
+  ],
+  "web_count": 6,
+  "all_http_200": true,
+  "all_bound_to_loopback": true,
+  "same_screen_grasp_integration_complete": false,
+  "latest_code_supports_configured_new_tab_link_only": true,
+  "source_identity_limit": "코드 작업트리와 실행 중 프로세스의 전체 로드 코드 동일성을 이 조사만으로 확정하지 않습니다.",
+  "excluded": "호스트 경로, PID, 프로세스 명령행, LAN 주소, 자격 증명과 원본 실행 식별자는 게시하지 않습니다."
+}

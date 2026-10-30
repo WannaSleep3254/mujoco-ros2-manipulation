@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.6",
+  "document_version": "1.7",
   "layout_baseline": "1.9",
   "baseline_commit": "a095f448bbbbf58051f928102e3fa0d75ec5016d",
   "scope": "Viewer UI evolution and historical screen records with existing measurement references; not a new performance report.",
@@ -10,7 +10,7 @@
     "evidence/cleanup-summary.json": "617c49b3742ccbe82a291ff7d83d121948193f2c7037a16dea68aa1ba1ad0411",
     "evidence/framing-validation.json": "5b0081e9be42bcfd90ec876a2dea81ad3768a44fd489e28b832467c9bc4c34f3",
     "evidence/publication-notes.json": "179ca58a7538ea41203686a2573c89040a3d3329e20a9843d4891b8954fd545b",
-    "index.html": "35174ccdad6add853024abef52a58873012aca7fa485f679b9a3c0df484f372b",
+    "index.html": "bbccb8c9a9a28b278931948acb6a45cd5c4898930e467d8eb60e862f30473ada",
     "media/comparison-v1.1.mp4": "10f4e7171e9cd3ae4657dcf6846d5ef47ac768dabdb8f0fd8b6d355e0d171962",
     "media/comparison.jpg": "90c5130559ab0ae2721fa25da840ded72db0c0437c1ce9370fa5092a0ac761b0",
     "media/legacy-motion-poster.png": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1",
@@ -23,5 +23,10 @@
     "media/stage-c-features-v1.1.mp4": "b90862aa76f953ef1b10e96afc3c6e43197acd9b3da069e724e67c3baa24264c",
     "media/stage-c-runtime.jpg": "b4846f683bdbe7df91b80c34ad6ffd33d751556f34ad17f6134be08ef7be0843"
   },
-  "editorial_revision": "2026-10-27 terminology and approved browser comments"
+  "editorial_revision": "2026-10-27 terminology and approved browser comments",
+  "navigation_update": {
+    "date": "2026-10-30",
+    "related_report": "../viewer-status-2026-10-30/index.html",
+    "scope": "Related status-report links and explicit separate-task versus integrated-UI scope; original media, measurement inputs and verification evidence unchanged."
+  }
 }

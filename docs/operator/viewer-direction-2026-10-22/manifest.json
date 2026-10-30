@@ -4,8 +4,8 @@
   "baseline_commit": "7a71402e2a04fd002f8d863ac9908341103a9f00",
   "assets": {
     "current-console.png": "86ff495dc312c7395db458534b647df45476d6d1a3fd991b6580243bf5f06b87",
-    "index.html": "a343c2b555a871afcfb6fa59f3986c5072ccdbd871f5b59fd60b235b1a8caba4",
-    "review-data.json": "e69c92e9ec1c25c3b5ddf249e215171f3e0f2dfbe21af18369e1dc9dcf0df7c4",
+    "index.html": "dbbb68e08c03d408d551f43ad347c033808852cb73df6ce429ae9080a41f028a",
+    "review-data.json": "f910ab9c564c6cdca50c446e91112b55d36f7b160391a0f1d6ea79c4c012b43f",
     "review-notes.json": "a8d6c159d39d3af1dbe35853bd02b17af655922178f751ada8873d247ff1d2dd",
     "viewer-demo.mp4": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba",
     "viewer-demo-poster.png": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1"
@@ -28,6 +28,11 @@
     "docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.mp4": "a9c25d14ae275f6ce8d9983be878ec78a663eb285fb9803e9bb4b485cd4c0fba",
     "docs/operator/picking-comparison-2026-10-22/viewer-interface-focus.png": "61a21f249610a8d98a2426bc086b1bfc7629fc49715f2ec30521b74ecc1d92e1"
   },
-  "document_version": "1.9",
-  "editorial_revision": "2026-10-27 terminology and approved browser comments"
+  "document_version": "1.10",
+  "editorial_revision": "2026-10-27 terminology and approved browser comments",
+  "navigation_update": {
+    "date": "2026-10-30",
+    "related_report": "../viewer-status-2026-10-30/index.html",
+    "scope": "Related status-report links and explicit separate-task versus integrated-UI scope; original media, measurement inputs and verification evidence unchanged."
+  }
 }

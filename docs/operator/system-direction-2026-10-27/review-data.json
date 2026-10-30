@@ -916,5 +916,17 @@
       "public_data_policy": "Reduced public synthetic-case facts and reviewed hashes only; no raw logs, full trajectories, process IDs, absolute paths, session identifiers, CAD or model assets.",
       "archived_as": "1.10"
     }
-  ]
+  ],
+  "navigation_update": {
+    "date": "2026-10-30",
+    "document_edition": "1.12",
+    "previous_implementation_edition": "1.11",
+    "related_report": "../viewer-status-2026-10-30/index.html",
+    "scope": "Operating viewer inventory and separate-task versus integrated-UI distinction; existing implementation and CI failure evidence retained unchanged.",
+    "current_running_web_viewers": 6,
+    "same_ui_grasp_execution_integrated": false,
+    "running_integrated_viewers_have_grasp_link": false,
+    "latest_code_optional_new_tab_link": true,
+    "new_performance_measurements": false
+  }
 }

@@ -21,7 +21,7 @@
       "published_date": "2026-10-22",
       "document_type": "design_review",
       "overview": "2026-10-22 당시의 FR5·UR5e 통합 조작과 렌더링 대안·단계별 계획입니다. 현재 구현과 Three.js 유지·확장 이유는 2026-10-26 후속 기록에서 확인합니다.",
-      "manifest_sha256": "e1152e1236f468a39142402cf60ce060db308b325b057af99c29530c6cae14d9"
+      "manifest_sha256": "36b6388374ea45ca9b7adaa8c85aa27406e6c8ef790583ee48eef009612f382a"
     },
     {
       "id": "motion-planning-direction-2026-10-22",
@@ -45,7 +45,7 @@
       "published_date": "2026-10-26",
       "document_type": "design_review",
       "overview": "Three.js를 유지·확장하는 이유와 현재 구현, JPEG·WebGL 정지 상태 비교를 정리합니다. 기존 개발 계획의 진행 상황과 여러 공급원·센서 연결의 다음 과제를 제시합니다.",
-      "manifest_sha256": "42a20b7c03fc094e5e98fc009fcf8d745491c137b44679d11cf8e9a587a6dd87"
+      "manifest_sha256": "778fdcea648a524d070d9e94b1e9f438a050beeffd9833f0650a6f631d17e619"
     },
     {
       "id": "viewer-history-2026-10-27",
@@ -53,7 +53,7 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "서버의 2D 이미지 표시부터 초기·현행 WebGL까지의 확장 과정을 사진과 영상으로 비교합니다. 시점 조작과 모션플랜 검토·승인 기능, 기존 성능 측정과 구형 서버의 보존 기록을 정리합니다.",
-      "manifest_sha256": "7049f7e82a1a1f1f0a38de7659a8a9f86f76aecb2ca7c0997a2823ed0db02158"
+      "manifest_sha256": "bbaa7ec0d5800e722263843b2398cab8258c1a4f125a4fb91dc00d75aa541ef0"
     },
     {
       "id": "system-direction-2026-10-27",
@@ -61,7 +61,7 @@
       "published_date": "2026-10-27",
       "document_type": "design_review",
       "overview": "Three.js 작업실과 센서·3D 재생, ROS 집기의 현재 구현을 정리합니다. 충돌·관측·실행 전 파일 확인과 시작 시각 확정의 진단·수정, 서로 다른 소스의 실제 검증을 연결하고 남은 개발 순서를 제시합니다.",
-      "manifest_sha256": "5e4ab7cc496e16872ad95a828741eb95975f4c28793971065b45f3da34cc46f4"
+      "manifest_sha256": "97e925723741023dd417c4e531246e724da49c59dad4c49371ebecd984d8be4c"
     },
     {
       "id": "planner-cache-2026-10-28",
@@ -70,6 +70,21 @@
       "document_type": "design_review",
       "overview": "FR5·UR5e의 같은 입력에서 RRTConnect·RRT와 캐시 cold·warm을 비교합니다. 최종 기능10조건과 성능12표본, 재검증 비용·일회 승인·실패 원본과 표본 한계를 구분합니다.",
       "manifest_sha256": "64363913d761d665b1e291ef1c501a1cb854a53b9019e57ed7f9dd3468cb6457"
+    },
+    {
+      "id": "viewer-status-2026-10-30",
+      "title": "뷰어 운영 현황과 통합 계획",
+      "published_date": "2026-10-30",
+      "document_type": "design_review",
+      "overview": "실행 중인 여섯 뷰어의 역할과 새 동작 영상, 선택 비교와 남은 통합 순서를 정리합니다. 계획 미리보기·물리 집기·읽기 전용 재생을 구분하고 기존 개발 단계와 연결합니다.",
+      "manifest_sha256": "b79809133f0b6862994f919dd249ea0515f7c01be59ac0b5452ea152c8185b55",
+      "preview": {
+        "image": "media/viewer-8925.jpg",
+        "alt": "객체 목록과 3D 경로 미리보기, 계획 검토 패널을 표시하는 새 작업실 GUI",
+        "width": 1266,
+        "height": 1266,
+        "caption": "2026-10-30 실제 화면 · 동작 예제 계획 미리보기 · 실행 승인 없음"
+      }
     }
   ]
 }
