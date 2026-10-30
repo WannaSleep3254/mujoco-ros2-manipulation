@@ -50,6 +50,53 @@ def request_while_pumping(operation, wait, label, seconds=15):
         return future.result()
 
 
+def capture_readiness(state, catalog):
+    """Observe one current motion/view handshake and the capture owner's gate.
+
+    A ready pose can precede the motion server's first status. It is not enough
+    until its binding names that same server. The public capture availability
+    remains authoritative for source freshness and all other admission checks.
+    """
+    def mapping(value):
+        return value if type(value) is dict else {}
+    def bounded(value):
+        return value[:256] if type(value) is str else None
+    state,catalog=mapping(state),mapping(catalog)
+    lifecycle,server=mapping(state.get("lifecycle")),mapping(state.get("server"))
+    view=mapping(state.get("view"));binding=mapping(view.get("binding"))
+    capture=mapping(catalog.get("capture"))
+    motion=server.get("session_id")
+    owner_ready=(lifecycle.get("phase")=="running" and type(motion) is str and bool(motion)
+        and view.get("status")=="ready" and view.get("pose_ready") is True
+        and view.get("mode")=="live" and binding.get("mode")=="live"
+        and binding.get("motion_session_id")==motion and binding.get("job_id") is None)
+    can_start=capture.get("can_start") is True
+    return dict(ready=bool(owner_ready and can_start),owner_ready=bool(owner_ready),can_start=can_start,
+        lifecycle_phase=bounded(lifecycle.get("phase")),motion_session_id=bounded(motion),
+        view_status=bounded(view.get("status")),pose_ready=view.get("pose_ready") is True,
+        view_mode=bounded(view.get("mode")),binding_mode=bounded(binding.get("mode")),
+        binding_id=bounded(view.get("binding_id")),binding_motion_session_id=bounded(binding.get("motion_session_id")),
+        binding_job_id=bounded(binding.get("job_id")),availability_reason=bounded(capture.get("availability_reason")))
+
+
+def start_synchronized_capture(http, wait, result):
+    """Read-only readiness polling, followed by exactly one owned start POST."""
+    evidence=dict(poll_count=0,start_requests=0,last_observed=None)
+    result["synchronized_capture_readiness"]=evidence
+    def probe():
+        state=http("/api/state")
+        catalog=http("/api/sync-recordings")
+        evidence["poll_count"]+=1
+        evidence["last_observed"]=capture_readiness(state,catalog)
+        return evidence["last_observed"]["ready"]
+    wait(probe,"same motion live 3D and synchronized capture readiness",30,frames=True)
+    # Asset preparation can outlast image freshness. Continue publishing during
+    # this one request; a later refusal remains evidence and is never retried.
+    evidence["start_requests"]=1
+    return request_while_pumping(lambda:http("/api/sync-recordings/start",{}),
+        wait,"synchronized capture start")["id"]
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain",type=int,required=True)
@@ -126,12 +173,7 @@ def main():
             jpeg_sha256=hashlib.sha256(pixels).hexdigest(),status=source["status"],source_clock_domain=source["clock_domain"]))
         capture_id=None
         if args.synchronized:
-            wait(lambda:http("/api/state")["view"].get("pose_ready"),"published 3D pose",30,frames=True)
-            # Reading and validating model assets can outlast the image source's
-            # freshness window. A real camera runs independently of HTTP; this
-            # diagnostic producer must also keep publishing during preparation.
-            capture_id=request_while_pumping(lambda:http("/api/sync-recordings/start",{}),
-                wait,"synchronized capture start")["id"]
+            capture_id=start_synchronized_capture(http,wait,result)
             wait(lambda:http("/api/sync-recordings")["capture"]["image_count"]>=3,"initial synchronized image samples",frames=True)
             records.append(dict(name="synchronized_capture_started",id=capture_id))
         before=source["counters"]["rejected"]
