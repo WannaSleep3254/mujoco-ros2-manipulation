@@ -407,5 +407,100 @@
     ],
     "unclean_missing_result_can_be_reported_success": false,
     "actual_fatal_fault_ros_injection_performed": false
+  },
+  "synchronized_capture_readiness_followup": {
+    "source_commit": "24b11b5e76705dafe554b87c4ba325d44a030d01",
+    "code_url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/24b11b5e76705dafe554b87c4ba325d44a030d01",
+    "scope": "Verifier-only readiness repair and its local checks. Existing integration implementation, three-case ROS receipts and all original viewer evidence remain separate historical baselines.",
+    "original_ci_failure": {
+      "run_number": 157,
+      "baseline_main_short_commit": "51040d53",
+      "status": "failed",
+      "retained_receipt_sha256": "65becbdc6e6bf7d463df5101496c12462419308718b68443d98803cff440c279",
+      "rgb8_to_http_jpeg": "passed",
+      "refused_path": "/api/sync-recordings/start",
+      "http_status": 400,
+      "server_reason": "같은 명령 실행의 실시간 3D 자세가 필요합니다.",
+      "console_exit_code": 0,
+      "cleanup_clean": true,
+      "exact_failed_subcondition_known": false,
+      "missing_original_telemetry": "No original admission snapshot distinguishes missing motion session, mismatched motion binding, or a demonstration job binding."
+    },
+    "diagnosis": {
+      "prior_verifier_wait": "pose_ready alone",
+      "source_supported_race": "ConsoleViews updates its live binding independently of the motion-server handshake; an already-ready pose can still name an absent or previous motion owner.",
+      "original_exact_interleaving_proven": false
+    },
+    "fix": {
+      "files_changed": 2,
+      "product_admission_changed": false,
+      "readiness": "Read-only polling requires running lifecycle, exact current motion session in a ready live binding without a demonstration job, and authoritative capture.can_start.",
+      "start": "One start POST while the diagnostic producer continues publishing; a later refusal propagates without retry.",
+      "atomic_readiness_claim": false,
+      "final_start_revalidates_product_admission": true,
+      "start_mutation_retries": 0,
+      "identity_checks_relaxed": false,
+      "freshness_thresholds_relaxed": false
+    },
+    "tests": {
+      "targeted": {
+        "total": 20,
+        "passed": 20,
+        "status": "passed"
+      },
+      "unit": {
+        "total": 1407,
+        "passed": 1406,
+        "skipped": 1,
+        "elapsed_wall_sec": 69.732,
+        "status": "passed"
+      },
+      "package": {
+        "source_distribution": "passed",
+        "wheel": "passed"
+      },
+      "coverage": [
+        "old_ready_binding_with_absent_or_other_motion_owner",
+        "loading_live_view",
+        "authoritative_capture_unavailable",
+        "readiness_timeout_without_start",
+        "one_refused_start_propagates_without_retry",
+        "bounded_readiness_diagnostics"
+      ]
+    },
+    "actual_ros_diagnostic": {
+      "status": "passed",
+      "receipt_sha256": "5ae1df8bc59efd2992c520256f8d332ac4b264c3344b95b22f4c28bd68ff4493",
+      "readiness_readonly_polls": 89,
+      "start_requests": 1,
+      "current_motion_and_binding_match": true,
+      "capture_can_start_observed": true,
+      "recording_sha256": "31048c7b20d401ad882bd8a415231d0bf27b2b5e4ab983abf40ac7c09a2ff951",
+      "pose_count": 41,
+      "diagnostic_jpeg_count": 17,
+      "preserved_missing_image_gaps": 1,
+      "checks": [
+        "actual_ros_rgb8_to_http_jpeg",
+        "synchronized_capture_started",
+        "invalid_encoding_rejected",
+        "stale_without_publisher_loss",
+        "request_image_joint_clock_observations",
+        "synchronized_capture_and_readonly_replay",
+        "publisher_reconnected_without_command_replay"
+      ],
+      "readonly_seek_and_frame_step": "passed",
+      "image_hash_and_recording_hash": "passed",
+      "no_command_replay": true,
+      "reconnect_without_automatic_command_replay": true,
+      "console_exit_code": 0,
+      "cleanup_clean": true
+    },
+    "interpretation_limits": [
+      "Local validation does not claim post-fix remote CI, merge or Pages publication outcomes.",
+      "The original combined HTTP refusal is retained; the precise failed original disjunct is unknown.",
+      "Read-only readiness snapshots are sequential observations, not an atomic promise that start cannot later be refused.",
+      "This newly acquired 41-pose/17-image synthetic ROS diagnostic record is distinct from the existing imported 41-pose/18-image replay fixture.",
+      "No native-grasp RGB acquisition, hardware camera synchronization, native integration-step alignment, browser rendering or latency/FPS claim is made."
+    ]
   }
 }
