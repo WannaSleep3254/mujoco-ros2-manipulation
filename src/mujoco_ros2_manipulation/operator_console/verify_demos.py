@@ -17,6 +17,7 @@ from ..model_build.integrity import file_sha256
 from ..paths import ROOT
 from ..verification.reports import VerificationReport, utc_now
 from ..verification.runner import group_gone, stop_process
+from ..verification.process_faults import process_failures
 from ..verification.diagnostics import check_stop_physics
 from ..workcells.config import load_workcell
 from ..workcells.contact_comparison import compare_runs
@@ -25,6 +26,7 @@ from ..workcells.integrity import check_workcell
 from ..workcells.motion_request import command
 from ..workcells.timing_comparison import compare_timing
 from .demo_worker import frame_matches
+from .demo_jobs import matching_process
 
 
 def require(condition, message):
@@ -44,6 +46,108 @@ def completed_job(state, identifier):
             and demo.get("can_start") is True):
         return current
     return None
+
+
+def controller_spawner_readiness(log, controllers):
+    """Require three one-shot helpers to have exited before active cancellation.
+
+    Activation does not prove that a Python spawner has finished its own
+    teardown. This is only a verification readiness barrier; cancellation and
+    strict child-exit classification remain unchanged.
+    """
+    roles=("joint_state_broadcaster",*controllers)
+    require(len(roles)==3 and len(set(roles))==3,"Expected three distinct controller startup helpers")
+    # This fixed workcell launch emits simulation/state-publisher first, then
+    # these helpers in role order. A changed launch must be reviewed explicitly.
+    expected={"spawner-"+str(index):role for index,role in enumerate(roles,3)}
+    plain=re.sub(r"\x1b\[[0-9;]*m","",log)
+    lines=plain.splitlines()
+    observed=dict(ready=False,reason="waiting_for_spawner_clean_exit",spawners=[])
+    if process_failures(log) or any("process has died" in line for line in lines):
+        observed["reason"]="child_process_failure"
+        return observed
+    if any("sending signal" in line or "user interrupted" in line for line in lines):
+        observed["reason"]="launch_is_stopping"
+        return observed
+    starts=[];activated=[];exits=[]
+    for number,line in enumerate(lines,1):
+        match=re.fullmatch(r"\[INFO\] \[(spawner-[0-9]+)\]: process started with pid \[([0-9]+)\]",line)
+        if match:starts.append((match[1],int(match[2]),number))
+        match=re.fullmatch(r"\[(spawner-[0-9]+)\] \[INFO\] \[[^\]]+\] \[spawner_([^\]]+)\]: Configured and activated ([^ ]+)",line)
+        if match:activated.append((match[1],match[2],match[3],number))
+        match=re.fullmatch(r"\[INFO\] \[(spawner-[0-9]+)\]: process has finished cleanly \[pid ([0-9]+)\]",line)
+        if match:exits.append((match[1],int(match[2]),number))
+    names={item[0] for item in starts}
+    all_names=set(re.findall(r"\[(spawner-[0-9]+)\]",plain))
+    if (len(starts)!=3 or names!=set(expected) or len({item[1] for item in starts})!=3
+            or any(item[1]<=1 for item in starts) or all_names!=names):
+        observed["reason"]="missing_duplicate_or_unknown_spawner"
+        return observed
+    if (len(activated)!=3 or {item[0] for item in activated}!=names
+            or {item[1] for item in activated}!=set(roles)
+            or any(item[1]!=item[2] or item[1]!=expected[item[0]] for item in activated)):
+        observed["reason"]="missing_duplicate_or_wrong_controller_activation"
+        return observed
+    if len(exits)!=3 or {item[0] for item in exits}!=names:
+        return observed
+    for name,pid,started in starts:
+        activation=next(item for item in activated if item[0]==name)
+        exited=next(item for item in exits if item[0]==name)
+        if exited[1]!=pid or not started<activation[3]<exited[2]:
+            observed["reason"]="wrong_spawner_pid_or_event_order"
+            return observed
+        observed["spawners"].append(dict(node=name,pid=pid,controller=activation[1],
+            start_line=started,activated_line=activation[3],clean_exit_line=exited[2]))
+    observed.update(ready=True,reason=None)
+    return observed
+
+
+def owned_controller_startup_readiness(launch, root, domain, started_utc, controllers):
+    """Read only the exact active launch's bounded, identity-checked report/log."""
+    require(type(launch) is dict,"Missing active launch for cancellation readiness")
+    run=launch.get("run_id")
+    require(type(run) is str and re.fullmatch(r"[A-Za-z0-9_.-]{1,128}",run),"Invalid active launch run identity")
+    runs=(Path(root)/"runtime/validation/runs").resolve()
+    directory=(runs/run).resolve()
+    path=Path(launch.get("report_path","")).resolve()
+    require(directory.parent==runs and path==directory/"result.json",
+            "Active cancellation report escaped its owned run")
+    require(type(launch.get("pid")) is int and launch["pid"]>1
+            and type(launch.get("start_ticks")) is int and launch["start_ticks"]>0,
+            "Invalid active launch process identity")
+    if not matching_process(launch):
+        return dict(ready=False,reason="active_launch_no_longer_matches",run_id=run,spawners=[])
+    require(path.stat().st_size<=64*1024*1024,"Active cancellation report exceeded its bound")
+    raw=path.read_bytes()
+    require(len(raw)<=64*1024*1024,"Active cancellation report grew beyond its bound")
+    value=json.loads(raw)
+    log=directory/"launch.log"
+    require(value.get("run_id")==run and value.get("ros_domain_id")==domain
+            and Path(value.get("log_path","")).resolve()==log,
+            "Active cancellation report belongs to another launch/domain/log")
+    require(datetime.fromisoformat(value["started_utc"])>=datetime.fromisoformat(started_utc),
+            "Active cancellation reused an archived report")
+    if value.get("status")!="running" or value.get("stage")!="approach_fixed_obstacle":
+        return dict(ready=False,reason="active_report_not_approaching",run_id=run,spawners=[])
+    require(log.stat().st_size<=4*1024*1024,"Active cancellation log exceeded its bound")
+    logged=log.read_bytes()
+    require(len(logged)<=4*1024*1024,"Active cancellation log grew beyond its bound")
+    observed=controller_spawner_readiness(logged.decode("utf-8",errors="replace"),controllers)
+    observed.update(run_id=run,launch_pid=launch["pid"],launch_start_ticks=launch["start_ticks"],
+        stage=value["stage"],report_sha256=hashlib.sha256(raw).hexdigest(),
+        observed_log_sha256=hashlib.sha256(logged).hexdigest(),observed_log_bytes=len(logged))
+    return observed
+
+
+def active_contact_approach(state, identifier, controllers):
+    current=(state.get("demo") or {}).get("current") or {}
+    guard=state.get("guard") or {}
+    age=state.get("state_age_sec")
+    return (current.get("job_id")==identifier and current.get("variant")=="contact"
+        and current.get("status")=="running" and current.get("stage")=="approach_fixed_obstacle"
+        and guard.get("latched") is False and guard.get("phase")=="ready"
+        and all((guard.get("controllers") or {}).get(name)=="active" for name in controllers)
+        and type(age) in (int,float) and 0<=age<1)
 
 
 def checked_reports(job, variants, root, domain, started_utc):
@@ -324,6 +428,8 @@ def main():
         report.stage("cancel_latched_contact_job" if args.cancel_after_latch else "cancel_active_contact_job")
         identifier = start("contact_comparison")
         stopped_since = [None]
+        startup_readiness = [None]
+        controllers = tuple(instance.controller for instance in cell.instances)
         def approaching():
             state = observe(identifier)
             current = state["demo"]["current"]
@@ -345,7 +451,22 @@ def main():
                 if stopped_since[0] is None:
                     stopped_since[0] = time.monotonic()
                 return state if time.monotonic() - stopped_since[0] >= .1 else None
-            return state
+            if not active_contact_approach(state,identifier,controllers):
+                return None
+            launch=current.get("active_launch") or {}
+            startup_readiness[0]=owned_controller_startup_readiness(launch,ROOT,args.domain,
+                report.data["started_utc"],controllers)
+            report.update(cancellation_startup_readiness=startup_readiness[0])
+            if not startup_readiness[0]["ready"]:
+                return None
+            # File observation is not an atomic stop admission. Recheck the
+            # same active, unlatched approach after reading its startup proof.
+            latest=observe(identifier)
+            newest=(latest.get("demo") or {}).get("current") or {}
+            if (not active_contact_approach(latest,identifier,controllers)
+                    or newest.get("active_launch")!=launch):
+                return None
+            return latest
         cancellation_state = until(approaching, 120, "owned contact approach before cancellation")
         cancellation_launch = cancellation_state["demo"]["current"].get("active_launch") or {}
         require(cancellation_launch.get("run_id") and cancellation_launch["run_id"] not in run_ids,
@@ -353,7 +474,8 @@ def main():
         report.update(cancellation_observation=dict(run_id=cancellation_launch["run_id"],
             stage=cancellation_state["demo"]["current"]["stage"],
             after_latch=args.cancel_after_latch, guard=cancellation_state.get("guard"),
-            simulation_sec=cancellation_state.get("simulation_sec")))
+            simulation_sec=cancellation_state.get("simulation_sec"),
+            controller_startup_readiness=startup_readiness[0]))
         response = api("/api/demos/stop", dict(job_id=identifier))
         require(response["job_id"] == identifier and response["status"] == "cancel_requested", "Wrong cancellation acknowledgement")
         cancelled = save_job(identifier, 90, "cancelled")

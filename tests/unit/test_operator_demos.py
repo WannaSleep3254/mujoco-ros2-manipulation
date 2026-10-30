@@ -21,12 +21,135 @@ from mujoco_ros2_manipulation.operator_console.demo_jobs import matching_process
 from mujoco_ros2_manipulation.operator_console.demo_worker import DemoCancelled, DemoJob, frame_matches
 from mujoco_ros2_manipulation.operator_console.http_server import ConsoleHTTPServer, Handler
 from mujoco_ros2_manipulation.operator_console.state import ConsoleState
-from mujoco_ros2_manipulation.operator_console.verify_demos import completed_job, checked_reports
+from mujoco_ros2_manipulation.operator_console.verify_demos import (
+    completed_job, checked_reports, checked_cancelled_report, controller_spawner_readiness,
+    owned_controller_startup_readiness, active_contact_approach,
+)
 from mujoco_ros2_manipulation.verification.reports import atomic_json
 from mujoco_ros2_manipulation.verification.runner import run_verification
 from mujoco_ros2_manipulation.workcells.motion_request import command
 
 JOBS = 'mujoco_ros2_manipulation.operator_console.demo_jobs'
+
+
+class DemoCancellationReadinessTests(unittest.TestCase):
+    controllers=('left_controller','right_controller')
+    # CI159 run 20261030T081942.462189Z-a1ca941b, before its owned SIGINT.
+    # Unrelated lines omitted, timestamps/PIDs normalized; importantly, active
+    # controllers and accepted goals preceded two missing helper exit markers.
+    pending_log="""[INFO] [spawner-3]: process started with pid [42]
+[INFO] [spawner-4]: process started with pid [43]
+[INFO] [spawner-5]: process started with pid [44]
+[spawner-4] [INFO] [1.1] [spawner_left_controller]: \x1b[92mConfigured and activated \x1b[1mleft_controller\x1b[0m
+[spawner-5] [INFO] [1.2] [spawner_right_controller]: \x1b[92mConfigured and activated \x1b[1mright_controller\x1b[0m
+[spawner-3] [INFO] [1.3] [spawner_joint_state_broadcaster]: \x1b[92mConfigured and activated \x1b[1mjoint_state_broadcaster\x1b[0m
+[ros2_control_node-1] [INFO] [1.4] [left_controller]: Accepted new action goal
+[ros2_control_node-1] [INFO] [1.4] [right_controller]: Accepted new action goal
+[INFO] [spawner-4]: process has finished cleanly [pid 43]
+"""
+
+    @classmethod
+    def ready_log(cls):
+        return cls.pending_log+(
+            '[INFO] [spawner-3]: process has finished cleanly [pid 42]\n'
+            '[INFO] [spawner-5]: process has finished cleanly [pid 44]\n')
+
+    def test_original_activation_and_goal_acceptance_window_is_not_clean_startup(self):
+        value=controller_spawner_readiness(self.pending_log,self.controllers)
+        self.assertFalse(value['ready'])
+        self.assertEqual(value['reason'],'waiting_for_spawner_clean_exit')
+        ready=controller_spawner_readiness(self.ready_log(),self.controllers)
+        self.assertTrue(ready['ready'])
+        self.assertEqual({(row['node'],row['pid'],row['controller']) for row in ready['spawners']},
+            {('spawner-3',42,'joint_state_broadcaster'),('spawner-4',43,'left_controller'),
+             ('spawner-5',44,'right_controller')})
+        self.assertTrue(all(row['start_line']<row['activated_line']<row['clean_exit_line'] for row in ready['spawners']))
+
+    def test_missing_ambiguous_wrong_pid_or_role_and_nonzero_exits_cannot_pass(self):
+        ready=self.ready_log()
+        start='[INFO] [spawner-5]: process started with pid [44]\n'
+        clean='[INFO] [spawner-5]: process has finished cleanly [pid 44]\n'
+        activation=next(line for line in ready.splitlines(True) if '[spawner-5] [INFO]' in line)
+        variants={
+            'missing_start':ready.replace(start,''),
+            'duplicate_start':ready+start,
+            'restarted_helper':ready+start.replace('[44]','[99]'),
+            'reused_pid':ready.replace('[pid 44]','[pid 42]').replace('pid [44]','pid [42]'),
+            'missing_exit':ready.replace(clean,''),
+            'wrong_exit_pid':ready.replace(clean,clean.replace('pid 44','pid 99')),
+            'duplicate_exit':ready+clean,
+            'unknown_helper':ready+'[spawner-6] unexpected helper output\n',
+            'wrong_activation_role':ready.replace(activation,activation.replace('right_controller','unknown_controller')),
+            'swapped_roles':ready.replace('left_controller','TEMP').replace('right_controller','left_controller').replace('TEMP','right_controller'),
+            'duplicate_activation':ready+activation,
+            'exit_before_activation':clean+ready.replace(clean,''),
+            'nonzero_after_activation':ready+"[ERROR] [spawner-5]: process has died [pid 44, exit code -2, cmd '/owned/spawner'].\n",
+            'stopping_launch':ready+"[INFO] [spawner-5]: sending signal 'SIGINT' to process[spawner-5]\n",
+        }
+        for name,log in variants.items():
+            with self.subTest(name=name):
+                self.assertFalse(controller_spawner_readiness(log,self.controllers)['ready'])
+
+    def test_startup_log_is_bound_to_current_owned_report_run_domain_and_process(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);folder=root/'runtime/validation/runs/owned-run';folder.mkdir(parents=True)
+            path=folder/'result.json';log=folder/'launch.log';log.write_text(self.ready_log())
+            report=dict(run_id='owned-run',ros_domain_id=91,status='running',stage='approach_fixed_obstacle',
+                started_utc='2026-10-30T01:00:01+00:00',log_path=str(log))
+            atomic_json(path,report)
+            launch=dict(run_id='owned-run',report_path=str(path),pid=10000,start_ticks=10)
+            since='2026-10-30T01:00:00+00:00'
+            with patch('mujoco_ros2_manipulation.operator_console.verify_demos.matching_process',return_value=True):
+                proof=owned_controller_startup_readiness(launch,root,91,since,self.controllers)
+                self.assertTrue(proof['ready'])
+                self.assertEqual(proof['run_id'],'owned-run')
+                self.assertEqual(proof['launch_pid'],10000)
+                self.assertEqual(proof['observed_log_sha256'],file_sha256(log))
+                self.assertEqual(proof['report_sha256'],file_sha256(path))
+                for change in ('run','domain','archived','log','escaped_path'):
+                    value=deepcopy(report);candidate=deepcopy(launch)
+                    if change=='run':value['run_id']='other-run'
+                    if change=='domain':value['ros_domain_id']=92
+                    if change=='archived':value['started_utc']='2026-10-29T01:00:01+00:00'
+                    if change=='log':value['log_path']=str(root/'other.log')
+                    if change=='escaped_path':candidate['report_path']=str(root/'other.json')
+                    atomic_json(path,value)
+                    with self.subTest(change=change),self.assertRaises(RuntimeError):
+                        owned_controller_startup_readiness(candidate,root,91,since,self.controllers)
+                atomic_json(path,report)
+            with patch('mujoco_ros2_manipulation.operator_console.verify_demos.matching_process',return_value=False):
+                self.assertFalse(owned_controller_startup_readiness(launch,root,91,since,self.controllers)['ready'])
+
+    def test_startup_proof_does_not_replace_fresh_unlatched_active_approach(self):
+        state=dict(demo=dict(current=dict(job_id='a'*32,variant='contact',status='running',
+            stage='approach_fixed_obstacle')),guard=dict(latched=False,phase='ready',
+            controllers=dict(left_controller='active',right_controller='active')),state_age_sec=.1)
+        self.assertTrue(active_contact_approach(state,'a'*32,self.controllers))
+        for change in ('job','variant','terminal','stage','latched','stopping','inactive','stale','missing_age'):
+            value=deepcopy(state);current=value['demo']['current'];guard=value['guard']
+            if change=='job':current['job_id']='b'*32
+            if change=='variant':current['variant']='control'
+            if change=='terminal':current['status']='succeeded'
+            if change=='stage':current['stage']='waiting_for_frame'
+            if change=='latched':guard['latched']=True
+            if change=='stopping':guard['phase']='stopped'
+            if change=='inactive':guard['controllers']['right_controller']='inactive'
+            if change=='stale':value['state_age_sec']=1.
+            if change=='missing_age':value['state_age_sec']=None
+            with self.subTest(change=change):self.assertFalse(active_contact_approach(value,'a'*32,self.controllers))
+
+    def test_gone_group_cannot_normalize_unclean_child_to_clean_cancellation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);folder=root/'runtime/validation/runs/owned-run';folder.mkdir(parents=True)
+            path=folder/'result.json'
+            report=dict(run_id='owned-run',ros_domain_id=91,started_utc='2026-10-30T01:00:01+00:00',
+                status='interrupted',shutdown_clean=False,process_group_gone=True,
+                error=dict(type='DemoCancelled'),shutdown_failures=[dict(node='spawner-5',pid=44,exit_code=-2)])
+            atomic_json(path,report)
+            job=dict(status='cancelled',comparison=None,results=[dict(variant='contact',run_id='owned-run',
+                report_path=str(path),report_sha256=file_sha256(path))])
+            with self.assertRaisesRegex(RuntimeError,'clean owned shutdown'):
+                checked_cancelled_report(job,root,91,'2026-10-30T01:00:00+00:00')
 
 
 class DemoApplicationTests(unittest.TestCase):
