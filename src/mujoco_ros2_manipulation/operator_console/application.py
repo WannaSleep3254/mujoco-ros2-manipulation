@@ -18,10 +18,11 @@ from .demo_jobs import DemoJobs
 from .console_views import ConsoleViews
 from .review_summary import summarize_review
 from .synchronized_capture import CaptureLibrary
+from .workspace_tasks import WorkspaceTasks
 
 
 class ConsoleApplication:
-    def __init__(self, cell, state, bridge, directory, *, render=True, view_sources=(), execution_target=None):
+    def __init__(self, cell, state, bridge, directory, *, render=True, view_sources=(), execution_target=None, grasp_application=None):
         if type(view_sources) not in (tuple,list) or len(view_sources)>8 or (view_sources and not render):
             raise ValueError('화면 표시를 켜고 읽기 전용 작업 환경을 최대 8개까지 명시적으로 등록하세요.')
         self.execution_target = execution_target
@@ -45,11 +46,20 @@ class ConsoleApplication:
         self.demos = DemoJobs(self)
         self.display_mode = "web3d"
         self.image_render_enabled = False
+        self.tasks = WorkspaceTasks(self, grasp_application)
         self.views = ConsoleViews(self, enabled=render,extra_sources=view_sources)
         self.sync_recordings = CaptureLibrary(self)
         self.audit("console_started")
         self.monitor = threading.Thread(target=self.watch, daemon=True)
         self.monitor.start()
+
+    def require_motion_task(self):
+        tasks = getattr(self, "tasks", None)
+        if tasks is not None:
+            tasks.require_motion()
+
+    def task_snapshot(self):
+        return self.tasks.snapshot()
 
     def audit(self, action, **details):
         with self.lock:
@@ -69,6 +79,7 @@ class ConsoleApplication:
         if set(options) != {"native_gui", "planning_case"} or type(options["native_gui"]) is not bool or options["planning_case"] not in ("none", "dual_arm_crossing"):
             raise ValueError("실행 옵션이 올바르지 않습니다.")
         with self.lock, self.state.lock:
+            self.require_motion_task()
             if self.views.preview:
                 raise RuntimeError("미리보기를 종료하고 현재 작업 환경의 실시간 보기로 돌아오세요.")
             if self.demos.busy or self.phase in ("starting", "running", "stopping") or any(p.poll() is None for k,p in self.children.items() if k != "renderer"):
@@ -177,6 +188,7 @@ class ConsoleApplication:
 
     def execute_plan(self, payload):
         with self.lock, self.state.lock:
+            self.require_motion_task()
             from ..workcells.motion_request import validate_approval
             validate_approval(payload)
             reason = self.state.approval_reason(payload)
@@ -188,6 +200,7 @@ class ConsoleApplication:
     def discard_plan(self, identifier):
         request_id(identifier)
         with self.lock, self.state.lock:
+            self.require_motion_task()
             review = self.state.review_snapshot()
             if self.state.active or self.demos.busy or not review or review.get("plan_request_id") != identifier:
                 raise RuntimeError("현재 승인 대기 계획만 폐기할 수 있습니다.")
@@ -203,6 +216,7 @@ class ConsoleApplication:
 
     def _submit(self, payload, kind):
         with self.lock, self.state.lock:
+            self.require_motion_task()
             target = getattr(self, "execution_target", None)
             if target is not None:
                 target.validate()
@@ -228,6 +242,11 @@ class ConsoleApplication:
             return dict(request_id=payload["request_id"])
 
     def cancel(self, identifier):
+        with self.lock:
+            self.require_motion_task()
+            return self._cancel_motion(identifier)
+
+    def _cancel_motion(self, identifier):
         if self.demos.busy:
             raise RuntimeError("시연 종료 버튼으로 현재 시연을 종료하세요.")
         request_id(identifier)
@@ -300,13 +319,16 @@ class ConsoleApplication:
     def camera(self, view):
         if view not in ("overview", "front", "top"):
             raise ValueError("지원하지 않는 카메라입니다.")
-        atomic_json(self.directory/"camera.json", dict(view=view))
-        return dict(view=view)
+        with self.lock:
+            self.require_motion_task()
+            atomic_json(self.directory/"camera.json", dict(view=view))
+            return dict(view=view)
 
     def set_display(self, mode):
         if mode not in ("web3d", "image") or not isinstance(mode, str):
             raise ValueError("지원하는 화면 표시 방식을 선택하세요.")
         with self.lock, self.state.lock:
+            self.require_motion_task()
             if mode == "image" and getattr(self, "execution_target", None) is not None:
                 raise RuntimeError("선택한 설치 환경은 웹 3D에서 표시합니다. 서버 이미지 전환은 지원하지 않습니다.")
             if not self.render_enabled:
@@ -334,6 +356,8 @@ class ConsoleApplication:
     def update_views(self):
         """A display failure must not kill supervision or stop robot processes."""
         try:
+            if getattr(getattr(self, "tasks", None), "selected", "motion") != "motion":
+                return
             self.views.tick()
         except Exception as error:
             failure = dict(code="view_update_failed", message="표시 상태를 갱신하지 못했습니다. 실시간 보기를 다시 선택하세요.")
@@ -458,6 +482,7 @@ class ConsoleApplication:
 
     def stop_async(self):
         with self.lock:
+            self.require_motion_task()
             if self.phase == "stopping":
                 return dict(phase="stopping")
             if not any(k in self.children for k in ("simulation", "commands")):
@@ -513,6 +538,14 @@ class ConsoleApplication:
                 and self.phase not in ("starting", "stopping") and not self.closing.is_set()
                 and self.state.graph.get("approvals", 0) >= 1
                 and self.state.pose_review_reason(review) is None)
+            tasks = getattr(self, "tasks", None)
+            if tasks is not None:
+                data['task'] = tasks.snapshot()
+                if tasks.selected == 'grasp':
+                    data['view'] = tasks.view(data['task']['grasp'])
+                    for key in ('can_submit', 'can_plan', 'can_pose_plan', 'can_approve'):
+                        data[key] = False
+                    data['reason'] = '집기 작업이 선택되어 있습니다. 일반 조작은 실행하지 않습니다.'
             return data
 
     def close(self):
@@ -544,6 +577,9 @@ class ConsoleApplication:
         except Exception as problem:
             errors.append(dict(stage="dispatch_cleanup", error_type=type(problem).__name__))
         finally:
+            tasks = getattr(self, "tasks", None)
+            if tasks is not None:
+                attempt("grasp_owner_cleanup", tasks.close)
             attempt("view_cleanup", self.views.close)
             stopped = attempt("owned_process_cleanup", self.stop)
             if isinstance(stopped, dict) and stopped.get("cleanup_errors"):

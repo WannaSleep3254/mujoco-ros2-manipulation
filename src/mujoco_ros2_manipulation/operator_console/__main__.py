@@ -24,6 +24,24 @@ def local_grasp_viewer_url(value):
         raise argparse.ArgumentTypeError("ROS grasp viewer must be http://127.0.0.1:<port>/") from None
 
 
+def validate_workspace_options(args):
+    """Startup-only task registration; a browser cannot choose files or domains."""
+    selected = (args.ros_grasp_environment, args.ros_grasp_manifest_sha256, args.ros_grasp_domain)
+    if any(value is not None for value in selected):
+        if any(value is None for value in selected):
+            raise ValueError("집기 모델 경로·manifest SHA256·전용 ROS 도메인을 함께 지정하세요.")
+        if not 0 <= args.ros_grasp_domain <= 232 or args.ros_grasp_domain == args.domain:
+            raise ValueError("일반 조작과 다른 빈 집기 ROS 도메인(0..232)을 지정하세요.")
+        if args.no_render:
+            raise ValueError("통합 집기 작업은 같은 3D 화면을 사용하므로 --no-render와 함께 실행할 수 없습니다.")
+        if args.execution_environment is not None:
+            raise ValueError("첫 통합 집기는 기본 작업 환경과 명시한 전용 집기 모델을 사용합니다.")
+        if args.ros_grasp_viewer is not None:
+            raise ValueError("통합 집기와 별도 집기 화면 링크 중 하나를 명시하세요.")
+    if len(args.saved_recording) > 8:
+        raise ValueError("시작할 때 등록할 보존 기록은 최대 8개입니다.")
+
+
 def shutdown_console(server, app, ros_stopped, ros_thread, node, rclpy, previous):
     """Always release ROS resources, including when a recording cannot finish."""
     clean = True
@@ -56,6 +74,9 @@ def shutdown_console(server, app, ros_stopped, ros_thread, node, rclpy, previous
 
 
 def main():
+    # Console validators inspect manufacturer Git state; optional index refresh
+    # must not mutate .git metadata while the native owner pins file identities.
+    os.environ["GIT_OPTIONAL_LOCKS"] = "0"
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workcell", default="fr5_ur5e")
     parser.add_argument("--domain", type=int, default=int(os.environ.get("ROS_DOMAIN_ID", "89")))
@@ -68,6 +89,12 @@ def main():
     parser.add_argument("--image-clock-domain", choices=("unknown", "ros_simulation"), default="unknown", help="Declared acquisition clock; never inferred from the presence of /clock")
     parser.add_argument("--ros-grasp-viewer", type=local_grasp_viewer_url,
                         help="Explicit local ROS grasp viewer URL, shown as a separate-task link")
+    parser.add_argument("--ros-grasp-environment", type=Path,
+                        help="Explicit immutable native ROS grasp target for the shared workspace UI")
+    parser.add_argument("--ros-grasp-manifest-sha256", help="Expected SHA256 of the registered grasp.json")
+    parser.add_argument("--ros-grasp-domain", type=int, help="Unused fixed ROS domain distinct from the normal task")
+    parser.add_argument("--saved-recording", type=Path, action="append", default=[],
+                        help="Explicit local synchronized recording to copy into read-only workspace analysis (max 8)")
     args = parser.parse_args()
     if not 0 <= args.domain <= 232 or not 1024 <= args.port <= 65535:
         parser.error("ROS domain must be 0..232; port must be 1024..65535")
@@ -75,6 +102,10 @@ def main():
         parser.error("--image-clock-domain requires --image-topic")
     if args.no_render and args.view_scene_catalog is not None:
         parser.error("--view-scene-catalog requires scene display; remove --no-render")
+    try:
+        validate_workspace_options(args)
+    except ValueError as error:
+        parser.error(str(error))
     os.environ["ROS_DOMAIN_ID"] = os.environ["MANIPULATION_ROS_DOMAIN_ID"] = str(args.domain)
     from ..workcells.config import load_workcell
     from ..workcells.integrity import check_workcell
@@ -88,6 +119,13 @@ def main():
     if (execution_target is not None
             and execution_target.description().get("artifact_kind") == "grasp-execution-target-v1"):
         parser.error("이 집기 모델은 manipulation-grasp-ros-viewer로 실행하세요. 일반 조작 화면에서는 --ros-grasp-viewer로 연결합니다.")
+    from ..grasping.ros_target import load_ros_grasp_target
+    grasp_target = load_ros_grasp_target(cell, args.ros_grasp_environment, args.ros_grasp_manifest_sha256)
+    if grasp_target is not None:
+        from ..grasping.ros_runtime import check_grasp_runtime
+        check_grasp_runtime(cell.root)
+    from .synchronized_capture import load_saved_recordings
+    saved_recordings = load_saved_recordings(args.saved_recording)
     view_sources=()
     if args.view_scene_catalog is not None:
         from .environment_sources import load_scene_catalog
@@ -117,7 +155,28 @@ def main():
     state = ConsoleState(configuration)
     node = ConsoleBridge(state, cell, execution_target=execution_target, image_topic=args.image_topic, image_clock_domain=args.image_clock_domain)
     folder = cell.root/"runtime/operator"/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"-"+uuid.uuid4().hex[:8])
-    app = ConsoleApplication(cell, state, node, folder, render=not args.no_render,view_sources=view_sources, execution_target=execution_target)
+    grasp_application = None
+    app = None
+    try:
+        if grasp_target is not None:
+            from ..grasping.ros_demo_server import RosDemoApplication
+            grasp_application = RosDemoApplication(grasp_target, folder.with_name(folder.name+"-grasp"),
+                                                   domain=args.ros_grasp_domain)
+        app = ConsoleApplication(cell, state, node, folder, render=not args.no_render,view_sources=view_sources,
+                                 execution_target=execution_target, grasp_application=grasp_application)
+        for recording in saved_recordings:
+            app.sync_recordings.add_saved(recording)
+    except Exception:
+        try:
+            if app is not None:
+                app.close()
+            elif grasp_application is not None:
+                grasp_application.close()
+        finally:
+            server.server_close()
+            node.destroy_node()
+            rclpy.shutdown()
+        raise
     server.application, server.token = app, secrets.token_urlsafe(32)
     stopped = threading.Event()
     ros_stopped = threading.Event()

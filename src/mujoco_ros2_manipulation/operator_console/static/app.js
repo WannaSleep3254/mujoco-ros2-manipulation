@@ -1,6 +1,8 @@
 'use strict';
 const $=id=>document.getElementById(id);
-let sceneControls=null;
+let sceneControls=null,taskControls=null,taskCommandBusy=false;
+function graspSelected(data=state){return data?.task?.selected==='grasp';}
+function motionUnavailable(data=state){return graspSelected(data)||taskCommandBusy||Boolean(taskControls?.unconfirmed);}
 let config,token,state,targets={},arm=0,unit='deg',polling=false,latestRequest=null,detailsAt=0,demoCatalog=[],selectedDemo=null,replanning=false,readConnected=false,detailSerial=0;
 const requestCache=new Map(),requestLoads=new Map();
 const pendingCancels=new Map();
@@ -32,6 +34,12 @@ function observationProblem(data){
  return null;
 }
 function connectionPresentation(data){
+ if(graspSelected(data)){
+  const job=data.task.grasp?.job;
+  if(job?.finished&&job.owner_cleanup_clean!==true)return {status:'blocked',text:'집기 정리 결과 확인 필요'};
+  if(job?.finished)return {status:job.status==='failed'?'blocked':'ready',text:(({cancelled:'집기 취소 완료',succeeded:'집기 작업 완료',failed:'집기 작업 실패'})[job.status]||'집기 작업 종료')+' · 마지막 결과'};
+  return {status:job?'running':'ready',text:job?.cancel_requested?'집기 취소 · 정리 확인 중':job?'집기 작업 진행 중':'ROS 집기 작업 연결'};
+ }
  const problem=observationProblem(data);
  if(problem)return {status:'blocked',text:data.guard?.latched?guardPresentation(data.guard).text:data.server?.status==='blocked'?'실행 차단 · 재시작 필요':data.lifecycle?.error?'실행 오류':data.state_age_sec===null||data.state_age_sec>.5?'관절 상태 수신 중단':'시계 갱신 중단'};
  if(demoActive(data.demo?.current))return {status:'running',text:data.demo.current.status==='cancel_requested'?'시연 중단 · 정리 확인 중':'시연 진행 중'};
@@ -87,6 +95,7 @@ function cancellationPhase(record){
  return pendingCancels.get(record.request_id)?.phase||null;
 }
 async function cancelCurrentRequest(){
+ if(graspSelected()){await taskControls?.command('cancel');return;}
  const identifier=state?.active_request_id;if(!readConnected||!identifier||demoActive(state.demo?.current)||pendingCancels.has(identifier))return;
  const entry={phase:'submitting',session:state.server?.session_id||null};pendingCancels.set(identifier,entry);publishCancellation(identifier);refreshControls();requestProgress(state.history.find(item=>item.request_id===identifier));
  try{const result=await request('/api/cancel',{request_id:identifier});
@@ -99,10 +108,11 @@ async function cancelCurrentRequest(){
 function notice(text){$('notice-text').textContent=text;$('notice').hidden=false;}
 async function request(path,body){
  const read=body===undefined,controller=read?new AbortController():null;
- const options=read?{signal:controller.signal,cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json','X-Operator-Token':token},body:JSON.stringify(body)};
+ const selection=state?.task?.selection_id,selectionHeader=selection&&!path.startsWith('/api/task/')&&!/^\/api\/sync-recordings\/[^/]+\/control$/.test(path)?{'X-Workspace-Selection':selection}:{};
+ const options=read?{signal:controller.signal,cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json','X-Operator-Token':token,...selectionHeader},body:JSON.stringify(body)};
  const timer=read?setTimeout(()=>controller.abort(),READ_TIMEOUT_MS):null;
  try{const response=await fetch(path,options);const data=await response.json();
-  if(!response.ok)throw Error(data.error||`HTTP ${response.status}`);return data;
+  if(!response.ok){const error=Error(data.error||`HTTP ${response.status}`);error.httpStatus=response.status;throw error;}return data;
  }catch(error){if(controller?.signal.aborted){const timeout=Error('상태 조회가 지연되었습니다. 연결을 다시 확인하고 있습니다.');timeout.code='read_timeout';throw timeout;}throw error;}
  finally{if(timer!==null)clearTimeout(timer);}
 }
@@ -121,7 +131,7 @@ function goalValidationReason(){
  try{poseGoalPayload('0'.repeat(32));return null;}catch(error){return error.message;}
 }
 function validGoal(){return goalValidationReason()===null;}
-function canPlanGoal(data=state){return goalKind()==='pose'?data?.can_pose_plan:data?.can_plan;}
+function canPlanGoal(data=state){if(motionUnavailable(data))return false;return goalKind()==='pose'?data?.can_pose_plan:data?.can_plan;}
 function poseSignature(payload){return JSON.stringify({arm_id:payload.arm_id,tool_id:payload.tool_id,tool_sha256:payload.tool_sha256,frame_id:payload.frame_id,position_m:payload.position_m,quaternion_xyzw:payload.quaternion_xyzw});}
 function goalMatchesPayload(payload){
  if(payload?.arm_id){if(goalKind()!=='pose')return false;try{return poseSignature(payload)===poseSignature(poseGoalPayload(payload.request_id));}catch{return false;}}
@@ -199,6 +209,7 @@ function fields(){
 }
 function updateCurrent(){document.querySelectorAll('[data-current]').forEach(el=>{const v=state?.positions_rad?.[el.dataset.current];el.textContent=typeof v==='number'?displayed(v).toFixed(unit==='deg'?2:4):'—';});}
 function renderContext(){
+ if(graspSelected()){const source=state.task.grasp?.source,job=state.task.grasp?.job;$('display-context').textContent=(state.view?.mode==='model_preview'?'실행 전 모델':'Native 실제 관측')+' · '+(source?.label||'ROS 집기 모델');$('control-context').textContent=(source?.label||'ROS 집기')+' · ROS DOMAIN '+source?.domain;$('context-note').textContent=!readConnected?'상태 조회 중단 · 마지막 관측과 현재 실행을 구분합니다.':job?.finished?'종료한 집기 작업의 마지막 관측입니다. 새 실행의 현재 상태가 아닙니다.':job?.cancel_requested?'취소 전달·제어기 정지·프로세스 정리를 각각 확인합니다.':'고정 모델의 집기·운반·놓기를 이 작업실에서 실행합니다. 일반 관절·TCP 조작과 동시에 실행하지 않습니다.';return;}
  const view=state?.view,source=view?.source,mode=view?.mode,recorded=source?.kind==='recording',demo=demoActive(state?.demo?.current);
  const label=source?.label||view?.catalog?.find(item=>item.id===source?.id)?.label||config?.label||'표시 대상 확인 중';
  const kind=recorded?'기록 재생':mode==='model_preview'?'모델 미리보기':mode==='plan_preview'?(view.review_plan?'실행 전 계획':'저장 궤적'):demo?'실시간 시연':'실제 관절 상태';
@@ -211,19 +222,23 @@ function renderContext(){
 function validTargets(){return config&&Object.entries(config.joint_limits).every(([n,l])=>Number.isFinite(targets[n])&&targets[n]>=l.lower&&targets[n]<=l.upper);}
 function refreshControls(){
  if(!state)return;
+ const taskBusy=motionUnavailable();
  const owned=state.lifecycle.owned,phase=state.lifecycle.phase,transition=['starting','stopping'].includes(phase),demoBusy=demoActive(state.demo?.current);
- $('start').disabled=!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
- $('stop').disabled=!readConnected||demoBusy||transition||!(owned.simulation||owned.commands);
- $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition;
+ $('start').disabled=taskBusy||!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition||owned.simulation||owned.commands||Object.values(state.graph).some(v=>v>0)||performance.now()<2000;
+ $('stop').disabled=taskBusy||!readConnected||demoBusy||transition||!(owned.simulation||owned.commands);
+ $('attach').hidden=!(state.simulation_verified&&state.graph.status===0&&!owned.commands);$('attach').disabled=taskBusy||!readConnected||Boolean(state.view?.preview_active)||demoBusy||transition;
  $('execute').disabled=replanning||!readConnected||demoBusy||Boolean(observationProblem(state))||!canPlanGoal()||!validGoal()||!sceneControls;const cancelRecord=state.history.find(item=>item.request_id===state.active_request_id),cancelPhase=cancellationPhase(cancelRecord);document.querySelectorAll('[data-cancel]').forEach(el=>{el.disabled=!readConnected||demoBusy||!state.active_request_id||Boolean(cancelPhase);el.textContent=cancelPhase==='acknowledged'?'취소 수신 · 종료 확인 중':cancelPhase==='unconfirmed'?'취소 전달 결과 미확인':cancelPhase?'취소 요청 전달 중':'■ 양팔 동작 취소';});
- $('use-current').disabled=!readConnected||!state.positions_rad||state.state_age_sec>0.5;
+ $('use-current').disabled=taskBusy||!readConnected||!state.positions_rad||state.state_age_sec>0.5;
  $('planning-case').disabled=demoBusy||transition||owned.simulation||state.graph.clock>0;$('native-gui').disabled=$('planning-case').disabled;
  $('admission').textContent=demoBusy?'동작 시연 중입니다. 시연을 마치거나 중단한 뒤 목표를 전송하세요.':goalValidationReason()||(!sceneControls?'계획 검토에는 로컬 3D 표시가 필요합니다.':observationProblem(state)||(canPlanGoal()?'계획을 생성합니다. 경로를 확인하고 승인해야 로봇이 움직입니다.':(goalKind()==='pose'?state.pose_reason||state.reason:state.reason)||'계획 검토 명령 노드의 연결을 확인하세요.'));
  renderPoseMetadata();
  renderReview();
+ if(taskBusy){for(const id of ['execute','review-preview','review-approve','review-discard','review-replan','demo-run','demo-stop'])$(id).disabled=true;}
+ taskControls?.render();
 }
 function reviewMatchesTargets(review){const record=state?.history.find(item=>item.request_id===review?.plan_request_id),original=record?.pose_goal||record?.command;return goalMatchesPayload(original);}
 function renderReview(){
+ if(graspSelected()){ $('review-card').hidden=true;return;}
  const review=state?.pending_plan;$('review-card').hidden=!review;if(!review)return;
  const waiting=review.state==='awaiting_approval'&&review.remaining_sec>0,busy=replanning||Boolean(state.active_request_id)||demoActive(state.demo?.current),matches=reviewMatchesTargets(review);
  const preview=state.view?.review_plan===true&&state.view?.binding?.request_id===review.plan_request_id&&state.view?.mode==='plan_preview';
@@ -245,7 +260,7 @@ function renderReview(){
  $('review-admission').textContent=!waiting?'승인은 한 번만 사용할 수 있습니다.':observationProblem(state)||(!matches?'목표나 계획 방식을 바꿨습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.':!preview?'경로 미리보기를 열고 확인하세요.':!visible?'검토할 경로를 로컬 3D 화면에 표시하고 있습니다.':!state.can_approve?'현재 상태에서 실행을 승인할 수 없습니다. 연결과 감시 상태를 확인하세요.':'미리보기 재생은 로봇을 움직이지 않습니다. 실행하려면 승인·실행 버튼을 누르세요.');
 }
 async function replan(){
- if(replanning||!readConnected||!validGoal()||!sceneControls||state?.active_request_id||demoActive(state?.demo?.current))return;
+ if(motionUnavailable()||replanning||!readConnected||!validGoal()||!sceneControls||state?.active_request_id||demoActive(state?.demo?.current))return;
  replanning=true;refreshControls();
  const payload=goalPayload(crypto.randomUUID().replaceAll('-','')),poseRequest=Boolean(payload.arm_id);
  try{
@@ -283,7 +298,7 @@ function requestProgress(record){
  }).catch(()=>{});}
 }
 function history(records){
- const groups=groupRequests(records),signature=JSON.stringify({records,active:state?.active_request_id,demoBusy:demoActive(state?.demo?.current),local3d:Boolean(sceneControls),pending:state?.pending_plan?.state,
+ const groups=groupRequests(records),signature=JSON.stringify({records,task:state?.task?.selected,active:state?.active_request_id,demoBusy:demoActive(state?.demo?.current),local3d:Boolean(sceneControls),pending:state?.pending_plan?.state,
   summaries:groups.map(group=>{const record=group.plan||group.records[0];return summaryOf(record,requestCache.get(record.request_id)?.data);})});
  if(signature===historySignature)return;historySignature=signature;
  $('history-count').textContent=groups.length;$('history-empty').hidden=groups.length>0;
@@ -297,7 +312,7 @@ function history(records){
   badge(tag,record.status,planStatus||(!group.executions.length&&group.plan&&record.status==='succeeded'?'계획 생성':undefined));result.append(tag,textNode('small',group.executions.length?`계획 1건 · 실행 요청 ${group.executions.length}건`:group.plan?'실행하지 않은 계획':record.stage||'상태 확인 중'));row.append(result);
   row.append(textNode('td',value(group.executions[0]?.metrics?.received_to_first_motion_wall_sec)),textNode('td',value((group.executions[0]||record).metrics?.received_to_terminal_wall_sec)),textNode('td',value(Number.isFinite(summary.minimum?.distance_m)?summary.minimum.distance_m*1000:undefined,1,' mm')));
   const actions=document.createElement('td'),button=textNode('button','작업 상세');button.addEventListener('click',()=>detail(record.request_id));actions.append(button);
-  if(sceneControls&&record.status==='succeeded'&&record.trace_path&&record.mode!=='plan_only'){const preview=textNode('button','저장 궤적');preview.disabled=Boolean(state?.active_request_id)||demoActive(state?.demo?.current);preview.addEventListener('click',()=>sceneControls.previewRequest(record.request_id));actions.append(preview);}row.append(actions);body.append(row);
+  if(sceneControls&&record.status==='succeeded'&&record.trace_path&&record.mode!=='plan_only'){const preview=textNode('button','저장 궤적');preview.disabled=motionUnavailable()||Boolean(state?.active_request_id)||demoActive(state?.demo?.current);preview.addEventListener('click',()=>sceneControls.previewRequest(record.request_id));actions.append(preview);}row.append(actions);body.append(row);
  }
 }
 function groupRequests(records){
@@ -325,7 +340,7 @@ function renderDetail(group,id){
 }
 async function detail(id){const serial=++detailSerial,group=groupRequests(state?.history||[]).find(item=>item.records.some(record=>record.request_id===id));if(!group)return;renderDetail(group,id);try{await Promise.all([loadRequest(id,{force:true}),...(group.plan&&group.plan.request_id!==id?[loadRequest(group.plan.request_id,{force:true})]:[])]);if(serial===detailSerial)renderDetail(groupRequests(state?.history||[]).find(item=>item.id===group.id)||group,id);}catch(error){if(serial===detailSerial)$('detail-error').textContent='기록을 불러오지 못했습니다. '+error.message;}}
 function render(data){
- state=data;window.dispatchEvent?.(new CustomEvent('console-observation',{detail:data}));const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
+ data=taskControls?.observe(data)||data;state=data;window.dispatchEvent?.(new CustomEvent('console-observation',{detail:data}));const ready=data.can_submit,active=data.active_request_id,latched=data.guard?.latched;
  for(const [identifier,pending] of pendingCancels){const record=data.history.find(item=>item.request_id===identifier);if(record&&terminal.has(record.status)||pending.session&&data.server?.session_id&&pending.session!==data.server.session_id)pendingCancels.delete(identifier);}
  publishCancellation();
  const connection=connectionPresentation(data);badge($('connection'),connection.status,connection.text);
@@ -336,15 +351,18 @@ function render(data){
  if(data.lifecycle.error)notice(data.lifecycle.error);
  renderDemos(data.demo);updateLiveFrames(data);renderContext();
  updateCurrent();refreshControls();history(data.history);
- const record=data.history.find(r=>r.request_id===active)||data.history[0];requestProgress(record);
+ const record=data.history.find(r=>r.request_id===active)||data.history[0];if(!graspSelected(data))requestProgress(record);taskControls?.render();
+ $('domain').textContent='ROS DOMAIN '+(graspSelected(data)?data.task.grasp?.source?.domain:config.domain);$('cell-label').textContent=graspSelected(data)?data.task.grasp?.source?.label||'ROS 집기 작업':config.label;if($('cell-summary'))$('cell-summary').textContent=graspSelected(data)?'팔 12관절 · 손가락 2관절 · 자유 블록':'하나의 시뮬레이션 환경 · 12관절 · 양팔 제어';
+ if(graspSelected(data)){const job=data.task.grasp?.job;$('connection-detail').textContent=JSON.stringify({selected_task:'grasp',selection_id:data.task.selection_id,source:data.task.grasp?.source,job},null,2);$('sim-time').textContent=value(job?.simulation_sec);$('state-age').textContent=value(data.task.observation_age_sec*1000,0,' ms');if(data.task.observation_age_sec==null)$('state-age').textContent='—';$('guard-state').textContent=job?.native_guard?.latched?'집기 정지 감시 잠김':job?.native_guard?.phase==='ready'?'집기 정지 감시 중':'집기 감시 관측 대기';}
 }
 function disconnected(){
+ taskControls?.lost();
  window.dispatchEvent?.(new CustomEvent('console-observation-lost'));readConnected=false;badge($('connection'),'blocked','상태 조회 중단');$('execute').disabled=$('review-preview').disabled=$('review-approve').disabled=$('review-discard').disabled=$('review-replan').disabled=true;
  for(const id of ['start','stop','attach','use-current','demo-run','demo-stop'])$(id).disabled=true;
  document.querySelectorAll('[data-cancel]').forEach(el=>el.disabled=true);
  $('admission').textContent='상태 조회가 끊겼습니다. 명령을 자동으로 재전송하지 않습니다.';
  $('demo-admission').textContent='상태 연결을 다시 확인하고 있습니다. 시연을 자동으로 다시 실행하지 않습니다.';
- renderContext();
+ renderContext();taskControls?.render();
 }
 async function readState(){
  const serial=++stateReadSerial;
@@ -357,12 +375,12 @@ async function readState(){
 async function poll(){
  // A periodic tick must not supersede the explicit observation that owns a
  // replan. Other explicit observations still retain their serial safety gates.
- if(polling||replanReadPending)return;polling=true;
+ if(polling||replanReadPending||taskCommandBusy)return;polling=true;
  try{await readState();window.operatorReady=true;}
  catch(error){}
  finally{polling=false;}
 }
-async function action(path,body){try{const result=await request(path,body);await poll();return result;}catch(error){notice(error.message);return null;}}
+async function action(path,body){if(motionUnavailable()){notice('선택한 작업의 실행 상태를 확인하세요. 일반 관절·TCP 명령은 집기 작업과 동시에 보내지 않습니다.');return null;}try{const result=await request(path,body);await poll();return result;}catch(error){notice(error.message);return null;}}
 function demoActive(job){return Boolean(job&&['starting','running','cancel_requested'].includes(job.status));}
 function demoOutcomeStatus(job){return job?.status==='cancelled'&&job.cleanup_clean!==true?'unknown':job?.status;}
 function demoDefinition(id){return demoCatalog.find(item=>item.id===id);}
@@ -445,6 +463,14 @@ function updateLiveFrames(data){
  if(frame.error){$('frame-empty').dataset.renderError='true';$('demo-frame-empty').dataset.renderError='true';$('frame-empty').replaceChildren(textNode('p',frame.error));$('demo-frame-empty').replaceChildren(textNode('p',frame.error));}else{if($('frame-empty').dataset.renderError){delete $('frame-empty').dataset.renderError;$('frame-empty').replaceChildren(textNode('div','⬡','scene-symbol'),textNode('h2','시뮬레이션을 시작하세요'),textNode('p','시뮬레이션을 시작하면 현재 자세가 표시됩니다.'));}if($('demo-frame-empty').dataset.renderError){delete $('demo-frame-empty').dataset.renderError;$('demo-frame-empty').replaceChildren(textNode('div','▶','scene-symbol'),textNode('h3','시연을 선택하고 실행하세요'),textNode('p','현재 시연의 로봇과 작업 환경이 표시됩니다.'));}}
 }
 
+function beginTaskCommand(kind){
+ taskCommandBusy=true;++stateReadSerial;
+ if(kind==='select'||kind==='start')sceneControls?.invalidateTask('작업 전환 · 새 관측 대기');
+ else sceneControls?.viewer?.markStale('취소 전달 · 정지 상태 확인 중');
+ refreshControls();
+}
+function endTaskCommand(){taskCommandBusy=false;refreshControls();}
+
 async function boot(){
  const bootstrap=await request('/api/bootstrap');config=bootstrap.config;token=bootstrap.token;targets={...config.home_rad};demoCatalog=(bootstrap.demos||[]).filter(item=>['contact_comparison','timing_comparison'].includes(item.id));mountDemos();
  $('cell-label').textContent=config.label;$('domain').textContent='ROS DOMAIN '+config.domain;
@@ -455,6 +481,8 @@ async function boot(){
  }
  fields();
  if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('review',{focusTask:true}),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
+ const {WorkspaceTaskControls}=await import('./task_controls.mjs');taskControls=new WorkspaceTaskControls({document,request,refresh:readState,notify:notice,showOperate:()=>show('operate',{focusTask:true}),cameraReady:()=>Boolean(sceneControls?.cameraReady()),beforeCommand:beginTaskCommand,afterCommand:endTaskCommand});
+ window.addEventListener('pagehide',()=>taskControls?.destroy());
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));
  window.addEventListener('workspace-record',()=>{const record=state?.history.find(row=>row.request_id===state.active_request_id)||state?.history[0];if(record){show('history');detail(record.request_id);}});
  $('dismiss').addEventListener('click',()=>$('notice').hidden=true);
@@ -470,7 +498,7 @@ async function boot(){
  $('demo-run').addEventListener('click',async()=>{if(!readConnected||!selectedDemo||!state?.demo?.can_start)return;$('demo-run').disabled=true;await action('/api/demos/start',{scenario:selectedDemo,native_gui:false});});
  $('demo-stop').addEventListener('click',async()=>{const job=state?.demo?.current;if(!readConnected||!job||!demoActive(job))return;$('demo-stop').disabled=true;await action('/api/demos/stop',{job_id:job.job_id});});
  $('start').addEventListener('click',()=>action('/api/start',{native_gui:$('native-gui').checked,planning_case:$('planning-case').value}));
- $('attach').addEventListener('click',()=>action('/api/attach',{}));$('stop').addEventListener('click',()=>action('/api/stop',{}));
+ $('attach').addEventListener('click',()=>action('/api/attach',{}));$('stop').addEventListener('click',()=>graspSelected()?taskControls?.command('cancel'):action('/api/stop',{}));
  $('execute').addEventListener('click',async()=>{
   if(!readConnected||replanning||!canPlanGoal()||!validGoal())return;
   $('execute').disabled=true;

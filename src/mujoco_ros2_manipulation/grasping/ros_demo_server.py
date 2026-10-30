@@ -143,6 +143,7 @@ class RosJob:
     cancel_requested: bool = False
     cancel_at: object = None
     cancel_delivery: str = 'not_requested'
+    cancel_signal_sent: bool = False
     escalation: int = 0
     timed_out: bool = False
     update_digest: object = None
@@ -270,20 +271,22 @@ class RosDemoApplication:
                     # A drainer/setup failure after Popen must not abandon a
                     # live worker or declare cleanup before observing its exit.
                     self._owner_error(job, 'worker setup', error)
-                    self._begin_cancel(job, reason='ROS 작업의 출력 준비에 실패해 소유 프로세스를 정리하고 있습니다.')
+                    self._begin_cancel(job, reason='ROS 작업의 출력 준비에 실패해 소유 프로세스를 정리하고 있습니다.',
+                                       force_error_delivery=True)
                 raise RuntimeError('ROS 작업을 준비하지 못했습니다. 이 요청은 자동 재실행하지 않습니다.') from error
             self._checkpoint(job)
             return self.snapshot()
 
     def _signal_worker(self, job, sig):
         if job.process is None or job.process.poll() is not None:
-            return
+            return False
         try:
             # SIGINT targets the worker's cancellation handler. Its ROS launch
             # is a separate owned session and must be allowed to stop in order.
             os.kill(job.process.pid, sig)
+            return True
         except ProcessLookupError:
-            pass
+            return False
 
     def _bind_native_group(self, job, group):
         self._bind_owned_group(job, group, 'native')
@@ -348,18 +351,44 @@ class RosDemoApplication:
         except Exception as error:
             self._owner_error(job, 'owner receipt', error)
 
-    def _begin_cancel(self, job, *, reason=None, timeout=False):
+    def _begin_cancel(self, job, *, reason=None, timeout=False, force_error_delivery=False):
         job.timed_out = job.timed_out or timeout
+        first_request = not job.cancel_requested
         if not job.cancel_requested:
             job.cancel_requested, job.cancel_at = True, self.clock()
-            job.cancel_delivery, job.status = 'worker_signal_sent', 'cancelling'
-            if reason is not None and job.error is None:
-                job.error = dict(type='OwnerStop', message=reason)
-            try:
-                self._signal_worker(job, signal.SIGINT)
-            except Exception as error:
-                self._owner_error(job, 'worker cancel signal', error)
+            if job.cancel_delivery != 'worker_observed':
+                job.cancel_delivery = 'waiting_for_worker'
+            job.status = 'cancelling'
+        if reason is not None and job.error is None:
+            job.error = dict(type='OwnerStop', message=reason)
+        # Fatal owner failures must abort the exact owned worker immediately,
+        # including when a user cancellation was already queued. Keep its
+        # original cancellation deadline and never accept invalid IPC as ready.
+        self._deliver_cancel(job, force_error_delivery=force_error_delivery)
+        if first_request or force_error_delivery:
             self._checkpoint(job)
+
+    def _deliver_cancel(self, job, *, force_error_delivery=False):
+        # Popen can return while bash/Python imports still use SIGINT's default
+        # action. The first accepted IPC record is emitted only after main()
+        # installs the cooperative cancellation handler. Reserve the user's
+        # request immediately, then deliver once that exact worker is ready.
+        # Invalid IPC is never a readiness proof. Owner/IPC/output failures
+        # bypass this graceful-user-cancel wait and immediately abort the owned
+        # Popen; an early exit without a result remains an unclean failure.
+        # The original 50/57-second escalation is independent of readiness.
+        if (not job.cancel_requested or job.cancel_signal_sent
+                or job.cancel_delivery == 'worker_observed' or job.escalation != 0):
+            return
+        if job.update is None and not force_error_delivery:
+            return
+        try:
+            if self._signal_worker(job, signal.SIGINT):
+                job.cancel_signal_sent = True
+                job.cancel_delivery = 'worker_signal_sent'
+                self._checkpoint(job)
+        except Exception as error:
+            self._owner_error(job, 'worker cancel signal', error)
 
     @staticmethod
     def _checked_task(task):
@@ -466,7 +495,8 @@ class RosDemoApplication:
                 job.status = 'running'
         except Exception as error:
             job.display_error = str(error)[:512]
-            self._begin_cancel(job, reason='ROS 관측의 식별·시계 검사를 통과하지 못했습니다.')
+            self._begin_cancel(job, reason='ROS 관측의 식별·시계 검사를 통과하지 못했습니다.',
+                               force_error_delivery=True)
 
     def _finish(self, job):
         if job.finished or job.process is None or job.process.poll() is None:
@@ -548,6 +578,7 @@ class RosDemoApplication:
             return
         try:
             self._read_update(job)
+            self._deliver_cancel(job)
             if self.clock() - job.members_checked >= .5:
                 for kind in ('native', 'validation'):
                     group = getattr(job, kind + '_group')
@@ -561,19 +592,22 @@ class RosDemoApplication:
                 if job.finished:
                     return
             if job.output is not None and (job.output.overflow or job.output.error):
-                self._begin_cancel(job, reason='ROS 작업 로그의 보존 한도를 초과했습니다.')
+                self._begin_cancel(job, reason='ROS 작업 로그의 보존 한도를 초과했습니다.',
+                                   force_error_delivery=True)
             if _directory_bytes(job.directory) > MAX_JOB_BYTES:
-                self._begin_cancel(job, reason='ROS 작업 자료의 보존 한도를 초과했습니다.')
+                self._begin_cancel(job, reason='ROS 작업 자료의 보존 한도를 초과했습니다.',
+                                   force_error_delivery=True)
         except Exception as error:
             # Quarantine malformed IPC/retention input, preserve the last
             # accepted frame, and keep the independent stop driver alive.
             job.display_error = job.display_error or str(error)[:512]
             self._owner_error(job, 'owned task observation', error)
-            self._begin_cancel(job)
+            self._begin_cancel(job, force_error_delivery=True)
         finally:
             if not job.finished:
                 if self.clock() - job.started >= self.timeout_sec:
-                    self._begin_cancel(job, reason='ROS 작업의 제한시간을 초과했습니다.', timeout=True)
+                    self._begin_cancel(job, reason='ROS 작업의 제한시간을 초과했습니다.', timeout=True,
+                                       force_error_delivery=True)
                 self._advance_cancel(job)
 
     def _watch(self):
@@ -584,7 +618,7 @@ class RosDemoApplication:
                         self._update(self.current)
                     except Exception as error:
                         self._owner_error(self.current, 'owner monitor', error)
-                        self._begin_cancel(self.current)
+                        self._begin_cancel(self.current, force_error_delivery=True)
                         self._advance_cancel(self.current)
 
     @staticmethod

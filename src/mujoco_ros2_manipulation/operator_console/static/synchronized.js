@@ -107,7 +107,7 @@ export class SynchronizedPlayer {
     try{
       const data=await this.readState();if(this.closed||epoch!==this.revision||this.busy)return;
       this.token=data.token;this.acceptView(data.view);this.enable();
-      this.node('sync-back').hidden=data.console_available===false;
+      const back=this.node('sync-back');if(back)back.hidden=data.console_available===false;
       if(!this.hidden())await this.applySelection(data.view,epoch);
     }catch(error){if(!this.closed&&epoch===this.revision){this.clearDisplays('기록 표시를 확인할 수 없습니다.');this.node('sync-status').dataset.state='error';this.error(error.message||'기록 연결을 확인하세요.');}}
     finally{this.inflight=false;if(!this.closed&&!this.busy){const immediate=this.pending&&!this.hidden();this.pending=false;this.schedule(immediate?0:undefined);}}
@@ -188,4 +188,6 @@ function bootstrap(){
   document.addEventListener('visibilitychange',()=>player.visibility());window.addEventListener('pagehide',()=>player.destroy());
   void player.update();
 }
-bootstrap();
+// The player is also embedded in the workspace analysis panel. Importing it
+// there must never bootstrap a second player from the page URL.
+if(typeof document!=='undefined'&&typeof location!=='undefined'&&location.pathname==='/synchronized')bootstrap();

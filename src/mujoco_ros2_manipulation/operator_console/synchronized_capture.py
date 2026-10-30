@@ -22,6 +22,33 @@ MAX_LIBRARY_BYTES = 512 * 1024 * 1024
 MAX_POSES, MAX_IMAGES = 2400, 600
 
 
+def _saved_size(recording):
+    if type(recording) is not SyncRecording:
+        raise ValueError("시작 설정에서 검증한 동기 기록만 등록하세요.")
+    return (len(_canonical(recording.document)) + sum(map(len, recording.assets.values()))
+            + sum(map(len, recording.images.values())))
+
+
+def load_saved_recordings(paths):
+    """Load a bounded startup registry in sequence before creating ROS entities.
+
+    Stop at the first invalid or over-budget bundle. Never eagerly retain eight
+    maximum-size loader results before checking the tighter console budgets.
+    The paths are explicit trusted CLI inputs, not HTTP request fields.
+    """
+    if type(paths) not in (list, tuple) or len(paths) > MAX_RECORDINGS:
+        raise ValueError("시작 설정의 동기 기록은 최대 8개까지 지정하세요.")
+    loaded, total = [], 0
+    for path in paths:
+        value = SyncRecording.load(path)
+        size = _saved_size(value)
+        if size > MAX_CAPTURE_BYTES or total + size > MAX_LIBRARY_BYTES:
+            raise ValueError("시작 설정 동기 기록의 보존 용량 상한을 초과했습니다.")
+        loaded.append(value)
+        total += size
+    return tuple(loaded)
+
+
 class CaptureLibrary:
     def __init__(self, app, *, clock=time.monotonic):
         self.app, self.clock = app, clock
@@ -35,9 +62,44 @@ class CaptureLibrary:
         self.bytes = 0
         self.retained_count = 0
 
+    def add_saved(self, recording):
+        """Register one explicitly loaded startup record, without a file API.
+
+        A separate immutable copy keeps caller-owned maps from changing a
+        registered source. Saved acquisition identities and times are retained;
+        they never become the current sensor or command execution session.
+        """
+        if _saved_size(recording) > MAX_CAPTURE_BYTES:
+            raise ValueError("등록할 기록의 보존 용량 상한을 초과했습니다.")
+        value = SyncRecording(recording.document, dict(recording.assets), dict(recording.images))
+        size = _saved_size(value)
+        if size > MAX_CAPTURE_BYTES:
+            raise ValueError("등록할 기록의 보존 용량 상한을 초과했습니다.")
+        identifier = value.sha256[:32]
+        with self.lock:
+            if self.closed or self.thread is not None or self.current["status"] != "idle":
+                raise ValueError("동기 기록은 수집을 시작하기 전 시작 설정에서만 등록하세요.")
+            if identifier in self.records:
+                if self.records[identifier].sha256 != value.sha256:
+                    raise ValueError("동기 기록 식별자가 기존 기록과 다릅니다.")
+                return identifier
+            if self.retained_count >= MAX_RECORDINGS or self.bytes + size > MAX_LIBRARY_BYTES:
+                raise ValueError("이 콘솔의 기록 보존 상한에 도달했습니다.")
+            self.records[identifier] = value
+            self.hosts[identifier] = SynchronizedSceneHost(value)
+            self.bytes += size
+            self.retained_count += 1
+            return identifier
+
     def _context(self, *, collecting=False):
         app = self.app
         with app.lock, app.state.lock:
+            guard = getattr(app, "require_motion_task", None)
+            if callable(guard):
+                try:
+                    guard()
+                except RuntimeError as error:
+                    raise ValueError(str(error)) from error
             if (app.closing.is_set() or app.phase != "running" or app.demos.busy
                     or app.display_mode != "web3d" or app.views.mode != "live"
                     or not app.state.identity or app.state.clock_backwards
