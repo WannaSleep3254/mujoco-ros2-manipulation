@@ -356,3 +356,15 @@ test('normal mutation headers retain the selection epoch captured at request con
  const pending=h.api.request('/api/plan',{request_id:PLAN});h.set(state({task:{selected:'motion',selection_id:'e'.repeat(32)}}));
  assert.equal(h.calls[0].options.headers['X-Workspace-Selection'],'d'.repeat(32));resolve({ok:true,json:()=>Promise.resolve({})});await pending;
 });
+
+
+test('native connection badge prioritizes finished results over historical cancellation flags',()=>{
+ const h=harness(()=>reply({}));
+ const snapshot=job=>state({task:{selected:'grasp',grasp:{job}}});
+ for(const [status,label,tone] of [['cancelled','집기 취소 완료','ready'],['succeeded','집기 작업 완료','ready'],['failed','집기 작업 실패','blocked']]){
+  const result=h.api.connectionPresentation(snapshot({status,finished:true,owner_cleanup_clean:true,cancel_requested:true}));
+  assert.equal(result.status,tone);assert.equal(result.text,label+' · 마지막 결과');assert.doesNotMatch(result.text,/정리 확인 중/);
+ }
+ const active=h.api.connectionPresentation(snapshot({status:'cancelling',finished:false,cancel_requested:true}));assert.equal(active.status,'running');assert.equal(active.text,'집기 취소 · 정리 확인 중');
+ const unclean=h.api.connectionPresentation(snapshot({status:'cancelled',finished:true,owner_cleanup_clean:false,cancel_requested:true}));assert.equal(unclean.status,'blocked');assert.equal(unclean.text,'집기 정리 결과 확인 필요');
+});

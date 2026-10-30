@@ -34,7 +34,12 @@ function observationProblem(data){
  return null;
 }
 function connectionPresentation(data){
- if(graspSelected(data)){const job=data.task.grasp?.job;if(job?.finished&&job.owner_cleanup_clean!==true)return {status:'blocked',text:'집기 정리 결과 확인 필요'};return {status:job?.status==='failed'?'blocked':job&&!job.finished?'running':'ready',text:job?.cancel_requested?'집기 취소 · 정리 확인 중':job&&!job.finished?'집기 작업 진행 중':'ROS 집기 작업 연결'};}
+ if(graspSelected(data)){
+  const job=data.task.grasp?.job;
+  if(job?.finished&&job.owner_cleanup_clean!==true)return {status:'blocked',text:'집기 정리 결과 확인 필요'};
+  if(job?.finished)return {status:job.status==='failed'?'blocked':'ready',text:(({cancelled:'집기 취소 완료',succeeded:'집기 작업 완료',failed:'집기 작업 실패'})[job.status]||'집기 작업 종료')+' · 마지막 결과'};
+  return {status:job?'running':'ready',text:job?.cancel_requested?'집기 취소 · 정리 확인 중':job?'집기 작업 진행 중':'ROS 집기 작업 연결'};
+ }
  const problem=observationProblem(data);
  if(problem)return {status:'blocked',text:data.guard?.latched?guardPresentation(data.guard).text:data.server?.status==='blocked'?'실행 차단 · 재시작 필요':data.lifecycle?.error?'실행 오류':data.state_age_sec===null||data.state_age_sec>.5?'관절 상태 수신 중단':'시계 갱신 중단'};
  if(demoActive(data.demo?.current))return {status:'running',text:data.demo.current.status==='cancel_requested'?'시연 중단 · 정리 확인 중':'시연 진행 중'};
