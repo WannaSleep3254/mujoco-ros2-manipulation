@@ -407,5 +407,238 @@
     ],
     "unclean_missing_result_can_be_reported_success": false,
     "actual_fatal_fault_ros_injection_performed": false
+  },
+  "synchronized_capture_readiness_followup": {
+    "source_commit": "24b11b5e76705dafe554b87c4ba325d44a030d01",
+    "code_url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/24b11b5e76705dafe554b87c4ba325d44a030d01",
+    "scope": "Verifier-only readiness repair and its local checks. Existing integration implementation, three-case ROS receipts and all original viewer evidence remain separate historical baselines.",
+    "original_ci_failure": {
+      "run_number": 157,
+      "baseline_main_short_commit": "51040d53",
+      "status": "failed",
+      "retained_receipt_sha256": "65becbdc6e6bf7d463df5101496c12462419308718b68443d98803cff440c279",
+      "rgb8_to_http_jpeg": "passed",
+      "refused_path": "/api/sync-recordings/start",
+      "http_status": 400,
+      "server_reason": "같은 명령 실행의 실시간 3D 자세가 필요합니다.",
+      "console_exit_code": 0,
+      "cleanup_clean": true,
+      "exact_failed_subcondition_known": false,
+      "missing_original_telemetry": "No original admission snapshot distinguishes missing motion session, mismatched motion binding, or a demonstration job binding."
+    },
+    "diagnosis": {
+      "prior_verifier_wait": "pose_ready alone",
+      "source_supported_race": "ConsoleViews updates its live binding independently of the motion-server handshake; an already-ready pose can still name an absent or previous motion owner.",
+      "original_exact_interleaving_proven": false
+    },
+    "fix": {
+      "files_changed": 2,
+      "product_admission_changed": false,
+      "readiness": "Read-only polling requires running lifecycle, exact current motion session in a ready live binding without a demonstration job, and authoritative capture.can_start.",
+      "start": "One start POST while the diagnostic producer continues publishing; a later refusal propagates without retry.",
+      "atomic_readiness_claim": false,
+      "final_start_revalidates_product_admission": true,
+      "start_mutation_retries": 0,
+      "identity_checks_relaxed": false,
+      "freshness_thresholds_relaxed": false
+    },
+    "tests": {
+      "targeted": {
+        "total": 20,
+        "passed": 20,
+        "status": "passed"
+      },
+      "unit": {
+        "total": 1407,
+        "passed": 1406,
+        "skipped": 1,
+        "elapsed_wall_sec": 69.732,
+        "status": "passed"
+      },
+      "package": {
+        "source_distribution": "passed",
+        "wheel": "passed"
+      },
+      "coverage": [
+        "old_ready_binding_with_absent_or_other_motion_owner",
+        "loading_live_view",
+        "authoritative_capture_unavailable",
+        "readiness_timeout_without_start",
+        "one_refused_start_propagates_without_retry",
+        "bounded_readiness_diagnostics"
+      ]
+    },
+    "actual_ros_diagnostic": {
+      "status": "passed",
+      "receipt_sha256": "5ae1df8bc59efd2992c520256f8d332ac4b264c3344b95b22f4c28bd68ff4493",
+      "readiness_readonly_polls": 89,
+      "start_requests": 1,
+      "current_motion_and_binding_match": true,
+      "capture_can_start_observed": true,
+      "recording_sha256": "31048c7b20d401ad882bd8a415231d0bf27b2b5e4ab983abf40ac7c09a2ff951",
+      "pose_count": 41,
+      "diagnostic_jpeg_count": 17,
+      "preserved_missing_image_gaps": 1,
+      "checks": [
+        "actual_ros_rgb8_to_http_jpeg",
+        "synchronized_capture_started",
+        "invalid_encoding_rejected",
+        "stale_without_publisher_loss",
+        "request_image_joint_clock_observations",
+        "synchronized_capture_and_readonly_replay",
+        "publisher_reconnected_without_command_replay"
+      ],
+      "readonly_seek_and_frame_step": "passed",
+      "image_hash_and_recording_hash": "passed",
+      "no_command_replay": true,
+      "reconnect_without_automatic_command_replay": true,
+      "console_exit_code": 0,
+      "cleanup_clean": true
+    },
+    "interpretation_limits": [
+      "Local validation does not claim post-fix remote CI, merge or Pages publication outcomes.",
+      "The original combined HTTP refusal is retained; the precise failed original disjunct is unknown.",
+      "Read-only readiness snapshots are sequential observations, not an atomic promise that start cannot later be refused.",
+      "This newly acquired 41-pose/17-image synthetic ROS diagnostic record is distinct from the existing imported 41-pose/18-image replay fixture.",
+      "No native-grasp RGB acquisition, hardware camera synchronization, native integration-step alignment, browser rendering or latency/FPS claim is made."
+    ]
+  },
+  "demo_cancel_readiness_followup": {
+    "source_commit": "46093a432de48bcb76ad01bb72937ad9104c5c40",
+    "code_url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/46093a432de48bcb76ad01bb72937ad9104c5c40",
+    "scope": "Verifier-only prerequisite for prepared active-approach comparison cancellation; product initialization-time cancellation lifecycle remains unresolved.",
+    "original_ci_failure": {
+      "run_number": 159,
+      "status": "failed",
+      "retained_receipt_sha256": "37709562f3b47a91988afb4967fe01f842803cc4df62a7275c70e5b69bb06f36",
+      "contact_and_timing_comparisons": "passed before the cancellation case",
+      "nested_status": "interrupted",
+      "nested_error_type": "DemoCancelled",
+      "nested_receipt_sha256": "670c00eff0a9c0d13cdf3ec2cc9fc2d5b893e13b1beeba3a3d4e8682a1de14e5",
+      "nested_shutdown_clean": false,
+      "nested_failed_child": "right-controller spawner",
+      "nested_failed_child_exit_code": -2,
+      "nested_process_group_gone": true,
+      "nested_launch_return_code": 0,
+      "strict_failure_preserved": true,
+      "observed_sequence": "Controller activation and Action goal acceptance preceded SIGINT while the right-controller startup helper was still alive; that helper exited -2."
+    },
+    "retained_log_gate_check": {
+      "receipt_sha256": "1d81fcf0bf116e45e49d0fd2e5905ff92f0ae1f18e454dbe5e56ca7feeaa8bff",
+      "original_log_sha256": "81edc690c6197006e773584f458746d377e4bdb10592074eb0bf1d426138bd2a",
+      "pre_signal_log_sha256": "e6549893a1b9073f60f0c7d00e48eb1262cd3f00afd7424cb88d70684c3d3fda",
+      "pre_signal_ready": false,
+      "pre_signal_reason": "waiting_for_spawner_clean_exit",
+      "complete_original_ready": false,
+      "complete_original_reason": "child_process_failure"
+    },
+    "verification_change": {
+      "files_changed": 2,
+      "prerequisite": "Exact owned run/report/log, ROS domain, start time and live process instance; three unique fixed-role spawners with start PID, matching controller activation and same-PID ordered clean exit.",
+      "before_stop": "After reading bounded report/log evidence, observe the same running, fresh, unlatched contact approach with both arm controllers active again.",
+      "latched_cancellation_branch_changed": false,
+      "product_stop_or_cancel_changed": false,
+      "negative_exit_classification_changed": false,
+      "unclean_shutdown_accepted": false,
+      "atomic_observation_claim": false,
+      "arbitrary_initialization_time_cancel_fixed": false
+    },
+    "tests": {
+      "targeted": {
+        "total": 40,
+        "passed": 40,
+        "status": "passed"
+      },
+      "unit": {
+        "total": 1412,
+        "passed": 1411,
+        "skipped": 1,
+        "elapsed_wall_sec": 68.594,
+        "status": "passed"
+      },
+      "package": {
+        "source_distribution": "passed",
+        "wheel": "passed"
+      },
+      "coverage": [
+        "original_activation_and_action_acceptance_without_helper_exit_rejected",
+        "fixed_role_mapping_and_unique_start_pid",
+        "missing_duplicate_restarted_swapped_or_wrong_pid_helper_rejected",
+        "event_order_signalling_and_nonzero_exit_rejected",
+        "owned_run_domain_time_log_and_process_identity",
+        "fresh_unlatched_active_approach_still_required",
+        "group_gone_does_not_normalize_unclean_child_exit"
+      ]
+    },
+    "actual_ros_prepared_active_cancel": {
+      "status": "passed",
+      "receipt_sha256": "92f5c16f0f33088bf3b7c541e7f785421ffe3f401e507873f1b4791924c45a8e",
+      "motion_checks_passed": true,
+      "shutdown_clean": true,
+      "jobs": [
+        {
+          "scenario": "contact_comparison",
+          "status": "succeeded",
+          "cleanup_clean": true
+        },
+        {
+          "scenario": "timing_comparison",
+          "status": "succeeded",
+          "cleanup_clean": true
+        },
+        {
+          "scenario": "contact_comparison",
+          "status": "cancelled",
+          "cleanup_clean": true
+        }
+      ],
+      "startup_readiness": {
+        "ready": true,
+        "helpers": [
+          {
+            "role": "joint_state_broadcaster",
+            "start_activation_clean_exit_ordered": true
+          },
+          {
+            "role": "left_controller",
+            "start_activation_clean_exit_ordered": true
+          },
+          {
+            "role": "right_controller",
+            "start_activation_clean_exit_ordered": true
+          }
+        ],
+        "observed_log_sha256": "308624a98401a14f3f094c3ec4a1ca6a60e9c329fc81585dd8974ac4c840231c",
+        "observed_report_sha256": "403a137cd18fa1ba992f2e4f602de7f26f41850cc41199a8fb6786cc6fa3c440"
+      },
+      "cancellation_observation": {
+        "stage": "approach_fixed_obstacle",
+        "after_latch": false,
+        "simulation_sec": 0.45,
+        "guard_latched": false,
+        "guard_phase": "ready",
+        "arm_controllers_active": true,
+        "displacement_verified": false
+      },
+      "nested_receipt_sha256": "7951bcf90f587228ba7679cdfb477aac615a125386c370777690de3f33498e7c",
+      "nested_status": "interrupted",
+      "nested_error_type": "DemoCancelled",
+      "nested_shutdown_clean": true,
+      "nested_shutdown_failures": [],
+      "nested_process_group_gone": true,
+      "nested_launch_return_code": 0,
+      "contact_scenario_completed": false
+    },
+    "remaining_work": {
+      "arbitrary_initialization_time_comparison_cancel": "Unresolved; design and verify cooperative lifecycle handling without accepting nonzero startup-helper exits as clean.",
+      "worklist_area": "W01 cancellation cleanup diagnosis"
+    },
+    "interpretation_limits": [
+      "This clarifies and prepares one active-approach cancellation condition; it does not prove arbitrary initialization-time cancellation safe or repair that product lifecycle.",
+      "Active controllers, ready guard and approach stage are not a measurement of physical displacement.",
+      "The new local run used the non-rendered verifier; it establishes no browser rendering result.",
+      "The latched cancellation branch is unchanged and was not separately exercised by this new non-latched run.",
+      "Local checks do not claim post-fix remote CI, merge or Pages publication outcomes."
+    ]
   }
 }
