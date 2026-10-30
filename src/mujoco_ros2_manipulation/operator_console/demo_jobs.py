@@ -56,6 +56,12 @@ class DemoJobs:
 
     def _reason(self):
         app = self.app
+        guard = getattr(app, "require_motion_task", None)
+        if callable(guard):
+            try:
+                guard()
+            except (ValueError, RuntimeError) as error:
+                return str(error)
         if getattr(app, "execution_target", None) is not None:
             return "선택한 설치 환경에서는 기존 고정 환경 시연을 실행할 수 없습니다."
         if app.views.preview:
@@ -290,6 +296,9 @@ class DemoJobs:
     def request_stop(self, identifier):
         app = self.app
         with app.lock:
+            guard = getattr(app, "require_motion_task", None)
+            if callable(guard):
+                guard()
             if not self.current or identifier != self.current["job_id"] or self.process is None:
                 raise RuntimeError("현재 진행 중인 시연만 종료할 수 있습니다.")
             if self.cancel_requested:

@@ -96,9 +96,45 @@ function currentCleanup(state,connected){
 }
 
 export function workspaceEvidence(state,{connected=true,cancellation=null}={}){
+ if(state?.task?.selected==='grasp')return graspEvidence(state,{connected});
  const record=selectedRequest(state),operation=operationFor(record);
  const prefix=(connected?'':'마지막 수신 · ')+(record?requestName(record)+' · ':state?.active_request_id?'현재 요청 기록 없음 · ':'');
  const requestRow=(label,result)=>row(label,prefix+result[0],connected?result[1]:'warn');
  return [requestRow('요청·취소 전달',delivery(record,operation,cancellation)),requestRow('Action 응답',actionResult(record,operation)),
   currentStop(state,connected),requestRow('요청 종료',terminalResult(record)),currentCleanup(state,connected)];
+}
+
+
+// These rows describe the selected native task. Historical physical evidence is
+// never promoted to a current grasp after observation loss, stop or completion.
+export const graspStageLabels={approaching:'접근',closing:'그리퍼 닫기',extracting:'들어 올리기',holding:'집기 확인',carrying:'운반',releasing:'놓기',settling:'안정화',succeeded:'배치 완료',failed:'실패',cancelled:'취소됨'};
+export const graspPhaseLabels={preflight:'실행 대상 확인',unused_domain:'ROS 환경 확인',launch:'시뮬레이션 시작',initial_settle:'초기 안정화',approach:'접근',close:'그리퍼 닫기',extract:'들어 올리기',verification_lift:'집기 확인',transport:'운반',carry:'운반',place:'내려놓기',lower:'내려놓기',open:'그리퍼 열기',retract:'물러나기',settle:'배치 안정화',final:'최종 관측',cleanup:'실행 정리',complete:'작업 종료'};
+export function graspJobActive(job){return Boolean(job&&(!job.finished||job.process_running===true));}
+export function graspIdentity(state){
+ const task=state?.task,snapshot=task?.grasp,source=snapshot?.source,job=snapshot?.job;
+ return Boolean(task?.selected==='grasp'&&/^[0-9a-f]{32}$/.test(task.selection_id||'')&&source?.id==='scene:ros_fr5_grasp'&&/^[0-9a-f]{64}$/.test(source.model_sha256||'')&&/^[0-9a-f]{64}$/.test(source.manifest_sha256||'')&&(!job||job.model_sha256===source.model_sha256&&/^[0-9a-f]{32}$/.test(job.job_id||'')&&Number.isInteger(job.generation)&&job.generation>0));
+}
+export function graspPresentation(state,{connected=true}={}){
+ const task=state?.task,snapshot=task?.grasp,job=snapshot?.job;
+ const matched=graspIdentity(state),active=matched&&graspJobActive(job);
+ const age=finite(task?.observation_age_sec)?task.observation_age_sec:job?.source_age_sec;
+ const fresh=Boolean(matched&&connected&&active&&!job?.cancel_requested&&!job?.native_guard?.latched&&job?.native_guard?.phase==='ready'&&job?.freshness==='fresh'&&finite(age)&&age>=0&&age<=.5&&snapshot?.view?.mode==='live');
+ const status=!connected?'상태 조회 중단':!matched?'집기 대상 식별 확인 필요':job?.cancel_requested&&!job.finished?'취소 처리 중':job?({starting:'시작 중',running:'실행 중',cancelling:'취소 처리 중',succeeded:'작업 완료',failed:'작업 실패',cancelled:'요청 취소 완료'})[job.status]||'결과 확인 중':'실행 전';
+ return {job,source:snapshot?.source,matched,active,fresh,age,status,
+  stage:graspStageLabels[job?.task?.stage]||graspPhaseLabels[job?.phase]||'단계 관측 대기',
+  physical:!job?'물리 관측 없음':(fresh?'현재 관측 · ':'마지막 기록 · ')+({confirmed:'물리 집기 확인',released:'놓기 관측',slipped:'미끄러짐 관측',unconfirmed:'집기 미확인'})[job?.task?.physical_grasp||'unconfirmed'],
+  attachment:({attached:'MoveIt 부착 확인',world:'MoveIt 작업공간 객체',uninitialized:'장면 연결 대기',unknown:'부착 상태 미확인'})[job?.task?.planning_attachment]||'부착 관측 대기'};
+}
+export function graspEvidence(state,{connected=true}={}){
+ const p=graspPresentation(state,{connected}),job=p.job,prefix=connected?'':'마지막 수신 · ',guard=job?.native_guard;
+ if(!p.matched)return [row('집기 대상','모델·실행 세대 식별 미확인','warn')];
+ const stopped=guard?.latched===true&&guard?.phase==='stopped'&&['left_controller','right_controller','gripper_controller'].every(name=>guard.controllers?.[name]==='inactive');
+ const clean=job?.cleanup?.clean===true&&job.owner_cleanup_clean===true;
+ const action=job?.action_terminal;
+ return [row('집기·놓기',p.physical,p.fresh?'neutral':'warn'),row('MoveIt 객체',prefix+p.attachment,'neutral'),
+  row('취소 전달',prefix+(({not_requested:'요청 없음',signal_sent:'취소 신호 전달 · 수신 확인 중',worker_signal_sent:'취소 신호 전달 · 작업자 수신 확인 중',waiting_for_worker:'작업자 준비 후 취소 전달 대기',worker_observed:'작업자 취소 수신 확인',process_exited:'프로세스 종료 관측'})[job?.cancel_delivery]||'요청 없음'),'neutral'),
+  row('개별 Action',prefix+(action?`${graspPhaseLabels[action.stage]||action.stage||'동작'} · ${({4:'성공',5:'취소',6:'중단'})[action.status]||'응답 확인 중'} · 전체 작업 결과와 구분`:'개별 종료 응답 대기'),'neutral'),
+  row('제어기 정지',!connected?'조회 중단 · 정지 상태 미확인':stopped?'제어기 3개 비활성 확인':guard?.latched?'제어기 정지 처리 중':guard?.phase==='ready'?'정지 감시 중 · 정지 판정 아님':'정지 관측 대기','neutral'),
+  row('작업 결과',prefix+p.status,connected&&job?.status==='failed'?'bad':'neutral'),
+  row('소유 실행 정리',!connected?'조회 중단 · 정리 결과 미확인':!job?'실행 전':clean?'Native 종료·소유 프로세스 정리 확인':job.finished?'정리 결과 확인 필요':'실행 중 · 종료 후 확인',connected&&clean?'good':'warn')];
 }

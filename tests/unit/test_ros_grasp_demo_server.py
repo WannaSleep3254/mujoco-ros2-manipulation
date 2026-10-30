@@ -221,6 +221,8 @@ class RosOwnedJobTests(unittest.TestCase):
 
     def test_cancel_is_exact_job_generation_model_and_never_adds_open_detach_or_retry(self):
         first = self.start()
+        self.update()
+        self.app.snapshot()  # IPC proves the cooperative handler is installed.
         job = first['job']
         for change in ({'job_id': '2' * 32}, {'generation': True}, {'model_sha256': '0' * 64}):
             body = dict(job_id=job['job_id'], generation=job['generation'], model_sha256=MODEL)
@@ -233,6 +235,168 @@ class RosOwnedJobTests(unittest.TestCase):
         self.assertEqual(len(self.calls), 1)
         self.assertFalse(self.app.snapshot()['job']['automatic_release'])
         self.assertFalse(self.app.snapshot()['job']['automatic_detach'])
+
+    def test_immediate_cancel_is_reserved_without_signal_until_valid_worker_ipc_then_delivered_once(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.assertTrue(job.cancel_requested)
+        self.assertEqual(job.cancel_delivery, 'waiting_for_worker')
+        self.signals.assert_not_called()
+        self.update(native=False)  # Task IPC alone is sufficient; native launch is not required.
+        self.app.snapshot()
+        self.assertEqual(job.cancel_delivery, 'worker_signal_sent')
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.app.snapshot()
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_no_ipc_immediate_cancel_keeps_original_escalation_deadline(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.now = 49.
+        self.app.snapshot()
+        self.signals.assert_not_called()
+        self.now = 50.
+        self.app.snapshot()
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGTERM)
+        self.now = 57.
+        self.app.snapshot()
+        self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGKILL))
+        self.assertEqual(job.escalation, 2)
+        self.assertFalse(job.finished)
+        self.assertIsNone(job.owner_cleanup_clean)
+
+    def test_malformed_first_ipc_aborts_queued_user_cancel_without_accepting_readiness_or_resetting_deadline(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        self.now = 7.
+        invalid = self.update(native=False)
+        invalid['run_id'] = 'f' * 32
+        atomic_json(job.directory/'run/latest.json', invalid)
+        self.app.snapshot()
+        self.assertIsNone(job.update)
+        self.assertIsNone(job.pose)
+        self.assertIsNotNone(job.display_error)
+        self.assertEqual(job.cancel_delivery, 'worker_signal_sent')
+        self.assertEqual(job.cancel_at, 0.)
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.app.snapshot()
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.now = 50.
+        self.app.snapshot()
+        self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGTERM))
+        self.now = 57.
+        self.app.snapshot()
+        self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGKILL))
+
+    def test_malformed_first_ipc_aborts_worker_immediately_and_missing_result_stays_unclean(self):
+        self.start()
+        job = self.app.current
+        invalid = self.update(native=False)
+        invalid['run_id'] = 'f' * 32
+        atomic_json(job.directory/'run/latest.json', invalid)
+        self.app.snapshot()
+        self.assertIsNone(job.update)
+        self.assertIsNone(job.observation)
+        self.assertEqual(job.cancel_delivery, 'worker_signal_sent')
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        job.process.returncode = -signal.SIGINT
+        failed = self.app.snapshot()['job']
+        self.assertEqual(failed['status'], 'failed')
+        self.assertTrue(failed['finished'])
+        self.assertIs(failed['owner_cleanup_clean'], False)
+        self.assertFalse(failed['worker_result_observed'])
+
+    def test_output_overflow_before_first_ipc_aborts_owned_worker(self):
+        self.start()
+        job = self.app.current
+        job.output = SimpleNamespace(overflow=True, error=None, thread=SimpleNamespace(join=lambda **kwargs: None))
+        self.app.snapshot()
+        self.assertIsNone(job.update)
+        self.assertTrue(job.cancel_requested)
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+
+    def test_output_error_before_first_ipc_aborts_owned_worker(self):
+        self.start()
+        job = self.app.current
+        job.output = SimpleNamespace(overflow=False, error='fixture output write failed',
+                                     thread=SimpleNamespace(join=lambda **kwargs: None))
+        self.app.snapshot()
+        self.assertIsNone(job.update)
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+
+    def test_artifact_overflow_before_first_ipc_aborts_owned_worker(self):
+        self.start()
+        job = self.app.current
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._directory_bytes', return_value=97 * 1024 * 1024):
+            self.app.snapshot()
+        self.assertIsNone(job.update)
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+
+    def test_artifact_validation_failure_before_first_ipc_aborts_even_if_receipt_cannot_be_saved(self):
+        self.start()
+        job = self.app.current
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._directory_bytes',
+                   side_effect=ValueError('linked retention fixture')), \
+             patch.object(self.app, '_save', side_effect=OSError('read-only receipt fixture')):
+            self.app.snapshot()
+            self.assertIsNone(job.update)
+            self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+            self.now = 50.
+            self.app.snapshot()
+            self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGTERM))
+            self.now = 57.
+            self.app.snapshot()
+            self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGKILL))
+        self.assertTrue(any('owner receipt' in error for error in job.owner_errors))
+        self.assertIsNone(job.owner_cleanup_clean)
+
+    def test_timeout_before_first_ipc_aborts_immediately_and_retains_escalation_limits(self):
+        self.start()
+        job = self.app.current
+        self.now = 300.
+        self.app.snapshot()
+        self.assertTrue(job.timed_out)
+        self.assertEqual(job.cancel_at, 300.)
+        self.assertIsNone(job.update)
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.now = 350.
+        self.app.snapshot()
+        self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGTERM))
+        self.now = 357.
+        self.app.snapshot()
+        self.assertEqual(self.signals.call_args.args, (job.process.pid, signal.SIGKILL))
+
+    def test_owner_monitor_failure_before_first_ipc_aborts_owned_worker(self):
+        self.app.closing.set()
+        self.app.monitor.join(timeout=1.)
+        self.app.closing.clear()
+        self.start()
+        job = self.app.current
+        with patch.object(self.app.closing, 'wait', side_effect=(False, True)), \
+             patch.object(self.app, '_update', side_effect=RuntimeError('fixture owner monitor failed')):
+            self.app._watch()
+        self.assertIsNone(job.update)
+        self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
+        self.assertTrue(any('owner monitor' in error for error in job.owner_errors))
+
+    def test_fatal_error_preserves_worker_acknowledgement_and_never_sends_second_cancel(self):
+        self.start()
+        job = self.app.current
+        self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
+        value = self.update(native=False)
+        value['task']['status'] = 'cancelled'
+        atomic_json(job.directory/'run/latest.json', value)
+        self.app.snapshot()
+        self.assertEqual(job.cancel_delivery, 'worker_observed')
+        with patch('mujoco_ros2_manipulation.grasping.ros_demo_server._directory_bytes', return_value=97 * 1024 * 1024):
+            self.app.snapshot()
+        self.assertEqual(job.cancel_delivery, 'worker_observed')
+        self.signals.assert_not_called()
 
     def test_success_requires_worker_result_exit_and_separate_native_cleanup_evidence(self):
         self.start()
@@ -262,6 +426,8 @@ class RosOwnedJobTests(unittest.TestCase):
 
     def test_cancel_grace_allows_real_worker_cleanup_before_escalation(self):
         self.start()
+        self.update()
+        self.app.snapshot()
         job = self.app.current
         self.app.cancel(dict(job_id=job.identifier, generation=job.generation, model_sha256=MODEL))
         self.now = 49.
@@ -360,6 +526,7 @@ class RosOwnedJobTests(unittest.TestCase):
         self.assertFalse(job.finished)
         self.assertIsNone(job.owner_cleanup_clean)
         self.assertTrue(job.cancel_requested)
+        self.assertEqual(job.cancel_delivery, 'worker_signal_sent')
         self.signals.assert_called_once_with(job.process.pid, signal.SIGINT)
         with self.assertRaises(RuntimeError): self.start('2' * 32)
         self.start()  # This is an observation, never another spawn.

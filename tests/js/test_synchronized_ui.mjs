@@ -177,18 +177,18 @@ test('state deadline covers stalled headers or body and a late response cannot r
 const inspector=(await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/inspector.js',import.meta.url),'utf8'));
 const captureScript=inspector.slice(inspector.indexOf('// Capture controls preserve'));
 function captureHarness(hidden=false){
- const nodes=new Map(),events={},documentEvents={},requests=[],timers=new Map();let timerID=0,now=10000;
+ const nodes=new Map(),events={},documentEvents={},requests=[],timers=new Map(),dispatched=[];let timerID=0,now=10000;
  const node=()=>({textContent:'',disabled:true,hidden:false,children:[],events:{},className:'',
   addEventListener(name,callback){this.events[name]=callback;},replaceChildren(...items){this.children=items;},append(...items){this.children.push(...items);},get childElementCount(){return this.children.length;}});
  const get=key=>{if(!nodes.has(key))nodes.set(key,node());return nodes.get(key);};
  get('analysis').hidden=hidden;const analysisButton=node();
  const document={hidden:false,getElementById:get,createElement:node,querySelectorAll:()=>[analysisButton],
   addEventListener:(name,callback)=>{documentEvents[name]=callback;}};
- const window={addEventListener:(name,callback)=>{events[name]=callback;}};
+ const window={addEventListener:(name,callback)=>{events[name]=callback;},dispatchEvent:event=>{dispatched.push(event);}};
  const fetcher=(url,options={})=>{const pending=deferred();requests.push({url,options,...pending});return pending.promise;};
- new Function('document','window','fetch','setTimeout','clearTimeout','Date',captureScript)(document,window,fetcher,
-  (fn,delay)=>{const key=++timerID;timers.set(key,{fn,delay});return key;},key=>timers.delete(key),{now:()=>now});
- return {get,document,events,documentEvents,requests,timers,analysisButton,advance:()=>{now+=1100;},
+ new Function('document','window','fetch','setTimeout','clearTimeout','Date','CustomEvent',captureScript)(document,window,fetcher,
+  (fn,delay)=>{const key=++timerID;timers.set(key,{fn,delay});return key;},key=>timers.delete(key),{now:()=>now},function(type,options){this.type=type;this.detail=options.detail;});
+ return {get,document,events,documentEvents,requests,timers,analysisButton,dispatched,advance:()=>{now+=1100;},
   posts:()=>requests.filter(item=>item.options.method==='POST'),gets:()=>requests.filter(item=>!item.options.method),
   click:key=>get(key).events.click()};
 }
@@ -198,7 +198,7 @@ test('capture catalog exposes only explicit checked recording links and recordin
  const h=captureHarness();h.gets()[0].resolve(response(catalog(undefined,[{id,label:'고정 입력',duration_sec:3.5,ended_reason:'user_stop'},{id:'../../other',label:'invalid'}])));await drain();
  assert.equal(h.get('sync-capture-start').disabled,false);assert.equal(h.get('sync-capture-stop').disabled,true);
  assert.equal(h.get('sync-capture-list').children.length,1);
- assert.equal(h.get('sync-capture-list').children[0].children[0].href,'/synchronized?id='+id);
+ assert.equal(h.get('sync-capture-list').children[0].children[1].href,'/synchronized?id='+id);
  h.click('sync-capture-start');assert.equal(h.posts().length,1);assert.deepEqual(JSON.parse(h.posts()[0].options.body),{});
  h.posts()[0].resolve(response({status:'recording'}));await drain();
  h.gets().at(-1).resolve(response(catalog({status:'recording',id,pose_count:3,image_count:2})));await drain();
@@ -216,6 +216,24 @@ test('capture failure remains visible through status refresh and never retries i
  assert.equal(h.posts().length,1);assert.match(h.get('sync-capture-error').textContent,/unknown acquisition clock/);
  h.advance();h.events['console-observation']();h.gets().at(-1).resolve(response(catalog()));await drain();
  assert.equal(h.posts().length,1);assert.match(h.get('sync-capture-error').textContent,/unknown acquisition clock/);
+});
+
+test('selecting a saved record requests same-workspace replay without any command POST',async()=>{
+ const h=captureHarness();h.gets()[0].resolve(response(catalog(undefined,[{id,label:'보존 기록',duration_sec:3.5}])));await drain();
+ const button=h.get('sync-capture-list').children[0].children[0];assert.equal(button.textContent,'보존 기록 · 작업실에서 재생');button.events.click();
+ assert.equal(h.dispatched.length,1);assert.equal(h.dispatched[0].type,'workspace-replay-open');assert.deepEqual(h.dispatched[0].detail,{id});
+ assert.equal(h.posts().length,0);assert.equal(h.requests.length,1);
+});
+
+test('capture mutations pin the observed workspace selection and cannot use a lost epoch',async()=>{
+ const h=captureHarness();h.gets()[0].resolve(response(catalog()));await drain();
+ h.events['console-observation']({detail:{task:{selection_id:id,grasp:{source:{id:'scene:grasp'}}}}});
+ h.click('sync-capture-start');assert.equal(h.posts()[0].options.headers['X-Workspace-Selection'],id);
+ h.events['console-observation']({detail:{task:{selection_id:'b'.repeat(32),grasp:{source:{id:'scene:grasp'}}}}});
+ assert.equal(h.posts()[0].options.headers['X-Workspace-Selection'],id,'In-flight mutation cannot adopt a later selection');
+ h.posts()[0].resolve(response({status:'recording'}));await drain();h.gets().at(-1).resolve(response(catalog({status:'recording',id})));await drain();
+ h.events['console-observation-lost']();assert.equal(h.get('sync-capture-stop').disabled,true);const count=h.posts().length;
+ h.click('sync-capture-stop');assert.equal(h.posts().length,count);
 });
 
 test('hidden analysis does not poll the catalog and loss disables capture controls',async()=>{

@@ -900,3 +900,26 @@ test('returning from image or unready rendering reconciles readable body details
   assert.equal(h.requests.length,0);assert.equal(h.inspectorReads.length,1);h.controls.destroy();
  }
 });
+
+test('native task keeps the shared camera and geometry view while disabling normal source/image selection',async()=>{
+ const h=harness({poseResult:true}),native=state('a',1,{mode:'live',preview_active:false,task_selected:'grasp'});
+ native.task={grasp:{job:{finished:false,cancel_requested:false,freshness:'fresh',native_guard:{phase:'ready',latched:false}}}};
+ h.controls.update(native);await drain();await h.tick();
+ assert.equal(h.controls.cameraReady(),true);
+ for(const id of ['scene-model','scene-live','scene-source','display-mode'])assert.equal(h.element(id).disabled,true,id);
+ assert.equal(h.element('operate-fit-all').disabled,false);
+ assert.equal(await h.controls.useServerImage(),false);assert.deepEqual(h.requests,[]);
+ native.task.grasp.job={finished:true,freshness:'fresh'};h.controls.update(native);
+ assert.match(h.controls.viewer.staleReason,/집기 작업 종료.*마지막 수신/);assert.match(h.element('scene-mode').textContent,/마지막 관측/);
+ h.controls.viewer.sceneError='lost';h.controls.updateRecoveryControls();assert.equal(h.element('scene-fallback').hidden,true);assert.equal(h.element('scene-restart').hidden,false);
+});
+test('task invalidation discards an in-flight pose before the next native binding is loaded',async()=>{
+ const pending=deferred(),h=harness({poseResult:()=>pending.promise});
+ h.controls.update(state('a',1,{mode:'live',preview_active:false}));await drain();
+ const timer=h.timers.get(h.controls.poseTimer);h.timers.delete(h.controls.poseTimer);timer.callback();await drain();
+ const read=h.controls.viewer.poseReads.at(-1);h.controls.invalidateTask('작업 전환');
+ assert.equal(h.controls.expected,null);assert.equal(h.controls.viewer.hasPose,false);assert.equal(read.accept({}),false);
+ pending.resolve({});await drain();assert.equal(h.controls.viewer.hasPose,false);
+ h.controls.update(state('b',2,{mode:'model_preview',preview_active:true,task_selected:'grasp'}));
+ assert.equal(h.controls.expected,'b'.repeat(64));assert.equal(h.controls.viewer.bindingID,'b'.repeat(64));
+});

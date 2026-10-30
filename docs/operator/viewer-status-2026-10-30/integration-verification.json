@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "kind": "workspace-integration-verification-v1",
+  "checked_date": "2026-10-30",
+  "source_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+  "previous_report_commit": "dc2454a7ea9b7d629c29e6d25cca640a33fce079",
+  "code_url": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/fd6cebc28e98337361e7224921785f96ec8cc79c",
+  "integrated_viewer": {
+    "port": 8933,
+    "scope": "Same workspace task selection, shared 3D, start/state/cancel and read-only synchronized analysis. Loopback deployment only.",
+    "task_choices": [
+      "joint_tcp_motion",
+      "fixed_fr5_pick_carry_place"
+    ],
+    "normal_and_grasp_domains": "Distinct startup-pinned ROS domains; one active operation owner."
+  },
+  "execution_target": {
+    "model_sha256": "b1b0e7876951adcbf8985e31f088a9fbeba30a122f71465c6c6b0555074afe9d",
+    "manifest_sha256": "94bdb1fa3091b109c96b2a412ad743c80af2f3d0bba7a72298b16d0342eb03a7",
+    "native_engine": "MuJoCo 3.12.0",
+    "fixture": "FR5, validation parallel gripper, simple block; UR5e holds position"
+  },
+  "tests": {
+    "unit": {
+      "total": 1402,
+      "skipped": 1,
+      "status": "passed",
+      "passed": 1401
+    },
+    "model": {
+      "total": 91,
+      "skipped": 1,
+      "status": "passed",
+      "passed": 90
+    },
+    "javascript": {
+      "scripts": 18,
+      "scenarios": 276,
+      "status": "passed"
+    },
+    "targeted_error_stop": {
+      "native_owner_tests": 35,
+      "workspace_owner_tests": 11,
+      "status": "passed",
+      "method": "Unit tests with controlled worker/IPC/output/clock conditions; not real ROS fatal fault injection."
+    },
+    "package": {
+      "source_distribution": "passed",
+      "wheel": "passed"
+    }
+  },
+  "cases": [
+    {
+      "case": "normal",
+      "status": "passed",
+      "source_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+      "receipt_sha256": "16387b18b9ddc572e51e6278cda19db53a9443bf6b1d8757d91dcdfcb8b9bd01",
+      "verification_elapsed_wall_sec": 30.575076,
+      "console_clean_exit": true,
+      "native_task_status": "succeeded",
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "native_launched": true,
+      "controller_stop_observed": true,
+      "owner_cleanup_clean": true,
+      "native_process_clean": true,
+      "worker_process_group_gone": true,
+      "validation_process_group_gone": true,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "automatic_retry": false,
+      "checks": [
+        "same_shared_native_scene_and_scoped_task_selection",
+        "saved_sensor_and_pose_replay_remains_readonly",
+        "active_owner_blocks_switch_and_rejects_wrong_cancel",
+        "native_result_and_owned_cleanup",
+        "completed_owner_returns_to_motion_and_old_bindings_rejected",
+        "ordinary_motion_start_plan_review_discard_stop_after_grasp"
+      ],
+      "http_round_trip_json": {
+        "state_samples": 187,
+        "state_get_median_ms": 5.929647,
+        "state_get_max_ms": 34.181917,
+        "cancel_response_ms": []
+      }
+    },
+    {
+      "case": "cancel_startup",
+      "status": "passed",
+      "source_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+      "receipt_sha256": "9ba15598d82571da5154bf4a1b48f2508632d53b4333cf674831ca5f59f15f55",
+      "verification_elapsed_wall_sec": 7.010745,
+      "console_clean_exit": true,
+      "native_task_status": "cancelled",
+      "physical_grasp": "unconfirmed",
+      "planning_attachment": "uninitialized",
+      "native_launched": false,
+      "controller_stop_observed": false,
+      "owner_cleanup_clean": true,
+      "native_process_clean": true,
+      "worker_process_group_gone": true,
+      "validation_process_group_gone": true,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "automatic_retry": false,
+      "checks": [
+        "same_shared_native_scene_and_scoped_task_selection",
+        "saved_sensor_and_pose_replay_remains_readonly",
+        "active_owner_blocks_switch_and_rejects_wrong_cancel",
+        "startup_cancel_requested",
+        "startup_cancel_preceded_native_launch_not_physical_stop",
+        "native_result_and_owned_cleanup",
+        "completed_owner_returns_to_motion_and_old_bindings_rejected"
+      ],
+      "http_round_trip_json": {
+        "state_samples": 24,
+        "state_get_median_ms": 1.76161,
+        "state_get_max_ms": 2.457833,
+        "cancel_response_ms": [
+          1.416964
+        ]
+      }
+    },
+    {
+      "case": "cancel_transport",
+      "status": "passed",
+      "source_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+      "receipt_sha256": "c8517eab0a461987d094d22d3a1bdd42cb88dcbd9b363436e62b539dae146cef",
+      "verification_elapsed_wall_sec": 19.324492,
+      "console_clean_exit": true,
+      "native_task_status": "cancelled",
+      "physical_grasp": "unconfirmed",
+      "planning_attachment": "attached",
+      "native_launched": true,
+      "controller_stop_observed": true,
+      "owner_cleanup_clean": true,
+      "native_process_clean": true,
+      "worker_process_group_gone": true,
+      "validation_process_group_gone": true,
+      "automatic_release": false,
+      "automatic_detach": false,
+      "automatic_retry": false,
+      "checks": [
+        "same_shared_native_scene_and_scoped_task_selection",
+        "saved_sensor_and_pose_replay_remains_readonly",
+        "active_owner_blocks_switch_and_rejects_wrong_cancel",
+        "moving_transport_cancel_requested",
+        "native_result_and_owned_cleanup",
+        "completed_owner_returns_to_motion_and_old_bindings_rejected"
+      ],
+      "http_round_trip_json": {
+        "state_samples": 102,
+        "state_get_median_ms": 5.583979,
+        "state_get_max_ms": 37.89239,
+        "cancel_response_ms": [
+          7.159039
+        ]
+      }
+    }
+  ],
+  "ordinary_motion_regression": {
+    "verified": [
+      "normal simulation startup",
+      "plan generation",
+      "review",
+      "discard",
+      "owned stop"
+    ],
+    "approved_trajectory_execution_tested_in_this_integrated_case": false
+  },
+  "synchronized_replay": {
+    "recording_sha256": "e037dc6d57a6dc616132df560db09d557de51daf46559c00adcb43126e69dc71",
+    "poses": 41,
+    "images": 18,
+    "image_type": "synthetic diagnostic RGB",
+    "imported_at_startup": true,
+    "same_workspace_analysis": true,
+    "read_only": true,
+    "robot_dispatch_from_replay": false,
+    "grasp_rgb_acquisition_tested": false
+  },
+  "original_failures": [
+    {
+      "case": "first_startup_cancel",
+      "result": "failed",
+      "worker_exit": -2,
+      "failure": "Missing worker result after cancellation before Python cancellation handler was ready.",
+      "fix": "Retain cancellation immediately; signal once the exact worker emits valid IPC after installing its handler.",
+      "unchanged": "Original 50/57-second escalation, source/observation/physical checks.",
+      "retained_original_receipt_sha256": "a8440f4f1002e2874c6295b2db1f43812cf4ce8e30c831e0ffc59311a00cd8b0"
+    },
+    {
+      "case": "pre_final_transport_cancel",
+      "result": "identity_guard_rejection",
+      "observation": "Only manufacturer Git administration state changed during parallel inspection; original run retained.",
+      "fix": "Use GIT_OPTIONAL_LOCKS=0 in console/worker and run frozen validation sequentially.",
+      "unchanged": "File, source and execution identity checks remain enabled.",
+      "retained_original_receipt_sha256": "b2b1b1082be46dc27ddf1d243e6a9591f612e4e24a7723de22e65c61c2b77568"
+    }
+  ],
+  "environment_setup": {
+    "initial_unit_environment_failures": "Missing report dependency and sandbox socket authorization; resolved as environment prerequisites, not product bug claims."
+  },
+  "preserved_limits": {
+    "observation_age_sec": 0.5,
+    "physical_grasp_sample_gap_sec": 0.15,
+    "held_diagnostic_sec": 30,
+    "cancel_escalation_sec": [
+      50,
+      57
+    ],
+    "physical_and_contact_guards_changed": false
+  },
+  "interpretation_limits": [
+    "Case elapsed values are recorded before the final console shutdown. They include setup, ROS startup, validation, polling, native job cleanup and the stated ordinary-motion regression; they are not robot cycle performance or full server lifetime.",
+    "HTTP metrics include response and JSON decode on one host. They are not browser paint/FPS, input-to-control delay or cancel-to-physical-stop latency.",
+    "Startup cancellation happened before native launch and sent zero Actions. It does not establish an observed physical controller stop.",
+    "Ordinary-motion regression generated, reviewed and discarded a plan. It did not approve and execute that trajectory in this case.",
+    "The imported 41-pose/18-image record is an existing synthetic diagnostic source, not newly acquired grasp RGB or camera hardware synchronization.",
+    "New PC/mobile browser layout, interactive WebGL and video capture were not performed because browser access was disabled. Prior screenshots/videos retain their original scope.",
+    "CI, merge and publication outcomes are separate from these local verification results.",
+    "Fatal stop branch coverage uses targeted unit fault conditions. The three final actual ROS cases are healthy completion and explicit user cancellations, not fatal ROS fault-injection experiments."
+  ],
+  "operational_transition": "Original six servers and six video/poster pairs are preserved; 8933 is the new integrated entry point. Port is not a version.",
+  "implementation_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+  "actual_ros_case_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+  "readonly_http_media": {
+    "status": "passed",
+    "scope": "same workspace readonly HTTP media and static modules, not rendered browser QA",
+    "recording_sha256": "e037dc6d57a6dc616132df560db09d557de51daf46559c00adcb43126e69dc71",
+    "manifest_asset_image_hashes_match": true,
+    "jpeg_decoded": true,
+    "robot_task_started": false,
+    "static_modules": 13,
+    "verified_implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+    "relation_to_current_source": "Static frontend is unchanged by the later fatal-error owner fix. This original protocol/media check is retained separately from final-source three-case ROS acceptance."
+  },
+  "previous_verified_baselines": [
+    {
+      "source_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+      "implementation_commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+      "actual_ros_case_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+      "tests": {
+        "unit": {
+          "total": 1394,
+          "skipped": 1,
+          "status": "passed"
+        },
+        "model": {
+          "total": 91,
+          "skipped": 1,
+          "status": "passed"
+        },
+        "javascript": {
+          "scripts": 18,
+          "scenarios": 276,
+          "status": "passed"
+        }
+      },
+      "cases": [
+        {
+          "case": "normal",
+          "status": "passed",
+          "source_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+          "receipt_sha256": "24f1533634cb28971ed7a11951e3c9c27d2752f4fa2a5bca5c3cd899b1d4902e",
+          "verification_elapsed_wall_sec": 30.095964,
+          "console_clean_exit": true,
+          "native_task_status": "succeeded",
+          "physical_grasp": "released",
+          "planning_attachment": "world",
+          "native_launched": true,
+          "controller_stop_observed": true,
+          "owner_cleanup_clean": true,
+          "native_process_clean": true,
+          "worker_process_group_gone": true,
+          "validation_process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false,
+          "automatic_retry": false,
+          "checks": [
+            "same_shared_native_scene_and_scoped_task_selection",
+            "saved_sensor_and_pose_replay_remains_readonly",
+            "active_owner_blocks_switch_and_rejects_wrong_cancel",
+            "native_result_and_owned_cleanup",
+            "completed_owner_returns_to_motion_and_old_bindings_rejected",
+            "ordinary_motion_start_plan_review_discard_stop_after_grasp"
+          ],
+          "http_round_trip_json": {
+            "state_samples": 184,
+            "state_get_median_ms": 5.777528,
+            "state_get_max_ms": 28.662785,
+            "cancel_response_ms": []
+          }
+        },
+        {
+          "case": "cancel_startup",
+          "status": "passed",
+          "source_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+          "receipt_sha256": "d6b950126be7b052e3ef5b02bdc3d75c1f8f8376c53f42e75e480ed4af34b935",
+          "verification_elapsed_wall_sec": 7.068955,
+          "console_clean_exit": true,
+          "native_task_status": "cancelled",
+          "physical_grasp": "unconfirmed",
+          "planning_attachment": "uninitialized",
+          "native_launched": false,
+          "controller_stop_observed": false,
+          "owner_cleanup_clean": true,
+          "native_process_clean": true,
+          "worker_process_group_gone": true,
+          "validation_process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false,
+          "automatic_retry": false,
+          "checks": [
+            "same_shared_native_scene_and_scoped_task_selection",
+            "saved_sensor_and_pose_replay_remains_readonly",
+            "active_owner_blocks_switch_and_rejects_wrong_cancel",
+            "startup_cancel_requested",
+            "startup_cancel_preceded_native_launch_not_physical_stop",
+            "native_result_and_owned_cleanup",
+            "completed_owner_returns_to_motion_and_old_bindings_rejected"
+          ],
+          "http_round_trip_json": {
+            "state_samples": 24,
+            "state_get_median_ms": 1.958201,
+            "state_get_max_ms": 10.137744,
+            "cancel_response_ms": [
+              1.781871
+            ]
+          }
+        },
+        {
+          "case": "cancel_transport",
+          "status": "passed",
+          "source_commit": "732413f5ff8bfdc30a7aada09b7c1acaf37560bb",
+          "receipt_sha256": "b002f9b8de9baf71f799c1a7054f16876612f9626ee049e7ce718abf918ca1ad",
+          "verification_elapsed_wall_sec": 19.141981,
+          "console_clean_exit": true,
+          "native_task_status": "cancelled",
+          "physical_grasp": "unconfirmed",
+          "planning_attachment": "attached",
+          "native_launched": true,
+          "controller_stop_observed": true,
+          "owner_cleanup_clean": true,
+          "native_process_clean": true,
+          "worker_process_group_gone": true,
+          "validation_process_group_gone": true,
+          "automatic_release": false,
+          "automatic_detach": false,
+          "automatic_retry": false,
+          "checks": [
+            "same_shared_native_scene_and_scoped_task_selection",
+            "saved_sensor_and_pose_replay_remains_readonly",
+            "active_owner_blocks_switch_and_rejects_wrong_cancel",
+            "moving_transport_cancel_requested",
+            "native_result_and_owned_cleanup",
+            "completed_owner_returns_to_motion_and_old_bindings_rejected"
+          ],
+          "http_round_trip_json": {
+            "state_samples": 101,
+            "state_get_median_ms": 5.742912,
+            "state_get_max_ms": 25.87366,
+            "cancel_response_ms": [
+              8.473423
+            ]
+          }
+        }
+      ],
+      "ui_followup": {
+        "commit": "688dd4b05e62c8ac6a8351da0207cbb0ea707732",
+        "scope": "Terminal cancellation status has priority over a pending cancellation label. Backend/native/harness logic unchanged from actual-case source.",
+        "additional_javascript_scenario": 1
+      },
+      "readonly_http_media": {
+        "status": "passed",
+        "scope": "same workspace readonly HTTP media and static modules, not rendered browser QA",
+        "recording_sha256": "e037dc6d57a6dc616132df560db09d557de51daf46559c00adcb43126e69dc71",
+        "manifest_asset_image_hashes_match": true,
+        "jpeg_decoded": true,
+        "robot_task_started": false,
+        "static_modules": 13
+      },
+      "scope": "Previous passing acceptance source; retained as history, not reused as final-source actual ROS proof."
+    }
+  ],
+  "fatal_error_stop_followup": {
+    "source_commit": "fd6cebc28e98337361e7224921785f96ec8cc79c",
+    "finding": "The graceful worker-readiness wait also gated fatal error stops before valid IPC, allowing delayed termination.",
+    "fix": "Bypass readiness only for fatal aborts of the exact owned Popen worker. Normal user cancellation and close remain queued until cooperative IPC readiness.",
+    "verified_unit_paths": [
+      "malformed_first_ipc",
+      "queued_user_cancel_then_fatal_error_preserves_deadline",
+      "stdout_overflow_before_first_ipc",
+      "stdout_error_before_first_ipc",
+      "retention_overflow_before_first_ipc",
+      "artifact_validation_and_receipt_failure_before_first_ipc",
+      "timeout_before_first_ipc",
+      "owner_monitor_failure_before_first_ipc",
+      "acknowledged_cancel_not_signalled_twice"
+    ],
+    "invalid_ipc_accepted_as_ready": false,
+    "repeat_cancel_signal_added": false,
+    "cancel_deadline_reset": false,
+    "escalation_sec": [
+      50,
+      57
+    ],
+    "unclean_missing_result_can_be_reported_success": false,
+    "actual_fatal_fault_ros_injection_performed": false
+  }
+}

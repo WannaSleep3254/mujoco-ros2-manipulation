@@ -24,13 +24,13 @@ function harness(fetcher){
  const elements=new Map(),timers=new Map(),calls=[];let timerID=0;
  const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};element('strategy').value='coordinated';
  const document={getElementById:element,querySelectorAll:selector=>selector==='[data-cancel]'?[element('cancel'),element('cancel-secondary')]:[],createElement:tag=>new Element(tag)};
- const scene={cameraReady:()=>true,pause(){},update(){},isImage:()=>false,mount(){},select(){}};
+ const scene={cameraReady:()=>true,pause(){},update(){},isImage:()=>false,mount(){},select(){},invalidateTask(){this.taskInvalidations=(this.taskInvalidations||0)+1;}};
  const context=vm.createContext({document,fetch:(path,options)=>{calls.push({path,options});return fetcher(path,options);},AbortController,
   setTimeout:(callback,delay)=>{const id=++timerID;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),
   performance:{now:()=>5000},crypto:{randomUUID:()=> 'c'.repeat(32)},window:{}});
- vm.runInContext(source+`\nglobalThis.uiTest={request,poll,readState,replan,groupRequests,summaryOf,renderReview,renderContext,history,detail,renderDetail,loadRequest,requestProgress,requestGuidance,guidanceText,guardPresentation,connectionPresentation,observationProblem,cancelCurrentRequest,render,refreshControls,demoStage,demoOutcomeStatus,
+ vm.runInContext(source+`\nglobalThis.uiTest={request,beginTaskCommand,endTaskCommand,poll,readState,replan,groupRequests,summaryOf,renderReview,renderContext,history,detail,renderDetail,loadRequest,requestProgress,requestGuidance,guidanceText,guardPresentation,connectionPresentation,observationProblem,cancelCurrentRequest,render,refreshControls,demoStage,demoOutcomeStatus,
  set(data,positions={left:.2,right:.1},connected=true){state=data;targets=positions;config={label:'FR5 + UR5e',domain:160,joint_limits:{left:{lower:-1,upper:1},right:{lower:-1,upper:1}}};readConnected=connected;sceneControls=globalThis.scene;},
- get(){return {polling,readConnected,replanning};},cache(id,data,age=0){requestCache.set(id,{data,at:Date.now()-age});},age(id,age=2000){requestCache.get(id).at=Date.now()-age;},demos(data){demoCatalog=[{id:'contact_comparison',title:'접촉 비교'}];selectedDemo='contact_comparison';renderDemos(data);}};`,context);
+ get(){return {polling,readConnected,replanning,selected:state?.task?.selected};},taskController(value){taskControls=value;},cache(id,data,age=0){requestCache.set(id,{data,at:Date.now()-age});},age(id,age=2000){requestCache.get(id).at=Date.now()-age;},demos(data){demoCatalog=[{id:'contact_comparison',title:'접촉 비교'}];selectedDemo='contact_comparison';renderDemos(data);}};`,context);
  context.scene=scene;
  return {api:context.uiTest,element,scene,calls,timers,expire(){const entries=[...timers.values()];for(const entry of entries)entry.callback();},set(data,targets,connected){context.uiTest.set(data,targets,connected);}};
 }
@@ -335,4 +335,36 @@ test('missing telemetry after expected or previously observed sources remains bl
   {lifecycle:{...absent.lifecycle,error:'process failed'}}]){
   const current={...absent,...override};assert.ok(h.api.observationProblem(current));assert.equal(h.api.connectionPresentation(current).status,'blocked');
  }
+});
+
+
+test('task change invalidates an older normal-state GET before it can overwrite the selected native task',async()=>{
+ let resolveOld,reads=0;const selected=state({task:{selected:'grasp',selection_id:'d'.repeat(32),grasp:{source:{domain:230},job:null}}});
+ const h=harness(()=>++reads===1?new Promise(resolve=>resolveOld=resolve):reply(selected));h.set(state());
+ const old=h.api.readState(),rejected=assert.rejects(old,error=>error.code==='state_read_superseded');await drain();
+ h.api.beginTaskCommand('select');assert.equal(h.scene.taskInvalidations,1);assert.equal(h.element('execute').disabled,true);
+ await h.api.readState();h.api.endTaskCommand();resolveOld({ok:true,json:()=>Promise.resolve(state())});await rejected;
+ assert.equal(h.api.get().selected,'grasp');assert.equal(h.element('execute').disabled,true);assert.equal(h.calls.length,2);assert.ok(h.calls.every(row=>row.options.method!=='POST'));
+});
+test('header cancellation follows the selected native owner and does not submit a normal-arm cancellation',async()=>{
+ const h=harness(()=>{throw Error('normal cancellation must not be sent');});h.set(state({active_request_id:PLAN,task:{selected:'grasp'}}));let cancelled=0;
+ h.api.taskController({command:async kind=>{assert.equal(kind,'cancel');cancelled++;}});await h.api.cancelCurrentRequest();
+ assert.equal(cancelled,1);assert.equal(h.calls.length,0);
+});
+test('normal mutation headers retain the selection epoch captured at request construction',async()=>{
+ let resolve;const h=harness(()=>new Promise(done=>resolve=done));h.set(state({task:{selected:'motion',selection_id:'d'.repeat(32)}}));
+ const pending=h.api.request('/api/plan',{request_id:PLAN});h.set(state({task:{selected:'motion',selection_id:'e'.repeat(32)}}));
+ assert.equal(h.calls[0].options.headers['X-Workspace-Selection'],'d'.repeat(32));resolve({ok:true,json:()=>Promise.resolve({})});await pending;
+});
+
+
+test('native connection badge prioritizes finished results over historical cancellation flags',()=>{
+ const h=harness(()=>reply({}));
+ const snapshot=job=>state({task:{selected:'grasp',grasp:{job}}});
+ for(const [status,label,tone] of [['cancelled','집기 취소 완료','ready'],['succeeded','집기 작업 완료','ready'],['failed','집기 작업 실패','blocked']]){
+  const result=h.api.connectionPresentation(snapshot({status,finished:true,owner_cleanup_clean:true,cancel_requested:true}));
+  assert.equal(result.status,tone);assert.equal(result.text,label+' · 마지막 결과');assert.doesNotMatch(result.text,/정리 확인 중/);
+ }
+ const active=h.api.connectionPresentation(snapshot({status:'cancelling',finished:false,cancel_requested:true}));assert.equal(active.status,'running');assert.equal(active.text,'집기 취소 · 정리 확인 중');
+ const unclean=h.api.connectionPresentation(snapshot({status:'cancelled',finished:true,owner_cleanup_clean:false,cancel_requested:true}));assert.equal(unclean.status,'blocked');assert.equal(unclean.text,'집기 정리 결과 확인 필요');
 });
