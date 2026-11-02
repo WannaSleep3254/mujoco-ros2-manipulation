@@ -14,7 +14,6 @@ import re
 import secrets
 import stat
 import subprocess
-import tempfile
 
 from .scene_host import SceneSource
 
@@ -105,37 +104,59 @@ def _stop_owned(process):
     _require(process.poll() is not None, 'Owned overlay checker did not stop')
 
 
+def _retained_check_directory(base, token):
+    """Keep validation evidence in this workspace; never follow output links."""
+    root = Path(base.root).absolute()
+    _require(root.is_dir() and root.resolve(strict=True) == root,
+             'Environment check evidence requires an unlinked workspace root')
+    _require(re.fullmatch('[0-9a-f]{32}', token), 'Invalid environment check token')
+    parent = root
+    for name in ('runtime', 'validation', 'environment-checks'):
+        parent = parent / name
+        try:
+            parent.mkdir(mode=0o700)
+        except FileExistsError:
+            pass
+        _require(stat.S_ISDIR(parent.lstat().st_mode) and parent.resolve(strict=True) == parent,
+                 'Environment check evidence must stay in unlinked workspace directories')
+    owned = parent / token
+    # Exclusive creation preserves all earlier checks, including failed ones.
+    owned.mkdir(mode=0o700)
+    return owned
+
+
 def _full_check(directory, base, manifest_sha256, before, python, timeout_sec):
     token = secrets.token_hex(16)
     worker_sha256 = _worker_source_sha256()
     expected = _receipt(before, token=token, manifest_sha256=manifest_sha256, worker_sha256=worker_sha256)
-    with tempfile.TemporaryDirectory(prefix='environment-check-') as temporary:
-        owned = Path(temporary)
-        receipt = owned / 'receipt.json'
-        process = None
-        with (owned / 'checker.log').open('wb') as log:
-            try:
-                process = subprocess.Popen([str(python), '-m', WORKER_MODULE,
-                    '--workspace', str(base.root), '--base-workcell', base.id,
-                    '--overlay', str(directory), '--manifest-sha256', manifest_sha256,
-                    '--request-token', token, '--worker-sha256', worker_sha256,
-                    '--receipt', str(receipt), '--parent-pid', str(os.getpid()),
-                    '--cpu-limit-sec', str(int(math.ceil(timeout_sec)) + 2)],
-                    cwd=base.root, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
-                    start_new_session=True, env=dict(os.environ, MUJOCO_ROS2_WORKSPACE=str(base.root),
-                        OPENBLAS_NUM_THREADS='1', OMP_NUM_THREADS='1'))
-                process.wait(timeout=timeout_sec)
-                _require(process.returncode == 0, 'Overlay CPU validation failed')
-                checked = _json(_regular(receipt, MAX_RECEIPT_BYTES))
-                _require(type(checked) is dict and type(checked.get('schema_version')) is int
-                    and checked == expected, 'Overlay CPU receipt differs from the frozen artifact')
-            except BaseException as error:
-                if process is not None:
-                    try:
-                        _stop_owned(process)
-                    except Exception as cleanup:
-                        raise RuntimeError('Owned overlay checker cleanup failed') from error
-                raise
+    owned = _retained_check_directory(base, token)
+    receipt = owned / 'receipt.json'
+    process = None
+    descriptor = os.open(owned / 'checker.log', os.O_WRONLY | os.O_CREAT | os.O_EXCL
+                         | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+    with os.fdopen(descriptor, 'wb') as log:
+        try:
+            process = subprocess.Popen([str(python), '-m', WORKER_MODULE,
+                '--workspace', str(base.root), '--base-workcell', base.id,
+                '--overlay', str(directory), '--manifest-sha256', manifest_sha256,
+                '--request-token', token, '--worker-sha256', worker_sha256,
+                '--receipt', str(receipt), '--parent-pid', str(os.getpid()),
+                '--cpu-limit-sec', str(int(math.ceil(timeout_sec)) + 2)],
+                cwd=base.root, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
+                start_new_session=True, env=dict(os.environ, MUJOCO_ROS2_WORKSPACE=str(base.root),
+                    OPENBLAS_NUM_THREADS='1', OMP_NUM_THREADS='1'))
+            process.wait(timeout=timeout_sec)
+            _require(process.returncode == 0, 'Overlay CPU validation failed')
+            checked = _json(_regular(receipt, MAX_RECEIPT_BYTES))
+            _require(type(checked) is dict and type(checked.get('schema_version')) is int
+                and checked == expected, 'Overlay CPU receipt differs from the frozen artifact')
+        except BaseException as error:
+            if process is not None:
+                try:
+                    _stop_owned(process)
+                except Exception as cleanup:
+                    raise RuntimeError('Owned overlay checker cleanup failed') from error
+            raise
 
 
 def _entries(path):

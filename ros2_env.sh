@@ -2,4 +2,7 @@
 source /opt/ros/humble/setup.bash
 export ROS_DOMAIN_ID=87
 export ROS_LOCALHOST_ONLY=1
-export ROS_LOG_DIR=/tmp/mujoco_ros2_logs
+task_ros2_log_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+export ROS_LOG_DIR="${task_ros2_log_root}/runtime/ros-logs"
+mkdir -p "$ROS_LOG_DIR"
+unset task_ros2_log_root
