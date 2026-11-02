@@ -4,7 +4,7 @@ const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const format=(value,digits=3,suffix='')=>finite(value)?value.toFixed(digits)+suffix:'—';
 const TIMEOUT_MS=3000;
 export class WorkspaceTaskControls {
- constructor({document,request,refresh,beforeCommand=()=>{},afterCommand=()=>{},notify=()=>{},showOperate=()=>{},cameraReady=()=>true,now=()=>performance.now(),schedule=setTimeout,unschedule=clearTimeout}){
+ constructor({document,request,refresh,beforeCommand=()=>{},afterCommand=()=>{},notify=()=>{},showOperate=()=>{},cameraReady=()=>true,now=()=>performance.now(),schedule=(...args)=>globalThis.setTimeout(...args),unschedule=id=>globalThis.clearTimeout(id)}){
   Object.assign(this,{document,request,refresh,beforeCommand,afterCommand,notify,showOperate,cameraReady,now,schedule,unschedule});
   this.state=null;this.connected=false;this.pending=null;this.sample=null;this.eventsKey=null;this.needsFresh=true;this.epoch=0;this.closed=false;this.unconfirmed=null;
   this.get('task-select').addEventListener('change',()=>this.command('select',this.get('task-select').value));
@@ -91,11 +91,11 @@ export class WorkspaceTaskControls {
    // Timeout limits observation only. A late response cannot dispatch or retry.
    await Promise.race([this.request(path,body),new Promise((_,reject)=>{timer=this.schedule(()=>reject(Error('명령 응답 제한시간을 넘었습니다.')),TIMEOUT_MS);})]);
    if(this.closed||this.epoch!==epoch)return false;
-   success=true;this.showOperate();
+   success=true;
   }catch(error){if(!this.closed&&this.epoch===epoch){if(!Number.isInteger(error.httpStatus))this.unconfirmed={action,selection_id:task.selection_id,job_id:job?.job_id,generation:job?.generation??0};this.notify('명령 처리 결과를 확인하지 못했습니다. 자동으로 다시 보내지 않습니다. 최신 상태와 실행 기록을 확인하세요. '+error.message);}}
   finally{
    if(timer!==undefined)this.unschedule(timer);
-   if(!this.closed&&this.epoch===epoch){try{await this.refresh();}catch(_error){this.connected=false;this.needsFresh=true;}this.pending=null;this.afterCommand();this.render();}
+   if(!this.closed&&this.epoch===epoch){try{await this.refresh();if(success&&!this.closed&&this.epoch===epoch)this.showOperate();}catch(_error){this.connected=false;this.needsFresh=true;}this.pending=null;this.afterCommand();this.render();}
   }
   return success;
  }
