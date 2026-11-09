@@ -67,6 +67,28 @@ systemctl --user restart mujoco-viewer-8933.service
 복구 수정과 남은 검수는 뷰어 상태 리포트에 이어서 기록합니다.
 [복구·운영 후속](operator/viewer-status-2026-10-30/index.html#recovery-operations)
 
+## 공동 작업 환경의 시작 실패 후속
+
+main 승격 CI #167에서는 왼팔 제어기 설정 중 native 제어 노드가 SIGSEGV로 중단됐습니다.
+종료 신호 이전의 원본 스택은 ROS 시계 구독과 타이머의 jump callback 경로를 가리킵니다.
+고정한 `rclcpp_action 16.0.21`에 Action 서버 초기화·해제와 시계 갱신의 clock mutex를
+공유하는 패치를 추가했습니다. runtime 빌드는 이 패키지를 프로젝트별 prefix에 먼저 빌드합니다.
+
+```bash
+python3 build_workspace.py --component runtime
+source ./manipulation_env.sh
+```
+
+전체 빌드인 `--component all`도 같은 경로를 사용합니다. 일반 조작과 ROS 집기 실행 전에는
+현재 패치 SHA와 실제 라이브러리 검색의 첫 후보를 검사합니다. 단일 로봇 실행도 같은 검사를
+사용합니다. 빌드 설정이 바뀌면 실행용 모델과
+집기 타깃도 새 경로로 생성하고 식별 SHA를 다시 지정합니다. 수정 환경의 단일 로봇·공동 작업·
+직접 집기·같은 작업실 HTTP 집기 14개 실제 검증과 정상 정리를 확인했습니다.
+
+복구 수정의 원격 반영과 통합 UI 검수에 앞서 이 시작 실패를 확인합니다.
+기존 집기 시작 취소 수정의 검증과 W01의 남은 수명 주기 진단은 각각 유지합니다.
+[시작 실패의 원본과 후속 상태](operator/viewer-status-2026-10-30/index.html#workcell-clock-startup-followup)
+
 ## 작업실 구성
 
 상단의 **조작 · 계획 검토 · 기록 분석**은 화면의 목적을 바꿉니다. 메뉴를 바꾸거나 패널을
