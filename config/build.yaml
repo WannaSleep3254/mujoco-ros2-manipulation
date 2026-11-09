@@ -37,6 +37,9 @@ packages:
   fairino10_v6_moveit2_config:
     repository: fairino
     path: fairino10_v6_moveit2_config
+  fairino16_v6_moveit2_config:
+    repository: fairino
+    path: fairino16_v6_moveit2_config
   ur_description:
     repository: ur_description
     path: .
