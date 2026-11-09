@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15607,
-      "sha256": "c267d1b55b504f206bf8e9d5ebef70c383edbd41fb461ff66f6d7810c0dfabbc"
+      "bytes": 15563,
+      "sha256": "c7a5b9a0df3831c44827cca9c4e73c4d1b1be5965c8fae865845eb8149b192fa"
     },
     "operator-demos.json": {
-      "bytes": 5591,
-      "sha256": "5879a21e1615e96ecdc997765fb59d462e9d6d073381665e12b667adb3bd88a2"
+      "bytes": 5547,
+      "sha256": "82e7900f2abb91495c72ee7705811a6ab7acc43c933b60228dcb43a645dab6bd"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -380,12 +380,12 @@
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 87141,
-      "sha256": "2757cb12536e58b4757a85beacd7fcf84cde9fbedf0e63e6043247149e3d5ec1"
+      "bytes": 89262,
+      "sha256": "5c4c8ab855f7d071000f93a880f3ec94ae72cf865ffa3b94d16777618598b192"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 3273,
-      "sha256": "fa5598065a7a989b579ea52e1b86aad778b6fb04c2395093d3d6890d2ab53192"
+      "bytes": 4891,
+      "sha256": "7640ebca572a3f53085cd018832a3022163b7c187459381b65ed8faa0cf859f4"
     },
     "operator/system-direction-2026-10-27/native-admission-reservation-verification.json": {
       "bytes": 193037,
@@ -563,9 +563,13 @@
       "bytes": 13002,
       "sha256": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a"
     },
+    "operator/viewer-status-2026-10-30/grasp-recording-validation-2026-11-10.json": {
+      "bytes": 10106,
+      "sha256": "f3f497b5266303a0b01c9456bb1e31f5c579f4ceb91b4f411298c7e35155401a"
+    },
     "operator/viewer-status-2026-10-30/index.html": {
-      "bytes": 77290,
-      "sha256": "f3f0cbe61d7c2208e9e609ec8431225133b031eb0440ba499742b7e9c70dfcf8"
+      "bytes": 85329,
+      "sha256": "a77e7de71ac759d6d28050b5f8beb3fae5242cb69a280f60aa0512b1870c703f"
     },
     "operator/viewer-status-2026-10-30/integration-verification.json": {
       "bytes": 28191,
@@ -576,8 +580,20 @@
       "sha256": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db"
     },
     "operator/viewer-status-2026-10-30/manifest.json": {
-      "bytes": 27869,
-      "sha256": "a6d72199d899a4ba75a754fb66b4a694ae2f316e55feef4d4e8446f08c71f33c"
+      "bytes": 29960,
+      "sha256": "8f6692a19c5857cced15eb99a96df741254173f6fd7223758759549ac0b66405"
+    },
+    "operator/viewer-status-2026-10-30/media/grasp-recording-desktop-normal-2026-11-10.png": {
+      "bytes": 133547,
+      "sha256": "07613dc6cef08cf23472c156a31517c5c8cffd6281980f1fd70402cb512e3e3a"
+    },
+    "operator/viewer-status-2026-10-30/media/grasp-recording-mobile-event-only-2026-11-10.png": {
+      "bytes": 102969,
+      "sha256": "073a85dccef0dab0dacd6ae2c620b96ca1d0dc37899d56e639d7f624c96174e7"
+    },
+    "operator/viewer-status-2026-10-30/media/grasp-recording-mobile-normal-2026-11-10.png": {
+      "bytes": 104498,
+      "sha256": "5a2eace689cfe0b0ea1e28219fd44daf8f574552fd5fe8c3ca393d6b0360b58c"
     },
     "operator/viewer-status-2026-10-30/media/viewer-8897.jpg": {
       "bytes": 127089,

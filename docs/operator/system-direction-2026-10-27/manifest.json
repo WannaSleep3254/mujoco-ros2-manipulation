@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.13",
+  "document_version": "1.14",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim.",
+  "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. Remote CI and deployment are pending.",
   "assets": {
-    "index.html": "2757cb12536e58b4757a85beacd7fcf84cde9fbedf0e63e6043247149e3d5ec1",
+    "index.html": "5c4c8ab855f7d071000f93a880f3ec94ae72cf865ffa3b94d16777618598b192",
     "review-data.json": "350fcd6106eaa2e222b93996788e3dacc6b74a7fcc20c066ea64e807f033f477",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
@@ -40,5 +40,24 @@
     "rendered_browser_qa": "Not performed; browser access disabled.",
     "original_six_viewers_and_evidence_preserved": true,
     "fatal_stop_followup": "Fatal owned abort bypasses graceful readiness wait; targeted tests and final actual three-case acceptance are separate."
+  },
+  "grasp_synchronized_recording_update": {
+    "date": "2026-11-10",
+    "source_commit": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
+    "recording_version": 2,
+    "evidence": "../viewer-status-2026-10-30/grasp-recording-validation-2026-11-10.json",
+    "evidence_sha256": "f3f497b5266303a0b01c9456bb1e31f5c579f4ceb91b4f411298c7e35155401a",
+    "actual_ros_http_cases": [
+      "normal",
+      "cancel_startup",
+      "cancel_transport"
+    ],
+    "image_source": "64x48 diagnostic RGB8 pattern",
+    "clock_association": "declared_same_run",
+    "pose_sample_semantics": "parent_accepted_latest_ipc",
+    "rendered_browser_qa": "passed desktop 1280x720 and browser override 390x844; physical handset not tested",
+    "release_ci_and_deployment": "pending",
+    "frontend_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314",
+    "image_clock_fault_verification": "passed at 9c3a647; recording ended while native completed all six actions"
   }
 }
