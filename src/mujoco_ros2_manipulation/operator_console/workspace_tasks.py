@@ -58,6 +58,64 @@ class WorkspaceTasks:
             else:
                 self._transport.selection_id = previous
 
+    def require_capture_selection(self):
+        expected = getattr(self._transport, 'selection_id', None)
+        if expected is not None and expected != self.selection_id:
+            raise ValueError('기록 요청의 작업 선택이 바뀌었습니다.')
+
+    @contextmanager
+    def capture_request(self, headers):
+        if self.grasp is None:
+            yield
+            return
+        if (type(headers) is not list or len(headers) != 1 or type(headers[0]) is not str
+                or not _ID.fullmatch(headers[0])):
+            raise ValueError('현재 작업 선택의 X-Workspace-Selection 헤더가 필요합니다.')
+        previous = getattr(self._transport, 'selection_id', None)
+        self._transport.selection_id = headers[0]
+        try:
+            with self.app.lock:
+                self.require_capture_selection()
+            yield
+        finally:
+            if previous is None:
+                del self._transport.selection_id
+            else:
+                self._transport.selection_id = previous
+
+    @contextmanager
+    def capture_admission(self, owner):
+        # Only compare already materialized identities here. Asset reads and the
+        # source transport refresh happen outside both control-owner locks.
+        with self.app.lock, self.grasp.lock:
+            self.require_capture_selection()
+            job = self.grasp.current
+            if (self.selected != 'grasp' or self.selection_id != owner['selection_id']
+                    or self.app.closing.is_set() or job is None or job.finished
+                    or job.capture_owner != owner['native_owner']):
+                raise ValueError('기록 준비 중 선택한 집기 실행 소유자가 바뀌었습니다.')
+            yield
+
+    def capture_context(self):
+        with self.app.lock:
+            self.require_capture_selection()
+            if self.selected != 'grasp' or self.grasp is None or self.app.closing.is_set():
+                raise ValueError('현재 집기 실행의 센서 기록을 선택하세요.')
+            selection = self.selection_id
+        reader = getattr(self.grasp, 'capture_source', None)
+        if not callable(reader):
+            raise ValueError('이 집기 실행 소유자에 센서 기록이 등록되지 않았습니다.')
+        source = reader()
+        if source is None:
+            raise ValueError('집기 실행을 시작한 뒤 센서 기록을 준비하세요.')
+        with self.app.lock, self.grasp.lock:
+            self.require_capture_selection()
+            if (self.selected != 'grasp' or self.selection_id != selection
+                    or self.grasp.current is None or self.grasp.current.capture_owner != source['owner']):
+                raise ValueError('기록을 읽는 동안 집기 실행 소유자가 바뀌었습니다.')
+        source['selection_id'] = selection
+        return source
+
     def _normal_reason(self):
         app = self.app
         if app.closing.is_set():
@@ -76,7 +134,7 @@ class WorkspaceTasks:
         if app.views.preview:
             return '미리보기를 종료하고 실시간 보기로 돌아온 뒤 작업을 바꾸세요.'
         capture = getattr(getattr(app, 'sync_recordings', None), 'current', {})
-        if capture.get('status') in ('preparing', 'recording', 'saving'):
+        if capture.get('status') in ('preparing', 'armed', 'recording', 'saving'):
             return '현재 센서 기록의 저장이 끝난 뒤 작업을 바꾸세요.'
         if any(app.state.graph.get(name, 0) for name in ('clock', 'joints', 'status', 'guards')):
             return '일반 ROS 도메인에 실행이 남아 있습니다. 해당 소유자의 종료를 확인하세요.'

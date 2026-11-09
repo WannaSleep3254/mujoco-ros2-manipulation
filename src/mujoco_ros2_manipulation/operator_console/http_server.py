@@ -132,12 +132,19 @@ class Handler(BaseHTTPRequestHandler):
                 if image:
                     return self.respond(host.image_bytes(image[1]), mime="image/jpeg")
                 return self.respond(dict(error="기록 자료를 찾을 수 없습니다."), 404)
-            if path == "/api/image-source":
-                image = getattr(app.bridge, "image_source", None)
-                return self.respond(None if image is None else image.snapshot())
-            if path == "/api/image-source/frame":
-                image = getattr(app.bridge, "image_source", None)
+            if path in ("/api/image-source", "/api/image-source/frame"):
                 query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                grasp = getattr(getattr(app, "tasks", None), "selected", None) == "grasp"
+                owner = query.pop("owner_token", None)
+                if grasp and (owner is None or len(owner) != 1 or not re.fullmatch("[0-9a-f]{64}", owner[0])):
+                    raise ValueError("현재 집기 센서 이미지의 소유자 식별자가 필요합니다.")
+                if not grasp and owner is not None:
+                    raise ValueError("센서 이미지의 집기 실행 소유자가 바뀌었습니다.")
+                image, info = app.sync_recordings.image_source(None if owner is None else owner[0])
+                if path == "/api/image-source":
+                    if query:
+                        raise ValueError("현재 센서의 소유자 식별자만 지정하세요.")
+                    return self.respond(info)
                 if (set(query) != {"generation", "sequence"}
                         or any(len(v) != 1 for v in query.values())
                         or not re.fullmatch("[0-9a-f]{32}", query["generation"][0])
@@ -146,6 +153,9 @@ class Handler(BaseHTTPRequestHandler):
                 frame = None if image is None else image.frame(query["generation"][0], int(query["sequence"][0]))
                 if frame is None:
                     return self.respond(dict(error="이미지 보존 범위 밖이거나 공급원이 바뀌었습니다."), 410)
+                # Recheck after a potentially delayed frame lookup. Provider
+                # generations alone do not identify another task/job.
+                app.sync_recordings.image_source(None if owner is None else owner[0])
                 return self.respond(frame[1], mime="image/jpeg")
             if path.startswith("/api/analysis/"):
                 return self.respond(app.analysis(path.removeprefix("/api/analysis/")))
@@ -234,7 +244,10 @@ class Handler(BaseHTTPRequestHandler):
             path = urlsplit(self.path).path
             app = self.server.application
             tasks = getattr(app, 'tasks', None)
-            scope = (tasks.motion_request(self.headers.get_all('X-Workspace-Selection', []))
+            capture_path = path in ("/api/sync-recordings/start", "/api/sync-recordings/stop")
+            scope = (tasks.capture_request(self.headers.get_all('X-Workspace-Selection', []))
+                     if tasks is not None and capture_path else
+                     tasks.motion_request(self.headers.get_all('X-Workspace-Selection', []))
                      if tasks is not None and path in _NORMAL_TASK_POSTS else nullcontext())
             with scope:
                 if path == "/api/task/select":
@@ -243,10 +256,10 @@ class Handler(BaseHTTPRequestHandler):
                     result = app.tasks.start_grasp(payload)
                 elif path == "/api/task/grasp/cancel":
                     result = app.tasks.cancel_grasp(payload)
-                elif path == "/api/sync-recordings/start" and payload == {}:
-                    result = app.sync_recordings.start()
-                elif path == "/api/sync-recordings/stop" and set(payload) == {"id"}:
-                    result = app.sync_recordings.stop(payload["id"])
+                elif path == "/api/sync-recordings/start" and set(payload) in (set(), {"expected_owner_token"}):
+                    result = app.sync_recordings.start(payload.get("expected_owner_token"))
+                elif path == "/api/sync-recordings/stop" and set(payload) in ({"id"}, {"id", "expected_owner_token"}):
+                    result = app.sync_recordings.stop(payload["id"], payload.get("expected_owner_token"))
                 elif re.fullmatch(r"/api/sync-recordings/[0-9a-f]{32}/control", path):
                     if set(payload) not in ({"action"}, {"action", "time_sec"}, {"action", "speed"}):
                         raise ValueError("재생 동작과 시각 또는 속도만 지정하세요.")

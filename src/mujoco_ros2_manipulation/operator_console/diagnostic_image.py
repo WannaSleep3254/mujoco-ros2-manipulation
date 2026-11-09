@@ -36,6 +36,7 @@ def main():
     ImageSource(topic=args.topic)  # Validate before ROS entities.
     import rclpy
     from rclpy.node import Node
+    from rclpy.executors import ExternalShutdownException
     from rclpy.qos import QoSProfile, ReliabilityPolicy
     from sensor_msgs.msg import Image
     from rosgraph_msgs.msg import Clock
@@ -63,9 +64,12 @@ def main():
             image.data = pattern(count)
             publisher.publish(image)
             count,last_stamp,next_frame = count+1,key,elapsed+1/args.rate
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
     print(json.dumps(dict(kind="diagnostic-pattern-only",published=count,
         clock="observed ROS /clock acquisition stamp",control_commands=0)))
     return 0

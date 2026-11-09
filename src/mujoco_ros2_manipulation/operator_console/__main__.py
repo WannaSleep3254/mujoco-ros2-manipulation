@@ -38,6 +38,13 @@ def validate_workspace_options(args):
             raise ValueError("첫 통합 집기는 기본 작업 환경과 명시한 전용 집기 모델을 사용합니다.")
         if args.ros_grasp_viewer is not None:
             raise ValueError("통합 집기와 별도 집기 화면 링크 중 하나를 명시하세요.")
+    image_topic = getattr(args, "ros_grasp_image_topic", None)
+    image_clock = getattr(args, "ros_grasp_image_clock_domain", "unknown")
+    if image_topic is not None or image_clock != "unknown":
+        if image_topic is None or args.ros_grasp_environment is None:
+            raise ValueError("집기 센서는 명시적으로 등록한 집기 모델과 고정 이미지 토픽을 함께 지정하세요.")
+        from .image_source import ImageSource
+        ImageSource(source_id="grasp_rgb", topic=image_topic, clock_domain=image_clock)
     if len(args.saved_recording) > 8:
         raise ValueError("시작할 때 등록할 보존 기록은 최대 8개입니다.")
 
@@ -93,6 +100,9 @@ def main():
                         help="Explicit immutable native ROS grasp target for the shared workspace UI")
     parser.add_argument("--ros-grasp-manifest-sha256", help="Expected SHA256 of the registered grasp.json")
     parser.add_argument("--ros-grasp-domain", type=int, help="Unused fixed ROS domain distinct from the normal task")
+    parser.add_argument("--ros-grasp-image-topic", help="Opt-in fixed RGB8 topic in the registered grasp worker domain")
+    parser.add_argument("--ros-grasp-image-clock-domain", choices=("unknown", "ros_simulation"), default="unknown",
+                        help="Explicit grasp sensor acquisition clock declaration")
     parser.add_argument("--saved-recording", type=Path, action="append", default=[],
                         help="Explicit local synchronized recording to copy into read-only workspace analysis (max 8)")
     args = parser.parse_args()
@@ -161,7 +171,9 @@ def main():
         if grasp_target is not None:
             from ..grasping.ros_demo_server import RosDemoApplication
             grasp_application = RosDemoApplication(grasp_target, folder.with_name(folder.name+"-grasp"),
-                                                   domain=args.ros_grasp_domain)
+                                                   domain=args.ros_grasp_domain,
+                                                   image_topic=args.ros_grasp_image_topic,
+                                                   image_clock_domain=args.ros_grasp_image_clock_domain)
         app = ConsoleApplication(cell, state, node, folder, render=not args.no_render,view_sources=view_sources,
                                  execution_target=execution_target, grasp_application=grasp_application)
         for recording in saved_recordings:

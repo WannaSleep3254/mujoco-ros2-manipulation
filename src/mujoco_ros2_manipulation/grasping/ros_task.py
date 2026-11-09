@@ -30,6 +30,7 @@ from ..workcells.interference import Spline
 from ..workcells.planning_adapter import MoveItPlanningAdapter
 from ..workcells.pose_adapter import MoveItPoseAdapter, PoseAdapterError
 from .contract import GraspLifecycle
+from .capture_transport import CapturePublisher, checked_registration
 from .ros_distance import GraspDistanceEvaluator
 from .ros_model import FINGER_JOINTS
 from .ros_observation import GraspObservationStore, ObservationUnavailable
@@ -372,7 +373,8 @@ def expected_startup_spawner_interruptions(log, *, startup_cancel, launch_was_al
 
 
 def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_event=None,
-                  on_update=None, run_id=None, diagnostic_hold_sec=0):
+                  on_update=None, run_id=None, diagnostic_hold_sec=0, capture_registration=None,
+                  image_topic=None, image_clock_domain="unknown"):
     """Run one fresh fixed task and retain originals, including any failure.
 
     ``on_update`` receives detached dictionaries with ``kind`` (task or
@@ -403,6 +405,14 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         enabled=diagnostic_hold_sec > 0, production_default_sec=0., gui_option=False,
         reference_policy="original closed-grasp reference is retained; no tolerance or contact gate change")
     process = node = context = executor = target = evaluator = scene = life = frames = receipts = log_stream = timer = publisher = None
+    capture_feed = None
+    if capture_registration is not None:
+        try:
+            owner = checked_registration(capture_registration, output, identifier, domain, manifest_sha256)
+            capture_feed = CapturePublisher(output, owner, image_topic=image_topic,
+                                            image_clock_domain=image_clock_domain)
+        except Exception as error:
+            record["recording_observations"] = dict(clean=False, fault=str(error)[:512])
     identity_worker = None
     identity_paths = ()
     clients, pending, handles = {}, [], []
@@ -433,6 +443,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         return deepcopy(record)
 
     def emit(kind="task", observation=None):
+        emitted_ns = time.monotonic_ns()
         record["event_sequence"] += 1
         saved = snapshot()
         public = {key: saved[key] for key in ("status", "stage", "physical_grasp", "planning_attachment",
@@ -461,6 +472,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                      truth_source=record["truth_source"], task=public)
         if observation is not None:
             value["observation"] = deepcopy(observation)
+        if capture_feed is not None:
+            capture_feed.event(value, emitted_ns=emitted_ns,
+                               native_alive=process is not None and process.poll() is None)
         if on_update is not None:
             on_update(value)
 
@@ -783,7 +797,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                       plugin_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/observation.cpp"))
         action_patch, action_binary = action_clock_runtime_paths(ROOT)
         source_paths = [action_patch, Path(__file__), *[Path(__file__).with_name(name) for name in
-            ("ros_observation.py", "ros_planning_scene.py", "ros_distance.py", "ros_admission.py", "contract.py")],
+            ("ros_observation.py", "ros_planning_scene.py", "ros_distance.py", "ros_admission.py", "contract.py", "capture_transport.py")],
             *[ROOT/"src/mujoco_ros2_manipulation/workcells"/name for name in
               ("pose_adapter.py", "planning_adapter.py", "interference.py")],
             ROOT/"native/grasp_ros2_plugin/src/observation.cpp", ROOT/"native/grasp_policy.hpp",
@@ -844,6 +858,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         node = Node("native_ros_grasp_task_"+identifier[:8], context=context)
         executor = SingleThreadedExecutor(context=context)
         executor.add_node(node)
+        if capture_feed is not None:
+            capture_feed.attach(node)
         qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT)
         guard_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
                                durability=DurabilityPolicy.TRANSIENT_LOCAL)
@@ -1144,6 +1160,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                 client.destroy()
             except Exception as error:
                 record["cleanup_errors"].append("action client: "+str(error))
+        if capture_feed is not None:
+            capture_feed.stop_sensor()
         if executor is not None:
             try:
                 executor.shutdown(timeout_sec=1.)
@@ -1216,6 +1234,11 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         if (output/"physics.json").exists():
             record["physics_sha256"] = file_sha256(output/"physics.json")
         save()
+        if capture_feed is not None:
+            record["recording_observations"] = capture_feed.close()
+            # Preserve the final recording diagnostic without emitting another
+            # source event after its bounded exporter has already closed.
+            atomic_json(result_path, snapshot())
     return snapshot()
 
 
@@ -1227,6 +1250,10 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run-id", help="startup owner's fresh 32-character lowercase run ID")
     parser.add_argument("--updates", type=Path, help="new output/latest.json atomic IPC; never an arbitrary destination")
+    parser.add_argument("--capture-registration", type=Path,
+        help="Fixed owned job capture-registration.json; read-only recording identity")
+    parser.add_argument("--image-topic", help="Startup-fixed optional RGB8 source for recording only")
+    parser.add_argument("--image-clock-domain", choices=("unknown", "ros_simulation"), default="unknown")
     parser.add_argument("--diagnostic-hold-sec", type=float, default=0.,
         help="Explicit diagnostic only: hold the confirmed physical grasp for 0..60 simulation seconds; GUI never sets this")
     args = parser.parse_args(argv)
@@ -1245,7 +1272,8 @@ def main(argv=None):
         signal.signal(signal.SIGINT, lambda *_: cancel.set())
         result = run_ros_grasp(args.target, args.sha, args.output, domain=args.domain, run_id=args.run_id,
             cancel_event=cancel, on_update=update if updates is not None else None,
-            diagnostic_hold_sec=args.diagnostic_hold_sec)
+            diagnostic_hold_sec=args.diagnostic_hold_sec, capture_registration=args.capture_registration,
+            image_topic=args.image_topic, image_clock_domain=args.image_clock_domain)
         print(result["status"].upper()+": "+str(args.output/"result.json"), flush=True)
         return 0 if result["status"] == "succeeded" else 1
     except Exception as error:

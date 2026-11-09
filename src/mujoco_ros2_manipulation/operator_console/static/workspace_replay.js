@@ -60,6 +60,16 @@ export class WorkspaceReplay {
     speed.value='1';speed.addEventListener('change',()=>this.player?.control('speed',Number(speed.value)));
     const status=create('p','기록을 준비하고 있습니다.','sync-status',root);status.setAttribute('role','status');status.dataset.state='waiting';
     create('p','표시된 선택 시각 —','sync-displayed-time',root).className='help';
+    const eventsPanel=create('section','','sync-events-panel',root);eventsPanel.className='sync-events-panel';eventsPanel.hidden=true;
+    const eventsHeading=create('div','',null,eventsPanel);eventsHeading.className='sync-events-heading';
+    create('h4','작업 이벤트','sync-events-title',eventsHeading);eventsPanel.setAttribute('aria-labelledby',this.node('sync-events-title').id);
+    const eventsState=create('p','이벤트를 준비하고 있습니다.','sync-events-state',eventsHeading);eventsState.setAttribute('role','status');
+    create('p','시각이 연결된 이벤트를 선택하면 같은 기록의 재생 위치로 이동합니다.',null,eventsPanel).className='sync-event-help';
+    create('ol','','sync-events',eventsPanel).className='sync-events-list';
+    const untimed=create('details','','sync-untimed-panel',eventsPanel);untimed.className='sync-untimed-panel';
+    create('summary','재생 시각에 연결되지 않은 이벤트',null,untimed);
+    create('p','발생 순서와 원래 단조 시계 시각을 함께 보존했습니다.',null,untimed).className='sync-event-help';
+    create('ol','','sync-untimed-events',untimed).className='sync-events-list';
     create('p','선택 시각보다 앞선 0.5초 이내 표본을 표시합니다. 빠진 자세·영상은 보간하지 않습니다. 3D 드래그 회전 · 휠 확대·축소 · 오른쪽 드래그 이동',null,root).className='help';
     const details=create('details','',null,root);create('summary','기록 출처와 표시 정보',null,details);
     create('p','','sync-identity',details).className='workspace-replay-identity';
@@ -78,12 +88,12 @@ export class WorkspaceReplay {
       viewer=this.makeViewer(this.node('sync-scene'),{recordedPlayback:true,
         assetURL:hash=>prefix+'/assets/'+hash,
         onMetrics:value=>{this.node('sync-metrics').textContent=JSON.stringify(value,null,2);}});
-      this.player=this.makePlayer({id,viewer,element:key=>this.node(key),
+      this.player=this.makePlayer({id,viewer,element:key=>this.node(key),createElement:tag=>this.doc.createElement(tag),
         hidden:()=>this.disposed||this.doc.hidden||this.panel.hidden||this.root.hidden});
       void this.player.update();this.root.focus?.();this.root.scrollIntoView?.({block:'nearest'});return true;
     }catch(error){
       if(this.player)this.player.destroy();else viewer?.destroy();this.player=null;
-      this.node('sync-error').textContent='기록 표시를 준비하지 못했습니다: '+error.message;this.node('sync-error').hidden=false;return false;
+      this.node('sync-error').textContent='기록 표시를 준비하지 못했습니다. '+error.message;this.node('sync-error').hidden=false;return false;
     }
   }
   close({restoreFocus=false}={}){
