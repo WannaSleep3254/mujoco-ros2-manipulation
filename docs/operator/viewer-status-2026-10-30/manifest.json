@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.3",
+  "document_version": "1.4",
   "layout_baseline": "1.9",
   "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
-  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered.",
+  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "82e422fc0aaac4b201b626cb619ab4576d71c3e96dbc404f20bc12a8b35ab66b",
+    "index.html": "4ba4b17fb17e0ad5489542d6900f0fde185afc492dece1487e3359f8d5051653",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -74,5 +74,134 @@
     "full_pc_mobile_ui_followup": "pending",
     "arbitrary_initialization_time_cancel": "unresolved",
     "original_synchronized_records": "41-pose/18-image and 41-pose/17-image local originals still unavailable"
+  },
+  "moveit_startup_cancel_followup": {
+    "date": "2026-11-09",
+    "original_ci": {
+      "run_id": 42594517669,
+      "run_number": 165,
+      "head_sha": "bd792518944f9de3148b7975069066c60c2cbd34",
+      "case": "cancel_startup",
+      "move_group_exit_code": -6,
+      "error": "rclcpp::exceptions::RCLError: could not create publisher because the ROS context was invalid during initialization after SIGINT",
+      "native_control_exit_clean": true,
+      "native_three_controller_stop_observed": true,
+      "artifact_id": 13663077346,
+      "artifact_sha256": "3101d2049617aee9f6a2f43dd94394eb323b8331415553be9b24592c7eff676d",
+      "result_sha256": "28bd2b955ebdc8c74c9a97cc5e4ab26c6030490772a54ea7688ca070ef1a7dc7",
+      "launch_log_sha256": "9156018f39c22d7a3c53e3e40ef67f94324353e218eb1b8ca3a8d63d2dd50b31",
+      "original_failure_retained": true
+    },
+    "production_fix": {
+      "commit": "b02eb57084e87e6fe89f72381e7b7c06ff1c5874",
+      "ros_task_sha256": "ac923a756ea3030c67889a9f38e61c1a0e1b834d6c84caf3cdd955a02b384b1e",
+      "immediate_native_phase": 8,
+      "scope": "Cancelled before first Action, after native stop; same-live-owned MoveGroup final initialization proof, required services and fresh stopped guard before launch termination",
+      "shared_cleanup_budget_sec": 8,
+      "unexpected_child_failure_classification": "preserved"
+    },
+    "verification": {
+      "focused_unit_tests": 69,
+      "focused_unit_status": "passed",
+      "full_unit_tests": 1435,
+      "full_unit_skipped": 1,
+      "full_unit_status": "passed",
+      "model_tests": 91,
+      "model_skipped": 3,
+      "model_status": "passed",
+      "package_build": "passed",
+      "execution_manifest_sha256": "f4883126938f0fa84e7a13480c1f007fdc36947a38983aba2128d0e9fba5f365",
+      "actual_ros_cases": [
+        {
+          "entrypoint": "direct",
+          "case": "cancel_startup",
+          "status": "passed",
+          "result_sha256": "fb08cddeaf6a7b8fcd31e63ecac897eb441ade6ea3aad7d4971bbfd887bd0b17",
+          "run_id": "764624b6c2d1453783af3bb67d14234e",
+          "native_stop_then_owned_initialization": "passed",
+          "cleanup_observed_wall_sec": 1.2881854439983726,
+          "shared_cleanup_budget_sec": 8.0
+        },
+        {
+          "entrypoint": "direct",
+          "case": "normal",
+          "status": "passed",
+          "result_sha256": "3560002b9f577f68444d6bde4d69fb18492033cf1daca9866315f2028c8c688b",
+          "run_id": "c8226c36eb704ff488500747eecb6ceb"
+        },
+        {
+          "entrypoint": "direct",
+          "case": "normal_hold",
+          "status": "passed",
+          "result_sha256": "c9be6a6cd3e4878d40d103c1502501f4696d33957679b0eaecd1ad7fb8a97cf1",
+          "run_id": "8c8ec19db8b6493aade445b6141c525c",
+          "diagnostic_hold_simulation_sec": 30.0
+        },
+        {
+          "entrypoint": "direct",
+          "case": "cancel_transport",
+          "status": "passed",
+          "result_sha256": "149800414cec5571a7cd6c68d7b5df70dc245330a520894dc175b1a5b6ad7570",
+          "run_id": "b09c5384d37749dbbec9f636eded790f"
+        },
+        {
+          "entrypoint": "shared_workspace_http",
+          "case": "normal",
+          "status": "passed",
+          "result_sha256": "2640b41b3c61b326fed00436cba6268f7271f033b3e61ea9244bc22fe25b7af4"
+        },
+        {
+          "entrypoint": "shared_workspace_http",
+          "case": "cancel_startup",
+          "status": "passed",
+          "result_sha256": "755b5961d0a2a4c8ab4fce1a87d9cdcfe7a13cb48850b872d18544caa712fe37"
+        },
+        {
+          "entrypoint": "shared_workspace_http",
+          "case": "cancel_transport",
+          "status": "passed",
+          "result_sha256": "8472404285b7ab044340c239a8892172bd655be213a39022ad07454c80155ea5"
+        }
+      ],
+      "full_pc_mobile_ui": "pending",
+      "controlled_startup_boundary": {
+        "scope": "Separate runtime-only diagnostic with a test-only 3s constructor delay; excluded from normal performance metrics and CI workload",
+        "diagnostic_hold_monotonic_sec": 3.0,
+        "probe_sha256": "a7276e6dfb87dd8c3725b5f4821ebc02d6893b37c7038aa2979a4f4583c2b7d8",
+        "planning_pipeline_sha256": "0efe878a422dce3ca74042dd46cec0fda131e3249d5e8356a4b612639d4ee937",
+        "move_group_executable_sha256": "5178a2e916d4b6aabdd0c3f28a8d6c01343a23be03f66f39fe6c38babdada67f",
+        "before": {
+          "status": "expected_failure_observed",
+          "source_commit": "198d8c3c358bff110e54500d2ed3d3b6e4d4119b",
+          "ros_task_sha256": "72a99c9cc7d4e73266fc87cc87e4bb24386493f7eb40fa5507e6bf65e4941515",
+          "result_sha256": "1c9569794c0443e4b2bc61424831e925be229439e701c7e42224ed6c3f30911e",
+          "move_group_exit_code": -6
+        },
+        "after": {
+          "status": "passed",
+          "source_commit": "b02eb57084e87e6fe89f72381e7b7c06ff1c5874",
+          "ros_task_sha256": "ac923a756ea3030c67889a9f38e61c1a0e1b834d6c84caf3cdd955a02b384b1e",
+          "result_sha256": "fa1def169af9f27e04e04c00659fc6b64118921c029fd9fd1d4ffd40e229dec2",
+          "cleanup_clean": true,
+          "unexpected_child_process_failures": []
+        },
+        "runtime_guard_restored_after_each_test": true,
+        "restored_guard_sha256": "d3c192cf24467d35cc24762179ec29d3fe2bbdfed060e16bacc75b0b6f514501"
+      }
+    },
+    "separate_open_work": [
+      "Arbitrary initialization-time comparison cancellation",
+      "Historical intermittent cleanup-delay diagnosis"
+    ],
+    "separate_local_input_change_rejection": {
+      "case": "normal_hold",
+      "status": "failed",
+      "reason": "Task identity files changed during read-only validation while model checks ran concurrently",
+      "failure_stage": "open",
+      "original_result_sha256": "a7f1754e012710251431bf3cffd3749e42e4656880f31b324782da69447288c1",
+      "retained_accepted_terminal_actions": 6,
+      "original_preserved": true,
+      "followup": "A separate sequential normal_hold execution passed after model checks completed"
+    }
   }
 }

@@ -132,6 +132,13 @@ native 실행이 시작되기 전에 취소됐다면 물리 정지를 관측했�
 즉시 중단합니다. 잘못된 IPC를 준비 완료로 받아들이거나 신호를 중복 전송하지 않으며, 원래 취소 시한을
 다시 시작하지 않습니다. 결과 누락·정리 미확인인 오류 종료는 정상 취소 완료로 표시하지 않습니다.
 
+native 실행이 시작된 뒤 첫 Action 전에 취소하면 phase 8로 정지를 먼저 요청합니다.
+세 궤적 제어기의 정지를 확인한 뒤 같은 소유 MoveGroup의 초기화 완료 메시지와 필수 서비스,
+0.5초 이내의 정지 guard를 확인하고 ROS launch를 종료합니다. native 정지와 이 초기화 대기는
+8초 정리 예산을 함께 사용합니다. 시한 초과나 자식 프로세스의 비정상 종료는 정리 실패로 기록합니다.
+운반 중 취소는 Action 취소와 native 정지 경로로 처리합니다.
+[집기 시작 취소 후속](operator/viewer-status-2026-10-30/index.html#moveit-startup-cancel-followup)
+
 ### 이번 통합에서 확인한 범위
 
 [통합 소스 fd6cebc](https://github.com/WannaSleep3254/mujoco-ros2-manipulation/tree/fd6cebc28e98337361e7224921785f96ec8cc79c)에서
