@@ -22,6 +22,51 @@
 아래의 [같은 작업실에서 ROS 집기 실행](#같은-작업실에서-ros-집기-실행) 절을 따릅니다.
 예전 서버를 여는 것만으로 새 기능이 추가되지는 않습니다. 기존 서버와 촬영 자료는 보존합니다.
 
+## 프로젝트 내부 실행과 기록 보존
+
+실행 환경과 중요한 기록은 프로젝트 안에 둡니다. `start-viewer.sh`는 프로젝트의 ROS 환경을
+불러온 뒤 조작 화면의 표준 시작 인수를 전달합니다. 일반 조작 화면은 다음과 같이 시작합니다.
+
+```bash
+./start-viewer.sh --domain 218 --port 8933
+```
+
+집기를 함께 사용하려면 준비한 실행 환경과 `grasp.json`의 SHA를 명시합니다.
+
+```bash
+task_grasp_directory=runtime/grasp-ros/target-01
+task_grasp_sha256="$(sha256sum "$task_grasp_directory/grasp.json" | cut -d ' ' -f 1)"
+./start-viewer.sh --domain 218 --port 8933 \
+  --ros-grasp-environment "$task_grasp_directory" \
+  --ros-grasp-manifest-sha256 "$task_grasp_sha256" \
+  --ros-grasp-domain 219
+```
+
+환경 스크립트를 불러오는 자식 프로세스도 같은 프로젝트의 `runtime/ros-logs/`에 ROS 로그를 남깁니다.
+설치 환경 검사별 `checker.log`와 `receipt.json`은
+`runtime/validation/environment-checks/` 아래 고유 폴더에 보존합니다.
+실행 기록, 성공·실패 결과, 영상과 센서·자세 기록도 프로젝트 내부에서 관리합니다.
+`/tmp`는 삭제돼도 되는 재생성 가능한 휘발성 자료에 사용합니다.
+
+로그인 후 자동 시작이 필요한 운영 호스트는 프로젝트의 절대 경로와 위 인수를 사용자 서비스의
+`ExecStart`에 등록합니다. 서비스 정의와 출력 로그를 프로젝트 안에 두고,
+사용자 systemd 설정에서는 그 정의를 연결합니다. 서비스는 뷰어 서버를 시작하며
+시뮬레이션과 로봇 작업은 사용자가 화면에서 시작합니다.
+
+현재 로컬 운영 예시는 `mujoco-viewer-8933.service`입니다. 등록된 호스트에서 다음 명령으로 관리합니다.
+
+```bash
+systemctl --user status mujoco-viewer-8933.service
+systemctl --user start mujoco-viewer-8933.service
+systemctl --user stop mujoco-viewer-8933.service
+systemctl --user restart mujoco-viewer-8933.service
+```
+
+프로젝트 경로와 실행 인수를 바꾸면 서비스 정의도 함께 갱신하고 다시 불러옵니다.
+새 경로의 실행과 로그를 확인한 뒤 전환하며 기존 실행 자료는 보존합니다.
+복구 수정과 남은 검수는 뷰어 상태 리포트에 이어서 기록합니다.
+[복구·운영 후속](operator/viewer-status-2026-10-30/index.html#recovery-operations)
+
 ## 작업실 구성
 
 상단의 **조작 · 계획 검토 · 기록 분석**은 화면의 목적을 바꿉니다. 메뉴를 바꾸거나 패널을
