@@ -75,7 +75,7 @@ class BuildTests(unittest.TestCase):
             selected = command[command.index('--packages-select')+1:command.index('--cmake-args')]
             self.assertEqual(selected, ['rclcpp_action'])
             self.assertIn('-DBUILD_TESTING=OFF', command)
-            self.assertEqual(command[command.index('--allow-overriding')+1], 'rclcpp_action')
+            self.assertNotIn('--allow-overriding', command)
 
     def test_action_runtime_rejects_missing_stale_or_shadowed_library(self):
         with tempfile.TemporaryDirectory() as temporary:

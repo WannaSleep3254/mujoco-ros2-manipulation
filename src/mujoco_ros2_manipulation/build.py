@@ -262,8 +262,6 @@ def apply_patch_series(source, patches):
 
 def colcon(root, packages, runtime=False, *, cmake_args=()):
     command = ['colcon', '--log-base', 'ros_ws/log', 'build']
-    if any(entry['name'] == 'rclcpp_action' for entry in packages):
-        command += ['--allow-overriding', 'rclcpp_action']
     command += ['--base-paths', *[entry['path'] for entry in packages]]
     command += ['--build-base', 'ros_ws/build', '--install-base', 'ros_ws/install', '--packages-select']
     command += [entry['name'] for entry in packages]
