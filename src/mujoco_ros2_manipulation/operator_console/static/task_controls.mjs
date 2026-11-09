@@ -61,13 +61,14 @@ export class WorkspaceTaskControls {
   this.text('grasp-source-age',format(p.age,2,' s'));
   this.text('grasp-relative-error',format(job?.evidence?.relative_position_error_m,5,' m'));
   this.text('grasp-finger-force',(job?.evidence?.finger_force_n||[]).map(value=>format(value,3,' N')).join(' / ')||'—');
-  this.text('grasp-error',job?.error?JSON.stringify(job.error):'');this.get('grasp-error').hidden=!job?.error;
+  const expectedCancel=job?.error?.type==='RosGraspCancelled'&&['cancelling','cancelled'].includes(job.status);
+  const message=expectedCancel?(job.status==='cancelled'?'취소 요청에 따라 작업을 중단했습니다.':'취소 요청을 처리하고 있습니다.'):job?.error?JSON.stringify(job.error):'';
+  for(const id of ['grasp-error','request-error']){this.text(id,message);this.get(id).hidden=!message;this.get(id).className=expectedCancel?'help':'error-text';}
   const events=job?.task?.events||[],key=JSON.stringify([job?.job_id,job?.generation,events]);
   if(key!==this.eventsKey){this.eventsKey=key;this.get('grasp-events').replaceChildren();for(const event of events.slice(-20)){const li=this.document.createElement('li');li.textContent=(graspStageLabels[event.stage]||graspPhaseLabels[event.stage]||event.stage||'작업')+' · '+(event.event||'상태 변경');this.get('grasp-events').append(li);}}
   this.text('request-stage',p.stage);this.text('request-id',job?.job_id||'—');this.text('request-badge',p.status);
   this.get('request-badge').className=this.get('grasp-status').className;
   this.text('first-motion','—');this.text('terminal-time','—');this.text('clearance','—');
-  this.text('request-error',job?.error?JSON.stringify(job.error):'');this.get('request-error').hidden=!job?.error;
   for(const node of this.document.querySelectorAll('[data-step]')){const index=Number(node.dataset.step);node.textContent=['01 접근·집기','02 집기 확인','03 운반·놓기','04 결과·정리'][index];node.classList.toggle('reached',job?.task?.events?.some(event=>index===0||index===1&&event.physical_grasp==='confirmed'||index===2&&event.stage==='carrying'||index===3&&job.finished&&job.owner_cleanup_clean===true));}
  }
  async command(action,choice){

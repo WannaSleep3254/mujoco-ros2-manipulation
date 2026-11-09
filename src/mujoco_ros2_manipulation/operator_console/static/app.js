@@ -245,7 +245,8 @@ function renderReview(){
  const visible=preview&&sceneControls?.cameraReady();
  badge($('review-badge'),waiting?'ready':'blocked',({awaiting_approval:'승인 대기',expired:'만료',invalidated:'무효화',consumed:'사용 완료',approval_queued:'승인 전송 중'})[review.state]||'다시 계획 필요');
  $('review-id').textContent=review.plan_request_id;
- $('review-summary').textContent=waiting?`계획과 검사가 끝났습니다. 실행 승인까지 ${Math.ceil(review.remaining_sec)}초 남았습니다.`:'이 계획은 실행할 수 없습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.';
+ const approvalSummary=({approval_queued:'실행 승인 요청을 보내고 있습니다. 요청과 실행 상태에서 진행을 확인하세요.',consumed:'이 계획의 승인을 한 번 사용했습니다. 연결된 실행 요청의 상태와 결과를 확인하세요.'})[review.state];
+ $('review-summary').textContent=waiting?`계획과 검사가 끝났습니다. 실행 승인까지 ${Math.ceil(review.remaining_sec)}초 남았습니다.`:approvalSummary||'이 계획은 실행할 수 없습니다. 실시간 보기로 돌아가 새 계획을 생성하세요.';
  $('review-preview').disabled=!readConnected||!waiting||busy||!sceneControls||state.view?.display_mode==='image';
  $('review-discard').disabled=!readConnected||!waiting||busy;
  $('review-approve').disabled=!readConnected||Boolean(observationProblem(state))||!waiting||!state.can_approve||!visible||!matches||busy;
@@ -279,7 +280,15 @@ async function replan(){
  finally{replanning=false;refreshControls();}
 }
 function requestProgress(record){
- if(!record)return;
+ if(!record){
+  latestRequest=null;detailsAt=0;
+  $('request-badge').textContent='대기';$('request-badge').className='badge';
+  $('request-stage').textContent='목표를 설정하고 계획을 생성한 뒤, 경로를 검토하고 실행하세요.';
+  $('request-id').textContent='—';$('request-error').textContent='';$('request-error').hidden=true;$('request-error').className='error-text';
+  for(const id of ['first-motion','terminal-time','clearance'])$(id).textContent='—';
+  document.querySelectorAll('[data-step]').forEach(el=>el.classList.toggle('reached',false));
+  return;
+ }
  badge($('request-badge'),record.status,record.stage==='plan_not_required'?'이동 불필요':record.mode==='plan_only'&&record.status==='succeeded'?'계획 생성 완료':undefined);$('request-id').textContent=record.request_id.slice(0,12)+'…';
  const stages={submitted:'명령 노드 수신 확인 대기',received:'목표 수신',state_snapshot:'시작 자세 확인',computation_started:'경로 계산 시작',pose_ik:'TCP 목표 IK 계산',planning_both_arms:'양팔 공동 경로 계획',planning_left_arm:'FR5 경로 계획',planning_right_arm:'UR5e 경로 계획',departure_search:'출발 타이밍 탐색',safety_checks:'거리·충돌 검사',computation_done:'계획·검사 완료',dispatch:'동작 예약·명령 전송',first_motion:'관절 이동 확인',first_motion_left:'FR5 이동 확인',first_motion_right:'UR5e 이동 확인',actions_done:'양팔 Action 완료',settled:'관절 수렴 확인',terminal:labels[record.status],cancel_received:'양팔 취소 요청 수신'};
  $('request-stage').textContent=({plan_ready:'계획·검사 완료 · 실행 승인 대기',plan_not_required:'이미 목표 자세에 있습니다. 실행할 이동이 없습니다.',plan_revoked:'미승인 계획 폐기',approval_validating:'승인 계획 재검사'})[record.stage]||stages[record.stage]||record.stage||labels[record.status];
@@ -294,7 +303,7 @@ function requestProgress(record){
  $('terminal-time').textContent=value(record.metrics?.received_to_terminal_wall_sec);
  if(latestRequest!==record.request_id){latestRequest=record.request_id;detailsAt=0;$('clearance').textContent='—';}
  if(Date.now()-detailsAt>1500){detailsAt=Date.now();loadRequest(record.request_id,{refresh:!terminal.has(record.status),expected:record}).then(data=>{
-  if(latestRequest===data.request_id){$('clearance').textContent=value(data.planned_clearance?.minimum?.distance_m*1000,1,' mm');const current=state?.history.find(item=>item.request_id===data.request_id)||record;$('request-error').textContent=guidanceText(current,data);$('request-error').hidden=!$('request-error').textContent;renderReview();}
+  if(!graspSelected()&&latestRequest===data.request_id){$('clearance').textContent=value(data.planned_clearance?.minimum?.distance_m*1000,1,' mm');const current=state?.history.find(item=>item.request_id===data.request_id)||record;$('request-error').textContent=guidanceText(current,data);$('request-error').hidden=!$('request-error').textContent;renderReview();}
  }).catch(()=>{});}
 }
 function history(records){
