@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.2",
+  "document_version": "1.3",
   "layout_baseline": "1.9",
   "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
-  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved.",
+  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "9a5a90d12ef599d806a280bcd945c3ad3f84e555521601ccc06b6392f377ef07",
+    "index.html": "82e422fc0aaac4b201b626cb619ab4576d71c3e96dbc404f20bc12a8b35ab66b",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -61,5 +61,18 @@
     "local_prepared_active_approach_cancel": "passed",
     "arbitrary_initialization_time_cancel": "unresolved",
     "historical_integration_rgb_followup_and_original_assets_preserved": true
+  },
+  "recovery_operations_update": {
+    "date": "2026-11-09",
+    "scope": "Browser timer receivers and authoritative task refresh; project-local logs, retained environment checker evidence and generic operator startup arguments.",
+    "prior_local_verification_date": "2026-11-02",
+    "prior_local_ros_cases": [
+      "normal",
+      "cancel_startup",
+      "cancel_transport"
+    ],
+    "full_pc_mobile_ui_followup": "pending",
+    "arbitrary_initialization_time_cancel": "unresolved",
+    "original_synchronized_records": "41-pose/18-image and 41-pose/17-image local originals still unavailable"
   }
 }

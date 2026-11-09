@@ -5,7 +5,6 @@ cd "$viewer_root"
 mkdir -p runtime
 viewer_port="${VIEWER_PORT:-8933}"
 viewer_domain="${VIEWER_ROS_DOMAIN:-218}"
-viewer_grasp_domain="${VIEWER_GRASP_ROS_DOMAIN:-219}"
 [[ "$viewer_port" =~ ^[0-9]{4,5}$ ]] || { echo "Invalid local port" >&2; exit 1; }
 exec 9>"runtime/viewer-${viewer_port}.lock"
 if ! flock -n 9; then
@@ -16,7 +15,4 @@ source ./manipulation_env.sh
 export GIT_OPTIONAL_LOCKS=0
 export ROS_LOG_DIR="$viewer_root/runtime/ros-logs"
 mkdir -p "$ROS_LOG_DIR"
-viewer_target_sha="$(cat runtime/recovery-grasp-target.sha256)"
-exec /usr/bin/python3 operator_console.py --domain "$viewer_domain" --port "$viewer_port" \
- --ros-grasp-domain "$viewer_grasp_domain" --ros-grasp-environment runtime/recovery-grasp-target \
- --ros-grasp-manifest-sha256 "$viewer_target_sha"
+exec /usr/bin/python3 operator_console.py --domain "$viewer_domain" --port "$viewer_port" "$@"
