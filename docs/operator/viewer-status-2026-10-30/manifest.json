@@ -7,7 +7,7 @@
   "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open. Adds the retained CI167 native startup SIGSEGV before launch signals, clock/timer callback diagnosis and an isolated pinned rclcpp_action clock-lock overlay. The same final diagnostic binary reproduced the legacy failure and passed with the optimized overlay. Fourteen actual ROS/HTTP cases, 22 sampled owned-process library mappings, full unit/model checks and packaging passed locally. CI165 source b02eb57 verification remains frozen historical evidence. Main promotion and rendered UI QA remain pending.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "ff2380cafaef704894c9ecbf5f5651afe5da0d6acf243792fd6c0a02be9d0055",
+    "index.html": "5edbb6734bc8dcc6715e7cd7ca14a0834891a86eb298f99cb339876c83bb0a66",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -432,6 +432,63 @@
       "main_promotion": "pending",
       "pages_deployment": "pending",
       "full_pc_mobile_ui": "pending"
+    },
+    "build_compatibility_followup": {
+      "date": "2026-11-09",
+      "original_ci": {
+        "run_id": 42613808373,
+        "run_number": 168,
+        "head_sha": "4e5bc35fa3715edd44fde9378b4e251122291de1",
+        "python_jobs_succeeded": 1,
+        "ros_jobs_failed": 5,
+        "failed_step": "Build locked runtime and selected model",
+        "error": "colcon: error: unrecognized arguments: --allow-overriding rclcpp_action",
+        "native_cases_started": false,
+        "workcell_artifact_id": 13672230575,
+        "workcell_artifact_sha256": "918e9c46c371169bbe8055b2cbd50ac5f21b8ef474cf4bb1eed1414b391bbeed",
+        "workcell_full_log_sha256": "4acd4ecd18e05d0138e4b43a4c19769200c9e4d56ea70e1a5ff30f2431c60c6c",
+        "original_failure_retained": true
+      },
+      "change": "Remove the optional colcon --allow-overriding argument and assert its absence in the existing build regression test",
+      "build_source_sha256": "0ce236c94eb8df4b4e4e98dc46983fc6dc63bbd84619f68cb919cf7f30de0ab3",
+      "build_test_source_sha256": "059e8611a2aa55fc964679f3116370b3c11cf9504118eaa6b877b212eb798457",
+      "runtime_build": "passed",
+      "focused_unit_tests": 57,
+      "focused_unit_status": "passed",
+      "full_unit_tests": 1444,
+      "full_unit_passed": 1443,
+      "full_unit_skipped": 1,
+      "full_unit_status": "passed",
+      "validation_log_sha256": {
+        "runtime-build-01.log": "d7df61ad6b866c36a1a6d917eb20db2a934fe308a451fc300c31ef97e02484f8",
+        "focused-unit-01.log": "aa6afd399aff14a14f720214e289c62c2c95f2efcaf84244c0aa8448ccceaa19",
+        "full-unit-01.log": "287f4160c969766545967ab1688e09f1cf84c9e478b254ea045eddbf54198029",
+        "model-tests-01.log": "148eff32b3f8d9f6284817b4709b0eb103abc51d9ead4a13de80dd938ab3fa6a"
+      },
+      "clock_patch_sha256_unchanged": "c451221a94cab8d32cdbdf8d4ba26037668ec88b6ea659d13910e89918efb311",
+      "optimized_library_sha256_unchanged": "4d7cbf46c2204d3ade1f7ced0c922a2c552344598ae78693461af7123bbe92e9",
+      "prior_actual_14_cases_source_preserved": "7a40943eaf1adcc4312f0fd5b85128b410fa3457",
+      "prior_model_91_no_skip_result_preserved": true,
+      "new_remote_ci": "pending",
+      "commit": "594563577e9c82b8c558a14335c73f5a42dea9ec",
+      "execution_manifest_sha256": "ba1abf291b4859513e720a4d16fc70c52ac4a8763f85da7de45e1d01476588ea",
+      "actual_smoke_cases": [
+        {
+          "case": "single-fr5",
+          "kind": "actual_single_robot",
+          "status": "passed",
+          "result_sha256": "948e0a0bbf271715114e25b8a4af793b65277cf47eae6f1372474cc64047f96a"
+        },
+        {
+          "case": "workspace-normal",
+          "kind": "workspace_http",
+          "status": "passed",
+          "result_sha256": "e7f499837d50dd688ae3a58ab6d725abbc6a4e2d1139085dc305c1ec2c45aa7d"
+        }
+      ],
+      "model_tests": 91,
+      "model_skipped": 0,
+      "model_status": "passed"
     }
   }
 }
