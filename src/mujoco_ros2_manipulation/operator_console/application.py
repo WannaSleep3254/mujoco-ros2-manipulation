@@ -494,6 +494,13 @@ class ConsoleApplication:
             return dict(phase="stopping")
 
     def snapshot(self):
+        grasp_image = None
+        recordings = getattr(self, "sync_recordings", None)
+        if recordings is not None and recordings._grasp_selected():
+            try:
+                _, grasp_image = recordings.image_source()
+            except ValueError:
+                pass
         with self.lock:
             data = self.state.snapshot()
             frame = {}
@@ -543,6 +550,13 @@ class ConsoleApplication:
                 data['task'] = tasks.snapshot()
                 if tasks.selected == 'grasp':
                     data['view'] = tasks.view(data['task']['grasp'])
+                    job = (data['task'].get('grasp') or {}).get('job') or {}
+                    image_owner = (grasp_image or {}).get('owner') or {}
+                    data['image_source'] = (grasp_image if image_owner.get('job_id') == job.get('job_id')
+                        and image_owner.get('job_generation') == job.get('generation')
+                        and image_owner.get('selection_id') == tasks.selection_id else None)
+                    if data['image_source'] is not None:
+                        data['image_source'].pop('history', None)
                     for key in ('can_submit', 'can_plan', 'can_pose_plan', 'can_approve'):
                         data[key] = False
                     data['reason'] = '집기 작업이 선택되어 있습니다. 일반 조작은 실행하지 않습니다.'

@@ -4,6 +4,7 @@ HTTP selects only start/cancel of the startup-pinned FR5 task. It never selects 
 model, executable, ROS endpoint, goal, gripper action or attachment operation.
 """
 import argparse
+from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass, field
 import hashlib
@@ -29,6 +30,8 @@ from ..model_build.integrity import file_sha256
 from ..verification.reports import atomic_json
 from ..workcells.config import load_workcell
 from .ros_display import build_scene
+from .capture_transport import CaptureReceiver, MAX_JOURNAL
+from ..operator_console.image_source import ImageSource
 from .ros_observation import GraspObservation
 from .ros_runtime import check_grasp_runtime
 from .ros_target import load_ros_grasp_target
@@ -166,16 +169,26 @@ class RosJob:
     members_checked: float = 0.
     owner_cleanup_clean: object = None
     owner_errors: list = field(default_factory=list)
+    capture_owner: dict = field(default_factory=dict)
+    capture: object = None
+    capture_poses: object = field(default_factory=lambda: deque(maxlen=MAX_JOURNAL))
+    capture_poses_dropped: int = 0
+    capture_source_gaps: int = 0
+    capture_fault: object = None
 
 
 class RosDemoApplication:
     """One owned ROS task at a time; frozen geometry and retained evidence."""
     def __init__(self, target, output_root, *, domain, clock=time.monotonic,
                  _process_factory=subprocess.Popen, _domain_check=_unused_domain,
-                 _scene_builder=build_scene, _timeout_sec=MAX_WALL_SEC):
+                 _scene_builder=build_scene, _timeout_sec=MAX_WALL_SEC,
+                 image_topic=None, image_clock_domain="unknown"):
         _require(type(domain) is int and 0 <= domain <= 232, 'Select a fixed unused ROS domain 0..232')
         _require(type(_timeout_sec) in (int, float) and 300 <= _timeout_sec <= 360,
                  'Owned ROS task timeout must include at least 300 seconds')
+        # Validate startup configuration before reserving or starting a task.
+        ImageSource(source_id='grasp_rgb', topic=image_topic or '/camera/image', clock_domain=image_clock_domain)
+        self.image_topic, self.image_clock_domain = image_topic, image_clock_domain
         target.validate()
         check_grasp_runtime(target.root)
         self.target, self.workspace, self.domain = target, target.root, domain
@@ -245,17 +258,29 @@ class RosDemoApplication:
             directory.mkdir(mode=0o700)
             self.requests[identifier] = run_id
             job = RosJob(run_id, identifier, self.generation, directory, binding, binding_id(binding), display, self.clock())
+            job.capture_owner = dict(job_id=run_id, generation=job.generation,
+                binding_id=job.binding_id, binding=deepcopy(job.binding), model_sha256=self.source['model_sha256'],
+                execution_manifest_sha256=self.target.manifest_sha256, domain=self.domain,
+                source_registration_epoch=uuid.uuid4().hex)
+            job.capture = CaptureReceiver(directory, job.capture_owner, image_topic=self.image_topic,
+                                          image_clock_domain=self.image_clock_domain)
             self.jobs[run_id] = self.current = job
             task_output = directory / 'run'
             command = ['bash', '--noprofile', '--norc', '-c',
                 'source "$1"; shift; exec /usr/bin/python3 -m mujoco_ros2_manipulation.grasping.ros_task "$@"',
                 'owned-ros-grasp', str(self.workspace / 'manipulation_env.sh'),
                 '--domain', str(self.domain), '--target', str(self.target.output), '--sha', self.target.manifest_sha256,
-                '--output', str(task_output), '--run-id', run_id, '--updates', str(task_output / 'latest.json')]
+                '--output', str(task_output), '--run-id', run_id, '--updates', str(task_output / 'latest.json'),
+                ]
+            if self.image_topic is not None:
+                command.extend(('--capture-registration', str(directory / 'capture-registration.json'),
+                    '--image-topic', self.image_topic, '--image-clock-domain', self.image_clock_domain))
             environment = dict(os.environ, MANIPULATION_ROS_DOMAIN_ID=str(self.domain), ROS_DOMAIN_ID=str(self.domain),
                                PYTHONUNBUFFERED='1', PYTHONDONTWRITEBYTECODE='1')
             try:
                 atomic_json(directory / 'source-pin.json', self.source_pin)
+                if self.image_topic is not None:
+                    atomic_json(directory / 'capture-registration.json', job.capture_owner)
                 job.process = self.process_factory(command, cwd=self.workspace, env=environment,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
                 if job.process.stdout is not None:
@@ -487,7 +512,15 @@ class RosDemoApplication:
                 observation = GraspObservation(observed * 1e-9, progressed * 1e-9,
                                                value['native_clock_has_advanced'], _canonical(native))
                 pose = job.display.pose(observation)
+                previous_native = None if job.observation is None else job.observation.payload
+                previous_sequence = None if previous_native is None else previous_native['sequence']
                 job.observation, job.observed_ns, job.progress_ns, job.capture_ns, job.pose = observation, observed, progressed, captured, pose
+                if (self.image_topic is not None and previous_sequence != native['sequence']
+                        and value['native_clock_has_advanced'] and native.get('phase') != 8
+                        and (previous_native is None or int(native['stamp_ns']) > int(previous_native['stamp_ns']))):
+                    if previous_sequence is not None:
+                        job.capture_source_gaps += max(0, native['sequence'] - previous_sequence - 1)
+                    self._capture_pose(job, native, pose, observed, progressed)
             job.update, job.update_digest = value, digest
             if task['status'] == 'cancelled':
                 job.cancel_delivery = 'worker_observed'
@@ -497,6 +530,45 @@ class RosDemoApplication:
             job.display_error = str(error)[:512]
             self._begin_cancel(job, reason='ROS 관측의 식별·시계 검사를 통과하지 못했습니다.',
                                force_error_delivery=True)
+
+    @staticmethod
+    def _capture_pose(job, native, pose, observed, progressed):
+        # Recording queues never decide native admission or initiate a stop.
+        try:
+            names = job.display.manifest['joint_names']
+            positions = {name: native['arm_positions_rad'][name] for name in names}
+            if len(job.capture_poses) == MAX_JOURNAL:
+                job.capture_poses_dropped += 1
+            job.capture_poses.append(dict(stamp_ns=native['stamp_ns'], sequence=native['sequence'],
+                positions_rad=positions, pose=deepcopy(pose), native=dict(time_sec=native['time_sec'],
+                    capture_monotonic_ns=native['capture_monotonic_ns'], observed_monotonic_ns=str(observed),
+                    progress_monotonic_ns=str(progressed), stamp_semantics=native['stamp_semantics'])))
+        except Exception as error:
+            job.capture_fault = job.capture_fault or (type(error).__name__ + ': ' + str(error))[:512]
+
+    def capture_source(self):
+        """Detached context for the selected exact job, including its reserved binding.
+
+        The immutable asset accessor and bounded RGB provider perform no control
+        operations. Pre-native preview geometry never enters the pose journal.
+        """
+        with self.lock:
+            job = self.current
+            if job is None:
+                return None
+            owner, poses = deepcopy(job.capture_owner), deepcopy(list(job.capture_poses))
+            manifest, asset_bytes = job.display.manifest, job.display.asset
+            finished, status = job.finished, job.status
+            pose_drops, source_gaps, fault = job.capture_poses_dropped, job.capture_source_gaps, job.capture_fault
+            capture = job.capture
+            final_fault = ((job.result or {}).get('recording_observations') or {}).get('fault')
+        capture.refresh(finished=finished)
+        with capture.lock:
+            return dict(owner=owner, manifest=manifest, asset_bytes=asset_bytes, image=capture,
+                poses=poses, events=deepcopy(list(capture.events)), poses_dropped=pose_drops,
+                events_dropped=capture.events_dropped, poses_source_gaps=source_gaps,
+                pose_sample_semantics='parent_accepted_latest_ipc', job_status=status, finished=finished,
+                fault=fault or capture.fault or final_fault)
 
     def _finish(self, job):
         if job.finished or job.process is None or job.process.poll() is None:

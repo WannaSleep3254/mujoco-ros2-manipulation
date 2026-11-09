@@ -99,3 +99,13 @@ test('importing synchronized player into the workspace cannot bootstrap standalo
   new Function('document','location','LocalSceneView',standalone)({getElementById(){touched++;throw Error('Unexpected standalone bootstrap');}}, {pathname:'/',search:''},()=>{touched++;});
   assert.equal(touched,0);
 });
+
+
+test('embedded and standalone replay expose matching event and untimed diagnostic containers',async()=>{
+ const h=harness(),html=await readFile(new URL('synchronized.html',directory),'utf8');
+ for(const id of ['sync-events-panel','sync-events-title','sync-events-state','sync-events','sync-untimed-panel','sync-untimed-events']){
+  assert.ok(h.replay.node(id),id);assert.match(html,new RegExp('id="'+id+'"'));
+ }
+ assert.equal(h.replay.node('sync-events-panel').hidden,true);h.replay.open(ID);
+ assert.equal(typeof h.players[0].options.createElement,'function');h.replay.destroy();
+});

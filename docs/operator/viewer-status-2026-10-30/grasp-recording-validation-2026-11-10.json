@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "kind": "grasp_rgb_native_event_recording_validation",
+  "date": "2026-11-10",
+  "source_commit": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
+  "source_summary_sha256": "e024b2dfc54612dcfc79b873e074ed277f8b387962ef859eb3d92e06370f74d7",
+  "recording_version": 2,
+  "robot": "FAIRINO FR5",
+  "gripper": "validation parallel gripper",
+  "object": "synthetic block",
+  "image_input": {
+    "kind": "diagnostic_rgb8_pattern",
+    "width": 64,
+    "height": 48,
+    "clock_domain": "ros_simulation",
+    "association": "declared_same_run"
+  },
+  "clock_semantics": {
+    "native_stamp_semantics": "rounded_native_mjData_time",
+    "image_stamp_semantics": "integer_ros_header_sec_nanosec",
+    "exact_integer_fields": "decimal_strings",
+    "event_emission": "worker_monotonic_ns",
+    "event_receipt": "parent_monotonic_ns",
+    "native_association": "latest_fresh_progressing_observation_in_same_run",
+    "unassociated_events": "no_media_time_or_seek_target",
+    "exact_native_step_synchronization_verified": false
+  },
+  "sampling": {
+    "pose_sample_semantics": "parent_accepted_latest_ipc",
+    "native_sequence_gaps_distinct_from_queue_evictions": true,
+    "observation_counters_retained": true
+  },
+  "checks_at_source": {
+    "unit_total": 1543,
+    "unit_passed": 1542,
+    "unit_skipped": 1,
+    "javascript_passed": 299,
+    "model_passed": 91,
+    "wheel_members_matched": 76,
+    "installed_entrypoint_imports": "passed"
+  },
+  "cases": [
+    {
+      "case": "normal",
+      "status": "passed",
+      "native_status": "succeeded",
+      "native_result_sha256": "65ffa22a85526fad3a95184e9975b082607ffe9ecca77488274bc36838a06b58",
+      "recording_sha256": "590e432d9c687aaecb260e6278419515c3e611b39c284f74e953cdae301885a0",
+      "verifier_result_sha256": "c1848113613ab284d5107cf4b770f766ae24582cc58fa6cc8f9e114e330002dd",
+      "pose_count": 207,
+      "image_count": 85,
+      "event_count": 33,
+      "media_state": "ready",
+      "observed_image_gap_count": 1,
+      "image_gap_verification": "passed",
+      "native_launch_started": true,
+      "native_stop_observed": true,
+      "owned_cleanup_clean": true,
+      "owned_process_group_gone": true,
+      "validation_process_group_gone": true,
+      "recording_originals": {
+        "status": "preserved",
+        "file_count": 121,
+        "bytes": 6485946
+      },
+      "native_event_originals": {
+        "status": "preserved",
+        "file_count": 12,
+        "bytes": 6407252,
+        "matched_event_rows": 33,
+        "matched_native_pose_rows": 207
+      },
+      "readonly_replay_control_commands": 0
+    },
+    {
+      "case": "cancel_startup",
+      "status": "passed",
+      "native_status": "cancelled",
+      "native_result_sha256": "7aed8d32ffbb1e47b0b2cf2f5db63bb5b5e445629b9f83b2ed9830f73f387b4f",
+      "recording_sha256": "7da18ef9b119f6f2b713e183b22c67ded9a673fa83333eb9d8652a5c2bbdb552",
+      "verifier_result_sha256": "fc59ccc33ec00aa5590361e3090629d8e6989bc4e62e732613cdd80d3409a4d0",
+      "pose_count": 0,
+      "image_count": 0,
+      "event_count": 5,
+      "media_state": "unavailable",
+      "observed_image_gap_count": 0,
+      "image_gap_verification": "not_exercised",
+      "native_launch_started": false,
+      "native_stop_observed": false,
+      "owned_cleanup_clean": true,
+      "owned_process_group_gone": true,
+      "validation_process_group_gone": true,
+      "recording_originals": {
+        "status": "preserved",
+        "file_count": 36,
+        "bytes": 3447869
+      },
+      "native_event_originals": {
+        "status": "preserved",
+        "file_count": 9,
+        "bytes": 30740,
+        "matched_event_rows": 5,
+        "matched_native_pose_rows": 0
+      },
+      "readonly_replay_control_commands": 0
+    },
+    {
+      "case": "cancel_transport",
+      "status": "passed",
+      "native_status": "cancelled",
+      "native_result_sha256": "8f32e192c35028a9a445e7e038972199263ec2c2517e3158ec7a57d8331f50e8",
+      "recording_sha256": "2f9dfd05278464754aa3b896eca871e86f5fcaa87a78b5d3c92990c802b3264d",
+      "verifier_result_sha256": "9bacb6b33570104928099c30a2308fafc389effdb7d4e6bd312128afec42b4f4",
+      "pose_count": 119,
+      "image_count": 46,
+      "event_count": 23,
+      "media_state": "ready",
+      "observed_image_gap_count": 1,
+      "image_gap_verification": "passed",
+      "native_launch_started": true,
+      "native_stop_observed": true,
+      "owned_cleanup_clean": true,
+      "owned_process_group_gone": true,
+      "validation_process_group_gone": true,
+      "recording_originals": {
+        "status": "preserved",
+        "file_count": 82,
+        "bytes": 5191605
+      },
+      "native_event_originals": {
+        "status": "preserved",
+        "file_count": 12,
+        "bytes": 3839175,
+        "matched_event_rows": 23,
+        "matched_native_pose_rows": 119
+      },
+      "readonly_replay_control_commands": 0
+    }
+  ],
+  "browser_followup": {
+    "status": "passed",
+    "source_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314",
+    "actual_three_capture_source_commit": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
+    "original_browser_receipt_sha256": "5f443c9448c607b31b56c2605da9314d79e6508d95a0fa2ae6a3422697e7068d",
+    "javascript_passed": 301,
+    "desktop_viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "narrow_viewport": {
+      "width": 390,
+      "height": 844,
+      "method": "browser_override"
+    },
+    "physical_phone_tested": false,
+    "checks": {
+      "v2_standalone_play_pause_speed2_event_seek": true,
+      "v2_embedded_event_rows_survive_joint_refresh": true,
+      "v2_embedded_mobile_ui_capture_and_replay": true,
+      "v2_startup_event_only_5_events_all_media_controls_disabled": true,
+      "v1_embedded_mobile_media_enabled_events_hidden": true,
+      "mobile_horizontal_overflow": false
+    },
+    "event_seek_example": {
+      "event_sequence": 19,
+      "cursor_sec": 9.102,
+      "native_relative_sec": 9.102,
+      "image_relative_sec": 8.952,
+      "image_age_sec": 0.15
+    },
+    "manual_observations": [
+      {
+        "case": "first_ui_capture_without_image_producer",
+        "native_status": "succeeded",
+        "media_state": "unavailable",
+        "observer_error": "The monitor read a missing field; no image publisher was launched. The event-only original was retained."
+      },
+      {
+        "case": "ui_capture_and_replay",
+        "native_status": "succeeded",
+        "pose_count": 69,
+        "image_count": 38,
+        "event_count": 33,
+        "media_duration_sec": 7.62,
+        "scope": "Recording was armed during the task. Event history was retained; media covers the final 7.620 seconds."
+      }
+    ],
+    "public_photo_review_sha256": "3c0ac0c4e8e0f762061fcc4367f545446d247dff0752b50937cb23e08a364133",
+    "public_screenshots": [
+      {
+        "path": "media/grasp-recording-desktop-normal-2026-11-10.png",
+        "bytes": 133547,
+        "sha256": "07613dc6cef08cf23472c156a31517c5c8cffd6281980f1fd70402cb512e3e3a"
+      },
+      {
+        "path": "media/grasp-recording-mobile-normal-2026-11-10.png",
+        "bytes": 104498,
+        "sha256": "5a2eace689cfe0b0ea1e28219fd44daf8f574552fd5fe8c3ca393d6b0360b58c"
+      },
+      {
+        "path": "media/grasp-recording-mobile-event-only-2026-11-10.png",
+        "bytes": 102969,
+        "sha256": "073a85dccef0dab0dacd6ae2c620b96ca1d0dc37899d56e639d7f624c96174e7"
+      }
+    ]
+  },
+  "scope_limits": [
+    "Diagnostic RGB input verifies transport and recording. Simulated camera rendering, camera calibration and hardware synchronization require separate work.",
+    "Same-run association does not establish an exact shared physics integration step.",
+    "Native poses are accepted latest-IPC samples, not every native physics step.",
+    "Native cancellation and owned cleanup are separate from recording completion.",
+    "Historical intermittent approximately 45-second cleanup delay remains unresolved.",
+    "Two historical original synchronized recordings remain unrecovered.",
+    "New release CI, main promotion and deployment remain pending."
+  ],
+  "image_fault_followup": {
+    "status": "passed",
+    "source_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314",
+    "verifier_result_sha256": "9cd4b1055c898a17d19e954e2bdf8a3da0581e8f1f1d2b22b82793db01cbe6ac",
+    "native_result_sha256": "27ed86057a80ed812c0e75c8de3bd33ea498e9b545880d77d094361623ac674b",
+    "recording_sha256": "645fde7763d31d0178de9aaeca23d498761f6f8c6edc3a14197ef60f4a0ace3d",
+    "input_fault": "one diagnostic image header set to zero after accepted media",
+    "fault_message_count": 1,
+    "injected_image_header_stamp_ns": "0",
+    "clock_messages_injected": 0,
+    "control_commands_injected": 0,
+    "image_error": "image_stamp_backwards",
+    "native_status_when_image_invalid": "running",
+    "recording_end_reason": "clock_reversed",
+    "recorded_task_status_at_capture_end": "running",
+    "native_final_status": "succeeded",
+    "successful_action_count": 6,
+    "action_terminal_status": 4,
+    "pose_count": 17,
+    "image_count": 4,
+    "event_count": 10,
+    "observed_image_gap_count": 0,
+    "image_gap_verification": "not_exercised",
+    "owned_cleanup_clean": true,
+    "owned_process_group_gone": true,
+    "validation_process_group_gone": true,
+    "synchronized_originals_preserved": true,
+    "native_event_originals_preserved": true,
+    "wall_sec": 29.560203465996892,
+    "timing_scope": "elapsed verification duration, not a native stop or end-to-end command latency measurement"
+  },
+  "final_package_followup": {
+    "source_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314",
+    "python_source_unchanged_since": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
+    "package_receipt_sha256": "81e4693024e8a6f3708c2b4fbd65f64e82ce9d5b6195c5b66b5d5c781d91c3f1",
+    "wheel_sha256": "ff9d05b6835b8ebbb1d31a6affe6c5df632edff2433a63975b3b35202bd954e3",
+    "source_and_static_members_byte_matched": 207,
+    "installed_entrypoint": "manipulation-operator --help",
+    "installed_entrypoint_status": "passed",
+    "installed_import": "passed outside checkout"
+  }
+}

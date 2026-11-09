@@ -278,3 +278,44 @@ test('body selection clears the renderer geometry while its null acknowledgement
  }
  h.assertReadOnly();
 });
+
+
+const OWNER_A='d'.repeat(64),OWNER_B='e'.repeat(64),JOB_A='f'.repeat(32),JOB_B='0'.repeat(32);
+function graspObservation(owner=OWNER_A,job=JOB_A,generation=1){
+ const value=observation({sensor:{...image(A),owner_token:owner},binding:BINDING_A});
+ value.task={selected:'grasp',selection_id:B,grasp:{job:{job_id:job,generation}}};return value;
+}
+
+test('normal-to-grasp ownership clears a selected image even when the image generation is repeated',async()=>{
+ const h=harness();h.emit(observation({sensor:image(A)}));h.reply(h.reads('/api/image-source/frame')[0],{frame:'normal'});await drain();
+ const oldURL=h.element('sensor-image').src,oldDetails=h.reads('/api/image-source')[0];
+ h.emit(graspObservation());assert.equal(h.element('sensor-image').hidden,true);assert.ok(h.revoked.includes(oldURL));
+ assert.equal(h.element('sensor-frame-select').value,'live');
+ const selected=h.reads('/api/image-source/frame').at(-1);assert.match(selected.path,new RegExp('owner_token='+OWNER_A));
+ h.reply(oldDetails,image(A,99,[99]));await drain();assert.equal(h.element('sensor-frame-select').children.some(item=>item.value==='99'),false);
+ h.reply(selected,{frame:'grasp'});await drain();assert.equal(h.created.at(-1).blob.frame,'grasp');h.assertReadOnly();
+});
+
+test('delayed task-local details and frames cannot cross jobs with the same source generation',async()=>{
+ const h=harness();h.emit(graspObservation());const oldFrame=h.reads('/api/image-source/frame')[0],oldDetails=h.reads('/api/image-source?')[0];
+ h.emit(graspObservation(OWNER_B,JOB_B,2));const current=h.reads('/api/image-source/frame').at(-1);
+ assert.match(current.path,new RegExp('owner_token='+OWNER_B));
+ h.reply(oldDetails,{...image(A,99,[99]),owner_token:OWNER_A});h.reply(oldFrame,{frame:'old-task'});await drain();assert.equal(h.created.length,0);
+ h.reply(current,{frame:'current-task'});await drain();assert.equal(h.created.length,1);assert.equal(h.created[0].blob.frame,'current-task');
+ assert.equal(h.element('sensor-frame-select').children.some(item=>item.value==='99'),false);h.assertReadOnly();
+});
+
+test('a grasp observation without its exact source owner cannot reuse a normal-domain frame',async()=>{
+ const h=harness();h.emit(observation({sensor:image(A)}));h.reply(h.reads('/api/image-source/frame')[0],{frame:'normal'});await drain();
+ const value=graspObservation();delete value.image_source.owner_token;const count=h.reads('/api/image-source/frame').length;
+ h.emit(value);assert.equal(h.element('sensor-image').hidden,true);assert.equal(h.reads('/api/image-source/frame').length,count);
+ assert.match(h.element('sensor-state').textContent,/현재 집기 작업/);h.assertReadOnly();
+});
+
+
+test('the actual source_stamp_ns image field is displayed without floating epoch conversion',()=>{
+ const h=harness(),value=graspObservation(),exact='9007199254740993123';
+ value.image_source.latest.source_stamp_ns=exact;
+ h.emit(value);assert.match(content(h.element('sensor-metadata')),new RegExp(exact+' ns'));
+ h.assertReadOnly();
+});

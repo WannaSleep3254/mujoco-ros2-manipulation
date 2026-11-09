@@ -38,6 +38,13 @@ _NS = re.compile(r"0|[1-9][0-9]{0,18}")
 _NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_/]*")
 _DOCUMENT_FIELDS = {"schema_version", "kind", "label", "manifest", "identity", "origin_ns",
                     "poses", "images", "ended_reason"}
+_V2_FIELDS = _DOCUMENT_FIELDS | {"media_state", "media_reason", "events", "task_status",
+    "pose_sample_semantics", "observation_counters"}
+_V2_IDENTITY_FIELDS = {"operator_session_id", "selection_id", "job_id", "job_generation",
+    "binding", "binding_id", "model_sha256", "execution_manifest_sha256", "domain",
+    "source_registration_epoch", "native_clock_domain", "native_stamp_semantics",
+    "image_clock_domain", "clock_association", "image_generation", "publisher_endpoint_sha256",
+    "image_source_id", "topic"}
 _IDENTITY_FIELDS = {"binding", "operator_session_id", "motion_session_id", "app_generation",
                     "image_generation", "image_source_id", "topic", "publisher_endpoint_sha256", "clock_domain"}
 
@@ -168,9 +175,83 @@ def _publish(directory, name, raw, *, reuse=False):
         os.unlink(temporary, dir_fd=directory)
 
 
+def _monotonic_ns(value):
+    _require(type(value) is str and _NS.fullmatch(value) is not None and 0 < int(value) <= 2**63 - 1,
+             "Invalid monotonic nanosecond stamp")
+    return int(value)
+
+
+def _grasp_identity(value, manifest):
+    _require(type(value) is dict and set(value) == _V2_IDENTITY_FIELDS, "Invalid grasp recording identity fields")
+    result = deepcopy(value)
+    for name in ("operator_session_id", "selection_id", "job_id", "source_registration_epoch"):
+        _require(type(result[name]) is str and _UUID.fullmatch(result[name]) is not None,
+                 "Invalid grasp recording " + name)
+    binding = _checked_binding(result["binding"])
+    _require(binding["mode"] == "live" and binding["job_id"] == result["job_id"]
+             and binding["run_id"] == result["job_id"] and binding["generation"] == result["job_generation"]
+             and binding_id(binding) == result["binding_id"], "Grasp reserved binding differs from job")
+    _sequence(result["job_generation"])
+    for name in ("model_sha256", "execution_manifest_sha256"):
+        _require(type(result[name]) is str and _SHA.fullmatch(result[name]) is not None,
+                 "Invalid grasp recording " + name)
+    _require(result["model_sha256"] == manifest["model_sha256"], "Grasp model differs from manifest")
+    _require(type(result["domain"]) is int and 0 <= result["domain"] <= 232, "Invalid recorded grasp domain")
+    _require(result["native_clock_domain"] == "mujoco-native:" + result["job_id"]
+             and result["native_stamp_semantics"] == "rounded_native_mjData_time"
+             and result["image_clock_domain"] == "ros_simulation"
+             and result["clock_association"] == "declared_same_run", "Invalid grasp recording clock declaration")
+    generation, publisher = result["image_generation"], result["publisher_endpoint_sha256"]
+    _require((generation is None and publisher is None) or
+             (type(generation) is str and _UUID.fullmatch(generation) is not None
+              and type(publisher) is str and _SHA.fullmatch(publisher) is not None),
+             "Invalid recorded image epoch")
+    _require(type(result["image_source_id"]) is str and 0 < len(result["image_source_id"]) <= 128
+             and _NAME.fullmatch(result["image_source_id"]) is not None, "Invalid image source identifier")
+    topic = result["topic"]
+    _require(type(topic) is str and len(topic) <= 256 and re.fullmatch(r"/[A-Za-z_][A-Za-z0-9_/]*", topic)
+             is not None and "//" not in topic, "Invalid image topic")
+    return result
+
+
+def _checked_image_row(item):
+    _require(type(item["jpeg_sha256"]) is str and _SHA.fullmatch(item["jpeg_sha256"]) is not None,
+             "Invalid recording image digest")
+    _require(type(item["byte_length"]) is int and 0 < item["byte_length"] <= MAX_JPEG_BYTES,
+             "Recording JPEG exceeds limit")
+    _require(type(item["width"]) is int and type(item["height"]) is int
+             and 0 < item["width"] <= 640 and 0 < item["height"] <= 480,
+             "Recording image dimensions exceed limit")
+
+
+def _checked_media(manifest, checked_images, assets, images):
+    asset_bytes, image_bytes = dict(assets or {}), dict(images or {})
+    _require(set(asset_bytes) == {item["sha256"] for item in manifest["assets"]}, "Incomplete recording assets")
+    _require(set(image_bytes) == {item["jpeg_sha256"] for item in checked_images}, "Incomplete recording images")
+    for item in manifest["assets"]:
+        raw = asset_bytes[item["sha256"]]
+        _require(type(raw) is bytes and len(raw) == item["byte_length"]
+                 and hashlib.sha256(raw).hexdigest() == item["sha256"], "Recording asset digest mismatch")
+    _require(sum(map(len, asset_bytes.values())) <= MAX_TOTAL_ASSET_BYTES, "Recording asset budget exceeded")
+    dimensions = {}
+    for item in checked_images:
+        digest = item["jpeg_sha256"]
+        raw = image_bytes[digest]
+        _require(type(raw) is bytes and len(raw) == item["byte_length"]
+                 and hashlib.sha256(raw).hexdigest() == digest, "Recording image digest mismatch")
+        if digest not in dimensions:
+            dimensions[digest] = _jpeg_dimensions(raw)
+        _require(dimensions[digest] == (item["width"], item["height"]), "JPEG dimensions do not match recording")
+    _require(sum(map(len, image_bytes.values())) <= MAX_TOTAL_IMAGE_BYTES, "Recording image budget exceeded")
+    return asset_bytes, image_bytes
+
+
 class SyncRecording:
     """A checked immutable bundle. Public structured values are defensive copies."""
     def __init__(self, document, assets=None, images=None):
+        if type(document) is dict and type(document.get("schema_version")) is int and document["schema_version"] == 2:
+            self._init_v2(document, assets, images)
+            return
         _require(type(document) is dict and set(document) == _DOCUMENT_FIELDS
                  and type(document["schema_version"]) is int and document["schema_version"] == 1
                  and document["kind"] == "synchronized-recording-v1", "Invalid synchronized recording")
@@ -212,24 +293,7 @@ class SyncRecording:
                  "Recording origin must be the first acquisition stamp")
         duration = max(int(poses[-1]["stamp_ns"]), int(image_frames[-1]["stamp_ns"])) - origin
         _require(0 < duration <= MAX_DURATION_NS, "Invalid recording duration")
-        asset_bytes, image_bytes = dict(assets or {}), dict(images or {})
-        _require(set(asset_bytes) == {item["sha256"] for item in manifest["assets"]}, "Incomplete recording assets")
-        _require(set(image_bytes) == {item["jpeg_sha256"] for item in checked_images}, "Incomplete recording images")
-        for item in manifest["assets"]:
-            raw = asset_bytes[item["sha256"]]
-            _require(type(raw) is bytes and len(raw) == item["byte_length"]
-                     and hashlib.sha256(raw).hexdigest() == item["sha256"], "Recording asset digest mismatch")
-        _require(sum(map(len, asset_bytes.values())) <= MAX_TOTAL_ASSET_BYTES, "Recording asset budget exceeded")
-        dimensions = {}
-        for item in checked_images:
-            digest = item["jpeg_sha256"]
-            raw = image_bytes[digest]
-            _require(type(raw) is bytes and len(raw) == item["byte_length"]
-                     and hashlib.sha256(raw).hexdigest() == digest, "Recording image digest mismatch")
-            if digest not in dimensions:
-                dimensions[digest] = _jpeg_dimensions(raw)
-            _require(dimensions[digest] == (item["width"], item["height"]), "JPEG dimensions do not match recording")
-        _require(sum(map(len, image_bytes.values())) <= MAX_TOTAL_IMAGE_BYTES, "Recording image budget exceeded")
+        asset_bytes, image_bytes = _checked_media(manifest, checked_images, assets, images)
         self._document = dict(schema_version=1, kind="synchronized-recording-v1", label=document["label"],
             manifest=manifest, identity=identity, origin_ns=document["origin_ns"], poses=checked_poses,
             images=checked_images, ended_reason=document["ended_reason"])
@@ -241,6 +305,155 @@ class SyncRecording:
         self._pose_stamps = tuple(int(item["stamp_ns"]) for item in checked_poses)
         self._image_stamps = tuple(int(item["stamp_ns"]) for item in checked_images)
 
+    def _init_v2(self, document, assets, images):
+        _require(set(document) == _V2_FIELDS and document["kind"] == "synchronized-grasp-recording-v2",
+                 "Invalid synchronized grasp recording fields")
+        for key, limit in (("label", 128), ("ended_reason", 256), ("task_status", 64)):
+            _require(type(document[key]) is str and 0 < len(document[key]) <= limit
+                     and all(ord(c) >= 32 for c in document[key]), "Invalid recording " + key)
+        _require(document["pose_sample_semantics"] == "parent_accepted_latest_ipc",
+                 "Invalid native pose sampling declaration")
+        counters = document["observation_counters"]
+        _require(type(counters) is dict and set(counters) == {"poses_dropped", "events_dropped",
+            "poses_source_gaps", "image_transport_gaps", "image_counters"}, "Invalid recording observation counters")
+        for name in ("poses_dropped", "events_dropped", "poses_source_gaps", "image_transport_gaps"):
+            _require(type(counters[name]) is int and 0 <= counters[name] <= MAX_SEQUENCE,
+                     "Invalid recording counter " + name)
+        image_counters = counters["image_counters"]
+        _require(type(image_counters) is dict and len(image_counters) <= 32
+                 and all(type(k) is str and 0 < len(k) <= 64 and re.fullmatch("[a-z_]+", k)
+                         and type(v) is int and 0 <= v <= MAX_SEQUENCE for k, v in image_counters.items()),
+                 "Invalid recorded image counters")
+        manifest = validate_manifest(document["manifest"])
+        _require(len(_canonical(manifest)) <= MAX_MANIFEST_BYTES, "Recording manifest exceeds limit")
+        identity = _grasp_identity(document["identity"], manifest)
+        poses, frames, events = document["poses"], document["images"], document["events"]
+        _require(type(poses) is list and len(poses) <= 2400, "Invalid native recording pose count")
+        _require(type(frames) is list and len(frames) <= 600, "Invalid recording image count")
+        _require(type(events) is list and len(events) <= 128, "Invalid recording event count")
+        checked_poses, checked_images, checked_events = [], [], []
+        for track, result in ((poses, checked_poses), (frames, checked_images)):
+            previous_stamp, previous_sequence = -1, 0
+            for item in track:
+                fields = ({"stamp_ns", "sequence", "positions_rad", "pose", "native"} if track is poses else
+                          {"stamp_ns", "sequence", "jpeg_sha256", "byte_length", "width", "height", "source"})
+                _require(type(item) is dict and set(item) == fields, "Invalid grasp recording sample fields")
+                stamp, sequence = _decimal_ns(item["stamp_ns"]), _sequence(item["sequence"])
+                _require(stamp > previous_stamp and sequence > previous_sequence,
+                         "Recording track timestamps and sequences must strictly advance within one epoch")
+                copied = deepcopy(item)
+                if track is poses:
+                    positions = item["positions_rad"]
+                    _require(type(positions) is dict and set(positions) == set(manifest["joint_names"])
+                             and all(type(v) in (int, float) and abs(v) <= 1e6 and math.isfinite(v)
+                                     for v in positions.values()), "Recording must cover named joints exactly")
+                    copied["pose"] = validate_pose(item["pose"], manifest)
+                    native = item["native"]
+                    _require(type(native) is dict and set(native) == {"time_sec", "capture_monotonic_ns",
+                        "observed_monotonic_ns", "progress_monotonic_ns", "stamp_semantics"},
+                        "Invalid native recording observation")
+                    value = native["time_sec"]
+                    _require(type(value) in (int, float) and 0 <= value <= 2147483647 and math.isfinite(value),
+                             "Invalid native simulation time")
+                    rounded = value * NS_PER_SEC
+                    _require(abs(stamp - rounded) <= max(.501, math.ulp(rounded))
+                             and native["stamp_semantics"] == "rounded_native_mjData_time",
+                             "Native stamp differs from original simulation time")
+                    capture = _monotonic_ns(native["capture_monotonic_ns"])
+                    observed = _monotonic_ns(native["observed_monotonic_ns"])
+                    progress = _monotonic_ns(native["progress_monotonic_ns"])
+                    _require(capture <= observed and progress <= observed, "Invalid native observation chronology")
+                else:
+                    _checked_image_row(item)
+                    source = item["source"]
+                    _require(type(source) is dict and set(source) == {"generation", "source_id", "topic", "frame_id",
+                        "publisher_endpoint_sha256", "clock_domain", "received_monotonic_sec", "encoded_monotonic_sec"},
+                        "Invalid recorded image source")
+                    for name, expected in (("generation", "image_generation"), ("source_id", "image_source_id"),
+                        ("topic", "topic"), ("publisher_endpoint_sha256", "publisher_endpoint_sha256"),
+                        ("clock_domain", "image_clock_domain")):
+                        _require(source[name] == identity[expected], "Recorded image owner differs from capture")
+                    _require(type(source["frame_id"]) is str and len(source["frame_id"]) <= 256,
+                             "Invalid image frame identity")
+                    receive, encode = source["received_monotonic_sec"], source["encoded_monotonic_sec"]
+                    _require(all(type(v) in (int, float) and 0 <= v <= 2**53 and math.isfinite(v) for v in (receive, encode))
+                             and encode >= receive, "Invalid image receive/encode chronology")
+                result.append(copied)
+                previous_stamp, previous_sequence = stamp, sequence
+        previous_sequence, previous_emitted, identifiers = 0, 0, set()
+        for item in events:
+            _require(type(item) is dict and set(item) == {"event_id", "event_sequence", "emitted_monotonic_ns",
+                "parent_received_monotonic_ns", "stage", "status", "details", "native_association"},
+                "Invalid recording event fields")
+            sequence = _sequence(item["event_sequence"])
+            _require(type(item["event_id"]) is str and item["event_id"] == identity["job_id"] + ":" + str(sequence)
+                     and item["event_id"] not in identifiers and sequence > previous_sequence,
+                     "Recording event identity or order changed")
+            emitted = _monotonic_ns(item["emitted_monotonic_ns"])
+            received = _monotonic_ns(item["parent_received_monotonic_ns"])
+            _require(emitted >= previous_emitted and received >= emitted, "Invalid event source chronology")
+            for name in ("stage", "status"):
+                _require(type(item[name]) is str and 0 < len(item[name]) <= 128
+                         and all(ord(c) >= 32 for c in item[name]), "Invalid event " + name)
+            _require(type(item["details"]) is dict and len(_canonical(item["details"])) <= 4096,
+                     "Recording event details exceed bounds")
+            association = item["native_association"]
+            _require(type(association) is dict and set(association) == {"available", "reason", "stamp_ns",
+                "sequence", "capture_monotonic_ns"} and type(association["available"]) is bool,
+                "Invalid event native association")
+            _require(type(association["reason"]) is str and 0 < len(association["reason"]) <= 256,
+                     "Missing event association reason")
+            if association["available"]:
+                _decimal_ns(association["stamp_ns"])
+                _sequence(association["sequence"])
+                capture = _monotonic_ns(association["capture_monotonic_ns"])
+                _require(0 <= emitted - capture <= MAX_SAMPLE_AGE_NS, "Event native association is stale")
+            else:
+                _require(all(association[n] is None for n in ("stamp_ns", "sequence", "capture_monotonic_ns")),
+                         "Unavailable native association must retain null timing")
+            checked_events.append(deepcopy(item))
+            identifiers.add(item["event_id"])
+            previous_sequence, previous_emitted = sequence, emitted
+        state = document["media_state"]
+        _require(state in ("ready", "unavailable"), "Invalid recording media state")
+        stamps = [int(item["stamp_ns"]) for item in poses + frames]
+        if state == "ready":
+            _require(len(poses) >= 2 and bool(frames) and document["media_reason"] is None,
+                     "Paired native/image media is incomplete")
+            origin = _decimal_ns(document["origin_ns"])
+            duration = max(stamps) - origin
+            _require(origin == min(stamps) and 0 < duration <= 120 * NS_PER_SEC,
+                     "Invalid grasp media origin or duration")
+        else:
+            _require(document["origin_ns"] is None and type(document["media_reason"]) is str
+                     and 0 < len(document["media_reason"]) <= 256, "Unavailable media requires null origin and reason")
+            _require(not stamps or max(stamps) - min(stamps) <= 120 * NS_PER_SEC,
+                     "Grasp diagnostic tracks exceed duration bound")
+            origin = duration = None
+        asset_bytes, image_bytes = _checked_media(manifest, checked_images, assets, images)
+        self._document = deepcopy(document)
+        self._document.update(manifest=manifest, identity=identity, poses=checked_poses,
+                              images=checked_images, events=checked_events)
+        self._raw = _canonical(self._document)
+        _require(len(self._raw) <= MAX_RECORDING_BYTES, "Recording document exceeds limit")
+        self._sha256 = hashlib.sha256(self._raw).hexdigest()
+        self._assets, self._images = MappingProxyType(asset_bytes), MappingProxyType(image_bytes)
+        self._origin_ns, self._duration_ns = origin, duration
+        self._pose_stamps = tuple(int(item["stamp_ns"]) for item in checked_poses)
+        self._image_stamps = tuple(int(item["stamp_ns"]) for item in checked_images)
+
+    @property
+    def version(self): return self._document["schema_version"]
+    @property
+    def kind(self): return self._document["kind"]
+    @property
+    def task_status(self): return self._document.get("task_status")
+    @property
+    def events(self): return deepcopy(self._document.get("events", []))
+    @property
+    def media_state(self): return self._document.get("media_state", "ready")
+    @property
+    def media_reason(self): return self._document.get("media_reason")
     @property
     def document(self): return deepcopy(self._document)
     @property
@@ -266,7 +479,7 @@ class SyncRecording:
     @property
     def duration_ns(self): return self._duration_ns
     @property
-    def duration(self): return self._duration_ns / NS_PER_SEC
+    def duration(self): return None if self._duration_ns is None else self._duration_ns / NS_PER_SEC
 
     @classmethod
     def load(cls, filename):
@@ -274,10 +487,18 @@ class SyncRecording:
         directory = _directory(path.parent)
         try:
             value = _json(_read(directory, path.name, MAX_RECORDING_BYTES))
-            _require(type(value) is dict and set(value) == _DOCUMENT_FIELDS, "Invalid synchronized recording fields")
+            _require(type(value) is dict and ((value.get("schema_version") == 1 and set(value) == _DOCUMENT_FIELDS)
+                or (value.get("schema_version") == 2 and set(value) == _V2_FIELDS)), "Invalid synchronized recording fields")
+            version = value["schema_version"]
+            if version == 2:
+                _require(type(value["poses"]) is list and len(value["poses"]) <= 2400,
+                         "Invalid native recording pose count")
+                _require(type(value["events"]) is list and len(value["events"]) <= 128,
+                         "Invalid recording event count")
             manifest = validate_manifest(value["manifest"])
             entries = value["images"]
-            _require(type(entries) is list and 1 <= len(entries) <= MAX_IMAGES, "Invalid recording image count")
+            _require(type(entries) is list and (0 if version == 2 else 1) <= len(entries)
+                     <= (600 if version == 2 else MAX_IMAGES), "Invalid recording image count")
             assets, images = {}, {}
             for folder, catalog, result, suffix, digest_key, budget in (
                     ("assets", manifest["assets"], assets, ".bin", "sha256", MAX_TOTAL_ASSET_BYTES),
@@ -344,7 +565,10 @@ class SynchronizedSceneHost:
         self._anchor_clock = self._last_clock = self._now()
         self.manifest = recording.manifest
         self.raw = _canonical(self.manifest) + b"\n"
-        self._steps = tuple(sorted(set(recording._pose_stamps + recording._image_stamps)))
+        event_stamps = tuple(int(item["native_association"]["stamp_ns"]) for item in recording.events
+            if item["native_association"]["available"] and recording.media_state == "ready"
+            and recording.origin_ns <= int(item["native_association"]["stamp_ns"]) <= recording.origin_ns + recording.duration_ns)
+        self._steps = tuple(sorted(set(recording._pose_stamps + recording._image_stamps + event_stamps)))
         self._bind()
 
     def _now(self):
@@ -372,6 +596,10 @@ class SynchronizedSceneHost:
         _require(not self.closed and identifier == self.identifier, "Recording binding changed")
 
     def _selection(self):
+        if self.recording.media_state != "ready":
+            return dict(cursor_ns=None, time_sec=None, pose=None, image=None, pose_status="missing",
+                image_status="missing", pose_time_sec=None, image_time_sec=None, pose_delta_sec=None,
+                image_delta_sec=None, event_ids=[]), dict(pose=-1, image=-1)
         cursor = self.recording.origin_ns + self._position_ns
         selected, indices = {}, {}
         for name, stamps, track in (("pose", self.recording._pose_stamps, self.recording._document["poses"]),
@@ -396,11 +624,23 @@ class SynchronizedSceneHost:
                 stamp_ns=item["stamp_ns"],
                 sequence=item["sequence"], joint_positions_rad=deepcopy(item["positions_rad"])))
             selected["pose"] = result
-        selected.update(cursor_ns=str(cursor), time_sec=self._position_ns / NS_PER_SEC)
+        associated = [item for item in self.recording.events if item["native_association"]["available"]
+                      and self.recording.origin_ns <= int(item["native_association"]["stamp_ns"]) <= cursor]
+        latest = max((int(item["native_association"]["stamp_ns"]) for item in associated), default=None)
+        selected.update(cursor_ns=str(cursor), time_sec=self._position_ns / NS_PER_SEC,
+            event_ids=[item["event_id"] for item in associated if int(item["native_association"]["stamp_ns"]) == latest])
         return selected, indices
 
     def _snapshot(self):
         selection, indices = self._selection()
+        events = self.recording.events
+        for item in events:
+            association = item["native_association"]
+            stamp = int(association["stamp_ns"]) if association["available"] else None
+            seekable = (self.recording.media_state == "ready" and stamp is not None
+                        and self.recording.origin_ns <= stamp <= self.recording.origin_ns + self.recording.duration_ns)
+            item["time_sec"] = (stamp - self.recording.origin_ns) / NS_PER_SEC if seekable else None
+            item["media_seek_reason"] = None if seekable else (association["reason"] if stamp is None else "outside_retained_media")
         return dict(schema_version=1, status="closed" if self.closed else "ready",
             binding_id=self.identifier, binding=deepcopy(self.binding),
             source=dict(id="scene:synchronized-recording", label=self.recording.label, kind="synchronized-recording", readonly=True),
@@ -408,9 +648,15 @@ class SynchronizedSceneHost:
                 model_sha256=self.manifest["model_sha256"], scene_sha256=self.manifest["scene_sha256"]),
             sequence=(0 if indices["pose"] < 0 else self.recording._document["poses"][indices["pose"]]["sequence"]),
             pose_ready=selection["pose"] is not None, worker_running=False,
-            position_sec=self._position_ns / NS_PER_SEC, duration_sec=self.recording.duration,
+            position_sec=None if self.recording.media_state != "ready" else self._position_ns / NS_PER_SEC, duration_sec=self.recording.duration,
             playing=self.playing, speed=self.speed, recording_sha256=self.recording.sha256,
-            origin_ns=str(self.recording.origin_ns), acquisition_clock_domain="ros_simulation",
+            origin_ns=None if self.recording.origin_ns is None else str(self.recording.origin_ns),
+            acquisition_clock_domain="ros_simulation",
+            recording_version=self.recording.version, recording_kind=self.recording.kind,
+            media_state=self.recording.media_state, media_reason=self.recording.media_reason, events=events,
+            task_status=self.recording._document.get("task_status"),
+            pose_sample_semantics=self.recording._document.get("pose_sample_semantics"),
+            observation_counters=deepcopy(self.recording._document.get("observation_counters")),
             acquisition_identity=self.recording.identity,
             selection=selection, error=None)
 
@@ -422,6 +668,7 @@ class SynchronizedSceneHost:
     def control(self, action, position=None, speed=None):
         with self.lock:
             self._ready(self.identifier)
+            _require(self.recording.media_state == "ready", "This diagnostic has no synchronized media to play")
             _require(action in ("play", "pause", "seek", "speed", "previous", "next"), "Only read-only playback controls are supported")
             _require(position is None or action == "seek", "Only seek accepts position")
             _require(speed is None or action == "speed", "Only speed accepts a rate")
