@@ -196,7 +196,7 @@ class CooperativeCancelTests(unittest.TestCase):
              patch(runner + "group_gone", return_value=True), \
              patch("mujoco_ros2_manipulation.operator_console.demo_worker.group_gone", return_value=True), \
              patch("mujoco_ros2_manipulation.operator_console.demo_worker.read_process_start_ticks", return_value=123), \
-             patch("builtins.print"):
+             patch("builtins.print"), patch.object(self.job, "_startup_proof", return_value=dict(ready=True, synthetic=True)):
             with self.assertRaises(DemoCancelled):
                 self.job._run_verifier("contact", cell, node_factory, Mock(), [], None, "test_")
         ros.init.assert_not_called()
@@ -212,6 +212,8 @@ class CooperativeCancelTests(unittest.TestCase):
         self.assertEqual(nested["error"]["type"], "DemoCancelled")
         self.assertTrue(nested["shutdown_clean"])
         self.assertTrue(nested["process_group_gone"])
+        self.assertEqual(nested["comparison_startup_drain"]["status"], "passed")
+        self.assertFalse(nested["comparison_startup_drain"]["node_was_created"])
         self.assertEqual(self.job.data["results"][0]["run_id"], nested["run_id"])
 
 

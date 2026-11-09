@@ -82,7 +82,7 @@ def _cleanup_step(report, diagnostics, name, *, applicable=True):
 
 def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=None,
                      validator=None, command_builder=None, report_prefix="",
-                     launch_environment=None, finalize=None, expected_crash=None, on_launch=None):
+                     launch_environment=None, finalize=None, expected_crash=None, on_launch=None, before_cleanup=None):
     mode = 'gui' if args.gui else 'headless'
     if args.stop_mode == 'window':
         mode += '_window'
@@ -92,6 +92,7 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
     process = node = profile = None
     failed = False
     interrupted = False
+    primary_error = None
     forced = False
     cleanup = []
     expected_exits = []
@@ -164,6 +165,7 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
                 raise RuntimeError(closed.message)
             process.wait(timeout=15)
     except (Exception, KeyboardInterrupt) as error:
+        primary_error = error
         failed = True
         interrupted = isinstance(error, KeyboardInterrupt)
         report.update(error={'type': type(error).__name__, 'message': str(error)},
@@ -171,6 +173,12 @@ def run_verification(args, root, ros, factory, trigger_type, *, profile_loader=N
     finally:
         # Cleanup errors must never erase the primary verification failure.
         diagnostics = dict(schema_version=1, steps=[])
+        if before_cleanup is not None and interrupted and process is not None:
+            try:
+                with _cleanup_step(report, diagnostics, 'startup_drain'):
+                    before_cleanup(report, profile, args, process, node, primary_error)
+            except Exception as error:
+                cleanup.append(f'startup drain: {error}')
         try:
             with _cleanup_step(report, diagnostics, 'destroy_node', applicable=node is not None):
                 if node is not None:
