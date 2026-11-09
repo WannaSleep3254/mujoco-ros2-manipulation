@@ -35,6 +35,7 @@ from .ros_model import FINGER_JOINTS
 from .ros_observation import GraspObservationStore, ObservationUnavailable
 from .ros_planning_scene import RosGraspPlanningScene, _observed_pose, _relative, _pose_error, _rotate
 from .ros_runtime import check_grasp_runtime
+from ..build import action_clock_runtime_paths
 from .ros_target import load_ros_grasp_target
 from .ros_admission import (AcceptedObservationRecorder, ReadOnlyAdmissionWorker,
                             file_stats, _member_identity)
@@ -780,7 +781,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         record.update(model_sha256=evaluator.model_sha256, execution_manifest_sha256=manifest_sha256,
                       target_fingerprint=target.fingerprint, clearance=evaluator.metadata(),
                       plugin_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/observation.cpp"))
-        source_paths = [Path(__file__), *[Path(__file__).with_name(name) for name in
+        action_patch, action_binary = action_clock_runtime_paths(ROOT)
+        source_paths = [action_patch, Path(__file__), *[Path(__file__).with_name(name) for name in
             ("ros_observation.py", "ros_planning_scene.py", "ros_distance.py", "ros_admission.py", "contract.py")],
             *[ROOT/"src/mujoco_ros2_manipulation/workcells"/name for name in
               ("pose_adapter.py", "planning_adapter.py", "interference.py")],
@@ -789,7 +791,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             ROOT/"native/grasp_distance.cpp", ROOT/"native/step_monitor.hpp", ROOT/"native/control_loop_shutdown.hpp"]
         source_hashes = {str(path): file_sha256(path) for path in source_paths}
         record["source_sha256"] = source_hashes
-        binaries = [ROOT/"runtime/native/grasp_distance.so",
+        binaries = [action_binary, ROOT/"runtime/native/grasp_distance.so",
             ROOT/"ros_ws/install/manipulation_grasp_plugin/lib/libmujoco_ros2_control_grasp_observer.so",
             ROOT/"ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so",
             ROOT/"ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"]

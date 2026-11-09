@@ -9,6 +9,8 @@ import os
 from pathlib import Path, PurePosixPath
 import xml.etree.ElementTree as ET
 
+from ..build import check_action_clock_runtime
+
 
 _PACKAGE = 'manipulation_grasp_plugin'
 _LOOKUP = 'manipulation_grasp/ObservationPlugin'
@@ -98,6 +100,7 @@ def _check_provider(root):
 def check_grasp_runtime(root):
     """Verify binaries and the class pluginlib will select; no ROS imports."""
     root = Path(root).resolve()
+    check_action_clock_runtime(root)
     _check_provider(root)
     targets = (
         (root / 'ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so',

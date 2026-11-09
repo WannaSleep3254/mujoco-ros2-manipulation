@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import tempfile
 import unittest
+from unittest.mock import patch
 import xml.etree.ElementTree as ET
 from mujoco_ros2_manipulation.workcells.contact_demo import (
     contact_demo_model,
@@ -81,7 +82,8 @@ class ContactPolicyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 contact_test_model(cell, directory)
 
-    def test_outdated_runtime_cannot_start_protected_workcell(self):
+    @patch("mujoco_ros2_manipulation.workcells.contact_policy.check_action_clock_runtime")
+    def test_outdated_runtime_cannot_start_protected_workcell(self, action_clock):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "native").mkdir()
@@ -99,6 +101,7 @@ class ContactPolicyTests(unittest.TestCase):
                 check_contact_runtime(root)
             binary.write_bytes(hashlib.sha256(header.read_bytes()).hexdigest().encode())
             check_contact_runtime(root)
+            action_clock.assert_called_with(root)
 
 
 class FixedObstacleFixtureTests(unittest.TestCase):

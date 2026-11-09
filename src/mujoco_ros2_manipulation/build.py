@@ -8,6 +8,7 @@ import platform
 import re
 import subprocess
 import tempfile
+import xml.etree.ElementTree as ET
 
 import yaml
 from mujoco_ros2_manipulation.paths import ROOT
@@ -61,6 +62,12 @@ def load_manifest(root=ROOT):
             local_path(root, runtime[key])
         if runtime['repository'] not in data['repositories'] or runtime['package'] not in data['packages']:
             raise ValueError('Unknown runtime repository/package')
+        action_package = runtime['action_server_package']
+        if action_package != 'rclcpp_action' or action_package not in data['packages']:
+            raise ValueError('Expected the isolated rclcpp_action runtime package')
+        if data['packages'][action_package].get('repository') not in data['repositories']:
+            raise ValueError('The action clock overlay requires a pinned source repository')
+        local_path(root, runtime['action_server_patch'])
         seen = set()
         for deb in runtime['debs']:
             if deb['package'] in seen or not re.fullmatch('[0-9a-f]{64}', deb['sha256']):
@@ -109,6 +116,60 @@ def build_plan(robot_ids=None, root=ROOT):
             base = local_path(root, manifest['repositories'][definition['repository']]['path'])
         packages.append({'name': name, 'path': str(local_path(base, definition['path']))})
     return {'robots': [profile.id for profile in profiles], 'repositories': sorted(repositories), 'packages': packages}
+
+
+def runtime_plan(manifest, root=ROOT):
+    """Select only the patched action library and the existing native owners."""
+    runtime = manifest['runtime']
+    names = (runtime['action_server_package'], runtime['package'], 'manipulation_grasp_plugin')
+    packages, repositories = [], set()
+    for name in names:
+        definition = manifest['packages'][name]
+        base = root
+        if 'repository' in definition:
+            repositories.add(definition['repository'])
+            base = local_path(root, manifest['repositories'][definition['repository']]['path'])
+        packages.append(dict(name=name, path=str(local_path(base, definition['path']))))
+    return dict(robots=[], repositories=sorted(repositories), packages=packages)
+
+
+def check_action_server_abi(source, underlay=Path('/opt/ros/humble')):
+    """Keep the small source overlay on the installed Humble C++ ABI version."""
+    paths = (source/'rclcpp/package.xml', source/'rclcpp_action/package.xml',
+             underlay/'share/rclcpp/package.xml', underlay/'share/rclcpp_action/package.xml')
+    try:
+        versions = [ET.parse(path).getroot().findtext('version') for path in paths]
+    except ET.ParseError as error:
+        raise ValueError('Cannot read the action clock overlay ABI versions') from error
+    if versions != ['16.0.21'] * len(paths):
+        raise ValueError('The pinned action clock overlay requires installed rclcpp and rclcpp_action 16.0.21')
+
+
+def action_clock_runtime_paths(root):
+    """Share the exact admitted patch/library paths with runtime identity checks."""
+    manifest = load_manifest(root)
+    return (local_path(root, manifest['runtime']['action_server_patch']),
+            root/'ros_ws/install/rclcpp_action/lib/librclcpp_action.so')
+
+
+def check_action_clock_runtime(root):
+    """Require the source-pinned isolated library selected by the launch environment."""
+    root = Path(root).resolve()
+    patch, binary = action_clock_runtime_paths(root)
+    digest = hashlib.sha256(patch.read_bytes()).hexdigest().encode()
+    if not binary.is_file() or binary.stat().st_size > 16*1024*1024 or digest not in binary.read_bytes():
+        raise ValueError('Build the isolated action clock overlay for the current source before launch')
+    search_path = os.environ.get('LD_LIBRARY_PATH')
+    if search_path is None:
+        raise ValueError('Source manipulation_env.sh to select the isolated action clock library')
+    for directory in search_path.split(os.pathsep):
+        # The ELF loader searches the current directory for every empty entry.
+        candidate = Path(directory)/binary.name
+        if candidate.is_file():
+            if candidate.resolve() != binary.resolve():
+                raise ValueError('The launch environment selects a different action clock library')
+            return
+    raise ValueError('Source manipulation_env.sh to select the isolated action clock library')
 
 
 def run(command, **kwargs):
@@ -199,9 +260,11 @@ def apply_patch_series(source, patches):
         run(['git', '-C', source, 'apply', patch])
 
 
-def colcon(root, packages, runtime=False):
-    command = ['colcon', '--log-base', 'ros_ws/log', 'build', '--base-paths']
-    command += [entry['path'] for entry in packages]
+def colcon(root, packages, runtime=False, *, cmake_args=()):
+    command = ['colcon', '--log-base', 'ros_ws/log', 'build']
+    if any(entry['name'] == 'rclcpp_action' for entry in packages):
+        command += ['--allow-overriding', 'rclcpp_action']
+    command += ['--base-paths', *[entry['path'] for entry in packages]]
     command += ['--build-base', 'ros_ws/build', '--install-base', 'ros_ws/install', '--packages-select']
     command += [entry['name'] for entry in packages]
     command += ['--cmake-args', '-DBUILD_TESTING=OFF']
@@ -212,6 +275,7 @@ def colcon(root, packages, runtime=False):
                     '-DMANIPULATION_GRASP_POLICY_SHA256=' + hashlib.sha256((root / 'native/grasp_policy.hpp').read_bytes()).hexdigest(),
                     f'-DMANIPULATION_SHUTDOWN_INCLUDE_DIR={root / "native"}',
                     '-DMANIPULATION_SHUTDOWN_SHA256=' + hashlib.sha256((root / 'native/control_loop_shutdown.hpp').read_bytes()).hexdigest()]
+    command += list(cmake_args)
     run(['bash', '-c', 'source "$1"\nexport CMAKE_PREFIX_PATH="$2/runtime/root/usr:$2/runtime/root/opt/ros/humble:${CMAKE_PREFIX_PATH:-}"\nshift 2\nexec "$@"',
          'manipulation-build', root / 'manipulation_env.sh', root, *command], cwd=root)
 
@@ -240,14 +304,13 @@ def main():
             plan['workcell'] = cell.id
         from mujoco_ros2_manipulation.scenes import load_scene
         load_scene(args.scene, ROOT)
-        if args.component == 'runtime':
-            runtime = manifest['runtime']
-            definition = manifest['packages'][runtime['package']]
-            source = local_path(ROOT, manifest['repositories'][runtime['repository']]['path'])
-            plan = dict(robots=[], repositories=[runtime['repository']], packages=[
-                dict(name=runtime['package'], path=str(local_path(source, definition['path'])))])
         if args.component in ('all', 'runtime'):
-            plan['repositories'] = sorted(set(plan['repositories']) | {manifest['runtime']['repository']})
+            native_plan = runtime_plan(manifest)
+            if args.component == 'runtime':
+                plan = native_plan
+            else:
+                plan['repositories'] = sorted(set(plan['repositories']) | set(native_plan['repositories']))
+                plan['runtime_packages'] = native_plan['packages']
         if args.dry_run:
             print(json.dumps(dict(component=args.component, scene=args.scene, **plan), indent=2))
             return 0
@@ -262,7 +325,15 @@ def main():
             source = local_path(ROOT, manifest['repositories'][runtime['repository']]['path'])
             apply_patch_series(source, [local_path(ROOT, runtime[key])
                 for key in RUNTIME_PATCH_KEYS])
+            action_definition = manifest['packages'][runtime['action_server_package']]
+            action_source = local_path(ROOT, manifest['repositories'][action_definition['repository']]['path'])
+            action_patch = local_path(ROOT, runtime['action_server_patch'])
+            check_action_server_abi(action_source)
+            apply_patch_series(action_source, [action_patch])
             prepare_debs(ROOT, manifest, args.download_debs)
+            colcon(ROOT, native_plan['packages'][:1], cmake_args=[
+                '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                '-DMANIPULATION_ACTION_CLOCK_SHA256=' + hashlib.sha256(action_patch.read_bytes()).hexdigest()])
             native = ROOT / 'runtime/native'
             native.mkdir(parents=True, exist_ok=True)
             run(['gcc', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror', '-o', native / 'moveit_plugin_lifetime.so',
@@ -280,10 +351,7 @@ def main():
                  '-I' + str(vendor / 'include'), ROOT / 'native/grasp_scene_export.cpp',
                  vendor / 'lib/libmujoco.so.3.12.0', '-Wl,-rpath,' + str(vendor / 'lib'),
                  '-o', native / 'grasp_scene_export'])
-            definition = manifest['packages'][runtime['package']]
-            colcon(ROOT, [dict(name=runtime['package'], path=str(local_path(source, definition['path']))),
-                          dict(name='manipulation_grasp_plugin', path=str(local_path(ROOT,
-                              manifest['packages']['manipulation_grasp_plugin']['path'])))], True)
+            colcon(ROOT, native_plan['packages'][1:], True)
         if args.component in ('all', 'models'):
             # Reject dirty manufacturer sources, including mesh edits, before colcon.
             from mujoco_ros2_manipulation.model_build.integrity import repository_commit

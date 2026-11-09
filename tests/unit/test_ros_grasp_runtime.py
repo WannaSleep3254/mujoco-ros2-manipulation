@@ -62,6 +62,9 @@ class RosGraspRuntimeTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        action_clock = patch('mujoco_ros2_manipulation.grasping.ros_runtime.check_action_clock_runtime')
+        self.action_clock = action_clock.start()
+        self.addCleanup(action_clock.stop)
         self.registry, self.descriptor = fixture(self.root)
         environment = patch.dict(os.environ, {'AMENT_PREFIX_PATH': ''})
         environment.start()
@@ -69,6 +72,7 @@ class RosGraspRuntimeTests(unittest.TestCase):
 
     def test_one_current_class_and_all_source_bound_binaries_are_admitted(self):
         self.assertIsNone(check_grasp_runtime(self.root))
+        self.action_clock.assert_called_once_with(self.root)
         with patch.dict(os.environ, {'AMENT_PREFIX_PATH': str(self.root / 'ros_ws/install' / PACKAGE)}):
             self.assertIsNone(check_grasp_runtime(self.root))
 
