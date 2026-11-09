@@ -24,11 +24,22 @@ function renderBrowserTimings() {
   }, null, 2);
  } catch (_error) { /* Optional diagnostics cannot alter a command. */ }
 }
+function browserRequestScope(data) {
+ return {
+  console_session_id: data?.lifecycle?.session_id ?? null,
+  workspace_selection_id: data?.task?.selection_id ?? null,
+  motion_session_id: data?.server?.session_id ?? null,
+ };
+}
 function beginBrowserRequestTiming(path, body) {
  if (body === undefined) return null;
  try {
+  const scope = browserRequestScope(state);
+  const scopeAvailable = Object.values(scope).every(value => typeof value === 'string' && /^[0-9a-f]{32}$/.test(value));
   const entry = {
    sequence: ++browserRequestSequence,
+   scope,
+   state_observation_unavailable_reason: scopeAvailable ? null : 'scope_unavailable',
    path: path.split('?')[0],
    request_id: typeof body?.request_id === 'string' && /^[0-9a-f]{32}$/.test(body.request_id) ? body.request_id : null,
    started_ms: browserTimingSample(),
@@ -66,9 +77,14 @@ function finishBrowserRequestTiming(entry, response, data, outcome) {
 function observeBrowserRequestTimings(data) {
  try {
   const observed = browserTimingSample();
+  const scope = browserRequestScope(data);
   for (const entry of browserRequestTimings) {
-   if (entry.request_id === null) continue;
-   const record = data.history?.find(row => row.request_id === entry.request_id);
+   if (entry.request_id === null || entry.state_observation_unavailable_reason !== null) continue;
+   if (!Object.keys(scope).every(key => scope[key] === entry.scope[key])) {
+    entry.state_observation_unavailable_reason = 'scope_changed';
+    continue;
+   }
+   const record = data.history?.find(row => row.request_id === entry.request_id && row.session_id === scope.motion_session_id);
    if (!record) continue;
    if (!entry.first_state_observed) {
     entry.first_state_observed = true;

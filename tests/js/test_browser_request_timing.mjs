@@ -6,6 +6,8 @@ import vm from 'node:vm';
 const source = (await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/app.js', import.meta.url), 'utf8'))
  .replace(/boot\(\)\.catch\(error=>\{notice\('조작 화면을 불러오지 못했습니다: '\+error\.message\);\}\);\s*$/, '');
 const ID = 'a'.repeat(32);
+const SESSION = 'b'.repeat(32);
+const SCOPE = {lifecycle: {session_id: 'c'.repeat(32)}, task: {selection_id: 'd'.repeat(32)}, server: {session_id: SESSION}};
 const deferred = () => {
  let resolve, reject;
  const promise = new Promise((accept, refuse) => { resolve = accept; reject = refuse; });
@@ -24,9 +26,13 @@ function harness(fetcher) {
  });
  vm.runInContext(source + `
 this.timingTest = {
-  request, observeBrowserRequestTimings,
+  request, observeBrowserRequestTimings(data) {
+   observeBrowserRequestTimings({...state, ...data, history: data.history?.map(row => ({session_id: state?.server?.session_id, ...row}))});
+  },
+  setScope(data) { state = data; },
   samples: () => JSON.parse(JSON.stringify(browserRequestTimings)),
  };`, context);
+ context.timingTest.setScope(JSON.parse(JSON.stringify(SCOPE)));
  return {api: context.timingTest, elements, now(value) { now = value; }};
 }
 const reply = (data, status = 200) => ({ok: status < 400, status, json: async () => data});
@@ -128,4 +134,40 @@ test('first observed statuses keep missing original times after the optional clo
  assert.equal(sample.first_state_status, 'running');
  assert.equal(sample.first_state_observed_ms, null);
  assert.equal(sample.terminal_state_observed_ms, null);
+});
+
+
+for (const field of ['console', 'selection', 'motion']) {
+ test(`a changed ${field} scope cannot attach a reused request or recover after a round trip`, async () => {
+  const h = harness(async () => reply({request_id: ID}));
+  await h.api.request('/api/plan', {request_id: ID});
+  const changed = JSON.parse(JSON.stringify(SCOPE));
+  if (field === 'console') changed.lifecycle.session_id = 'e'.repeat(32);
+  if (field === 'selection') changed.task.selection_id = 'e'.repeat(32);
+  if (field === 'motion') changed.server.session_id = 'e'.repeat(32);
+  h.now(20);
+  h.api.observeBrowserRequestTimings({...changed, history: [{request_id: ID, session_id: changed.server.session_id, status: 'running'}]});
+  h.api.observeBrowserRequestTimings({...SCOPE, history: [{request_id: ID, session_id: SESSION, status: 'succeeded'}]});
+  const sample = h.api.samples()[0];
+  assert.equal(sample.state_observation_unavailable_reason, 'scope_changed');
+  assert.equal(sample.first_state_observed, false);
+  assert.equal(sample.terminal_state_observed, false);
+  assert.equal(sample.outcome, 'accepted');
+ });
+}
+
+test('missing startup scope keeps state association unavailable after later discovery', async () => {
+ const h = harness(async () => reply({request_id: ID}));
+ h.api.setScope(undefined);
+ await h.api.request('/api/plan', {request_id: ID});
+ h.api.observeBrowserRequestTimings({...SCOPE, history: [{request_id: ID, session_id: SESSION, status: 'succeeded'}]});
+ assert.equal(h.api.samples()[0].state_observation_unavailable_reason, 'scope_unavailable');
+ assert.equal(h.api.samples()[0].first_state_observed, false);
+});
+
+test('same request ID from an old motion session cannot supply a current state observation', async () => {
+ const h = harness(async () => reply({request_id: ID}));
+ await h.api.request('/api/plan', {request_id: ID});
+ h.api.observeBrowserRequestTimings({history: [{request_id: ID, session_id: 'e'.repeat(32), status: 'succeeded'}]});
+ assert.equal(h.api.samples()[0].first_state_observed, false);
 });
