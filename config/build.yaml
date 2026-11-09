@@ -17,7 +17,14 @@ repositories:
     path: external/mujoco_ros2_control
     url: https://github.com/ros-controls/mujoco_ros2_control.git
     commit: 178b1c39e5010185116bc89b4e94cbb25b825f61
+  rclcpp:
+    path: external/rclcpp
+    url: https://github.com/ros2/rclcpp.git
+    commit: c07d2a5e9974bb9788c9dbb76cbda1c73973a5be
 packages:
+  rclcpp_action:
+    repository: rclcpp
+    path: rclcpp_action
   fairino_description:
     repository: fairino
     path: fairino_description
@@ -41,6 +48,8 @@ packages:
   manipulation_grasp_plugin:
     path: native/grasp_ros2_plugin
 runtime:
+  action_server_package: rclcpp_action
+  action_server_patch: patches/rclcpp_action-16.0.21-clock-lock.patch
   repository: mujoco_ros2_control
   package: mujoco_ros2_control
   patch: patches/mujoco_ros2_control-0.1.2-shutdown.patch

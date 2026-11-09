@@ -35,14 +35,17 @@ from .ros_model import FINGER_JOINTS
 from .ros_observation import GraspObservationStore, ObservationUnavailable
 from .ros_planning_scene import RosGraspPlanningScene, _observed_pose, _relative, _pose_error, _rotate
 from .ros_runtime import check_grasp_runtime
+from ..build import action_clock_runtime_paths
 from .ros_target import load_ros_grasp_target
-from .ros_admission import AcceptedObservationRecorder, ReadOnlyAdmissionWorker, file_stats
+from .ros_admission import (AcceptedObservationRecorder, ReadOnlyAdmissionWorker,
+                            file_stats, _member_identity)
 
 
 CONTROLLERS = ("left_controller", "right_controller", "gripper_controller")
 MAX_TASK_WALL_SEC = 240
 MAX_FRAME_BYTES = 64 * 1024 * 1024
 MAX_RECEIPT_BYTES = 2 * 1024 * 1024
+MAX_STARTUP_LOG_BYTES = 4 * 1024 * 1024
 
 
 class RosGraspTaskError(RuntimeError):
@@ -302,6 +305,38 @@ def _native_exit_proof(log):
     name, pid = values[0]
     marker = f"[{name}]: process has finished cleanly [pid {pid}]"
     return dict(observed=marker in log, node=name, pid=int(pid), clean_exit_marker=marker)
+
+
+def moveit_startup_proof(log, launch_pid, *, process_identity=_member_identity):
+    """Bind completed MoveGroup initialization to this still-live owned launch."""
+    plain = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", log)
+    lines = plain.splitlines()
+    _require(not process_failures(plain), "a launch child failed before MoveGroup initialization drained")
+    _require(not any("sending signal" in line or "user interrupted with ctrl-c" in line for line in lines),
+             "owned launch was already stopping before MoveGroup initialization drained")
+    starts = [(index, match.group(1), int(match.group(2)))
+        for index, line in enumerate(lines)
+        if (match := re.fullmatch(r"\[INFO\] \[(move_group-[0-9]+)\]: process started with pid \[([0-9]+)\]", line))]
+    if not starts:
+        return None
+    _require(len(starts) == 1, "MoveGroup startup process is ambiguous")
+    started, name, pid = starts[0]
+    _require(not any(line.startswith(f"[INFO] [{name}]: process has finished cleanly") for line in lines),
+             "MoveGroup startup process already exited")
+    identity = process_identity(pid)
+    _require(identity is not None and identity["pid"] == pid
+             and identity["ppid"] == identity["pgrp"] == identity["session"] == launch_pid,
+             "MoveGroup startup process does not belong to the owned launch")
+    context = [index for index, line in enumerate(lines) if re.fullmatch(
+        r"\[" + re.escape(name) + r"\] \[INFO\] \[[^\]]+\] "
+        r"\[moveit_move_group_capabilities_base\.move_group_context\]: MoveGroup context initialization complete", line)]
+    ready = [index for index, line in enumerate(lines) if line == f"[{name}] You can start planning now!"]
+    _require(len(context) <= 1 and len(ready) <= 1, "MoveGroup initialization markers are ambiguous")
+    if not context or not ready:
+        return None
+    _require(started < context[0] < ready[0], "MoveGroup initialization markers are out of order")
+    return dict(node=name, pid=pid, launch_pid=launch_pid, starttime=identity["starttime"],
+                start_line=started + 1, context_ready_line=context[0] + 1, planning_ready_line=ready[0] + 1)
 
 
 def expected_startup_spawner_interruptions(log, *, startup_cancel, launch_was_alive, native_stop_observed):
@@ -746,7 +781,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         record.update(model_sha256=evaluator.model_sha256, execution_manifest_sha256=manifest_sha256,
                       target_fingerprint=target.fingerprint, clearance=evaluator.metadata(),
                       plugin_sha256=file_sha256(ROOT/"native/grasp_ros2_plugin/src/observation.cpp"))
-        source_paths = [Path(__file__), *[Path(__file__).with_name(name) for name in
+        action_patch, action_binary = action_clock_runtime_paths(ROOT)
+        source_paths = [action_patch, Path(__file__), *[Path(__file__).with_name(name) for name in
             ("ros_observation.py", "ros_planning_scene.py", "ros_distance.py", "ros_admission.py", "contract.py")],
             *[ROOT/"src/mujoco_ros2_manipulation/workcells"/name for name in
               ("pose_adapter.py", "planning_adapter.py", "interference.py")],
@@ -755,7 +791,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
             ROOT/"native/grasp_distance.cpp", ROOT/"native/step_monitor.hpp", ROOT/"native/control_loop_shutdown.hpp"]
         source_hashes = {str(path): file_sha256(path) for path in source_paths}
         record["source_sha256"] = source_hashes
-        binaries = [ROOT/"runtime/native/grasp_distance.so",
+        binaries = [action_binary, ROOT/"runtime/native/grasp_distance.so",
             ROOT/"ros_ws/install/manipulation_grasp_plugin/lib/libmujoco_ros2_control_grasp_observer.so",
             ROOT/"ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so",
             ROOT/"ros_ws/install/mujoco_ros2_control/lib/mujoco_ros2_control/ros2_control_node"]
@@ -1004,20 +1040,68 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         except Exception as error:
             record["cleanup_errors"].append("checkpoint: "+str(error))
         if process is not None and process.poll() is None and publisher is not None:
+            cleanup_started = time.monotonic()
+            cleanup_deadline = cleanup_started + 8.
+            cleanup_step = "native stop"
+            drain = None
             try:
                 change_phase(8)
                 stopped = until(lambda: latest["guard"] and latest["guard"].get("phase") == "stopped"
                     and latest["guard"]["latched"] and all(latest["guard"]["controllers"].get(name) == "inactive"
                                                            for name in CONTROLLERS),
-                    8., "native three-controller cleanup stop", health=False)
+                    max(0., cleanup_deadline - time.monotonic()), "native three-controller cleanup stop", health=False)
                 record["cleanup"]["native_stop_observed"] = bool(stopped)
                 record["cleanup"]["guard"] = deepcopy(latest["guard"])
                 if life is not None and life.stage == "cancelled":
                     record.update(cancelled_hold_observation(life, stop_observed=True))
                 elif life is not None and life.stage == "failed":
                     record.update(failed_stop_hold_observation(life, stop_observed=True))
+                cancelled_before_actions = (not record["actions"] and cancel_event.is_set()
+                    and record["status"] == "cancelled" and record.get("error", {}).get("type") == "RosGraspCancelled")
+                if cancelled_before_actions:
+                    # Physics is already frozen. Drain constructor work before
+                    # launch SIGINT invalidates MoveGroup's ROS context. This
+                    # shares the original eight-second native cleanup budget.
+                    cleanup_step = "startup MoveIt drain"
+                    drain = dict(status="waiting", no_actions=True, native_stop_observed=True,
+                        launch_pid=process.pid, started_monotonic_ns=time.monotonic_ns(),
+                        shared_cleanup_budget_sec=8., remaining_budget_sec=max(0., cleanup_deadline-time.monotonic()))
+                    record["cleanup"]["moveit_startup_drain"] = drain
+                    save()
+                    def initialized():
+                        _require(process.poll() is None, "owned launch exited while draining MoveGroup initialization")
+                        with log_path.open("rb") as stream:
+                            raw = stream.read(MAX_STARTUP_LOG_BYTES + 1)
+                        _require(len(raw) <= MAX_STARTUP_LOG_BYTES, "MoveGroup startup log exceeded its bound")
+                        proof = moveit_startup_proof(raw.decode("utf-8", errors="replace"), process.pid)
+                        services = all(client.service_is_ready() for client in
+                            (ik_client, fk_client, plan_client, get_scene, apply_scene))
+                        guard, observed = latest["guard"], latest["guard_observed_monotonic_ns"]
+                        now = time.monotonic_ns()
+                        stopped_now = (guard and guard.get("latched") is True and guard.get("phase") == "stopped"
+                            and all(guard["controllers"].get(name) == "inactive" for name in CONTROLLERS)
+                            and type(observed) is int and 0 <= now - observed <= 500_000_000)
+                        if proof and services and stopped_now:
+                            _require(time.monotonic() <= cleanup_deadline,
+                                     "MoveGroup startup drain exceeded its existing cleanup deadline")
+                            return dict(proof, required_services_ready=True, guard=deepcopy(guard),
+                                guard_observed_monotonic_ns=observed, guard_age_sec=(now-observed)/1e9)
+                        return None
+                    proof = initialized()
+                    if proof is None:
+                        proof = until(initialized, max(0., cleanup_deadline-time.monotonic()),
+                                      "owned MoveGroup initialization after native stop", health=False)
+                    _require(time.monotonic() <= cleanup_deadline,
+                             "MoveGroup startup drain exceeded its existing cleanup deadline")
+                    drain.update(status="passed", proof=proof, completed_monotonic_ns=time.monotonic_ns(),
+                                 cleanup_elapsed_sec=time.monotonic()-cleanup_started)
+                    record["cleanup"]["guard"] = deepcopy(proof["guard"])
+                    save()
             except Exception as error:
-                record["cleanup_errors"].append("native stop: "+str(error))
+                if drain is not None:
+                    drain.update(status="failed", error=str(error), completed_monotonic_ns=time.monotonic_ns(),
+                                 cleanup_elapsed_sec=time.monotonic()-cleanup_started)
+                record["cleanup_errors"].append(cleanup_step+": "+str(error))
         # Own any late accepted goal before draining. Native stop came first.
         if node is not None:
             for future, action in pending:

@@ -76,8 +76,8 @@
       "title": "뷰어 운영 현황과 통합 계획",
       "published_date": "2026-10-30",
       "document_type": "design_review",
-      "overview": "통합 작업실 8933에서 작업 선택·공유 3D·ROS 집기 실행과 취소·기록 분석을 연결했습니다. 기존 6개 화면·영상은 보존하고, 실제 정상·취소 검증과 남은 센서·브라우저 검수 범위를 구분합니다.",
-      "manifest_sha256": "b53bb0c3d8e72fcd59e4deab95cc3c8ed6db3b73258edbe942aecc3a5758946a",
+      "overview": "통합 작업실의 작업 선택·공유 3D·ROS 집기와 기록 분석을 정리합니다. 기존 여섯 화면·영상과 검증 근거를 보존하며, 복구 수정과 프로젝트 내부 기록 보존, 로그인 후 시작과 남은 UI·센서 검수를 연결합니다.",
+      "manifest_sha256": "93d3aeb62aadc8340af789450a0c76aa0b073cd85b0b59b3e74f91f8126b343d",
       "preview": {
         "image": "media/viewer-8925.jpg",
         "alt": "객체 목록과 3D 경로 미리보기, 계획 검토 패널을 표시하는 새 작업실 GUI",

@@ -23,6 +23,30 @@ function harness(initial=snapshot()){
  ui.observe(initial);ui.render();
  return{ui,element,requests,notices,timers,setState(value){nextState=value;ui.observe(value);ui.render();},nextState(value){nextState=value;},advance(ms){now+=ms;},camera(value){ready=value;ui.render();},counts:()=>({before,after,refreshes,shown})};
 }
+test('browser timer defaults preserve Window receiver and finish authoritative refresh after each command',async()=>{
+ const originalSet=globalThis.setTimeout,originalClear=globalThis.clearTimeout;
+ const timers=new Map();let identifier=0,setCalls=0,clearCalls=0;
+ globalThis.setTimeout=function(callback){assert.equal(this,globalThis,'Window timer receiver');setCalls++;const id=++identifier;timers.set(id,callback);return id;};
+ globalThis.clearTimeout=function(id){assert.equal(this,globalThis,'Window timer receiver');clearCalls++;assert.equal(timers.delete(id),true);};
+ try{
+  for(const refused of [false,true]){
+   const initial=snapshot();initial.task.selected='motion';
+   const h=harness(initial),next=snapshot();next.task.selection_id=NEXT;
+   let posts=0,refreshes=0,finished=0,notices=0;
+   const ui=new WorkspaceTaskControls({document:h.ui.document,
+    request:async()=>{posts++;await Promise.resolve();await Promise.resolve();if(refused){const error=Error('refused');error.httpStatus=409;throw error;}},
+    refresh:async()=>{refreshes++;ui.observe(refused?initial:next);},
+    afterCommand:()=>finished++,notify:()=>notices++});
+   ui.observe(initial);ui.render();
+   assert.equal(await ui.command('select','grasp'),!refused);
+   assert.equal(posts,1);assert.equal(refreshes,1);assert.equal(finished,1);
+   assert.equal(ui.pending,null);assert.equal(ui.unconfirmed,null);
+   assert.equal(ui.state.task.selected,refused?'motion':'grasp');
+   assert.equal(notices,refused?1:0);assert.equal(timers.size,0);
+   assert.equal(setCalls,refused?2:1);assert.equal(clearCalls,refused?2:1);
+  }
+ }finally{globalThis.setTimeout=originalSet;globalThis.clearTimeout=originalClear;}
+});
 test('choosing a task performs one selection POST only; a response cannot replace the authoritative GET',async()=>{
  const initial=snapshot();initial.task.selected='motion';const h=harness(initial),next=snapshot();next.task.selection_id=NEXT;
  const pending=h.ui.command('select','grasp');
@@ -30,6 +54,21 @@ test('choosing a task performs one selection POST only; a response cannot replac
  assert.equal(h.element('task-select').disabled,true);assert.equal(await h.ui.command('start'),false);assert.equal(h.requests.length,1);
  h.nextState(next);h.requests[0].resolve({task:{selected:'motion',selection_id:SEL}});assert.equal(await pending,true);
  assert.equal(h.ui.state.task.selection_id,NEXT);assert.equal(h.element('grasp-task-panel').hidden,false);assert.equal(h.requests.length,1);assert.deepEqual(h.counts(),{before:1,after:1,refreshes:1,shown:1});
+});
+test('task navigation waits for authoritative selection before remounting the shared 3D view',async()=>{
+ const initial=snapshot();initial.task.selected='motion';const h=harness(initial),fresh=deferred(),next=snapshot();next.task.selection_id=NEXT;
+ let shown=0;h.ui.refresh=async()=>{await fresh.promise;h.ui.observe(next);};
+ h.ui.showOperate=()=>{shown++;assert.equal(h.ui.state.task.selection_id,NEXT);};
+ const pending=h.ui.command('select','grasp');h.requests[0].resolve({});
+ await Promise.resolve();await Promise.resolve();await Promise.resolve();
+ assert.equal(shown,0);assert.equal(h.ui.pending,'select');
+ fresh.resolve();assert.equal(await pending,true);assert.equal(shown,1);assert.equal(h.requests.length,1);
+});
+test('failed refresh after an accepted selection never remounts the stale task',async()=>{
+ const initial=snapshot();initial.task.selected='motion';const h=harness(initial);
+ h.ui.refresh=async()=>{throw Error('state unavailable');};
+ const pending=h.ui.command('select','grasp');h.requests[0].resolve({});await pending;
+ assert.equal(h.counts().shown,0);assert.equal(h.ui.connected,false);assert.equal(h.ui.needsFresh,true);assert.equal(h.requests.length,1);
 });
 test('a fixed task start pins selection/model and repeated clicks cannot start another worker',async()=>{
  const h=harness(),pending=h.ui.command('start');assert.equal(h.requests.length,1);

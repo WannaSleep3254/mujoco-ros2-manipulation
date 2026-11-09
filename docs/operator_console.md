@@ -22,6 +22,73 @@
 아래의 [같은 작업실에서 ROS 집기 실행](#같은-작업실에서-ros-집기-실행) 절을 따릅니다.
 예전 서버를 여는 것만으로 새 기능이 추가되지는 않습니다. 기존 서버와 촬영 자료는 보존합니다.
 
+## 프로젝트 내부 실행과 기록 보존
+
+실행 환경과 중요한 기록은 프로젝트 안에 둡니다. `start-viewer.sh`는 프로젝트의 ROS 환경을
+불러온 뒤 조작 화면의 표준 시작 인수를 전달합니다. 일반 조작 화면은 다음과 같이 시작합니다.
+
+```bash
+./start-viewer.sh --domain 218 --port 8933
+```
+
+집기를 함께 사용하려면 준비한 실행 환경과 `grasp.json`의 SHA를 명시합니다.
+
+```bash
+task_grasp_directory=runtime/grasp-ros/target-01
+task_grasp_sha256="$(sha256sum "$task_grasp_directory/grasp.json" | cut -d ' ' -f 1)"
+./start-viewer.sh --domain 218 --port 8933 \
+  --ros-grasp-environment "$task_grasp_directory" \
+  --ros-grasp-manifest-sha256 "$task_grasp_sha256" \
+  --ros-grasp-domain 219
+```
+
+환경 스크립트를 불러오는 자식 프로세스도 같은 프로젝트의 `runtime/ros-logs/`에 ROS 로그를 남깁니다.
+설치 환경 검사별 `checker.log`와 `receipt.json`은
+`runtime/validation/environment-checks/` 아래 고유 폴더에 보존합니다.
+실행 기록, 성공·실패 결과, 영상과 센서·자세 기록도 프로젝트 내부에서 관리합니다.
+`/tmp`는 삭제돼도 되는 재생성 가능한 휘발성 자료에 사용합니다.
+
+로그인 후 자동 시작이 필요한 운영 호스트는 프로젝트의 절대 경로와 위 인수를 사용자 서비스의
+`ExecStart`에 등록합니다. 서비스 정의와 출력 로그를 프로젝트 안에 두고,
+사용자 systemd 설정에서는 그 정의를 연결합니다. 서비스는 뷰어 서버를 시작하며
+시뮬레이션과 로봇 작업은 사용자가 화면에서 시작합니다.
+
+현재 로컬 운영 예시는 `mujoco-viewer-8933.service`입니다. 등록된 호스트에서 다음 명령으로 관리합니다.
+
+```bash
+systemctl --user status mujoco-viewer-8933.service
+systemctl --user start mujoco-viewer-8933.service
+systemctl --user stop mujoco-viewer-8933.service
+systemctl --user restart mujoco-viewer-8933.service
+```
+
+프로젝트 경로와 실행 인수를 바꾸면 서비스 정의도 함께 갱신하고 다시 불러옵니다.
+새 경로의 실행과 로그를 확인한 뒤 전환하며 기존 실행 자료는 보존합니다.
+복구 수정과 남은 검수는 뷰어 상태 리포트에 이어서 기록합니다.
+[복구·운영 후속](operator/viewer-status-2026-10-30/index.html#recovery-operations)
+
+## 공동 작업 환경의 시작 실패 후속
+
+main 승격 CI #167에서는 왼팔 제어기 설정 중 native 제어 노드가 SIGSEGV로 중단됐습니다.
+종료 신호 이전의 원본 스택은 ROS 시계 구독과 타이머의 jump callback 경로를 가리킵니다.
+고정한 `rclcpp_action 16.0.21`에 Action 서버 초기화·해제와 시계 갱신의 clock mutex를
+공유하는 패치를 추가했습니다. runtime 빌드는 이 패키지를 프로젝트별 prefix에 먼저 빌드합니다.
+
+```bash
+python3 build_workspace.py --component runtime
+source ./manipulation_env.sh
+```
+
+전체 빌드인 `--component all`도 같은 경로를 사용합니다. 일반 조작과 ROS 집기 실행 전에는
+현재 패치 SHA와 실제 라이브러리 검색의 첫 후보를 검사합니다. 단일 로봇 실행도 같은 검사를
+사용합니다. 빌드 설정이 바뀌면 실행용 모델과
+집기 타깃도 새 경로로 생성하고 식별 SHA를 다시 지정합니다. 수정 환경의 단일 로봇·공동 작업·
+직접 집기·같은 작업실 HTTP 집기 14개 실제 검증과 정상 정리를 확인했습니다.
+
+복구 수정의 원격 반영과 통합 UI 검수에 앞서 이 시작 실패를 확인합니다.
+기존 집기 시작 취소 수정의 검증과 W01의 남은 수명 주기 진단은 각각 유지합니다.
+[시작 실패의 원본과 후속 상태](operator/viewer-status-2026-10-30/index.html#workcell-clock-startup-followup)
+
 ## 작업실 구성
 
 상단의 **조작 · 계획 검토 · 기록 분석**은 화면의 목적을 바꿉니다. 메뉴를 바꾸거나 패널을
@@ -86,6 +153,13 @@ native 실행이 시작되기 전에 취소됐다면 물리 정지를 관측했�
 잘못된 IPC, 출력·보존 한도, 소유자 감시 오류와 시간 초과는 이 준비 대기를 건너뛰고 소유 작업자를
 즉시 중단합니다. 잘못된 IPC를 준비 완료로 받아들이거나 신호를 중복 전송하지 않으며, 원래 취소 시한을
 다시 시작하지 않습니다. 결과 누락·정리 미확인인 오류 종료는 정상 취소 완료로 표시하지 않습니다.
+
+native 실행이 시작된 뒤 첫 Action 전에 취소하면 phase 8로 정지를 먼저 요청합니다.
+세 궤적 제어기의 정지를 확인한 뒤 같은 소유 MoveGroup의 초기화 완료 메시지와 필수 서비스,
+0.5초 이내의 정지 guard를 확인하고 ROS launch를 종료합니다. native 정지와 이 초기화 대기는
+8초 정리 예산을 함께 사용합니다. 시한 초과나 자식 프로세스의 비정상 종료는 정리 실패로 기록합니다.
+운반 중 취소는 Action 취소와 native 정지 경로로 처리합니다.
+[집기 시작 취소 후속](operator/viewer-status-2026-10-30/index.html#moveit-startup-cancel-followup)
 
 ### 이번 통합에서 확인한 범위
 

@@ -31,6 +31,7 @@ class FakeProcess:
         self.returncode=None;self.terminated=self.killed=0;self.waits=[]
         def argument(name):return argv[argv.index(name)+1]
         self.receipt=Path(argument('--receipt'));self.directory=self.receipt.parent
+        kwargs['stdout'].write(factory.log_bytes)
         report=deepcopy(factory.reports[Path(argument('--overlay'))])
         value=sources._receipt(report, token=argument('--request-token'),
             manifest_sha256=argument('--manifest-sha256'),worker_sha256=argument('--worker-sha256'))
@@ -53,6 +54,7 @@ class Factory:
         self.reports=reports;self.processes=[];self.code=0
         self.mutate=None;self.raw=None;self.publish=True
         self.timeout=self.stubborn=self.unreapable=False
+        self.log_bytes=b'CPU checker diagnostic\n'
     def __call__(self,argv,**kwargs):
         process=FakeProcess(self,argv,kwargs);self.processes.append(process);return process
 
@@ -92,7 +94,65 @@ class EnvironmentSourceTests(unittest.TestCase):
         self.assertEqual(process.argv[:3],[str(self.python),'-m',sources.WORKER_MODULE])
         self.assertEqual(process.argv[process.argv.index('--parent-pid')+1],str(os.getpid()))
         self.assertEqual(process.terminated,0);self.assertEqual(process.killed,0)
-        self.assertFalse(process.directory.exists(),'Owned receipt/log files are transient')
+        self.assertTrue(process.directory.exists(),'Owned receipt/log evidence is retained')
+
+    def test_success_keeps_separate_private_receipts_and_logs_inside_workspace(self):
+        self.load();self.load()
+        first,second=self.factory.processes
+        expected=self.root/'runtime/validation/environment-checks'
+        self.assertEqual(first.directory.parent,expected)
+        self.assertEqual(second.directory.parent,expected)
+        self.assertNotEqual(first.directory,second.directory)
+        for process in (first,second):
+            token=process.argv[process.argv.index('--request-token')+1]
+            self.assertEqual(process.directory.name,token)
+            self.assertEqual(process.directory.stat().st_mode & 0o777,0o700)
+            log=process.directory/'checker.log'
+            self.assertEqual(log.stat().st_mode & 0o777,0o600)
+            self.assertEqual(log.read_bytes(),self.factory.log_bytes)
+            value=json.loads(process.receipt.read_bytes())
+            self.assertEqual(value['request_token'],token)
+            self.assertEqual(value['report_sha256'],sources._sha(sources._canonical(self.reports[self.overlay])))
+
+    def test_failed_checker_keeps_original_diagnostics_and_rejected_receipt(self):
+        self.factory.code=1
+        self.factory.log_bytes=b'CPU checker failed: diagnostic retained\n'
+        self.factory.mutate=lambda value:value.update(request_token='0'*32)
+        with self.assertRaisesRegex(ValueError,'CPU validation failed'):self.load()
+        process=self.factory.processes[0]
+        self.assertEqual(process.directory.parent,self.root/'runtime/validation/environment-checks')
+        self.assertEqual((process.directory/'checker.log').read_bytes(),self.factory.log_bytes)
+        self.assertEqual(json.loads(process.receipt.read_bytes())['request_token'],'0'*32)
+        self.assertEqual(process.returncode,1)
+        self.assertEqual(process.terminated,0);self.assertEqual(process.killed,0)
+
+    def test_output_directory_links_never_escape_workspace_or_spawn_checker(self):
+        outside=self.root/'outside';outside.mkdir()
+        for index,linked_name in enumerate(('runtime','validation','environment-checks')):
+            with self.subTest(component=linked_name):
+                project=self.root/('project'+str(index));project.mkdir()
+                current=project
+                for name in ('runtime','validation','environment-checks'):
+                    current=current/name
+                    if name==linked_name:
+                        current.symlink_to(outside,target_is_directory=True);break
+                    current.mkdir()
+                base=NS(root=project,id='pair')
+                with self.assertRaisesRegex(ValueError,'unlinked workspace'):
+                    sources._full_check(self.overlay,base,self.digest,manifest(),self.python,1.)
+        root_alias=self.root/'workspace-link';root_alias.symlink_to(self.root,target_is_directory=True)
+        with self.assertRaisesRegex(ValueError,'unlinked workspace'):
+            sources._full_check(self.overlay,NS(root=root_alias,id='pair'),self.digest,manifest(),self.python,1.)
+        self.assertEqual(self.factory.processes,[])
+        self.assertEqual(list(outside.iterdir()),[])
+
+    def test_existing_check_directory_is_never_overwritten_even_on_token_collision(self):
+        with patch.object(sources.secrets,'token_hex',return_value='a'*32):
+            self.load();process=self.factory.processes[0]
+            before={p.name:p.read_bytes() for p in process.directory.iterdir()}
+            with self.assertRaises(FileExistsError):self.load()
+            self.assertEqual({p.name:p.read_bytes() for p in process.directory.iterdir()},before)
+        self.assertEqual(len(self.factory.processes),1)
 
     def test_catalog_schema_is_exact_bounded_and_all_entries_checked_before_spawn(self):
         valid=dict(directory='overlay',manifest_sha256=self.digest)
@@ -126,7 +186,7 @@ class EnvironmentSourceTests(unittest.TestCase):
         self.write([dict(directory='overlay',manifest_sha256=self.digest),dict(directory='second',manifest_sha256='e'*64)])
         with self.assertRaisesRegex(ValueError,'Duplicate declared'):self.load()
         self.assertEqual(len(self.factory.processes),1)
-        self.assertFalse(self.factory.processes[0].directory.exists())
+        self.assertTrue(self.factory.processes[0].directory.exists())
 
     def test_receipt_cannot_substitute_nonce_model_geometry_hash_or_private_extra_fields(self):
         mutations=[lambda value:value.update(request_token='0'*32),lambda value:value.update(overlay_manifest_sha256='0'*64),
@@ -137,7 +197,7 @@ class EnvironmentSourceTests(unittest.TestCase):
             with self.subTest(mutation=mutations.index(mutate)):
                 self.factory.mutate=mutate
                 with self.assertRaisesRegex(ValueError,'receipt'):self.load()
-                self.assertFalse(self.factory.processes[-1].directory.exists())
+                self.assertTrue(self.factory.processes[-1].directory.exists())
 
     def test_missing_oversized_or_failed_worker_receipt_is_not_a_success(self):
         self.factory.publish=False
@@ -146,14 +206,14 @@ class EnvironmentSourceTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.load()
         self.factory.raw=None;self.factory.code=1
         with self.assertRaisesRegex(ValueError,'CPU validation'):self.load()
-        for process in self.factory.processes:self.assertFalse(process.directory.exists())
+        for process in self.factory.processes:self.assertTrue(process.directory.exists())
 
     def test_timeout_reaps_only_its_owned_child_with_term_then_kill(self):
         self.factory.timeout=self.factory.stubborn=True
         with self.assertRaises(subprocess.TimeoutExpired):self.load(timeout_sec=.5)
         process=self.factory.processes[0]
         self.assertEqual(process.waits,[.5,2,2]);self.assertEqual(process.terminated,1);self.assertEqual(process.killed,1)
-        self.assertEqual(process.returncode,-9);self.assertFalse(process.directory.exists())
+        self.assertEqual(process.returncode,-9);self.assertTrue(process.directory.exists())
         self.assertEqual(len(self.factory.processes),1)
 
     def test_unreapable_checker_failure_is_explicit_and_keeps_original_cause(self):

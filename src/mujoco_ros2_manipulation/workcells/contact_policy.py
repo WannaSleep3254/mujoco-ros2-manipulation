@@ -2,6 +2,7 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
+from mujoco_ros2_manipulation.build import check_action_clock_runtime
 
 
 class ContactPolicy:
@@ -43,6 +44,7 @@ class ContactPolicy:
 
 
 def check_contact_runtime(root):
+    check_action_clock_runtime(root)
     binary = root / "ros_ws/install/mujoco_ros2_control/lib/libmujoco_ros2_control.so"
     digest = file_sha256(root / "native/step_monitor.hpp")
     if not binary.is_file() or digest.encode() not in binary.read_bytes():
