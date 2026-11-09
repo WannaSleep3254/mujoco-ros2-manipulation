@@ -18,6 +18,7 @@ from ..paths import ROOT
 from ..verification.reports import VerificationReport, utc_now
 from ..verification.runner import group_gone, stop_process
 from ..verification.process_faults import process_failures
+from ..verification.startup import controller_spawner_readiness
 from ..verification.diagnostics import check_stop_physics
 from ..workcells.config import load_workcell
 from ..workcells.contact_comparison import compare_runs
@@ -46,60 +47,6 @@ def completed_job(state, identifier):
             and demo.get("can_start") is True):
         return current
     return None
-
-
-def controller_spawner_readiness(log, controllers):
-    """Require three one-shot helpers to have exited before active cancellation.
-
-    Activation does not prove that a Python spawner has finished its own
-    teardown. This is only a verification readiness barrier; cancellation and
-    strict child-exit classification remain unchanged.
-    """
-    roles=("joint_state_broadcaster",*controllers)
-    require(len(roles)==3 and len(set(roles))==3,"Expected three distinct controller startup helpers")
-    # This fixed workcell launch emits simulation/state-publisher first, then
-    # these helpers in role order. A changed launch must be reviewed explicitly.
-    expected={"spawner-"+str(index):role for index,role in enumerate(roles,3)}
-    plain=re.sub(r"\x1b\[[0-9;]*m","",log)
-    lines=plain.splitlines()
-    observed=dict(ready=False,reason="waiting_for_spawner_clean_exit",spawners=[])
-    if process_failures(log) or any("process has died" in line for line in lines):
-        observed["reason"]="child_process_failure"
-        return observed
-    if any("sending signal" in line or "user interrupted" in line for line in lines):
-        observed["reason"]="launch_is_stopping"
-        return observed
-    starts=[];activated=[];exits=[]
-    for number,line in enumerate(lines,1):
-        match=re.fullmatch(r"\[INFO\] \[(spawner-[0-9]+)\]: process started with pid \[([0-9]+)\]",line)
-        if match:starts.append((match[1],int(match[2]),number))
-        match=re.fullmatch(r"\[(spawner-[0-9]+)\] \[INFO\] \[[^\]]+\] \[spawner_([^\]]+)\]: Configured and activated ([^ ]+)",line)
-        if match:activated.append((match[1],match[2],match[3],number))
-        match=re.fullmatch(r"\[INFO\] \[(spawner-[0-9]+)\]: process has finished cleanly \[pid ([0-9]+)\]",line)
-        if match:exits.append((match[1],int(match[2]),number))
-    names={item[0] for item in starts}
-    all_names=set(re.findall(r"\[(spawner-[0-9]+)\]",plain))
-    if (len(starts)!=3 or names!=set(expected) or len({item[1] for item in starts})!=3
-            or any(item[1]<=1 for item in starts) or all_names!=names):
-        observed["reason"]="missing_duplicate_or_unknown_spawner"
-        return observed
-    if (len(activated)!=3 or {item[0] for item in activated}!=names
-            or {item[1] for item in activated}!=set(roles)
-            or any(item[1]!=item[2] or item[1]!=expected[item[0]] for item in activated)):
-        observed["reason"]="missing_duplicate_or_wrong_controller_activation"
-        return observed
-    if len(exits)!=3 or {item[0] for item in exits}!=names:
-        return observed
-    for name,pid,started in starts:
-        activation=next(item for item in activated if item[0]==name)
-        exited=next(item for item in exits if item[0]==name)
-        if exited[1]!=pid or not started<activation[3]<exited[2]:
-            observed["reason"]="wrong_spawner_pid_or_event_order"
-            return observed
-        observed["spawners"].append(dict(node=name,pid=pid,controller=activation[1],
-            start_line=started,activated_line=activation[3],clean_exit_line=exited[2]))
-    observed.update(ready=True,reason=None)
-    return observed
 
 
 def owned_controller_startup_readiness(launch, root, domain, started_utc, controllers):

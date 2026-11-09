@@ -6,6 +6,7 @@ so the console can clean up that exact process group after a worker failure.
 """
 import argparse
 import faulthandler
+import hashlib
 import json
 import math
 import os
@@ -20,6 +21,9 @@ from ..paths import ROOT
 from ..verification.reports import atomic_json
 from ..verification.runner import group_gone
 from .catalog import describe_scenarios
+from .demo_handshake import CANCEL_GRACE_SEC, read_handshake, bounded_regular_bytes
+from .demo_jobs import matching_process, process_identity
+from ..verification.startup import controller_spawner_readiness, move_group_readiness
 
 
 class DemoCancelled(KeyboardInterrupt):
@@ -117,7 +121,7 @@ def summarize_run(report, variant, label, path):
 
 
 class DemoJob:
-    def __init__(self, directory, scenario, domain, console_directory, *, render=True, native_gui=False, root=ROOT):
+    def __init__(self, directory, scenario, domain, console_directory, *, render=True, native_gui=False, root=ROOT, generation=None):
         self.root = Path(root).resolve()
         self.directory, self.console_directory = Path(directory).resolve(), Path(console_directory).resolve()
         operator = (self.root / "runtime/operator").resolve()
@@ -140,9 +144,19 @@ class DemoJob:
                     or initial.get("active_launch") is not None or initial.get("results") != []):
                 raise ValueError("Only this job's unstarted console status may be initialized")
         self.domain, self.render, self.native_gui = domain, render, native_gui
+        self.generation = generation if generation is not None else self.directory.name
+        if type(self.generation) is not str or not re.fullmatch('[0-9a-f]{32}', self.generation):
+            raise ValueError('Expected this comparison worker generation')
+        self.worker_identity = dict(pid=os.getpid(), start_ticks=read_process_start_ticks(os.getpid()))
         self.cancel_requested = False
+        self.cancel_deadline_ns = None
+        self.cancel_intent = None
         self._cancel_stacks = _CancelStackCapture(self.directory)
         self.active_report = None
+        self.startup_complete = False
+        self.move_group_identity = None
+        self.launch_process = None
+        self.launch_cell = None
         self.data = dict(schema_version=1, job_id=self.directory.name, scenario=scenario,
                          status="running", stage="preparing", variant=None, run_id=None,
                          active_launch=None, model_sha256=None, results=[], comparison=None, error=None)
@@ -157,12 +171,23 @@ class DemoJob:
         self.save()
 
     def check_cancel(self):
+        intent = read_handshake(self.directory / 'cancel-intent.json', 'cancel', self.data['job_id'],
+                                self.generation, self.worker_identity)
+        if intent is not None:
+            if self.cancel_intent is not None and intent != self.cancel_intent:
+                raise ValueError('Comparison cancellation intent changed after acceptance')
+            self.cancel_intent = intent
+            deadline = intent['deadline_monotonic_ns']
+            self.cancel_deadline_ns = min(self.cancel_deadline_ns or deadline, deadline)
+            self.interrupt()
         if self.cancel_requested:
             raise DemoCancelled("The user stopped this simulation comparison")
 
     def interrupt(self, *_):
         if not self.cancel_requested:
             self.cancel_requested = True
+            if self.cancel_deadline_ns is None:
+                self.cancel_deadline_ns = time.monotonic_ns() + CANCEL_GRACE_SEC * 1_000_000_000
             self._cancel_stacks.start()
         # A signal may arrive while rclpy/pybind is decoding a response. Raising
         # there can become a conversion RuntimeError instead of cancellation.
@@ -172,6 +197,7 @@ class DemoJob:
         # Popen may have returned just as SIGINT arrived. Persist ownership
         # before honoring cancellation so cleanup and its report stay linked.
         self.active_report = report
+        self.launch_process, self.launch_cell = process, cell
         model = (report.directory / "contact_test.xml"
                  if self.data["variant"] in ("contact", "control") else cell.output / "cell.xml")
         self.data.update(run_id=report.run_id, active_launch=dict(
@@ -183,8 +209,86 @@ class DemoJob:
         self.save()
         self.check_cancel()
 
+    def _startup_proof(self):
+        report, launch = self.active_report, self.data['active_launch']
+        if report is None or launch is None or self.launch_process is None:
+            raise RuntimeError('Missing owned launch for startup proof')
+        directory = self.root / 'runtime/validation/runs' / report.run_id
+        if (report.directory != directory or report.path != directory / 'result.json'
+                or report.log_path != directory / 'launch.log' or launch['run_id'] != report.run_id
+                or report.data['ros_domain_id'] != self.domain
+                or self.launch_process.pid != launch['pid'] or self.launch_process.poll() is not None
+                or not matching_process(launch)):
+            raise RuntimeError('Comparison startup proof does not match the live owned launch')
+        raw = bounded_regular_bytes(report.log_path, 4 * 1024 * 1024)
+        text = raw.decode('utf-8', errors='replace')
+        helpers = controller_spawner_readiness(text, tuple(item.controller for item in self.launch_cell.instances))
+        if helpers['reason'] in ('child_process_failure', 'launch_is_stopping'):
+            raise RuntimeError('Comparison launch failed or was stopping during startup proof: ' + helpers['reason'])
+        move_group = move_group_readiness(text, launch['pid'], process_identity)
+        if 'pid' in move_group:
+            identity = (move_group['pid'], move_group['start_ticks'])
+            if self.move_group_identity is not None and identity != self.move_group_identity:
+                raise RuntimeError('Owned MoveGroup identity changed while observing startup')
+            self.move_group_identity = identity
+        return dict(ready=helpers['ready'] and move_group['ready'], run_id=report.run_id,
+                    launch_pid=launch['pid'], launch_start_ticks=launch['start_ticks'],
+                    controllers=helpers, move_group=move_group,
+                    observed_log_sha256=hashlib.sha256(raw).hexdigest(), observed_log_bytes=len(raw))
+
+    def _startup_barrier(self, node):
+        if self.startup_complete:
+            return
+        self.stage('waiting_for_startup_helpers')
+        started = time.monotonic_ns()
+        deadline = started + 15_000_000_000
+        proof = None
+        def ready():
+            nonlocal proof
+            proof = self._startup_proof()
+            return proof['ready']
+        node.until(ready, 15, 'owned controller helper exits and MoveGroup initialization')
+        if time.monotonic_ns() >= deadline:
+            raise TimeoutError('Comparison startup proof exceeded its original deadline')
+        self.startup_complete = True
+        self.active_report.update(comparison_startup=dict(status='passed', proof=proof,
+            started_monotonic_ns=started, completed_monotonic_ns=time.monotonic_ns(),
+            worker_source_sha256=file_sha256(__file__)))
+
+    def _drain_cancelled_startup(self, report, profile, args, process, node, error):
+        if not isinstance(error, DemoCancelled) or self.startup_complete:
+            return
+        started = time.monotonic_ns()
+        # This consumes the user's original 45 seconds and reserves the existing
+        # 12-second launch SIGINT grace. No motion or extra ROS resource is created.
+        deadline = self.cancel_deadline_ns - 12_000_000_000
+        evidence = dict(status='running', started_monotonic_ns=started,
+                        cancel_deadline_monotonic_ns=self.cancel_deadline_ns,
+                        deadline_monotonic_ns=deadline, reserved_native_stop_sec=12,
+                        node_was_created=node is not None, proof=None)
+        report.update(comparison_startup_drain=evidence)
+        try:
+            while time.monotonic_ns() < deadline:
+                proof = self._startup_proof()
+                completed = time.monotonic_ns()
+                if completed >= deadline:
+                    break
+                if proof['ready']:
+                    self.startup_complete = True
+                    evidence.update(status='passed', proof=proof, completed_monotonic_ns=completed)
+                    report.update(comparison_startup_drain=evidence)
+                    return
+                time.sleep(min(.05, (deadline - completed) / 1e9))
+            raise TimeoutError('Comparison startup drain exhausted the original cancellation budget')
+        except Exception as failure:
+            evidence.update(status='failed', completed_monotonic_ns=time.monotonic_ns(),
+                            error=dict(type=type(failure).__name__, message=str(failure)))
+            report.update(comparison_startup_drain=evidence)
+            raise
+
     def _frame_barrier(self, node):
         self.check_cancel()
+        self._startup_barrier(node)
         launch = self.data["active_launch"]
         if not launch or self.active_report is None:
             raise RuntimeError("Missing owned launch identity")
@@ -225,6 +329,9 @@ class DemoJob:
 
         self.check_cancel()
         self.active_report = None
+        self.startup_complete = False
+        self.move_group_identity = None
+        self.launch_process = self.launch_cell = None
         self.data.update(variant=variant, run_id=None, active_launch=None, model_sha256=None)
         self.stage("preflight")
         args = self._args(contact=contact)
@@ -246,7 +353,7 @@ class DemoJob:
             profile_loader=lambda *a, **kw: cell,
             validator=validator, command_builder=lambda *a: command,
             report_prefix=prefix, launch_environment=diagnostic_environment,
-            finalize=finalize, on_launch=self._on_launch,
+            finalize=finalize, on_launch=self._on_launch, before_cleanup=self._drain_cancelled_startup,
         )
         report = self.active_report
         value = _json(report.path) if report is not None else None
@@ -363,6 +470,10 @@ class DemoJob:
     def run(self):
         previous = signal.signal(signal.SIGINT, self.interrupt)
         try:
+            atomic_json(self.directory / 'worker-ready.json', dict(
+                schema_version=1, kind='ready', job_id=self.data['job_id'], generation=self.generation,
+                **self.worker_identity, ready_monotonic_ns=time.monotonic_ns()))
+            self.check_cancel()
             from ..workcells.config import load_workcell
             os.environ["ROS_DOMAIN_ID"] = os.environ["MANIPULATION_ROS_DOMAIN_ID"] = str(self.domain)
             cell = load_workcell("fr5_ur5e", root=self.root)
@@ -396,10 +507,11 @@ def main():
     parser.add_argument("--console-directory", type=Path, required=True)
     parser.add_argument("--no-render", action="store_true")
     parser.add_argument("--native-gui", action="store_true")
+    parser.add_argument("--generation")
     args = parser.parse_args()
     try:
         job = DemoJob(args.directory, args.scenario, args.domain, args.console_directory,
-                      render=not args.no_render, native_gui=args.native_gui)
+                      render=not args.no_render, native_gui=args.native_gui, generation=args.generation)
     except ValueError as error:
         parser.error(str(error))
     return job.run()

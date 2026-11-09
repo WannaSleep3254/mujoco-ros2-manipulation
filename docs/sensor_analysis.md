@@ -75,3 +75,11 @@ python3 -m mujoco_ros2_manipulation.operator_console.verify_image_transport \
 비어 있는 도메인과 사용하지 않는 포트, 존재하지 않는 출력 디렉터리가 필요합니다. 진단용 합성 이미지의 전송 검사이며 실제 카메라, 보정·센서 정확도, 하드웨어 시간 동기화, 장시간 부하 성능을 검증한 결과는 아닙니다. 점군·프로파일 입력과 공구 의미 정보는 후속 확장입니다.
 
 [작업·계획·실행 규약](operation_contract.md) · [공통 표시 공급원](viewer_sources.md) · [설치 환경 실행](environment_execution.md) · [작업리스트](development_worklist.md)
+
+
+### 동기 기록 검증기의 원본 보존
+
+`verify_image_transport --synchronized --output runtime/validation/<고유한 이름>`은 소유 콘솔 종료 후
+수집 원본을 해당 출력의 `capture-originals/<기록 ID>/`에 복사합니다. 원본·보존본의 파일 목록,
+크기와 SHA256을 대조하고 완료 기록의 식별 해시를 확인합니다. 이미 저장된 부분 실패 파일과
+보존 오류도 결과 JSON에 남깁니다. 원본이 제외된 과거 CI와 새 검증 기록은 실행 ID로 구분합니다.

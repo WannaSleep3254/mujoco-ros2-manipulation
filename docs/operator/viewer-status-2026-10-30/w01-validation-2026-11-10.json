@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "kind": "comparison-startup-cancel-local-actual-verification",
+  "created_utc": "2026-11-09T16:47:11.771879+00:00",
+  "local_execution_commit": "778658e97d4af03ca4a8a87fd6018ab51a598518",
+  "source_files": {
+    "src/mujoco_ros2_manipulation/operator_console/demo_handshake.py": {
+      "path": "src/mujoco_ros2_manipulation/operator_console/demo_handshake.py",
+      "sha256": "c592488030a9a9fa82539e1802c67f269e453803139ebd77c0c7afe2024ba0df",
+      "byte_length": 2554
+    },
+    "src/mujoco_ros2_manipulation/operator_console/demo_jobs.py": {
+      "path": "src/mujoco_ros2_manipulation/operator_console/demo_jobs.py",
+      "sha256": "5307972b130ced7440ab898caee2a3f7cf3eda95eee1f59017d57dae4727cb85",
+      "byte_length": 21364
+    },
+    "src/mujoco_ros2_manipulation/operator_console/demo_worker.py": {
+      "path": "src/mujoco_ros2_manipulation/operator_console/demo_worker.py",
+      "sha256": "82ff7cd2fa28703be511653ada2dc6365bd5083348c30ab76b3c3bc1268ab51a",
+      "byte_length": 26775
+    },
+    "src/mujoco_ros2_manipulation/operator_console/verify_demos.py": {
+      "path": "src/mujoco_ros2_manipulation/operator_console/verify_demos.py",
+      "sha256": "3cebd9e2daea1f79a614a61fc1d6c4356a4030e473835530a199c723fc70c995",
+      "byte_length": 27876
+    },
+    "src/mujoco_ros2_manipulation/verification/runner.py": {
+      "path": "src/mujoco_ros2_manipulation/verification/runner.py",
+      "sha256": "8569dbe4446224249faccea5bae16297f30cd2baefaa611fdebb9adec217c76d",
+      "byte_length": 12336
+    },
+    "src/mujoco_ros2_manipulation/verification/startup.py": {
+      "path": "src/mujoco_ros2_manipulation/verification/startup.py",
+      "sha256": "b3a4c5e6f3463ce17f82031ebc61181ee57b24747d92eb349cd8d71c512adea9",
+      "byte_length": 5350
+    }
+  },
+  "diagnostic_cases": [
+    {
+      "source_commit": "7028ba68a035daa8b6a425a1b5c0c1b3f5d6dd5e",
+      "job_id": "1efd73089b86487282b2b58c1e9337b4",
+      "phase": "immediate",
+      "cancel_observed_stage": null,
+      "scenario_status": "failed",
+      "scenario_error": "시연 실행이 종료됐습니다 (exit=-2).",
+      "cancel_to_terminal_wall_sec": 0.0014208840002538636,
+      "cleanup_clean": true,
+      "console_return_code": 0,
+      "console_group_gone": true,
+      "source_unchanged": true,
+      "label": "baseline-immediate-01",
+      "result_sha256": "ee36b037ded189f50ae44af6438eff630c4cc5a0742b8b33b3d1dfa1a7ba6c63",
+      "native_launch_count": 0
+    },
+    {
+      "source_commit": "7028ba68a035daa8b6a425a1b5c0c1b3f5d6dd5e",
+      "job_id": "2674e91549564465b2fa421a27c45d0a",
+      "phase": "owned_launch",
+      "cancel_observed_stage": "visible_obstacle_discovery",
+      "scenario_status": "cancelled",
+      "scenario_error": null,
+      "cancel_to_terminal_wall_sec": 0.4112953780058888,
+      "cleanup_clean": true,
+      "console_return_code": 0,
+      "console_group_gone": true,
+      "source_unchanged": true,
+      "label": "baseline-owned-launch-01",
+      "result_sha256": "74fdcc245d8d08cd6384b5a957e7460b5bcd0be673c741d840fbe061c0e1df1f",
+      "native_launch_count": 1
+    },
+    {
+      "source_commit": "778658e97d4af03ca4a8a87fd6018ab51a598518",
+      "job_id": "8c3f730bfdd34d24a22933b1d7b46f56",
+      "phase": "immediate",
+      "cancel_observed_stage": null,
+      "scenario_status": "cancelled",
+      "scenario_error": null,
+      "cancel_to_terminal_wall_sec": 0.10404482099693269,
+      "cleanup_clean": true,
+      "console_return_code": 0,
+      "console_group_gone": true,
+      "source_unchanged": true,
+      "label": "fixed-immediate-01",
+      "result_sha256": "d274b06b632d2e1517db966020714d9bd85e66a757a8f0f8c631916a4bb7f2d0",
+      "native_launch_count": 0
+    },
+    {
+      "source_commit": "778658e97d4af03ca4a8a87fd6018ab51a598518",
+      "job_id": "2b2b5466c46141e8a7e275c61be11bd9",
+      "phase": "launch_sidecar",
+      "cancel_observed_stage": "launching",
+      "scenario_status": "cancelled",
+      "scenario_error": null,
+      "cancel_to_terminal_wall_sec": 2.0969388320008875,
+      "cleanup_clean": true,
+      "console_return_code": 0,
+      "console_group_gone": true,
+      "source_unchanged": true,
+      "label": "fixed-launch-sidecar-01",
+      "result_sha256": "fa6311a3e772f187ee18753cefd2d076bf387ef55b6dbaa5d21f5dd78ea5b4ae",
+      "native_launch_count": 1
+    }
+  ],
+  "comparisons": [
+    {
+      "run_id": "20261109T163915.779463Z-a9426b95",
+      "result_sha256": "8af3e85a2e05c17a71892239ce626eb94965abca06468e623acb44ae4449ab25",
+      "status": "passed",
+      "contact_latched_cancel": true,
+      "jobs": [
+        {
+          "job_id": "8227a35a93b44290a33eaeccdd6014a8",
+          "scenario": "contact_comparison",
+          "status": "succeeded",
+          "results": [
+            {
+              "variant": "contact",
+              "run_id": "20261109T163918.685389Z-c9101644",
+              "status": "passed",
+              "result_sha256": "6d1c5be476418268918ef4935ec0084d761c74cb590acf931385587e3ed4d450",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            },
+            {
+              "variant": "control",
+              "run_id": "20261109T163931.445538Z-3aa21426",
+              "status": "passed",
+              "result_sha256": "d2b1952100d217723081d1c32e2a89e36003c27f70a9e067ca6b13a26c3404a2",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            }
+          ]
+        },
+        {
+          "job_id": "63635f86193a4d71ac6434b0b2190bfb",
+          "scenario": "timing_comparison",
+          "status": "succeeded",
+          "results": [
+            {
+              "variant": "prepare",
+              "run_id": "20261109T163945.288291Z-65a6fe64",
+              "status": "passed",
+              "result_sha256": "924f04458033dad768b6dda4235d8c88c515cc41c38c06d82f67fa203869f639",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            },
+            {
+              "variant": "baseline",
+              "run_id": "20261109T164015.278770Z-c27a6d55",
+              "status": "passed",
+              "result_sha256": "3d69ebbc3f795a191d2542c25eaf6f4cc9879d32ba68e4f8cc3f14dbed437048",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            },
+            {
+              "variant": "timing",
+              "run_id": "20261109T164042.966778Z-ad68b36d",
+              "status": "passed",
+              "result_sha256": "d98693f101aa874e705def0b251a73b9c015e7bc9d100604fea64a70ca09f728",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            }
+          ]
+        },
+        {
+          "job_id": "0bab2a1a317e4d5086b253f6ec6316c7",
+          "scenario": "contact_comparison",
+          "status": "cancelled",
+          "results": [
+            {
+              "variant": "contact",
+              "run_id": "20261109T164111.365267Z-8c39d11f",
+              "status": "interrupted",
+              "result_sha256": "a86e60d51a698c4955e50c81caf8aef8ceb4254f4f0834071e3638864fc3d946",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            }
+          ]
+        }
+      ],
+      "worker_waits": [
+        {
+          "job_id": "0bab2a1a317e4d5086b253f6ec6316c7",
+          "elapsed_sec": 0.7148448180014384,
+          "return_code": 130,
+          "timed_out": false,
+          "timeout_sec": 45
+        }
+      ],
+      "console_exit_code": 0,
+      "shutdown_clean": true
+    },
+    {
+      "run_id": "20261109T164224.638284Z-fa56fabf",
+      "result_sha256": "3ebb37164e5507887f4cf186bc2f3980868e271ea60dd560093dab333e5aa754",
+      "status": "passed",
+      "contact_latched_cancel": false,
+      "jobs": [
+        {
+          "job_id": "6325a9ad9d174878a4689c24a9c48a0e",
+          "scenario": "contact_comparison",
+          "status": "succeeded",
+          "results": [
+            {
+              "variant": "contact",
+              "run_id": "20261109T164227.541253Z-3906329b",
+              "status": "passed",
+              "result_sha256": "cefd8089e621726a6b889400b0c3b6c69c26c27b9fe5c40802021b55e82fa7e0",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            },
+            {
+              "variant": "control",
+              "run_id": "20261109T164240.318050Z-b17fbe6f",
+              "status": "passed",
+              "result_sha256": "59f9f5555da2b5a7922c2621f82be3adbea2e9b6097533154b0a93844acc923d",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            }
+          ]
+        },
+        {
+          "job_id": "478b6fdeebea4a12a940b08d567008a2",
+          "scenario": "timing_comparison",
+          "status": "succeeded",
+          "results": [
+            {
+              "variant": "prepare",
+              "run_id": "20261109T164254.150440Z-27a5cd22",
+              "status": "passed",
+              "result_sha256": "a58b5bbdbea4a6fdf7eb9a14b526b06cea1fd047c8d981c6a52ca835bc9a4f83",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            },
+            {
+              "variant": "baseline",
+              "run_id": "20261109T164322.116881Z-70212a8a",
+              "status": "passed",
+              "result_sha256": "865af301fbc519898776dc5e2ab8f4a97cf798b5d184c66f27eee265151ba660",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            },
+            {
+              "variant": "timing",
+              "run_id": "20261109T164347.927621Z-353145a0",
+              "status": "passed",
+              "result_sha256": "b2eef806581d698ce53c244af89a5484136773da6e24470652a4b16b48c23a31",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            }
+          ]
+        },
+        {
+          "job_id": "85600bb2596744d68753ee183a47d59b",
+          "scenario": "contact_comparison",
+          "status": "cancelled",
+          "results": [
+            {
+              "variant": "contact",
+              "run_id": "20261109T164414.593240Z-72629279",
+              "status": "interrupted",
+              "result_sha256": "c4a2ee20849a327e76a814606be8ff36a64ed620b0dc7788d5f38c0ba9a1239a",
+              "shutdown_clean": true,
+              "startup_proof_passed": true
+            }
+          ]
+        }
+      ],
+      "worker_waits": [
+        {
+          "job_id": "85600bb2596744d68753ee183a47d59b",
+          "elapsed_sec": 0.7651046250030049,
+          "return_code": 130,
+          "timed_out": false,
+          "timeout_sec": 45
+        }
+      ],
+      "console_exit_code": 0,
+      "shutdown_clean": true
+    }
+  ],
+  "native_launch_count_fixed": 13,
+  "early_owned_launch": {
+    "run_id": "20261109T163808.958292Z-02456006",
+    "result_sha256": "8014b1ffbed324ba5e6fd065d75b22477e2c4d8b1a4ed8e232d3b08cbdf51463",
+    "drain_status": "passed",
+    "node_was_created": true,
+    "drain_elapsed_sec": 1.265623193,
+    "launch_stop_elapsed_sec": 0.464384703,
+    "helper_clean_exit_count": 3
+  },
+  "unit": {
+    "total": 1462,
+    "passed": 1461,
+    "skipped": 1,
+    "skip_reason": "Frozen local FR5 prototype c is not present",
+    "log_sha256": "6994b588a5e6e696da9f6295376889ce6b4b3b5f7dc73a3db5507bf6319f7ce6"
+  },
+  "focused": {
+    "passed": 120,
+    "log_sha256": "8eaca4ca34ab05c0b236855bbee27948a5032068a8ca38330b9d9f72cde63d70"
+  },
+  "model_preparation": {
+    "passed": 91,
+    "skipped": 0,
+    "log_sha256": "9d10dcc254f0a9f52e9c094aba4ee2b022872768468b23f54b5de7de9c24a6a5",
+    "scope": "Prepared before Python-only W01 edits; native/model identities unchanged in implementation manifest."
+  },
+  "limits": [
+    "Observed elapsed times are single-case console/worker cleanup observations, not physical stop onset or general latency benchmarks.",
+    "Actual earliest-sidecar case created a ROS node before cancellation was handled; node=None cleanup is covered by deterministic lifecycle unit tests.",
+    "Historical 45-second wait remains inferred from the original incomplete report, without a measured wait or blocking stack. These new passes do not establish its cause.",
+    "The two historical synchronized raw recordings remain unrecovered."
+  ]
+}

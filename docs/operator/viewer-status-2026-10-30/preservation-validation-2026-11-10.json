@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "kind": "synchronized-original-preservation-local-verification",
+  "local_execution_commit": "b1d8b99374fb1992ab9797e55ed43d5cb6a7f27e",
+  "verifier_sha256": "4cf7e34824e274d956fa4e5147ebb4c1bed66f81918949811b9b0e4149c601ac",
+  "ci175_original_gap": {
+    "run_id": 42659462444,
+    "source_commit": "deea6f06cfe8f9627c0a7a73fed3b0482c2dccb2",
+    "summary_sha256": "3cdfdf2e0afa145c7938a12e59fe048c137c773b891af4bb410c2ae7552f89a6",
+    "capture_id": "158c0160b4264266a8469e7fcbfaa4e4",
+    "recording_sha256": "eea2f765d9d8352c903d2b292e40fb4081d0b48906964233ddfe920fcd0d6039",
+    "recording_member_present": false
+  },
+  "new_actual_run": {
+    "status": "passed",
+    "result_sha256": "37f4a3fa060736c5780d1e97df55f00c30d06feb350e64e799fa79d2dd779275",
+    "capture_id": "69d16ca30beb40618c6b02dde0c0e735",
+    "schema_version": 1,
+    "recording_sha256": "fa308903538e786657f8a45e07b7f882d70926175cc4a48107209b4db25ae766",
+    "pose_count": 31,
+    "image_count": 17,
+    "gap_count": 1,
+    "no_command_replay": true,
+    "console_exit_code": 0,
+    "cleanup_clean": true,
+    "preserved_files": 53,
+    "preserved_bytes": 3851836,
+    "byte_agreement": true,
+    "source_before_after_and_destination_inventories_agree": true,
+    "source_inventory_sha256": "51e16c0d14be0421be81395f76ee0ade4055bfb4b8582399795c902cbcdaca60",
+    "destination_inventory_sha256": "58286c4f2f880d22fe67495e84672ce3cee67b6a498d72ab2167f7b35ea25db2",
+    "persistent_copy_provenance_sha256": "dc503756fdfa468789e867f7f66186a1180b0324359173703c91893e37676dee"
+  },
+  "unit": {
+    "total": 1476,
+    "passed": 1475,
+    "skipped": 1,
+    "skip_reason": "Frozen local FR5 prototype c is not present",
+    "log_sha256": "34b71b710a6b77e7f6fc2098df2784b293b9f2b2e771566905d8d7d2cd72c2de"
+  },
+  "focused_passed": 55,
+  "limits": [
+    "New diagnostic RGB8/3D recording with a new ID. Two historical local recordings remain unrecovered.",
+    "CI174/CI175 excluded raw bundles were absent from their preserved ZIPs. Earlier originals are not reconstructed by this repair.",
+    "Diagnostic ROS images are synthetic. Camera calibration, hardware synchronization and exact native-step image alignment were not evaluated.",
+    "Completed bundles and already-written partial diagnostic files are retained, with a preservation-error receipt on failure."
+  ]
+}

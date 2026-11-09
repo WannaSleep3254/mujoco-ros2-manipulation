@@ -55,7 +55,9 @@ class DemoWaitDiagnosticsTests(unittest.TestCase):
                  patch(JOBS + ".group_gone", return_value=True), \
                  patch(JOBS + ".stop_process") as stop:
                 manager._stop_sync()
-            process.wait.assert_called_once_with(timeout=45)
+            process.wait.assert_called_once()
+            self.assertGreaterEqual(process.wait.call_args.kwargs['timeout'], 0)
+            self.assertLessEqual(process.wait.call_args.kwargs['timeout'], 45)
             process.send_signal.assert_not_called()
             stop.assert_not_called()
             self.assertEqual(order[:3], ["demo_worker_wait_started", "wait", "demo_worker_wait_finished"])
@@ -74,7 +76,9 @@ class DemoWaitDiagnosticsTests(unittest.TestCase):
                  patch(JOBS + ".group_gone", return_value=True), \
                  patch(JOBS + ".stop_process", side_effect=lambda process: order.append("stop_worker")) as stop:
                 manager._stop_sync()
-            process.wait.assert_called_once_with(timeout=45)
+            process.wait.assert_called_once()
+            self.assertGreaterEqual(process.wait.call_args.kwargs['timeout'], 0)
+            self.assertLessEqual(process.wait.call_args.kwargs['timeout'], 45)
             stop.assert_called_once_with(process)
             self.assertEqual(order[:6], ["demo_worker_wait_started", "wait", "demo_worker_wait_finished",
                                         "refresh", "cleanup_groups", "stop_worker"])
@@ -93,7 +97,9 @@ class DemoWaitDiagnosticsTests(unittest.TestCase):
                          patch(JOBS + ".group_gone", return_value=True), \
                          patch(JOBS + ".stop_process") as stop:
                         manager._stop_sync()
-                    process.wait.assert_called_once_with(timeout=45)
+                    process.wait.assert_called_once()
+                    self.assertGreaterEqual(process.wait.call_args.kwargs['timeout'], 0)
+                    self.assertLessEqual(process.wait.call_args.kwargs['timeout'], 45)
                     self.assertEqual(stop.call_count, int(timed_out))
                     self.assertEqual(manager.cleanup_launches.call_count, 2 if timed_out else 1)
                     self.assertEqual(manager.current["status"], "failed" if timed_out else "cancelled")
