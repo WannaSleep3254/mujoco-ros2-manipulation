@@ -129,12 +129,15 @@ export function graspEvidence(state,{connected=true}={}){
  const p=graspPresentation(state,{connected}),job=p.job,prefix=connected?'':'마지막 수신 · ',guard=job?.native_guard;
  if(!p.matched)return [row('집기 대상','모델·실행 세대 식별 미확인','warn')];
  const stopped=guard?.latched===true&&guard?.phase==='stopped'&&['left_controller','right_controller','gripper_controller'].every(name=>guard.controllers?.[name]==='inactive');
- const clean=job?.cleanup?.clean===true&&job.owner_cleanup_clean===true;
+ const cleanup=job?.cleanup,clean=cleanup?.clean===true&&job.owner_cleanup_clean===true;
+ const nativeExited=cleanup?.launch_started===true&&cleanup.native_exit?.observed===true;
+ const beforeNative=cleanup?.launch_started===false&&cleanup.native_exit?.observed!==true;
+ const cleanText=nativeExited?'Native 종료·소유 프로세스 정리 확인':beforeNative?'Native 실행 없음 · 작업자 정리 확인':'소유 프로세스 정리 확인 · Native 종료 미확인';
  const action=job?.action_terminal;
  return [row('집기·놓기',p.physical,p.fresh?'neutral':'warn'),row('MoveIt 객체',prefix+p.attachment,'neutral'),
   row('취소 전달',prefix+(({not_requested:'요청 없음',signal_sent:'취소 신호 전달 · 수신 확인 중',worker_signal_sent:'취소 신호 전달 · 작업자 수신 확인 중',waiting_for_worker:'작업자 준비 후 취소 전달 대기',worker_observed:'작업자 취소 수신 확인',process_exited:'프로세스 종료 관측'})[job?.cancel_delivery]||'요청 없음'),'neutral'),
   row('개별 Action',prefix+(action?`${graspPhaseLabels[action.stage]||action.stage||'동작'} · ${({4:'성공',5:'취소',6:'중단'})[action.status]||'응답 확인 중'} · 전체 작업 결과와 구분`:'개별 종료 응답 대기'),'neutral'),
   row('제어기 정지',!connected?'조회 중단 · 정지 상태 미확인':stopped?'제어기 3개 비활성 확인':guard?.latched?'제어기 정지 처리 중':guard?.phase==='ready'?'정지 감시 중 · 정지 판정 아님':'정지 관측 대기','neutral'),
   row('작업 결과',prefix+p.status,connected&&job?.status==='failed'?'bad':'neutral'),
-  row('소유 실행 정리',!connected?'조회 중단 · 정리 결과 미확인':!job?'실행 전':clean?'Native 종료·소유 프로세스 정리 확인':job.finished?'정리 결과 확인 필요':'실행 중 · 종료 후 확인',connected&&clean?'good':'warn')];
+  row('소유 실행 정리',!connected?'조회 중단 · 정리 결과 미확인':!job?'실행 전':clean?cleanText:job.finished?'정리 결과 확인 필요':'실행 중 · 종료 후 확인',connected&&clean&&(nativeExited||beforeNative)?'good':'warn')];
 }

@@ -197,6 +197,31 @@ class TaskTests(unittest.TestCase):
         self.assertTrue(self.tasks.snapshot()['can_select'])
         self.select('motion')
 
+    def test_active_cancel_and_cleanup_reasons_preserve_the_same_admission_gate(self):
+        self.select('grasp'); self.start()
+        cases = (
+            ({}, '집기 작업을 진행하고 있습니다.', '취소'),
+            (dict(cancel_requested=True), '집기 취소 요청을 처리하고', None),
+            (dict(status='cancelling'), '집기 취소 요청을 처리하고', None),
+            (dict(cleanup=dict(status='running')), '집기 작업의 종료와', '취소'),
+            (dict(cleanup=dict(status='complete')), '집기 작업의 종료와', '취소'),
+            (dict(finished=True, owner_cleanup_clean=False), '정리를 확인하지 못했습니다.', None),
+        )
+        initial = deepcopy(self.native.job)
+        for changes, expected, absent in cases:
+            self.native.job = dict(initial, **changes)
+            with self.subTest(changes=changes):
+                state = self.tasks.snapshot()
+                self.assertIn(expected, state['reason'])
+                if absent:
+                    self.assertNotIn(absent, state['reason'])
+                self.assertFalse(state['can_start'])
+                self.assertFalse(state['can_select'])
+        self.native.job.update(finished=True, owner_cleanup_clean=True)
+        state = self.tasks.snapshot()
+        self.assertTrue(state['can_select'])
+        self.assertIsNone(state['reason'])
+
     def test_cancel_routes_only_exact_current_native_owner_without_motion_request(self):
         self.select('grasp'); self.start()
         for change in (dict(job_id='9'*32),dict(generation=2),dict(generation=True),dict(model_sha256='a'*64),dict(selection_id='0'*32)):

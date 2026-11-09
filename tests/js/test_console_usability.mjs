@@ -9,7 +9,7 @@ const source=(await readFile(new URL('../../src/mujoco_ros2_manipulation/operato
 const PLAN='a'.repeat(32),EXECUTION='b'.repeat(32);
 
 class Element{
- constructor(tag='div'){this.tagName=tag;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.className='';this.classList={toggle(){}};}
+ constructor(tag='div'){this.tagName=tag;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.className='';this.classes=new Set();this.classList={toggle:(name,enabled)=>enabled?this.classes.add(name):this.classes.delete(name)};}
  append(...nodes){this.children.push(...nodes);}
  replaceChildren(...nodes){this.children=[...nodes];}
  addEventListener(name,callback){this.listeners[name]=callback;}
@@ -23,7 +23,8 @@ function state(overrides={}){return {positions_rad:{left:0,right:0},state_age_se
 function harness(fetcher){
  const elements=new Map(),timers=new Map(),calls=[];let timerID=0;
  const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};element('strategy').value='coordinated';
- const document={getElementById:element,querySelectorAll:selector=>selector==='[data-cancel]'?[element('cancel'),element('cancel-secondary')]:[],createElement:tag=>new Element(tag)};
+ const steps=Array.from({length:4},(_,index)=>{const node=element('step'+index);node.dataset.step=String(index);return node;});
+ const document={getElementById:element,querySelectorAll:selector=>selector==='[data-cancel]'?[element('cancel'),element('cancel-secondary')]:selector==='[data-step]'?steps:[],createElement:tag=>new Element(tag)};
  const scene={cameraReady:()=>true,pause(){},update(){},isImage:()=>false,mount(){},select(){},invalidateTask(){this.taskInvalidations=(this.taskInvalidations||0)+1;}};
  const context=vm.createContext({document,fetch:(path,options)=>{calls.push({path,options});return fetcher(path,options);},AbortController,
   setTimeout:(callback,delay)=>{const id=++timerID;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),
@@ -367,4 +368,35 @@ test('native connection badge prioritizes finished results over historical cance
  }
  const active=h.api.connectionPresentation(snapshot({status:'cancelling',finished:false,cancel_requested:true}));assert.equal(active.status,'running');assert.equal(active.text,'집기 취소 · 정리 확인 중');
  const unclean=h.api.connectionPresentation(snapshot({status:'cancelled',finished:true,owner_cleanup_clean:false,cancel_requested:true}));assert.equal(unclean.status,'blocked');assert.equal(unclean.text,'집기 정리 결과 확인 필요');
+});
+
+
+test('empty normal history clears prior grasp request facts and progress without sending a command',()=>{
+ const h=harness(()=>reply({}));h.set(state());
+ for(const id of ['request-badge','request-stage','request-id','request-error','first-motion','terminal-time','clearance'])h.element(id).textContent='previous grasp cancellation';
+ h.element('request-badge').className='badge blocked';h.element('request-error').className='help';h.element('request-error').hidden=false;
+ for(let index=0;index<4;index++)h.element('step'+index).classes.add('reached');
+ h.api.render(state());
+ assert.equal(h.element('request-badge').textContent,'대기');assert.equal(h.element('request-badge').className,'badge');
+ assert.match(h.element('request-stage').textContent,/목표를 설정하고 계획을 생성/);
+ assert.equal(h.element('request-error').textContent,'');assert.equal(h.element('request-error').hidden,true);assert.equal(h.element('request-error').className,'error-text');
+ for(const id of ['request-id','first-motion','terminal-time','clearance'])assert.equal(h.element(id).textContent,'—');
+ for(let index=0;index<4;index++)assert.equal(h.element('step'+index).classes.has('reached'),false);
+ assert.equal(h.calls.length,0);
+});
+
+test('a late normal request detail cannot overwrite a newly selected grasp or an empty normal history',async()=>{
+ for(const next of ['grasp','empty']){
+  let release;const h=harness(()=>new Promise(resolve=>{release=resolve;}));
+  const record={request_id:PLAN,status:'failed',stage:'terminal',error:{message:'old normal failure'}};
+  h.set(state({history:[record]}));h.api.requestProgress(record);await drain();assert.equal(h.calls.length,1);
+  if(next==='grasp'){
+   h.set(state({task:{selected:'grasp'}}));
+   h.element('request-error').textContent='current grasp';h.element('request-error').hidden=false;h.element('clearance').textContent='current grasp';
+  }else{h.set(state());h.api.render(state());}
+  release({ok:true,json:()=>Promise.resolve({request_id:PLAN,status:'failed',planned_clearance:{minimum:{distance_m:.125}},error:{message:'late normal failure'}})});
+  await drain();
+  assert.equal(h.element('request-error').textContent,next==='grasp'?'current grasp':'');
+  assert.equal(h.element('clearance').textContent,next==='grasp'?'current grasp':'—');
+ }
 });

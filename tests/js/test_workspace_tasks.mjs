@@ -107,7 +107,7 @@ test('worker exit or request cancellation does not establish controller stop or 
  const ended=withJob({status:'cancelled',finished:true,process_running:false,owner_cleanup_clean:false,cleanup:{clean:false},task:{physical_grasp:'confirmed',planning_attachment:'attached',events:[]}});
  let rows=graspEvidence(ended);assert.doesNotMatch(rows.find(row=>row.label==='제어기 정지').value,/비활성 확인/);assert.match(rows.at(-1).value,/정리 결과 확인 필요/);assert.notEqual(rows.at(-1).tone,'good');
  ended.task.grasp.job.native_guard={phase:'stopped',latched:true,controllers:{left_controller:'inactive',right_controller:'inactive',gripper_controller:'inactive'}};
- ended.task.grasp.job.cleanup.clean=true;ended.task.grasp.job.owner_cleanup_clean=true;rows=graspEvidence(ended);
+ ended.task.grasp.job.cleanup={clean:true,launch_started:true,native_exit:{observed:true}};ended.task.grasp.job.owner_cleanup_clean=true;rows=graspEvidence(ended);
  assert.match(rows.find(row=>row.label==='제어기 정지').value,/3개 비활성 확인/);assert.equal(rows.at(-1).tone,'good');assert.match(rows[0].value,/마지막 기록/);
 });
 test('model or task identity mismatch cannot dispatch, and cleanup-pending jobs cannot switch or restart',async()=>{
@@ -138,4 +138,46 @@ test('an ambiguous cancel permits only a manual exact-owner retry after its dead
  const second=h.ui.command('cancel');assert.equal(h.requests.length,2);assert.deepEqual(h.requests[1].body,h.requests[0].body);assert.equal(await h.ui.command('cancel'),false);
  const other=snapshot();other.task.selected='motion';other.task.selection_id=NEXT;h.nextState(other);h.requests[1].resolve({});await second;
  h.requests[0].resolve({task:{selected:'grasp',selection_id:SEL}});await Promise.resolve();assert.equal(h.ui.state.task.selection_id,NEXT);assert.equal(h.ui.selected(),false);assert.equal(h.requests.length,2);
+});
+
+
+test('cleanup reports distinguish native exit, no launch and missing native exit evidence',()=>{
+ const cases=[
+  [{launch_started:true,native_exit:{observed:true}},'Native 종료·소유 프로세스 정리 확인','good'],
+  [{launch_started:false,native_exit:{observed:false}},'Native 실행 없음 · 작업자 정리 확인','good'],
+  [{launch_started:true,native_exit:{observed:false}},'소유 프로세스 정리 확인 · Native 종료 미확인','warn'],
+  [{},'소유 프로세스 정리 확인 · Native 종료 미확인','warn'],
+  [{launch_started:false,native_exit:{observed:true}},'소유 프로세스 정리 확인 · Native 종료 미확인','warn'],
+ ];
+ for(const [proof,value,tone] of cases){
+  const state=withJob({status:'cancelled',finished:true,process_running:false,owner_cleanup_clean:true,cleanup:{clean:true,...proof}});
+  const row=graspEvidence(state).at(-1);
+  assert.equal(row.value,value);assert.equal(row.tone,tone);
+  const disconnected=graspEvidence(state,{connected:false}).at(-1);
+  assert.match(disconnected.value,/미확인/);assert.notEqual(disconnected.tone,'good');
+ }
+});
+
+test('ordinary grasp cancellation is readable and neutral while actual failures retain diagnostics',()=>{
+ const error={type:'RosGraspCancelled',message:'ROS grasp task cancelled during native startup'};
+ const h=harness();
+ for(const status of ['cancelling','cancelled','failed']){
+  const state=withJob({status,cancel_requested:true,error});
+  h.setState(state);
+  for(const id of ['grasp-error','request-error']){
+   const element=h.element(id);assert.equal(element.hidden,false);
+   if(status==='failed'){
+    assert.equal(element.textContent,JSON.stringify(error));assert.equal(element.className,'error-text');
+   }else{
+    assert.match(element.textContent,status==='cancelled'?/취소 요청에 따라 작업을 중단/:/취소 요청을 처리/);
+    assert.doesNotMatch(element.textContent,/RosGraspCancelled|native startup/);assert.equal(element.className,'help');
+   }
+  }
+  assert.deepEqual(state.task.grasp.job.error,error,'The raw backend diagnostic is preserved');
+ }
+ const failedCleanup={type:'RuntimeError',message:'Owned process cleanup unconfirmed'};
+ h.setState(withJob({status:'cancelled',cancel_requested:true,error:failedCleanup}));
+ assert.equal(h.element('request-error').textContent,JSON.stringify(failedCleanup));assert.equal(h.element('request-error').className,'error-text');
+ h.setState(withJob());
+ for(const id of ['grasp-error','request-error']){assert.equal(h.element(id).textContent,'');assert.equal(h.element(id).hidden,true);assert.equal(h.element(id).className,'error-text');}
 });

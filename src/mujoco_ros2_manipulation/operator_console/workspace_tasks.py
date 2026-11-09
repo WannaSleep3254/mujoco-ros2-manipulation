@@ -85,8 +85,14 @@ class WorkspaceTasks:
     @staticmethod
     def _grasp_reason(grasp):
         job = None if grasp is None else grasp.get('job')
-        if job and (not job.get('finished') or job.get('owner_cleanup_clean') is not True):
-            return '집기 작업의 취소·종료와 소유 프로세스 정리를 확인하고 있습니다.'
+        if job and not job.get('finished'):
+            if job.get('cancel_requested') or job.get('status') == 'cancelling':
+                return '집기 취소 요청을 처리하고 소유 프로세스의 정리를 확인하고 있습니다.'
+            if job.get('cleanup', {}).get('status') in ('running', 'complete'):
+                return '집기 작업의 종료와 소유 프로세스 정리를 확인하고 있습니다.'
+            return '집기 작업을 진행하고 있습니다. 작업이 끝난 뒤 다른 작업을 선택하세요.'
+        if job and job.get('owner_cleanup_clean') is not True:
+            return '집기 작업이 종료됐지만 소유 프로세스의 정리를 확인하지 못했습니다.'
         return None
 
     def _identity(self, value, fields):
