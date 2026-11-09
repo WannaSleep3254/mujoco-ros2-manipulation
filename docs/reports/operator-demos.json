@@ -77,7 +77,7 @@
       "published_date": "2026-10-30",
       "document_type": "design_review",
       "overview": "통합 작업실의 작업 선택·공유 3D·ROS 집기와 기록 분석을 정리합니다. 기존 여섯 화면·영상과 검증 근거를 보존하며, 복구 수정과 프로젝트 내부 기록 보존, 로그인 후 시작과 남은 UI·센서 검수를 연결합니다.",
-      "manifest_sha256": "6103a919f94b36160182965b1ffa96cb0be8636273b3dd5ebdbb80a6a21e09e1",
+      "manifest_sha256": "a6d72199d899a4ba75a754fb66b4a694ae2f316e55feef4d4e8446f08c71f33c",
       "preview": {
         "image": "media/viewer-8925.jpg",
         "alt": "객체 목록과 3D 경로 미리보기, 계획 검토 패널을 표시하는 새 작업실 GUI",
