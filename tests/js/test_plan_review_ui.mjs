@@ -44,3 +44,17 @@ test('expiry, consumed approval, disconnect and another request keep execution d
   h.render();assert.equal(h.element('review-approve').disabled,true,condition);
  }
 });
+
+
+test('queued and consumed approvals explain their lifecycle without claiming invalidity or success',()=>{
+ for(const [status,expected] of [['approval_queued',/실행 승인 요청을 보내/],['consumed',/승인을 한 번 사용.*실행 요청의 상태와 결과/]]){
+  const h=harness();h.state.pending_plan.state=status;h.render();
+  assert.match(h.element('review-summary').textContent,expected);
+  assert.doesNotMatch(h.element('review-summary').textContent,/실행할 수 없습니다|성공|완료했습니다/);
+  assert.equal(h.element('review-approve').disabled,true);assert.equal(h.element('review-preview').disabled,true);assert.equal(h.element('review-discard').disabled,true);
+ }
+ for(const status of ['expired','invalidated']){
+  const h=harness();h.state.pending_plan.state=status;h.render();
+  assert.match(h.element('review-summary').textContent,/이 계획은 실행할 수 없습니다/);assert.equal(h.element('review-approve').disabled,true);
+ }
+});
