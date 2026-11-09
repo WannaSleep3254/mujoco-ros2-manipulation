@@ -14,6 +14,7 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 
 from mujoco_ros2_manipulation.paths import ROOT
+from mujoco_ros2_manipulation.build import check_action_clock_runtime
 from mujoco_ros2_manipulation.profiles import (check_generated_model, list_profiles, load_profile,
                           write_controller_config, write_moveit_controller_config)
 
@@ -28,6 +29,7 @@ def launch_nodes(context):
     profile = load_profile(LaunchConfiguration('robot').perform(context),
                            scene=LaunchConfiguration('scene').perform(context))
     check_generated_model(profile)
+    check_action_clock_runtime(profile.root)
     ros = profile.ros
     gui = LaunchConfiguration('gui').perform(context).lower() == 'true'
     moveit = LaunchConfiguration('moveit').perform(context).lower() == 'true'

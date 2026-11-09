@@ -115,6 +115,18 @@ jobs:
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi
+      - name: Action expiration timer and ROS clock initialization ordering
+        if: matrix.robot == 'workcell'
+        run: |
+          source ./manipulation_env.sh
+          cmake -S tests/native/action_clock_race -B runtime/validation/action-clock-race-build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPython3_EXECUTABLE=/usr/bin/python3
+          cmake --build runtime/validation/action-clock-race-build --parallel 2
+          python3 tests/native/action_clock_race/run_probe.py --variant fixed \
+            --binary runtime/validation/action-clock-race-build/clock_action_race \
+            --action-library ros_ws/install/rclcpp_action/lib/librclcpp_action.so \
+            --server-source external/rclcpp/rclcpp_action/src/server.cpp \
+            --domain 225 --output runtime/validation/action-clock-race
       - name: Native shutdown ordering with absent/paused clock and held JTC update
         if: matrix.robot == 'workcell'
         run: |

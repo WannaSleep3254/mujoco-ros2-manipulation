@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.4",
+  "document_version": "1.5",
   "layout_baseline": "1.9",
   "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
-  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open.",
+  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open. Adds the retained CI167 native startup SIGSEGV before launch signals, clock/timer callback diagnosis and an isolated pinned rclcpp_action clock-lock overlay. The same final diagnostic binary reproduced the legacy failure and passed with the optimized overlay. Fourteen actual ROS/HTTP cases, 22 sampled owned-process library mappings, full unit/model checks and packaging passed locally. CI165 source b02eb57 verification remains frozen historical evidence. Main promotion and rendered UI QA remain pending.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "4ba4b17fb17e0ad5489542d6900f0fde185afc492dece1487e3359f8d5051653",
+    "index.html": "5edbb6734bc8dcc6715e7cd7ca14a0834891a86eb298f99cb339876c83bb0a66",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -202,6 +202,293 @@
       "retained_accepted_terminal_actions": 6,
       "original_preserved": true,
       "followup": "A separate sequential normal_hold execution passed after model checks completed"
+    }
+  },
+  "workcell_clock_startup_followup": {
+    "date": "2026-11-09",
+    "status": "local_actual_verification_passed_remote_ci_and_deployment_pending",
+    "original_ci": {
+      "run_id": 42604269184,
+      "run_number": 167,
+      "head_sha": "e2cb8b1375e272d3dcf630ba54ed9655b4e2d9b8",
+      "case": "interference_comparison_left_fr5_ur5e",
+      "failure_stage": "interference_discovery",
+      "error": "Timeout: contact guard ready",
+      "native_exit_code": -11,
+      "native_segfault_before_launch_signals": true,
+      "stack_path": [
+        "rclcpp::TimeSource::NodeState::create_clock_sub",
+        "rcl_set_ros_time_override",
+        "librcl timer jump callback"
+      ],
+      "stack_original_lines": [
+        143,
+        159
+      ],
+      "artifact_id": 13669375392,
+      "artifact_bytes": 36327999,
+      "artifact_sha256": "de659eb8d069eb4095e493d2a71d3485cc31fb3f64caebfed3dc218419e9ca9d",
+      "result_sha256": "3498d898da9b7576baa9cbe11a62d31a52a8a5235f19c425947bfbd3a12f2a73",
+      "launch_log_sha256": "ffa5b2441bd84e660b4dbb82b925e288a378e36bc18718f0178e91673924ef7d",
+      "original_failure_retained": true
+    },
+    "source_analysis": {
+      "rclcpp_version": "16.0.21",
+      "rclcpp_commit": "c07d2a5e9974bb9788c9dbb76cbda1c73973a5be",
+      "rclcpp_action_server_source": "https://github.com/ros2/rclcpp/blob/c07d2a5e9974bb9788c9dbb76cbda1c73973a5be/rclcpp_action/src/server.cpp",
+      "observed_window": "Action server initialization does not acquire the shared clock mutex; timer initialization registers its jump callback before assigning its implementation pointer.",
+      "actual_legacy_diagnostic": {
+        "status": "expected_failure_observed",
+        "automatic_retry": false,
+        "result_sha256": "3df42c884d67610ac4c65c7db0e343a8e23620d59a399cf7f5ff4f2bdc279068",
+        "native_exit_code": -11,
+        "owned_process_group_gone": true,
+        "scope": "Runtime-only diagnostic using actual library registration and clock update at the same timer-initialization boundary"
+      },
+      "rcl_version": "5.3.13",
+      "rcl_timer_source": "https://github.com/ros2/rcl/blob/5.3.13/rcl/src/rcl/timer.c",
+      "rclcpp_time_source": "https://github.com/ros2/rclcpp/blob/c07d2a5e9974bb9788c9dbb76cbda1c73973a5be/rclcpp/src/rclcpp/time_source.cpp"
+    },
+    "historical_ci165_evidence_preserved": true,
+    "remaining_validation": [
+      "remote CI and main promotion/deployment",
+      "full PC/mobile integrated UI",
+      "W01 arbitrary initialization-time comparison cancellation and historical intermittent delay",
+      "deterministic concurrent finalization diagnostic"
+    ],
+    "production_fix": {
+      "scope": "Pinned project-local rclcpp_action clock-mutex overlay for action server initialization and finalization; verified prefix required for normal and grasp entrypoints",
+      "patch": "patches/rclcpp_action-16.0.21-clock-lock.patch",
+      "actual_overlay_verification": "passed",
+      "build_entrypoints": [
+        "python3 build_workspace.py --component runtime",
+        "python3 build_workspace.py --component all"
+      ],
+      "environment_entrypoint": "source ./manipulation_env.sh",
+      "runtime_admission": "Normal workcell and ROS grasp runtime checks require the current patch SHA and the actual first library candidate",
+      "execution_inputs": "Regenerate models and grasp targets into unique paths after the build configuration changes",
+      "commit": "7a40943eaf1adcc4312f0fd5b85128b410fa3457",
+      "production_source_sha256": {
+        "config/build.yaml": "31c9c78beed85cefd553ef632030c7dc8696f094554c4bfdeaf92a013ab9bf8c",
+        "src/mujoco_ros2_manipulation/build.py": "bc95a17f5aecec6e61bd24dc7a0959a652801714ea17cfb6b11242d6928c31d7",
+        "src/mujoco_ros2_manipulation/grasping/ros_task.py": "fde524a432639cc0a6fcaf236379ea784ea20da28cc51e63009100f885141086",
+        "src/mujoco_ros2_manipulation/ros_launch.py": "b401a0a9c3a17a7f037a16634c2ead120644758b0b8d171b69a97fc4e068a7b8",
+        "patches/rclcpp_action-16.0.21-clock-lock.patch": "c451221a94cab8d32cdbdf8d4ba26037668ec88b6ea659d13910e89918efb311"
+      },
+      "library_sha256": "4d7cbf46c2204d3ade1f7ced0c922a2c552344598ae78693461af7123bbe92e9"
+    },
+    "verification": {
+      "actual_validation_summary_sha256": "3bd2ab3ae9696d7d64a326032e4479aabd432c64741f1390c91e752b7641aef7",
+      "execution_manifest_sha256": "e8731a0e61d727175fe6d2bf4ef4f4a76a3338d65bbd8d330ecf49ede8e67383",
+      "actual_case_count": 14,
+      "automatic_retry": false,
+      "cases": [
+        {
+          "case": "single-fr5-02",
+          "kind": "actual_single_robot",
+          "result_sha256": "1cbe9a64251728f25edeb7f1361e1ebd292b06e4e0dc1da70208a3f23353f77e",
+          "run_id": "20261109T114717.532149Z-eadffc00",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": null
+        },
+        {
+          "case": "single-ur5e-02",
+          "kind": "actual_single_robot",
+          "result_sha256": "71a099d532c17fe43281e42c52d81db635c873038201e21c41da4d0132991139",
+          "run_id": "20261109T114726.946181Z-24feb30a",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": null
+        },
+        {
+          "case": "crossing-01",
+          "kind": "actual_workcell",
+          "result_sha256": "81cba994872014b206bdbadcd33df8d1a524143c2276361ea872cd8bdb2d9df0",
+          "run_id": "20261109T114735.685188Z-81199875",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": true
+        },
+        {
+          "case": "comparison-left-01",
+          "kind": "actual_workcell",
+          "result_sha256": "975dc56cfd25bca1ae1556e6472049687f62dcaf653f246c34915f9d49b18ccc",
+          "run_id": "20261109T114805.129240Z-852cc663",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": true
+        },
+        {
+          "case": "comparison-right-01",
+          "kind": "actual_workcell",
+          "result_sha256": "38feffb945321d573f226d4a23f915ad23a48ecbbf5b965b92ee2ee993176abc",
+          "run_id": "20261109T114835.039336Z-aabe0ed2",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": true
+        },
+        {
+          "case": "comparison-collision-01",
+          "kind": "actual_workcell",
+          "result_sha256": "65d765b43f8de8363084b4e936cbe7eb5ab9c836f9f5c53176a1867419246b37",
+          "run_id": "20261109T114904.913801Z-12e3166c",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": true
+        },
+        {
+          "case": "comparison-avoidance-01",
+          "kind": "actual_workcell",
+          "result_sha256": "1422615d9313e625ad0272c5109ad1d9f65df13cf58cd101efe1d1aeb8a5aac6",
+          "run_id": "20261109T114934.561058Z-421097f6",
+          "status": "passed",
+          "shutdown_clean": true,
+          "physics_checks_passed": true
+        },
+        {
+          "case": "direct-normal-01",
+          "kind": "direct_grasp",
+          "result_sha256": "9cdca03873936d3edf03dc60bbab7aa2820b66b509ec130aa040e200b95e48d1",
+          "status": "passed"
+        },
+        {
+          "case": "direct-normal_hold-01",
+          "kind": "direct_grasp",
+          "result_sha256": "1cc800e83f8a433f5aac59c29d314ff5c7a04bc6e7ab08ba5c0014282b327840",
+          "status": "passed"
+        },
+        {
+          "case": "direct-cancel_startup-01",
+          "kind": "direct_grasp",
+          "result_sha256": "80058e5274386a757e35d6c2e4152b5070d134aef5b33caa05a5dab4e2d525e0",
+          "status": "passed"
+        },
+        {
+          "case": "direct-cancel_transport-01",
+          "kind": "direct_grasp",
+          "result_sha256": "2a8046668e7bf43f5350256a0d17195e965bc51534b1fac50d5253cc82791eea",
+          "status": "passed"
+        },
+        {
+          "case": "workspace-normal-01",
+          "kind": "workspace_http",
+          "result_sha256": "999eb32c5c18ce4a5b8cc8c138d902a9bccab807ed83313f591db9adeb3ca632",
+          "status": "passed"
+        },
+        {
+          "case": "workspace-cancel_startup-01",
+          "kind": "workspace_http",
+          "result_sha256": "4e539911c713f688f11f0169c4cb85b3b634b7b8c1be48dd4ca4d8545edbfc86",
+          "status": "passed"
+        },
+        {
+          "case": "workspace-cancel_transport-01",
+          "kind": "workspace_http",
+          "result_sha256": "0fe0737770de299dec7969ec028814e6d3173d32882713ead8549fa79274282b",
+          "status": "passed"
+        }
+      ],
+      "mapped_library_observations": 22,
+      "mapping_receipt_sha256": "62047eafce6fe568533f973e1cd4f2fd9b1096bcf21ef0eb26ccd9220e3bb57e",
+      "focused_unit_tests": 57,
+      "focused_unit_status": "passed",
+      "full_unit_tests": 1444,
+      "full_unit_passed": 1443,
+      "full_unit_skipped": 1,
+      "full_unit_status": "passed",
+      "model_tests": 91,
+      "model_skipped": 0,
+      "model_status": "passed",
+      "all_four_robot_models_and_fixed_post_generated": true,
+      "package_build": "passed",
+      "deterministic_comparison": {
+        "comparison_sha256": "3291ae0a8b60a28c2610b2f00a3f2712c87ca4cc3055ef383810acc211252060",
+        "scope": "Actual timer initialization registration boundary with concurrent ROS clock update. Finalization has source lock review and normal destruction/shutdown coverage; deterministic concurrent finalization remains outside this test.",
+        "no_external_constructor_lock": true,
+        "automatic_retry": false,
+        "binary_sha256": "4afd5c72252e544af7a6d2087e05a5792a64b19587d4a93c62703ddf304550ee",
+        "driver_sha256": "54d1b333d1b8de236eb973bef2c0be08f56619e59d553f74ce0e56cbb5657566",
+        "harness_source_sha256": "9b984e23af85f92c026d8db2b4a57d334a515dd67d2c9a0b98ed0b6637116d86",
+        "legacy_result_sha256": "1d8ee754611f393e0759eaa49d3a890b54b19705df46325c1114a93a92620c5c",
+        "legacy_status": "expected_failure_observed",
+        "legacy_return_code": -11,
+        "legacy_library_sha256": "0c3c4c44b2f5db83afea6b9453d980ce597e2e244f515edf8c5f40f4c8c8eec6",
+        "fixed_result_sha256": "c262028ad5502fe5e487a1956b5c8f5367177de43b64566c2b12346f6845a1ad",
+        "fixed_status": "passed",
+        "fixed_return_code": 0,
+        "fixed_library_sha256": "4d7cbf46c2204d3ade1f7ced0c922a2c552344598ae78693461af7123bbe92e9",
+        "owned_process_groups_gone": true
+      },
+      "excluded_setup_attempt": {
+        "scope": "Wrong compatibility verification entrypoint failed before ROS, excluded from the 14 executed cases; original retained",
+        "original_preserved": true
+      },
+      "excluded_collector_attempt": {
+        "scope": "Summary postprocessing used a missing field for a single-robot result; original test result bytes unchanged and failed collector receipt retained",
+        "original_preserved": true
+      },
+      "remote_ci": "pending",
+      "main_promotion": "pending",
+      "pages_deployment": "pending",
+      "full_pc_mobile_ui": "pending"
+    },
+    "build_compatibility_followup": {
+      "date": "2026-11-09",
+      "original_ci": {
+        "run_id": 42613808373,
+        "run_number": 168,
+        "head_sha": "4e5bc35fa3715edd44fde9378b4e251122291de1",
+        "python_jobs_succeeded": 1,
+        "ros_jobs_failed": 5,
+        "failed_step": "Build locked runtime and selected model",
+        "error": "colcon: error: unrecognized arguments: --allow-overriding rclcpp_action",
+        "native_cases_started": false,
+        "workcell_artifact_id": 13672230575,
+        "workcell_artifact_sha256": "918e9c46c371169bbe8055b2cbd50ac5f21b8ef474cf4bb1eed1414b391bbeed",
+        "workcell_full_log_sha256": "4acd4ecd18e05d0138e4b43a4c19769200c9e4d56ea70e1a5ff30f2431c60c6c",
+        "original_failure_retained": true
+      },
+      "change": "Remove the optional colcon --allow-overriding argument and assert its absence in the existing build regression test",
+      "build_source_sha256": "0ce236c94eb8df4b4e4e98dc46983fc6dc63bbd84619f68cb919cf7f30de0ab3",
+      "build_test_source_sha256": "059e8611a2aa55fc964679f3116370b3c11cf9504118eaa6b877b212eb798457",
+      "runtime_build": "passed",
+      "focused_unit_tests": 57,
+      "focused_unit_status": "passed",
+      "full_unit_tests": 1444,
+      "full_unit_passed": 1443,
+      "full_unit_skipped": 1,
+      "full_unit_status": "passed",
+      "validation_log_sha256": {
+        "runtime-build-01.log": "d7df61ad6b866c36a1a6d917eb20db2a934fe308a451fc300c31ef97e02484f8",
+        "focused-unit-01.log": "aa6afd399aff14a14f720214e289c62c2c95f2efcaf84244c0aa8448ccceaa19",
+        "full-unit-01.log": "287f4160c969766545967ab1688e09f1cf84c9e478b254ea045eddbf54198029",
+        "model-tests-01.log": "148eff32b3f8d9f6284817b4709b0eb103abc51d9ead4a13de80dd938ab3fa6a"
+      },
+      "clock_patch_sha256_unchanged": "c451221a94cab8d32cdbdf8d4ba26037668ec88b6ea659d13910e89918efb311",
+      "optimized_library_sha256_unchanged": "4d7cbf46c2204d3ade1f7ced0c922a2c552344598ae78693461af7123bbe92e9",
+      "prior_actual_14_cases_source_preserved": "7a40943eaf1adcc4312f0fd5b85128b410fa3457",
+      "prior_model_91_no_skip_result_preserved": true,
+      "new_remote_ci": "pending",
+      "commit": "594563577e9c82b8c558a14335c73f5a42dea9ec",
+      "execution_manifest_sha256": "ba1abf291b4859513e720a4d16fc70c52ac4a8763f85da7de45e1d01476588ea",
+      "actual_smoke_cases": [
+        {
+          "case": "single-fr5",
+          "kind": "actual_single_robot",
+          "status": "passed",
+          "result_sha256": "948e0a0bbf271715114e25b8a4af793b65277cf47eae6f1372474cc64047f96a"
+        },
+        {
+          "case": "workspace-normal",
+          "kind": "workspace_http",
+          "status": "passed",
+          "result_sha256": "e7f499837d50dd688ae3a58ab6d725abbc6a4e2d1139085dc305c1ec2c45aa7d"
+        }
+      ],
+      "model_tests": 91,
+      "model_skipped": 0,
+      "model_status": "passed"
     }
   }
 }

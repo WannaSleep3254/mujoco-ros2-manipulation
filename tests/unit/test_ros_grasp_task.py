@@ -1,4 +1,8 @@
 from copy import deepcopy
+import ast
+import json
+from pathlib import Path
+import tempfile
 from types import SimpleNamespace as NS
 import unittest
 
@@ -9,11 +13,15 @@ from mujoco_ros2_manipulation.grasping.ros_task import (
     admitted_action_submission,
     validate_dispatch_geometry,
     diagnostic_hold_duration,
-    expected_startup_spawner_interruptions,
+    expected_startup_spawner_interruptions, identity_inventory, verify_identity_proof,
 )
 from mujoco_ros2_manipulation.grasping.contract import GraspLifecycle
 from mujoco_ros2_manipulation.workcells.pose_adapter import MoveItPoseAdapter
 from tests.unit.test_ros_grasp_observation import sample
+from mujoco_ros2_manipulation.build import load_manifest, action_clock_runtime_paths
+from mujoco_ros2_manipulation.grasping.ros_admission import file_stats
+from mujoco_ros2_manipulation.model_build.integrity import file_sha256
+import yaml
 
 
 def trajectory(positions=None, velocities=None):
@@ -25,6 +33,58 @@ def trajectory(positions=None, velocities=None):
 
 
 class RosGraspTaskTests(unittest.TestCase):
+    def test_real_task_hash_collection_pins_action_patch_and_binary_until_submission(self):
+        source = Path(__file__).resolve().parents[2]/'src/mujoco_ros2_manipulation/grasping/ros_task.py'
+        tree = ast.parse(source.read_text())
+        task = next(item for item in tree.body if isinstance(item, ast.FunctionDef) and item.name == 'run_ros_grasp')
+        body = next(item.body for item in task.body if isinstance(item, ast.Try))
+        # Execute the production hash-collection statements before any ROS import.
+        first = next(index for index, item in enumerate(body)
+                     if isinstance(item, ast.Assign) and isinstance(item.targets[0], ast.Tuple)
+                     and any(isinstance(name, ast.Name) and name.id == 'action_patch'
+                             for name in item.targets[0].elts))
+        last = next(index for index, item in enumerate(body)
+                    if isinstance(item, ast.Assign) and isinstance(item.targets[0], ast.Name)
+                    and item.targets[0].id == 'input_hashes')
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root/'config').mkdir()
+            (root/'config/build.yaml').write_text(yaml.safe_dump(load_manifest()))
+            module = root/'src/mujoco_ros2_manipulation/grasping/ros_task.py'
+            def fixture_hash(path):
+                path = Path(path)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                if not path.exists():
+                    path.write_text(str(path.relative_to(root)))
+                return file_sha256(path)
+            namespace = dict(ROOT=root, Path=Path, __file__=str(module), record={}, file_sha256=fixture_hash,
+                             action_clock_runtime_paths=action_clock_runtime_paths)
+            exec(compile(ast.Module(body=body[first:last+1], type_ignores=[]), str(source), 'exec'), namespace)
+            action_patch, action_binary = action_clock_runtime_paths(root)
+            self.assertIn(str(action_patch), namespace['record']['source_sha256'])
+            self.assertIn(str(action_binary), namespace['record']['runtime_binary_sha256'])
+            base_output, output = root/'base', root/'target'
+            base_output.mkdir(); output.mkdir()
+            (base_output/'source.json').write_text(json.dumps(dict(outputs={}, inputs=[])))
+            (output/'grasp.json').write_text('{}')
+            target = NS(output=output, manifest=dict(outputs=[], dependencies=[], inputs=dict(producer_sha256={})),
+                        base=NS(output=base_output, root=root, instances=[]))
+            inventory = identity_inventory(target, namespace['input_hashes'])
+            stats = file_stats(inventory)
+            proof = dict(manifest_sha256='a'*64, observed_sha256=namespace['input_hashes'], before=stats, after=stats)
+            verify_identity_proof(proof, manifest_sha256='a'*64, expected_hashes=namespace['input_hashes'], inventory=inventory)
+            for path in (action_patch, action_binary):
+                with self.subTest(path=path.name):
+                    before = path.read_bytes()
+                    path.write_bytes(before+b' changed')
+                    with self.assertRaisesRegex(RosGraspTaskError, 'after validation'):
+                        verify_identity_proof(proof, manifest_sha256='a'*64,
+                                              expected_hashes=namespace['input_hashes'], inventory=inventory)
+                    path.write_bytes(before)
+                    # Refresh only the next independent fixture's original stat proof.
+                    stats = file_stats(inventory)
+                    proof.update(before=stats, after=stats)
+
     def test_expected_startup_interrupt_keeps_exact_pid_command_signal_order_and_raw_failure(self):
         start = "[INFO] [spawner-4]: process started with pid [42]"
         stop = "[INFO] [spawner-4]: sending signal 'SIGINT' to process[spawner-4]"
