@@ -13,6 +13,7 @@ from ..model_build.integrity import file_sha256
 from ..verification.reports import atomic_json
 from ..verification.runner import group_gone, stop_process
 from .catalog import describe_scenarios
+from .demo_handshake import CANCEL_GRACE_SEC, read_handshake
 
 ACTIVE = {"starting", "running", "cancel_requested"}
 
@@ -45,6 +46,10 @@ class DemoJobs:
         self.stopping = False
         self.cleanup_blocked = False
         self.monitor_error = None
+        self.worker_generation = None
+        self.worker_identity = None
+        self.cancel_deadline_ns = None
+        self.cancel_signal_sent = False
 
     @property
     def busy(self):
@@ -101,15 +106,20 @@ class DemoJobs:
             self.cancel_requested = False
             self.cleanup_blocked = False
             self.monitor_error = None
+            self.worker_generation = uuid.uuid4().hex
+            self.worker_identity = None
+            self.cancel_deadline_ns = None
+            self.cancel_signal_sent = False
             app.phase, app.error = "demo", None
             app.render_suspended = True
-            args = ["/usr/bin/python3", "-m", "mujoco_ros2_manipulation.operator_console.demo_worker", "--directory", str(folder), "--scenario", options["scenario"], "--domain", str(app.state.config["domain"]), "--console-directory", str(app.directory)]
+            args = ["/usr/bin/python3", "-m", "mujoco_ros2_manipulation.operator_console.demo_worker", "--directory", str(folder), "--scenario", options["scenario"], "--domain", str(app.state.config["domain"]), "--console-directory", str(app.directory), "--generation", self.worker_generation]
             if options["native_gui"]:
                 args.append("--native-gui")
             if not app.image_render_enabled:
                 args.append("--no-render")
             try:
                 self.process = app.spawn("demo", args, folder)
+                self.worker_identity = process_identity(self.process.pid)
             except Exception as error:
                 self.current.update(status="failed", stage="launch_failed", error=str(error))
                 app.phase, app.error = "failed", str(error)
@@ -293,6 +303,46 @@ class DemoJobs:
         app.phase = "failed" if unclean else "idle"
         app.error = data.get("error") if unclean else None
 
+    def _begin_cancel(self):
+        if not self.cancel_requested:
+            requested = time.monotonic_ns()
+            self.cancel_deadline_ns = requested + CANCEL_GRACE_SEC * 1_000_000_000
+            self.cancel_requested = True
+            try:
+                if self.worker_identity is None:
+                    raise ValueError('Comparison worker identity was not observed')
+                atomic_json(self.folder / 'cancel-intent.json', dict(
+                    schema_version=1, kind='cancel', job_id=self.current['job_id'],
+                    generation=self.worker_generation, pid=self.worker_identity['pid'],
+                    start_ticks=self.worker_identity['start_ticks'],
+                    requested_monotonic_ns=requested, deadline_monotonic_ns=self.cancel_deadline_ns))
+            except Exception as error:
+                self.monitor_error = self.monitor_error or str(error)
+        self._deliver_cancel()
+
+    def _deliver_cancel(self):
+        if self.cancel_signal_sent or self.process.poll() is not None or self.worker_identity is None:
+            return
+        try:
+            ready = read_handshake(self.folder / 'worker-ready.json', 'ready', self.current['job_id'],
+                                   self.worker_generation, self.worker_identity)
+            if ready is None:
+                return
+            if not matching_process(self.worker_identity):
+                # A valid persisted intent can finish the worker while readiness
+                # is being read. Only that Popen's confirmed exit is benign.
+                if self.process.poll() is not None:
+                    return
+                raise ValueError('Comparison worker identity changed before cancellation delivery')
+            self.process.send_signal(signal.SIGINT)
+            self.cancel_signal_sent = True
+            self.app.audit('demo_cancel_delivered', job_id=self.current['job_id'],
+                           worker_generation=self.worker_generation, worker_pid=self.process.pid,
+                           worker_start_ticks=self.worker_identity['start_ticks'],
+                           ready_monotonic_ns=ready['ready_monotonic_ns'])
+        except Exception as error:
+            self.monitor_error = self.monitor_error or str(error)
+
     def request_stop(self, identifier):
         app = self.app
         with app.lock:
@@ -303,9 +353,12 @@ class DemoJobs:
                 raise RuntimeError("현재 진행 중인 시연만 종료할 수 있습니다.")
             if self.cancel_requested:
                 return dict(job_id=identifier, status="cancel_requested")
-            self.cancel_requested = True
-            self.process.send_signal(signal.SIGINT)
-            app.audit("demo_cancel_requested", job_id=identifier)
+            self._begin_cancel()
+            try:
+                app.audit("demo_cancel_requested", job_id=identifier,
+                          worker_generation=self.worker_generation, deadline_monotonic_ns=self.cancel_deadline_ns)
+            except Exception as error:
+                self.monitor_error = self.monitor_error or str(error)
             threading.Thread(target=self.stop_sync, daemon=True).start()
             return dict(job_id=identifier, status="cancel_requested")
 
@@ -329,16 +382,25 @@ class DemoJobs:
             if self.process is None:
                 return
             self.stopping = True
-            already_requested = self.cancel_requested
-            self.cancel_requested = True
             process = self.process
-            if not already_requested and process.poll() is None:
-                process.send_signal(signal.SIGINT)
+            self._begin_cancel()
+            if self.cancel_deadline_ns is None:
+                self.cancel_deadline_ns = time.monotonic_ns() + CANCEL_GRACE_SEC * 1_000_000_000
         forced = False
         wait_started = time.monotonic()
         self._audit_worker_wait("demo_worker_wait_started", process, elapsed_sec=0.0)
         try:
-            return_code = process.wait(timeout=45)
+            # Import/constructor readiness consumes the original request budget.
+            while not self.cancel_signal_sent and process.poll() is None:
+                with app.lock:
+                    self._deliver_cancel()
+                remaining = (self.cancel_deadline_ns - time.monotonic_ns()) / 1e9
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired('comparison worker readiness', CANCEL_GRACE_SEC)
+                if not self.cancel_signal_sent:
+                    time.sleep(min(.02, remaining))
+            remaining = max(0., (self.cancel_deadline_ns - time.monotonic_ns()) / 1e9)
+            return_code = process.wait(timeout=remaining)
         except subprocess.TimeoutExpired:
             self._audit_worker_wait("demo_worker_wait_finished", process,
                                     elapsed_sec=time.monotonic()-wait_started,

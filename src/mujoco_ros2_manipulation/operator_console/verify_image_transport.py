@@ -6,6 +6,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import time
@@ -17,6 +18,9 @@ from ..paths import ROOT
 from ..verification.reports import atomic_json
 from ..workcells.motion_request import command
 from .diagnostic_image import pattern
+from .synchronized_capture import MAX_CAPTURE_BYTES, MAX_IMAGES, MAX_RECORDINGS
+from .synchronized_recording import SyncRecording, _directory, _read, _publish, MAX_RECORDING_BYTES, MAX_JPEG_BYTES
+from .scene_host import MAX_ASSET_BYTES
 
 
 def http_request(base, path, payload=None, *, token=None, raw=False):
@@ -97,6 +101,184 @@ def start_synchronized_capture(http, wait, result):
         wait,"synchronized capture start")["id"]
 
 
+def owned_console_session(log_path, root, port, domain):
+    """Accept only this verifier's single current console readiness marker."""
+    descriptor = _directory(Path(log_path).parent)
+    try:
+        text = _read(descriptor, Path(log_path).name, 4 * 1024 * 1024).decode('utf-8', errors='replace')
+    finally:
+        os.close(descriptor)
+    lines = [line for line in text.splitlines() if line.startswith('OPERATOR_READY ')]
+    prefix = f'OPERATOR_READY http://127.0.0.1:{port}/ domain={domain} session='
+    if len(lines) != 1 or not lines[0].startswith(prefix):
+        raise ValueError('Missing or ambiguous current console session marker')
+    session = Path(lines[0][len(prefix):])
+    operator = Path(root).resolve() / 'runtime/operator'
+    if (not session.is_absolute() or '..' in session.parts or session.parent != operator
+            or not re.fullmatch(r'[0-9]{8}T[0-9]{6}Z-[0-9a-f]{8}', session.name)):
+        raise ValueError('Console capture session escaped the current owned runtime')
+    descriptor = _directory(session)
+    os.close(descriptor)
+    return session
+
+
+def _capture_names(directory, maximum):
+    names = []
+    with os.scandir(directory) as entries:
+        for entry in entries:
+            if len(names) >= maximum:
+                raise ValueError('Capture evidence member count exceeds its bound')
+            names.append(entry.name)
+    return sorted(names)
+
+
+def _capture_inventory(directory):
+    """Inventory only bounded capture JSON, digest assets and JPEG originals."""
+    names = _capture_names(directory, 5)
+    if set(names) - {'recording.json', 'capture.json', 'partial.json', 'assets', 'images'}:
+        raise ValueError('Unexpected member in owned synchronized capture')
+    inventory = dict(directories=[], files=[], byte_length=0)
+    for folder, maximum_count in (('', 3), ('assets', 1024), ('images', MAX_IMAGES)):
+        if folder and folder not in names:
+            continue
+        child = os.open(folder, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory) if folder else directory
+        try:
+            members = _capture_names(child, maximum_count) if folder else [name for name in names if name not in ('assets', 'images')]
+            if folder:
+                inventory['directories'].append(folder)
+            for name in members:
+                if folder and not re.fullmatch(r'[0-9a-f]{64}' + (r'\.jpg' if folder == 'images' else r'\.bin'), name):
+                    raise ValueError('Capture asset or image name is not a digest')
+                maximum = (MAX_JPEG_BYTES if folder == 'images' else MAX_ASSET_BYTES if folder else
+                           64 * 1024 if name == 'capture.json' else MAX_RECORDING_BYTES)
+                raw = _read(child, name, maximum)
+                inventory['byte_length'] += len(raw)
+                if inventory['byte_length'] > MAX_CAPTURE_BYTES + 128 * 1024:
+                    raise ValueError('Capture evidence byte budget exceeded')
+                inventory['files'].append(dict(relative_path=(folder+'/' if folder else '')+name,
+                    file_kind='regular', byte_length=len(raw), sha256=hashlib.sha256(raw).hexdigest()))
+        finally:
+            if folder:
+                os.close(child)
+    return inventory
+
+
+def preserve_capture_bundle(session, capture_id, output, *, root=ROOT, expected_recording_sha256=None):
+    """Keep exact original bytes and any copied prefix, including failed capture data."""
+    root, session, output = Path(root).resolve(), Path(session).absolute(), Path(output).absolute()
+    evidence = dict(capture_id=capture_id, status='failed', copied=False, byte_agreement=False,
+                    recording_valid=False, expected_recording_sha256=expected_recording_sha256, errors=[])
+    source = destination = archive = None
+    before = after = retained = None
+    try:
+        if (not re.fullmatch(r'[0-9a-f]{32}', capture_id) or session.parent != root/'runtime/operator'
+                or '..' in session.parts or '..' in output.parts
+                or not output.is_relative_to(root/'runtime') or output.is_relative_to(session)):
+            raise ValueError('Capture preservation requires exact owned runtime paths and capture ID')
+        source_path = session/'synchronized'/capture_id
+        archive_path = output/'capture-originals'
+        evidence.update(source=str(source_path.relative_to(root)), destination=str((archive_path/capture_id).relative_to(root)))
+        source = _directory(source_path)
+        archive = _directory(archive_path, create=True)
+        os.mkdir(capture_id, 0o700, dir_fd=archive)
+        destination = os.open(capture_id, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=archive)
+        before = _capture_inventory(source)
+        if not before['files']:
+            raise ValueError('Owned synchronized capture has no retained original members')
+        for folder in before['directories']:
+            os.mkdir(folder, 0o700, dir_fd=destination)
+        for item in before['files']:
+            parts = item['relative_path'].split('/')
+            source_child, destination_child = source, destination
+            try:
+                if len(parts) == 2:
+                    source_child = os.open(parts[0], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=source)
+                    destination_child = os.open(parts[0], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=destination)
+                raw = _read(source_child, parts[-1], item['byte_length'])
+                if len(raw) != item['byte_length'] or hashlib.sha256(raw).hexdigest() != item['sha256']:
+                    raise ValueError('Capture source changed after its original inventory')
+                _publish(destination_child, parts[-1], raw)
+            finally:
+                if source_child != source:
+                    os.close(source_child)
+                if destination_child != destination:
+                    os.close(destination_child)
+        evidence['copied'] = True
+        after, retained = _capture_inventory(source), _capture_inventory(destination)
+        if before != after or before != retained:
+            raise ValueError('Capture source/destination file sets, sizes or SHA256 digests differ')
+        evidence['byte_agreement'] = True
+        if any(item['relative_path'] == 'recording.json' for item in before['files']):
+            original = SyncRecording.load(source_path/'recording.json')
+            copied = SyncRecording.load(archive_path/capture_id/'recording.json')
+            if original.sha256 != copied.sha256 or (expected_recording_sha256 is not None and original.sha256 != expected_recording_sha256):
+                raise ValueError('Preserved recording differs from the verified recording identity')
+            evidence.update(recording_valid=True, recording_sha256=original.sha256)
+        elif expected_recording_sha256 is not None:
+            raise ValueError('Previously verified synchronized recording is missing')
+        evidence['status'] = 'preserved'
+    except Exception as error:
+        evidence['errors'].append(dict(type=type(error).__name__, message=str(error)[:512]))
+    finally:
+        if destination is not None:
+            if retained is None:
+                try:
+                    retained = _capture_inventory(destination)
+                except Exception as error:
+                    evidence['errors'].append(dict(type=type(error).__name__, message=str(error)[:512]))
+            source_inventory = dict(before=before, after=after)
+            for name, value in (('source-inventory', source_inventory), ('destination-inventory', retained), ('preservation', evidence)):
+                filename = capture_id+'-'+name+'.json'
+                try:
+                    _publish(archive, filename, (json.dumps(value, indent=2)+'\n').encode())
+                    evidence[name.replace('-', '_')] = str((output/'capture-originals'/filename).relative_to(root))
+                except Exception as error:
+                    evidence['status'] = 'failed'
+                    evidence['errors'].append(dict(type=type(error).__name__, message=str(error)[:512]))
+        for descriptor in (destination, archive, source):
+            if descriptor is not None:
+                os.close(descriptor)
+    return evidence
+
+
+def preserve_synchronized_originals(output, result, capture_id, *, root=ROOT, port, domain):
+    """Run after console exit, retaining partial or unknown-start outcomes too."""
+    evidence = dict(status='not_started', bundles=[], errors=[])
+    result['synchronized_originals'] = evidence
+    try:
+        requested = result.get('synchronized_capture_readiness', {}).get('start_requests') == 1
+        if capture_id is None and not requested:
+            return evidence
+        session = owned_console_session(Path(output)/'console.log', root, port, domain)
+        identifiers = [capture_id] if capture_id is not None else []
+        if capture_id is None:
+            descriptor = _directory(session/'synchronized')
+            try:
+                identifiers = _capture_names(descriptor, MAX_RECORDINGS)
+            finally:
+                os.close(descriptor)
+        if not identifiers:
+            raise ValueError('Requested synchronized capture has no preserved output')
+        for identifier in identifiers:
+            verified = [item['recording_sha256'] for item in result['checks']
+                        if item.get('id') == identifier and item.get('recording_sha256') is not None]
+            if (any(type(digest) is not str or not re.fullmatch(r'[0-9a-f]{64}', digest) for digest in verified)
+                    or len(set(verified)) > 1):
+                raise ValueError('Conflicting or invalid verified recording identities')
+            expected = verified[0] if verified else None
+            bundle = preserve_capture_bundle(session, identifier, output, root=root, expected_recording_sha256=expected)
+            evidence['bundles'].append(bundle)
+            if bundle['status'] != 'preserved':
+                evidence['errors'].extend(bundle['errors'])
+        evidence['status'] = 'preserved' if not evidence['errors'] else 'failed'
+    except Exception as error:
+        evidence['status'] = 'failed'
+        evidence['errors'].append(dict(type=type(error).__name__, message=str(error)[:512]))
+    if evidence['status'] == 'failed':
+        result['status'] = 'failed'
+    return evidence
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain",type=int,required=True)
@@ -127,6 +309,7 @@ def main():
     node.create_subscription(Clock,"/clock",lambda message:latest_clock.__setitem__(0,message.clock),qos)
     base=f"http://127.0.0.1:{args.port}"
     token=None
+    capture_id=None
     records=[]
     result=dict(schema_version=1,kind="diagnostic-rgb8-transport-verification",status="running",
         domain=args.domain,checks=records,note="Synthetic image transport only; no hardware camera, calibration, native-step alignment or latency claim")
@@ -171,7 +354,6 @@ def main():
             assert decoded.size==(64,48) and decoded.format=="JPEG"
         records.append(dict(name="actual_ros_rgb8_to_http_jpeg",generation=old_generation,sequence=old_sequence,
             jpeg_sha256=hashlib.sha256(pixels).hexdigest(),status=source["status"],source_clock_domain=source["clock_domain"]))
-        capture_id=None
         if args.synchronized:
             capture_id=start_synchronized_capture(http,wait,result)
             wait(lambda:http("/api/sync-recordings")["capture"]["image_count"]>=3,"initial synchronized image samples",frames=True)
@@ -204,9 +386,7 @@ def main():
             view=http(prefix)["view"]
             count_before=len(http("/api/state")["history"])
             # Locate only this owned console's output named in its own log.
-            text=(output/"console.log").read_text()
-            folder=Path(next(line.split(" session=",1)[1] for line in text.splitlines() if line.startswith("OPERATOR_READY ")))
-            from .synchronized_recording import SyncRecording
+            folder=owned_console_session(output/"console.log",ROOT,args.port,args.domain)
             recording=SyncRecording.load(folder/"synchronized"/capture_id/"recording.json")
             assert recording.sha256==view["recording_sha256"]
             image_sample=recording.image_frames[1]
@@ -260,7 +440,10 @@ def main():
                 result["cleanup_forced"]=True;os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=5)
         result["console_exit_code"]=process.returncode
         result["cleanup_clean"]=process.returncode==0 and not result.get("cleanup_forced",False)
-        log.close();node.destroy_node();rclpy.shutdown()
+        log.close()
+        if args.synchronized:
+            preserve_synchronized_originals(output,result,capture_id,root=ROOT,port=args.port,domain=args.domain)
+        node.destroy_node();rclpy.shutdown()
         if not result["cleanup_clean"]:result["status"]="failed"
         atomic_json(output/"result.json",result)
     print(result["status"].upper()+": "+str(output/"result.json"),flush=True)

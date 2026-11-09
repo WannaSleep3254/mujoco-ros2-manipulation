@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "kind": "integrated-ui-browser-validation",
+  "date_kst": "2026-11-09/10",
+  "feature_commit": "f2daaefd08a5be1178d407951d7a355962ac8dec",
+  "main_commit": "11b2ce9952a54f90da2fec41017fd0dd4879f766",
+  "source_tree": "539badc200e8d01c8e1c74c26561cdc37a9c7f7d",
+  "runtime_core_commit": "9e70413344290d0ba38ff82cc6d65fc360d0c8b9",
+  "candidate_runtime_association": "Candidate console presentation with byte-identical released core and canonical models/native runtime.",
+  "fixes_confirmed": [
+    "running vs cancellation and cleanup guidance",
+    "pre-native launch vs observed-native cleanup evidence",
+    "plain expected cancellation guidance",
+    "clear stale grasp facts in ordinary mode",
+    "queued and consumed one-use plan approval copy"
+  ],
+  "candidate_grasp_cases": [
+    {
+      "run_id": "4c69c35278aa4f1b9190014b1e3536a6",
+      "status": "cancelled",
+      "native_started": true,
+      "native_exit_observed": true,
+      "native_stop_observed": true,
+      "cleanup_clean": true,
+      "result_sha256": "5736647f32be014917ed122c16cfed457703c476e7018762a8bf381656dc2dd9"
+    },
+    {
+      "run_id": "6377ae2bbef04093908ac9225a84924d",
+      "status": "succeeded",
+      "native_started": true,
+      "native_exit_observed": true,
+      "native_stop_observed": true,
+      "cleanup_clean": true,
+      "result_sha256": "d574314ded5441891527c24b881b24e147fcbaeeb422536e9588ae789504461c"
+    },
+    {
+      "run_id": "a2ca8b4d911c4bd093c8ed613758d391",
+      "status": "cancelled",
+      "native_started": false,
+      "native_exit_observed": false,
+      "native_stop_observed": null,
+      "cleanup_clean": true,
+      "result_sha256": "e9eb0c3e9ea8c36e86894d610a6eb9dae31fd78af6c57c76313785c50fc5e493"
+    }
+  ],
+  "motion_approved_request": "a47f9e7bef13431ba5f4764c92673278",
+  "canonical_smoke": {
+    "job_id": "c0e402690bb44d0d83a05f34c1657745",
+    "status": "succeeded",
+    "native_stop_observed": true,
+    "native_exit_observed": true,
+    "cleanup_clean": true,
+    "result_sha256": "3f806fe2c9d94de696e1a7f3cafb5f5354be6f75431fe5292238b69308041f59",
+    "motion_task_fields_reset": true,
+    "start_enabled": true
+  },
+  "unit_checks": {
+    "total": 1436,
+    "passed": 1419,
+    "skipped": 17,
+    "skip_scope": "Source-only UI worktree lacked 16 generated/native model assets and one FR3 checkout."
+  },
+  "javascript_checks": {
+    "passed": 276
+  },
+  "ci": {
+    "feature_pr": 85,
+    "promotion_pr": 86,
+    "main_workflow_run": 42644361090,
+    "main_checks_passed": 6,
+    "pages_workflow_run": 42644546945,
+    "pages_attempt": 2,
+    "published_files_verified": 147,
+    "published_bytes_verified": 39074559,
+    "first_pages_attempt": "10-minute deployment job limit while GitHub syncing_files; original failure preserved; one deploy-only retry succeeded."
+  },
+  "media": [
+    {
+      "path": "media/viewer-8933-main-11b2ce9.jpg",
+      "sha256": "fe2eb5b3c99e76ab57c048f921f7e7be73ce00985895985ce845fc7523cc9431",
+      "size_bytes": 102925
+    },
+    {
+      "path": "media/viewer-8933-ui-f2daaef.mp4",
+      "sha256": "74b192df9a3f8c379f575a3d331ee6f5b32c79d3777cf58cc01410691d0d6221",
+      "size_bytes": 180973
+    }
+  ],
+  "limits": [
+    "Mobile validation used a 390x844 browser viewport, without a physical handset.",
+    "Video is 136 timestamped browser samples over 36 seconds, not an FPS or input-latency measurement.",
+    "The two historical synchronized raw recordings remain unrecovered.",
+    "Historical intermittent shutdown-delay cause remains unresolved."
+  ]
+}

@@ -189,8 +189,14 @@ class DemoApplicationTests(unittest.TestCase):
         return self.process
 
     def start_job(self, scenario='contact_comparison'):
-        with patch.object(self.app, 'spawn', side_effect=self.spawn):
-            return self.app.demos.start(dict(scenario=scenario, native_gui=False))
+        identity = dict(pid=self.process.pid, start_ticks=123, pgid=self.process.pid,
+                        sid=self.process.pid, ppid=1234)
+        with patch.object(self.app, 'spawn', side_effect=self.spawn), patch(JOBS+'.process_identity', return_value=identity):
+            result = self.app.demos.start(dict(scenario=scenario, native_gui=False))
+        atomic_json(self.app.demos.folder/'worker-ready.json', dict(schema_version=1, kind='ready',
+            job_id=result['job_id'], generation=self.app.demos.worker_generation,
+            pid=identity['pid'], start_ticks=identity['start_ticks'], ready_monotonic_ns=time.monotonic_ns()))
+        return result
 
     def launch(self, *, run_id='owned-run', pid=876543):
         directory = self.root/'runtime/validation/runs'/run_id
@@ -260,7 +266,7 @@ class DemoApplicationTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.app.demos.request_stop('f'*32)
         self.process.send_signal.assert_not_called()
-        with patch(JOBS+'.threading.Thread') as thread:
+        with patch(JOBS+'.threading.Thread') as thread, patch(JOBS+'.matching_process', return_value=True):
             result = self.app.demos.request_stop(reply['job_id'])
         thread.return_value.start.assert_called_once()
         self.assertEqual(result['status'], 'cancel_requested')
@@ -599,7 +605,9 @@ class DemoWorkerTests(unittest.TestCase):
         atomic_json(job.console_directory/'frame.json',dict(job_id=job.data['job_id'],run_id=report.run_id,
             model_sha256=file_sha256(model),sequence=1,rendered_monotonic=time.monotonic(),source_state_age_sec=.01))
         node = NS(until=lambda predicate,*args:self.assertTrue(predicate()))
-        job._frame_barrier(node)
+        with patch.object(job, '_startup_barrier') as barrier:
+            job._frame_barrier(node)
+        barrier.assert_called_once_with(node)
         self.assertEqual(job.data['active_launch']['model_sha256'],file_sha256(model))
         self.assertEqual(job.data['stage'],'frame_ready')
 

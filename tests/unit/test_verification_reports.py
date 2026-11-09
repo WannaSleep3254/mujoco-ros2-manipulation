@@ -58,7 +58,7 @@ class LifecycleTests(unittest.TestCase):
         self.process = Mock(pid=12345678, returncode=0)
         self.process.poll.return_value = None
 
-    def run_case(self, *, preflight=None, spawn=None, finalize=None, expected_crash=None, stop=None):
+    def run_case(self, *, preflight=None, spawn=None, finalize=None, expected_crash=None, stop=None, on_launch=None, before_cleanup=None):
         with patch('mujoco_ros2_manipulation.verification.runner.load_profile', return_value=self.profile), \
              patch('mujoco_ros2_manipulation.verification.runner.check_generated_model', side_effect=preflight), \
              patch('mujoco_ros2_manipulation.verification.runner.subprocess.Popen', side_effect=spawn, return_value=self.process), \
@@ -67,7 +67,8 @@ class LifecycleTests(unittest.TestCase):
              patch.dict(os.environ), patch('builtins.print'):
             code = run_verification(self.args, self.root, self.ros,
                                     lambda profile, progress: self.node,
-                                    SimpleNamespace(Request=lambda: object()), finalize=finalize, expected_crash=expected_crash)
+                                    SimpleNamespace(Request=lambda: object()), finalize=finalize, expected_crash=expected_crash,
+                                    on_launch=on_launch, before_cleanup=before_cleanup)
         mode = ('gui' if self.args.gui else 'headless') + ('_window' if self.args.stop_mode == 'window' else '')
         scene = getattr(self.args, 'scene', 'default')
         report_id = 'fr5' if scene == 'default' else f'fr5_{scene}'
@@ -167,6 +168,52 @@ class LifecycleTests(unittest.TestCase):
         code, report = self.run_case()
         self.assertEqual(code, 130)
         self.assertEqual(report['status'], 'interrupted')
+
+    def test_optional_startup_drain_precedes_context_cleanup_even_without_a_node(self):
+        for before_init in (True, False):
+            order = []
+            self.node.reset_mock()
+            self.ros.reset_mock()
+            self.ros.ok.return_value = not before_init
+            self.node.run.side_effect = KeyboardInterrupt('original cancellation')
+            self.node.destroy_node.side_effect = lambda:order.append('destroy')
+            self.ros.shutdown.side_effect = lambda:order.append('shutdown')
+            def launched(*args):
+                if before_init:
+                    raise KeyboardInterrupt('original cancellation')
+            def drain(report, profile, args, process, node, error):
+                self.assertIs(process, self.process)
+                self.assertIs(node, None if before_init else self.node)
+                self.assertIsInstance(error, KeyboardInterrupt)
+                self.node.destroy_node.assert_not_called()
+                self.ros.shutdown.assert_not_called()
+                order.append('drain')
+            code, report = self.run_case(on_launch=launched, before_cleanup=drain,
+                                         stop=lambda _:order.append('stop') or False)
+            self.assertEqual(code, 130)
+            self.assertTrue(report['shutdown_clean'])
+            self.assertEqual(order, ['drain', 'stop'] if before_init else ['drain', 'destroy', 'shutdown', 'stop'])
+            self.assertEqual(report['cleanup_diagnostics']['steps'][0]['name'], 'startup_drain')
+
+    def test_startup_drain_failure_preserves_primary_cancel_and_still_stops_launch(self):
+        self.node.run.side_effect = KeyboardInterrupt('original cancellation')
+        drain = Mock(side_effect=RuntimeError('startup helper deadline'))
+        stop = Mock(return_value=False)
+        code, report = self.run_case(before_cleanup=drain, stop=stop)
+        self.assertEqual(code, 130)
+        self.assertEqual(report['error']['message'], 'original cancellation')
+        self.assertFalse(report['shutdown_clean'])
+        self.assertIn('startup helper deadline', report['cleanup_errors'][0])
+        self.node.destroy_node.assert_called_once()
+        stop.assert_called_once_with(self.process)
+
+    def test_real_failure_does_not_enter_cancellation_only_cleanup_hook(self):
+        self.node.run.side_effect = RuntimeError('original decoder failure')
+        drain = Mock()
+        code, report = self.run_case(before_cleanup=drain)
+        drain.assert_not_called()
+        self.assertEqual(code, 1)
+        self.assertEqual(report['error']['message'], 'original decoder failure')
 
     def test_cleanup_does_not_hide_primary_failure(self):
         self.node.run.side_effect = RuntimeError('original failure')
