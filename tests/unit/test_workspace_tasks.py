@@ -135,6 +135,58 @@ class TaskTests(unittest.TestCase):
         value.update(changes)
         return self.tasks.cancel_grasp(value)
 
+    def test_grasp_capture_refresh_runs_outside_control_lock_and_rechecks_exact_owner(self):
+        self.select('grasp')
+        owner = dict(job_id='1'*32, generation=1)
+        self.native.lock = threading.RLock()
+        self.native.current = NS(capture_owner=deepcopy(owner), finished=False)
+        def source():
+            self.assertFalse(self.app.lock._is_owned())
+            self.assertFalse(self.native.lock._is_owned())
+            return dict(owner=deepcopy(owner))
+        self.native.capture_source = source
+        with self.tasks.capture_request([self.tasks.selection_id]):
+            observed = self.tasks.capture_context()
+            self.assertEqual(observed['owner'], owner)
+            admission = dict(selection_id=self.tasks.selection_id, native_owner=owner)
+            with self.tasks.capture_admission(admission):
+                self.assertTrue(self.app.lock._is_owned())
+                self.assertTrue(self.native.lock._is_owned())
+            self.native.current.capture_owner['generation'] = 2
+            with self.assertRaises(ValueError):
+                self.tasks.capture_context()
+            with self.assertRaises(ValueError), self.tasks.capture_admission(admission):
+                pass
+
+    def test_armed_capture_blocks_new_owner_and_task_change_but_allows_native_cancel(self):
+        self.select('grasp')
+        self.start()
+        self.app.sync_recordings.current['status'] = 'armed'
+        with self.assertRaisesRegex(RuntimeError, '기록'):
+            self.tasks.start_grasp(dict(selection_id=self.tasks.selection_id,
+                request_id='3'*32, model_sha256=MODEL))
+        self.cancel()
+        self.assertTrue(self.native.job['cancel_requested'])
+        self.native.job.update(finished=True, owner_cleanup_clean=True)
+        with self.assertRaisesRegex(RuntimeError, '기록'):
+            self.select('motion')
+        self.app.sync_recordings.current['status'] = 'completed'
+        self.assertEqual(self.select('motion')['selected'], 'motion')
+
+    def test_selected_grasp_image_uses_native_job_id_and_rejects_stale_snapshot_owner(self):
+        self.select('grasp')
+        self.start()
+        metadata = dict(owner_token='a'*64, history=[{'sequence':1}], owner=dict(
+            selection_id=self.tasks.selection_id, job_id='1'*32, job_generation=1))
+        with patch.object(self.app.sync_recordings, 'image_source', return_value=(None, metadata)):
+            observed = self.app.snapshot()['image_source']
+            self.assertEqual(observed['owner_token'], 'a'*64)
+            self.assertNotIn('history', observed)
+        stale = deepcopy(metadata)
+        stale['owner']['job_id'] = '3'*32
+        with patch.object(self.app.sync_recordings, 'image_source', return_value=(None, stale)):
+            self.assertIsNone(self.app.snapshot()['image_source'])
+
     def test_selection_never_starts_and_invalidates_normal_round_trip(self):
         before = self.app.views.host.identifier
         old = self.tasks.selection_id

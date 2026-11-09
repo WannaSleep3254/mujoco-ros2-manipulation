@@ -24,7 +24,7 @@ function decoded(name='image'){return {element:{name},destroyed:0,destroy(){this
 async function drain(){for(let i=0;i<30;i++)await Promise.resolve();}
 function harness(){
  const elements=new Map(),requests=[],images=[],timers=new Map();let timerID=0,hidden=false;
- const element=key=>{if(!elements.has(key))elements.set(key,{textContent:'',value:'',hidden:false,disabled:false,dataset:{},children:[],replaceChildren(...values){this.children=values;}});return elements.get(key);};
+ const element=key=>{if(!elements.has(key))elements.set(key,{textContent:'',value:'',hidden:false,disabled:false,dataset:{},children:[],append(...values){this.children.push(...values);},replaceChildren(...values){this.children=values;}});return elements.get(key);};
  const viewer={binding:null,hasPose:false,sequence:-1,applied:[],loads:[],destroyed:false,loadGate:null,
   setExpectedBinding(binding){this.binding=binding;this.hasPose=false;this.sequence=-1;},
   async loadManifest(url,options){this.loads.push({url,options});if(this.loadGate)await this.loadGate.promise;},
@@ -32,7 +32,7 @@ function harness(){
   cancelPoseRead(){},destroy(){this.destroyed=true;}};
  const fetcher=(url,options={})=>{const pending=deferred();requests.push({url,options,...pending});return pending.promise;};
  const imageLoader=(url,descriptor,options)=>{const pending=deferred();images.push({url,descriptor,options,...pending});return pending.promise;};
- const player=new api.SynchronizedPlayer({id,viewer,element,fetcher,imageLoader,hidden:()=>hidden,
+ const player=new api.SynchronizedPlayer({id,viewer,element,fetcher,imageLoader,createElement:eventElement,hidden:()=>hidden,
   timers:{set:(fn,delay)=>{const key=++timerID;timers.set(key,{fn,delay});return key;},clear:key=>timers.delete(key)}});
  return {player,viewer,element,requests,images,timers,setHidden:value=>hidden=value,
   get(url=undefined){return requests.filter(item=>!item.options.method&&(!url||item.url===url));},
@@ -269,4 +269,219 @@ test('polling during timeline scrubbing preserves the chosen thumb until seek is
  assert.equal(JSON.parse(h.post().at(-1).options.body).time_sec,3);
  h.post().at(-1).resolve(response(view({binding:'c',time:3,sequence:3})));await action;
  assert.equal(h.player.scrubbing,false);assert.equal(h.element('sync-seek').value,'3');
+});
+
+
+function eventElement(tag){
+ return {tag,children:[],textContent:'',dataset:{},attributes:{},events:{},disabled:false,
+  append(...items){this.children.push(...items);},setAttribute(name,value){this.attributes[name]=String(value);},
+  addEventListener(name,handler){this.events[name]=handler;}};
+}
+const eventText=node=>[node.textContent,...(node.children||[]).map(eventText)].join(' ');
+function taskEvents(){
+ return [
+  {event_id:'event-1',event_sequence:1,emitted_monotonic_ns:'9007199254740993123',parent_received_monotonic_ns:'9007199254740993223',
+   stage:'approach',status:'running',details:{original:'first'},time_sec:0,media_seek_reason:null,
+   native_association:{available:true,reason:'fresh_native',stamp_ns:'1000000000',sequence:1,capture_monotonic_ns:'9007199254740993023'}},
+  {event_id:'event-2',event_sequence:2,emitted_monotonic_ns:'9007199254740993123',parent_received_monotonic_ns:'9007199254740993224',
+   stage:'transport',status:'running',details:{},time_sec:1,media_seek_reason:null,
+   native_association:{available:true,reason:'fresh_native',stamp_ns:'2000000000',sequence:2,capture_monotonic_ns:'9007199254740993123'}},
+  {event_id:'event-3',event_sequence:3,emitted_monotonic_ns:'9007199254740993124',parent_received_monotonic_ns:'9007199254740993225',
+   stage:'cleanup',status:'cancelled',details:{original:'held'},time_sec:null,media_seek_reason:'native_held',
+   native_association:{available:false,reason:'native_held',stamp_ns:null,sequence:null,capture_monotonic_ns:null}}
+ ];
+}
+function graspView({events=taskEvents(),selected=['event-1'],unavailable=false,...options}={}){
+ const value={...view(options),recording_version:2,recording_kind:'synchronized-grasp-recording-v2',media_state:'ready',media_reason:null,
+  events,task_status:'cancelled',acquisition_identity:{job_id:'c'.repeat(32),job_generation:1}};
+ value.selection.event_ids=selected;
+ if(unavailable){
+  value.media_state='unavailable';value.media_reason='before_native';value.origin_ns=null;value.duration_sec=null;value.position_sec=null;value.playing=false;
+  value.selection={cursor_ns:null,time_sec:null,pose_status:'missing',image_status:'missing',pose:null,image:null,event_ids:[],
+   pose_time_sec:null,image_time_sec:null,pose_delta_sec:null,image_delta_sec:null};
+  value.events=events.map(event=>({...event,time_sec:null,media_seek_reason:'before_native',
+   native_association:{available:false,reason:'before_native',stamp_ns:null,sequence:null,capture_monotonic_ns:null}}));
+ }
+ return value;
+}
+function currentEvents(h){return [...h.player.eventRows].filter(([,entry])=>entry.row.dataset.current==='true').map(([id])=>id);}
+
+test('v2 event highlights commit with decoded media, preserving equal timestamps and original ns',async()=>{
+ const h=harness(),events=taskEvents();events[1].time_sec=0;events[1].native_association.stamp_ns='1000000000';
+ const value=graspView({events,selected:['event-1','event-2']}),update=h.player.update();
+ h.get()[0].resolve(response({view:value,token:'token'}));await drain();
+ assert.equal(h.element('sync-events-panel').hidden,false);assert.equal(h.element('sync-events').children.length,2);
+ assert.equal(h.element('sync-untimed-events').children.length,1);assert.deepEqual(currentEvents(h),[]);
+ assert.match(eventText(h.element('sync-events').children[0]),/9007199254740993123 ns/);
+ assert.equal(h.viewer.applied.length,0);
+ h.images[0].resolve(decoded());await update;
+ assert.deepEqual(currentEvents(h),['event-1','event-2']);assert.equal(h.viewer.applied.length,1);
+ assert.equal(h.player.eventRows.get('event-3').button,null);assert.match(eventText(h.player.eventRows.get('event-3').row),/3D 시계 정지/);
+});
+
+test('v1 playback hides the event track and keeps its original two-track presentation',async()=>{
+ const h=harness();await state(h);assert.equal(h.element('sync-events-panel').hidden,true);
+ assert.equal(h.player.eventRows.size,0);assert.equal(h.element('sync-status').dataset.state,'ready');
+});
+
+test('event-only diagnostics never load a manifest, apply a pose, fetch media or enable playback',async()=>{
+ const h=harness();await state(h,graspView({unavailable:true}));
+ assert.equal(h.viewer.loads.length,0);assert.equal(h.viewer.applied.length,0);assert.equal(h.images.length,0);
+ for(const key of ['sync-play','sync-pause','sync-restart','sync-previous','sync-next','sync-seek','sync-speed'])assert.equal(h.element(key).disabled,true,key);
+ assert.equal(h.element('sync-seek').max,'0');assert.match(h.element('sync-time').textContent,/기록 없음/);
+ assert.equal(h.element('sync-untimed-events').children.length,3);assert.equal(h.element('sync-untimed-panel').open,true);assert.deepEqual(currentEvents(h),[]);
+ for(const action of ['play','pause','seek','speed','previous','next'])await h.player.control(action,0);
+ assert.equal(h.post().length,0);assert.equal(h.player.view.selection.cursor_ns,null);
+ assert.match(h.element('sync-identity').textContent,/원래 작업 상태 취소/);
+});
+
+test('seek and late old-binding media cannot restore an earlier event highlight',async()=>{
+ const h=harness();await state(h,graspView());assert.deepEqual(currentEvents(h),['event-1']);
+ const update=h.player.update();h.get().at(-1).resolve(response({view:graspView({time:1,sequence:2,selected:['event-2']}),token:'token'}));await drain();
+ const old=decoded(),seek=h.player.control('seek',2);assert.deepEqual(currentEvents(h),[]);
+ h.post()[0].resolve(response(graspView({binding:'c',time:2,sequence:3,selected:['event-2']})));await seek;
+ h.images.at(-1).resolve(old);await update;assert.equal(old.destroyed,1);assert.deepEqual(currentEvents(h),[]);
+ await state(h,graspView({binding:'c',time:2,sequence:3,selected:['event-2']}));assert.deepEqual(currentEvents(h),['event-2']);
+});
+
+test('hidden tabs and decode errors clear current events until a matching visible pair commits',async()=>{
+ const h=harness();await state(h,graspView());h.setHidden(true);h.player.visibility();assert.deepEqual(currentEvents(h),[]);
+ await state(h,graspView({time:1,sequence:2,selected:['event-2'],playing:true}));assert.deepEqual(currentEvents(h),[]);
+ h.setHidden(false);h.player.visibility();const update=h.player.update();
+ h.get().at(-1).resolve(response({view:graspView({time:1,sequence:2,selected:['event-2']}),token:'token'}));await drain();
+ h.images.at(-1).reject(Error('v2 decode failure'));await update;assert.deepEqual(currentEvents(h),[]);
+ assert.equal(h.element('sync-status').dataset.state,'error');
+ await state(h,graspView({time:1,sequence:2,selected:['event-2']}));assert.deepEqual(currentEvents(h),['event-2']);
+ h.player.destroy();assert.equal(h.player.eventRows.size,0);assert.equal(h.element('sync-events-panel').hidden,true);
+});
+
+test('event clicks seek only by server relative time and never convert source epochs or send robot commands',async()=>{
+ const h=harness(),value=graspView();value.events[1].time_sec=1.234;value.events[1].native_association.stamp_ns='9007199254740993123';
+ await state(h,value);const button=h.player.eventRows.get('event-2').button;button.events.click();
+ assert.deepEqual(JSON.parse(h.post()[0].options.body),{action:'seek',time_sec:1.234});
+ assert.equal(h.post()[0].url,'/api/sync-recordings/'+id+'/control');
+ h.post()[0].resolve(response(graspView({events:value.events,binding:'c',time:1.234,selected:['event-2']})));await drain();
+ assert.equal(h.requests.some(request=>/^\/api\/(?:command|task|grasp|cancel|approve)/.test(request.url)),false);
+ h.player.destroy();const count=h.post().length;button.events.click();assert.equal(h.post().length,count);
+});
+
+test('mutated immutable event catalogs and missing selected event identities fail closed',async()=>{
+ for(const mutate of [value=>{value.events[0].stage='changed';},value=>{value.selection.event_ids=['unknown'];}]){
+  const h=harness();await state(h,graspView());const bad=graspView();mutate(bad);
+  const update=h.player.update();h.get().at(-1).resolve(response({view:bad,token:'token'}));await update;
+  assert.equal(h.element('sync-status').dataset.state,'error');assert.deepEqual(currentEvents(h),[]);assert.equal(h.post().length,0);
+ }
+});
+
+const selection='c'.repeat(32),jobA='d'.repeat(32),jobB='e'.repeat(32),ownerA='a'.repeat(64),ownerB='b'.repeat(64);
+const captureOwner=(job=jobA,generation=1)=>({selection_id:selection,job_id:job,job_generation:generation,binding_id:'f'.repeat(64),source_registration_epoch:'epoch'});
+const captureTask=(job=jobA,generation=1)=>({detail:{task:{selected:'grasp',selection_id:selection,grasp:{job:job===null?null:{job_id:job,generation}}}}});
+const graspCapture=(extra={})=>({status:'idle',id:null,pose_count:0,image_count:0,event_count:0,can_arm:true,can_stop:false,
+ expected_owner_token:ownerA,expected_owner:captureOwner(),owner_token:null,owner:null,awaiting_sources:true,media_ready:false,...extra});
+async function readyCapture(h,capture=graspCapture()){
+ h.gets()[0].resolve(response(catalog()));await drain();h.events['console-observation'](captureTask());
+ h.gets().at(-1).resolve(response(catalog(capture)));await drain();
+}
+
+test('v2 capture echoes the exact expected owner and stops an armed capture with its retained token',async()=>{
+ const h=captureHarness();await readyCapture(h);assert.equal(h.get('sync-capture-start').disabled,false);
+ h.click('sync-capture-start');assert.deepEqual(JSON.parse(h.posts()[0].options.body),{expected_owner_token:ownerA});
+ assert.equal(h.posts()[0].options.headers['X-Workspace-Selection'],selection);
+ h.posts()[0].resolve(response({status:'armed',id,owner_token:ownerA}));await drain();
+ const armed=graspCapture({status:'armed',id,can_arm:false,can_stop:true,owner_token:ownerA,owner:captureOwner(),expected_owner_token:ownerB,event_count:3});
+ h.gets().at(-1).resolve(response(catalog(armed)));await drain();
+ assert.equal(h.get('sync-capture-stop').disabled,false);assert.match(h.get('sync-capture-state').textContent,/영상과 3D 관측을 기다리고/);
+ h.events['console-observation'](captureTask(null));h.gets().at(-1).resolve(response(catalog(armed)));await drain();
+ assert.equal(h.get('sync-capture-stop').disabled,false,'A disappeared source must not remove retained stop ownership');
+ h.click('sync-capture-stop');assert.deepEqual(JSON.parse(h.posts().at(-1).options.body),{id,expected_owner_token:ownerA});
+ h.posts().at(-1).resolve(response({status:'saving'}));await drain();assert.equal(h.posts().length,2);
+});
+
+test('v2 availability for a different current job cannot enable recording under an older observation',async()=>{
+ const h=captureHarness();await readyCapture(h,graspCapture({expected_owner:captureOwner(jobB,2),expected_owner_token:ownerB}));
+ assert.equal(h.get('sync-capture-start').disabled,true);h.click('sync-capture-start');assert.equal(h.posts().length,0);
+ assert.match(h.get('sync-capture-state').textContent,/화면의 작업과 기록 공급원/);
+ h.events['console-observation'](captureTask(jobB,2));h.gets().at(-1).resolve(response(catalog(graspCapture({expected_owner:captureOwner(jobB,2),expected_owner_token:ownerB}))));await drain();
+ assert.equal(h.get('sync-capture-start').disabled,false);h.click('sync-capture-start');assert.deepEqual(JSON.parse(h.posts()[0].options.body),{expected_owner_token:ownerB});
+});
+
+test('a delayed old-job availability cannot restore an owner token after the observed job changes',async()=>{
+ const h=captureHarness();await readyCapture(h);h.advance();h.events['console-observation'](captureTask());const old=h.gets().at(-1);
+ h.events['console-observation'](captureTask(jobB,2));assert.equal(h.get('sync-capture-start').disabled,true);
+ old.resolve(response(catalog(graspCapture())));await drain();assert.equal(h.get('sync-capture-start').disabled,true);
+ const fresh=h.gets().at(-1);assert.notEqual(fresh,old);fresh.resolve(response(catalog(graspCapture({expected_owner:captureOwner(jobB,2),expected_owner_token:ownerB}))));await drain();
+ assert.equal(h.get('sync-capture-start').disabled,false);h.click('sync-capture-start');assert.deepEqual(JSON.parse(h.posts()[0].options.body),{expected_owner_token:ownerB});
+});
+
+test('an ambiguous v2 start response is read back without automatically resending the request',async()=>{
+ const h=captureHarness();await readyCapture(h);h.click('sync-capture-start');
+ h.posts()[0].reject(Object.assign(Error('lost response'),{name:'AbortError'}));await drain();
+ assert.equal(h.posts().length,1);assert.match(h.get('sync-capture-error').textContent,/응답이 지연/);
+ h.gets().at(-1).resolve(response(catalog(graspCapture({status:'armed',id,can_arm:false,can_stop:true,owner_token:ownerA,owner:captureOwner()}))));await drain();
+ assert.equal(h.posts().length,1);assert.equal(h.get('sync-capture-stop').disabled,false);
+});
+
+
+test('a catalog reply received after observation loss cannot restore v2 recording controls',async()=>{
+ const h=captureHarness();await readyCapture(h);h.advance();h.events['console-observation'](captureTask());const pending=h.gets().at(-1);
+ h.events['console-observation-lost']();pending.resolve(response(catalog(graspCapture())));await drain();
+ assert.equal(h.get('sync-capture-start').disabled,true);assert.equal(h.get('sync-capture-stop').disabled,true);
+ h.click('sync-capture-start');assert.equal(h.posts().length,0);
+ h.events['console-observation'](captureTask());const fresh=h.gets().at(-1);assert.notEqual(fresh,pending);
+ fresh.resolve(response(catalog(graspCapture())));await drain();assert.equal(h.get('sync-capture-start').disabled,false);
+});
+
+
+test('returning to motion uses legacy capture requests after a completed v2 owner is retained',async()=>{
+ const h=captureHarness();await readyCapture(h);
+ h.events['console-observation']({detail:{task:{selected:'motion',selection_id:'f'.repeat(32),grasp:{job:{job_id:jobA,generation:1}}}}});
+ const completed=graspCapture({status:'completed',id,can_start:true,can_arm:false,expected_owner_token:null,expected_owner:null,
+  owner_token:ownerA,owner:captureOwner(),can_stop:false});
+ h.gets().at(-1).resolve(response(catalog(completed)));await drain();assert.equal(h.get('sync-capture-start').disabled,false);
+ h.click('sync-capture-start');assert.deepEqual(JSON.parse(h.posts()[0].options.body),{});
+ assert.equal(h.posts()[0].options.headers['X-Workspace-Selection'],'f'.repeat(32));
+});
+
+
+test('native-associated events outside the retained media remain visible without a seek action',async()=>{
+ const h=harness(),events=taskEvents();events[1].time_sec=null;events[1].media_seek_reason='outside_media';
+ events[1].native_association.stamp_ns='9007199254740993123';
+ await state(h,graspView({events}));const row=h.player.eventRows.get('event-2');
+ assert.equal(row.button,null);assert.match(eventText(row.row),/9007199254740993123 ns/);
+ assert.match(eventText(row.row),/보존한 재생 구간 밖/);assert.equal(h.element('sync-untimed-events').children.length,2);
+ assert.equal(h.post().length,0);
+});
+
+test('an armed grasp without its retained stop token never falls back to a legacy stop request',async()=>{
+ const h=captureHarness();await readyCapture(h,graspCapture({status:'armed',id,can_stop:true,owner_token:null}));
+ assert.equal(h.get('sync-capture-stop').disabled,true);h.click('sync-capture-stop');assert.equal(h.posts().length,0);
+});
+
+
+test('a late capture mutation error cannot replace feedback for another observed job',async()=>{
+ const h=captureHarness();await readyCapture(h);h.click('sync-capture-start');
+ h.events['console-observation'](captureTask(jobB,2));
+ h.posts()[0].resolve(response({error:'old owner rejected'},false));await drain();
+ assert.equal(h.get('sync-capture-error').textContent,'');assert.equal(h.posts().length,1);
+ h.gets().at(-1).resolve(response(catalog(graspCapture({expected_owner_token:ownerB,expected_owner:captureOwner(jobB,2)}))));await drain();
+ assert.equal(h.get('sync-capture-start').disabled,false);assert.equal(h.posts().length,1);
+});
+
+
+test('known v2 completion and failure reasons use clear Korean recording feedback',async()=>{
+ for(const [reason,label] of [['task_finished','작업 종료에 따라 기록 종료'],['recording_source_fault','기록 공급원 오류'],
+  ['source_journal_limit','작업 이벤트·자세 보존 상한 도달'],['insufficient_paired_native_and_image_observations','영상과 3D 표본을 함께 확보하지 못했습니다']]){
+  const h=captureHarness();h.gets()[0].resolve(response(catalog({status:'completed',id,reason,task_status:'cancelled'})));await drain();
+  assert.ok(h.get('sync-capture-state').textContent.includes(label));assert.match(h.get('sync-capture-state').textContent,/원래 작업 취소/);
+ }
+});
+
+
+test('advanced v2 provenance distinguishes retained queue exclusions and source sequence gaps',async()=>{
+ const h=harness(),value=graspView();value.pose_sample_semantics='parent_accepted_latest_ipc';
+ value.observation_counters={poses_dropped:2,events_dropped:3,poses_source_gaps:4,image_transport_gaps:5,image_counters:{received:20,encoded:10}};
+ await state(h,value);const info=h.element('sync-identity').textContent;
+ assert.match(info,/부모가 수용한 최신 IPC 관측/);assert.match(info,/부모 자세 큐 제외 2개/);
+ assert.match(info,/원천 자세 순번 건너뜀 4개/);assert.match(info,/이벤트 큐 제외 3개/);assert.match(info,/영상 전송 누락 5개/);
+ assert.ok(info.includes('"received":20'));assert.equal(h.post().length,0);
 });

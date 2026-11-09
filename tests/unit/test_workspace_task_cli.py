@@ -39,3 +39,17 @@ class WorkspaceTaskCliTests(unittest.TestCase):
     def test_recording_registration_is_bounded_before_loading(self):
         with self.assertRaises(ValueError):
             validate_workspace_options(self.options(saved_recording=[Path('recording')]*9))
+
+
+class GraspSensorCliTests(unittest.TestCase):
+    options = WorkspaceTaskCliTests.options
+    def test_grasp_sensor_is_fixed_startup_opt_in_and_clock_is_explicit(self):
+        valid = dict(ros_grasp_environment=Path('target'), ros_grasp_manifest_sha256='a'*64,
+                     ros_grasp_domain=219, ros_grasp_image_topic='/diagnostic/image',
+                     ros_grasp_image_clock_domain='ros_simulation')
+        validate_workspace_options(self.options(**valid))
+        for changed in (dict(ros_grasp_environment=None, ros_grasp_manifest_sha256=None, ros_grasp_domain=None),
+                        dict(ros_grasp_image_topic=None), dict(ros_grasp_image_topic='https://external'),
+                        dict(ros_grasp_image_topic='/camera//image'), dict(ros_grasp_image_clock_domain='inferred')):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                validate_workspace_options(self.options(**(valid|changed)))

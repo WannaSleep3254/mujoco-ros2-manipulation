@@ -1,25 +1,96 @@
 import {LocalSceneView} from './viewer.js';
 
-const READ_TIMEOUT_MS=4000,MAX_JPEG_BYTES=512*1024;
+const READ_TIMEOUT_MS=4000,MAX_JPEG_BYTES=512*1024,MAX_TASK_EVENTS=128;
 const CONTROL_IDS=['sync-play','sync-pause','sync-restart','sync-previous','sync-next','sync-seek','sync-speed'];
 const finite=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0;
 const stamp=value=>finite(value)?value.toFixed(3)+' s':'—';
+const count=value=>Number.isSafeInteger(value)&&value>=0?String(value):'미확인';
+const ns=value=>typeof value==='string'&&/^\d{1,20}$/.test(value);
+const eventStage=value=>({starting:'시작 준비',approach:'접근',grasp:'집기',transport:'운반',release:'놓기',
+  retreat:'후퇴',running:'진행 중',succeeded:'성공',completed:'완료',cancelled:'취소',failed:'실패',cleanup:'종료 처리'}[value]||value||'작업');
+const associationReason=value=>({before_native:'첫 3D 관측 전',native_unavailable:'3D 관측 없음',
+  native_stale:'3D 관측 지연',native_held:'3D 시계 정지',after_exit:'3D 공급원 종료 후',
+  outside_media:'보존한 재생 구간 밖',outside_retained_media:'보존한 재생 구간 밖',pose_not_retained:'해당 3D 표본이 보존되지 않음'}[value]||value||'연결 시각 없음');
 
 /** A descriptor selects both tracks once. No later "latest" lookup may replace either. */
 export class SynchronizedPlayer {
   constructor({id,viewer,element,fetcher=(...args)=>fetch(...args),imageLoader=loadImage,hidden=()=>document.hidden,
-               timers={set:(...args)=>setTimeout(...args),clear:id=>clearTimeout(id)}}){
+               timers={set:(...args)=>setTimeout(...args),clear:id=>clearTimeout(id)},createElement=tag=>document.createElement(tag)}){
     this.id=id;this.prefix='/api/sync-recordings/'+id;this.viewer=viewer;this.element=element;
-    this.fetcher=fetcher;this.imageLoader=imageLoader;this.hidden=hidden;this.timers=timers;
+    this.fetcher=fetcher;this.imageLoader=imageLoader;this.hidden=hidden;this.timers=timers;this.createElement=createElement;
     this.token=null;this.view=null;this.binding=null;this.loaded=null;this.revision=0;
     this.inflight=false;this.busy=false;this.closed=false;this.timer=null;this.pending=false;
     this.readController=null;this.mediaController=null;this.image=null;this.displayKey=null;this.controlError=null;
-    this.scrubbing=false;
+    this.scrubbing=false;this.eventRecord=null;this.eventJSON=null;this.eventRows=new Map();
     this.enable();
   }
   node(id){return this.element(id);}
   error(message=''){this.node('sync-error').textContent=message;this.node('sync-error').hidden=!message;}
-  enable(){for(const id of CONTROL_IDS)this.node(id).disabled=this.closed||this.busy||!this.token;}
+  mediaReady(){return this.view?.media_state!=='unavailable';}
+  enable(){
+    const disabled=this.closed||this.busy||!this.token||!this.mediaReady();
+    for(const id of CONTROL_IDS)this.node(id).disabled=disabled;
+    for(const {button} of this.eventRows.values())if(button)button.disabled=disabled;
+  }
+  resetEvents(){
+    this.eventRecord=null;this.eventJSON=null;this.eventRows.clear();
+    this.node('sync-events').replaceChildren();this.node('sync-untimed-events').replaceChildren();
+    this.node('sync-events-panel').hidden=true;
+  }
+  clearEventSelection(message='선택 시각을 확인하고 있습니다.'){
+    for(const {row} of this.eventRows.values()){row.dataset.current='false';row.setAttribute('aria-current','false');}
+    this.node('sync-events-state').textContent=message;
+  }
+  acceptEvents(view){
+    if(view.recording_version!==2){if(this.eventRecord!==null)this.resetEvents();this.node('sync-events-panel').hidden=true;return;}
+    if(!Array.isArray(view.events)||view.events.length>MAX_TASK_EVENTS||!/^[0-9a-f]{64}$/.test(view.recording_sha256||''))throw Error('작업 이벤트의 기록 식별자를 확인할 수 없습니다.');
+    const serialized=JSON.stringify(view.events);
+    if(this.eventRecord===view.recording_sha256){
+      if(this.eventJSON!==serialized)throw Error('보존한 작업 이벤트가 기록 안에서 바뀌었습니다.');
+    }else{
+      this.resetEvents();let previous=0;const ids=new Set();
+      for(const event of view.events){
+        if(!event||typeof event.event_id!=='string'||!event.event_id||event.event_id.length>160||ids.has(event.event_id)||
+           !Number.isSafeInteger(event.event_sequence)||event.event_sequence<=previous||!ns(event.emitted_monotonic_ns)||
+           typeof event.native_association?.available!=='boolean'||
+           (event.time_sec!==null&&(!finite(event.time_sec)||!finite(view.duration_sec)||event.time_sec>view.duration_sec))||
+           (event.native_association.available?!ns(event.native_association.stamp_ns):event.time_sec!==null))throw Error('작업 이벤트의 순서나 연결 시각을 확인할 수 없습니다.');
+        ids.add(event.event_id);previous=event.event_sequence;
+      }
+      this.eventRecord=view.recording_sha256;this.eventJSON=serialized;
+      const node=(tag,text,parent)=>{const value=this.createElement(tag);value.textContent=text;if(parent)parent.append(value);return value;};
+      for(const event of view.events){
+        const timed=finite(event.time_sec),list=this.node(timed?'sync-events':'sync-untimed-events');
+        const row=node('li','',list);row.dataset.eventId=event.event_id;row.dataset.current='false';row.setAttribute('aria-current','false');
+        const label='#'+event.event_sequence+' · '+eventStage(event.stage)+(event.status?' · '+eventStage(event.status):'');
+        let button=null;
+        if(timed){
+          button=node('button',stamp(event.time_sec)+' · '+label,row);button.type='button';
+          button.addEventListener('click',()=>{if(!this.closed&&!this.hidden()&&this.eventRecord===view.recording_sha256)void this.control('seek',event.time_sec);});
+        }else node('strong',label,row);
+        const association=event.native_association;
+        const native=association.available?'3D 표본 #'+association.sequence+' · 원천 '+association.stamp_ns+' ns':
+          '3D 시각 연결 없음 · '+associationReason(association.reason);
+        node('small','이벤트 발생 단조 시계 '+event.emitted_monotonic_ns+' ns\n수신 단조 시계 '+event.parent_received_monotonic_ns+' ns\n'+native,row).className='sync-event-source';
+        if(!timed&&association.available)node('small',associationReason(event.media_seek_reason),row).className='sync-event-source';
+        if(event.details&&Object.keys(event.details).length)node('p',JSON.stringify(event.details),row).className='sync-event-detail';
+        this.eventRows.set(event.event_id,{row,button});
+      }
+      this.node('sync-untimed-panel').hidden=!view.events.some(event=>event.time_sec===null);
+      this.node('sync-untimed-panel').open=view.media_state==='unavailable';
+      this.clearEventSelection();
+    }
+    if(!Array.isArray(view.selection.event_ids)||view.selection.event_ids.some(id=>!this.eventRows.get(id)?.button))throw Error('선택 시각의 작업 이벤트를 확인할 수 없습니다.');
+    this.node('sync-events-panel').hidden=false;
+  }
+  commitEvents(view){
+    if(view.recording_version!==2)return;
+    const selected=new Set(view.selection.event_ids);
+    for(const [id,{row}] of this.eventRows){const current=selected.has(id);row.dataset.current=String(current);row.setAttribute('aria-current',String(current));}
+    this.node('sync-events-state').textContent=this.mediaReady()?
+      '표시한 영상·3D 시각의 연결 이벤트 '+selected.size+'개':
+      '작업 이벤트 '+view.events.length+'개 · 재생 시각 연결 없음';
+  }
   schedule(delay=this.hidden()?1000:this.view?.playing?50:1000){
     if(this.closed)return;
     if(this.timer!==null){this.timers.clear(this.timer);this.timer=null;}
@@ -29,26 +100,43 @@ export class SynchronizedPlayer {
   clearDisplays(reason='선택 시각의 기록을 준비하고 있습니다.'){
     this.image?.destroy();this.image=null;this.node('sync-image-frame').replaceChildren();
     for(const kind of ['pose','image']){this.node('sync-'+kind+'-empty').hidden=false;this.node('sync-'+kind+'-empty').textContent=reason;}
-    this.node('sync-status').textContent=reason;this.node('sync-status').dataset.state='waiting';this.displayKey=null;
+    this.node('sync-status').textContent=reason;this.node('sync-status').dataset.state='waiting';this.displayKey=null;this.clearEventSelection(reason);
   }
   acceptView(view){
-    if(!view||!finite(view.position_sec)||!finite(view.duration_sec)||view.position_sec>view.duration_sec||!view.selection||
-       !/^[0-9a-f]{64}$/.test(view.binding_id||'')||!/^\d{1,19}$/.test(view.selection.cursor_ns||''))throw Error('기록 시각과 식별자를 확인할 수 없습니다.');
-    this.view=view;
+    const version=view?.recording_version??1,unavailable=version===2&&view.media_state==='unavailable';
+    const timingValid=unavailable?
+      view.position_sec===null&&view.duration_sec===null&&view.selection?.cursor_ns===null&&view.selection?.time_sec===null&&
+        view.selection?.pose===null&&view.selection?.image===null&&view.playing===false:
+      finite(view?.position_sec)&&finite(view?.duration_sec)&&view.position_sec<=view.duration_sec&&/^\d{1,19}$/.test(view.selection?.cursor_ns||'');
+    if(!view||![1,2].includes(version)||!view.selection||!/^[0-9a-f]{64}$/.test(view.binding_id||'')||!timingValid||
+       version===2&&(!['ready','unavailable'].includes(view.media_state)||view.recording_kind!=='synchronized-grasp-recording-v2')){
+      throw Error('기록 시각과 식별자를 확인할 수 없습니다.');
+    }
+    this.acceptEvents(view);this.view=view;
     if(this.binding!==view.binding_id){
       this.binding=view.binding_id;this.loaded=null;this.clearDisplays('선택 시각 전환 중');
       this.viewer.setExpectedBinding(this.binding,view.binding);
     }
     this.node('sync-source').textContent=view.source.label+' · 보존한 관측 기록';
-    this.node('sync-seek').max=String(view.duration_sec);if(!this.scrubbing)this.node('sync-seek').value=String(view.position_sec);
-    this.node('sync-time').textContent=stamp(view.position_sec)+' / '+stamp(view.duration_sec);
+    this.node('sync-seek').max=unavailable?'0':String(view.duration_sec);
+    if(!this.scrubbing)this.node('sync-seek').value=unavailable?'0':String(view.position_sec);
+    this.node('sync-time').textContent=unavailable?'재생할 영상·3D 기록 없음':stamp(view.position_sec)+' / '+stamp(view.duration_sec);
     this.node('sync-speed').value=String(view.speed);
-    this.node('sync-playback-state').textContent=view.playing?'재생 중':view.position_sec>=view.duration_sec?'재생 완료':'일시 정지';
-    const original=view.acquisition_identity||{};
+    this.node('sync-playback-state').textContent=unavailable?'이벤트 기록':view.playing?'재생 중':view.position_sec>=view.duration_sec?'재생 완료':'일시 정지';
+    const original=view.acquisition_identity||{},counters=view.observation_counters;
+    const sourceDetails=version===2&&counters?[
+      '3D 수집 방식 '+(view.pose_sample_semantics==='parent_accepted_latest_ipc'?'부모가 수용한 최신 IPC 관측':view.pose_sample_semantics||'미확인'),
+      '부모 자세 큐 제외 '+count(counters.poses_dropped)+'개 · 원천 자세 순번 건너뜀 '+count(counters.poses_source_gaps)+'개',
+      '이벤트 큐 제외 '+count(counters.events_dropped)+'개 · 영상 전송 누락 '+count(counters.image_transport_gaps)+'개',
+      '이미지 수신 집계 '+JSON.stringify(counters.image_counters||{})]:[];
     this.node('sync-identity').textContent=['기록 '+view.recording_sha256,
-      '원천 시계 '+(view.acquisition_clock_domain||'미확인')+' · 원천 시각 '+view.selection.cursor_ns+' ns',
-      '실행 '+(original.motion_session_id||'미확인')+' · 이미지 수신 세대 '+(original.image_generation||'미확인'),
-      '선택 방식: 0.5초 이내 이전 표본 · 자세 보간 없음'].join('\n');
+      unavailable?'영상·3D 시각 없음 · '+associationReason(view.media_reason):version===2?
+        '기록 공통 시각 '+view.selection.cursor_ns+' ns · 같은 실행의 소프트웨어 시각 연결':
+        '원천 시계 '+(view.acquisition_clock_domain||'미확인')+' · 원천 시각 '+view.selection.cursor_ns+' ns',
+      version===2?'집기 작업 '+(original.job_id||'미확인')+' · 작업 세대 '+(original.job_generation??'미확인'):
+        '실행 '+(original.motion_session_id||'미확인')+' · 이미지 수신 세대 '+(original.image_generation||'미확인'),
+      version===2?'3D 시각은 반올림한 MuJoCo 시간이며 영상은 원래 ROS 헤더의 정수 ns입니다.':'선택 규칙은 0.5초 이내 이전 표본이며 자세를 보간하지 않습니다.',
+      ...sourceDetails,...(view.task_status?['원래 작업 상태 '+eventStage(view.task_status)]:[])].join('\n');
   }
   async readState(){
     const controller=new AbortController();this.readController=controller;
@@ -63,6 +151,13 @@ export class SynchronizedPlayer {
   async applySelection(view,epoch){
     const valid=()=>!this.closed&&!this.busy&&epoch===this.revision&&view.binding_id===this.binding&&!this.hidden();
     if(!valid())return;
+    if(!this.mediaReady()){
+      this.clearDisplays('영상·3D 기록이 없습니다. '+associationReason(view.media_reason));
+      this.node('sync-pose-status').textContent='기록 없음';this.node('sync-image-status').textContent='기록 없음';
+      this.node('sync-pose-time').textContent='3D 원천 시각 없음';this.node('sync-image-time').textContent='영상 원천 시각 없음';
+      this.node('sync-displayed-time').textContent='재생 시각 없음';this.node('sync-status').dataset.state='partial';
+      this.commitEvents(view);return;
+    }
     const descriptor=view.manifest_descriptor,id=view.binding_id;
     if(this.loaded!==id){
       await this.viewer.loadManifest(this.prefix+'/manifest?binding_id='+id,{binding_id:id,binding:view.binding,
@@ -96,7 +191,7 @@ export class SynchronizedPlayer {
       this.node('sync-status').dataset.state=hasPose&&hasImage?'ready':'partial';
       this.node('sync-status').textContent=hasPose&&hasImage?'같은 선택 시각의 두 관측을 표시했습니다.':'일부 기록이 없습니다. 빠진 프레임을 보간하지 않습니다.';
       this.node('sync-displayed-time').textContent='표시된 선택 시각 '+stamp(selected.time_sec);
-      this.displayKey=key;if(!this.controlError)this.error();
+      this.displayKey=key;this.commitEvents(view);if(!this.controlError)this.error();
     }finally{image?.destroy();if(this.mediaController===controller)this.mediaController=null;}
   }
   async update(){
@@ -113,7 +208,7 @@ export class SynchronizedPlayer {
     finally{this.inflight=false;if(!this.closed&&!this.busy){const immediate=this.pending&&!this.hidden();this.pending=false;this.schedule(immediate?0:undefined);}}
   }
   async control(action,value){
-    if(this.closed||this.busy||!this.token)return;
+    if(this.closed||this.busy||!this.token||!this.mediaReady())return;
     this.busy=true;const epoch=++this.revision;
     this.scrubbing=false;
     if(this.timer!==null){this.timers.clear(this.timer);this.timer=null;}
@@ -136,7 +231,7 @@ export class SynchronizedPlayer {
   destroy(){
     this.closed=true;++this.revision;this.readController?.abort();this.mediaController?.abort();
     if(this.timer!==null)this.timers.clear(this.timer);this.timer=null;
-    this.image?.destroy();this.image=null;this.viewer.destroy();this.enable();
+    this.image?.destroy();this.image=null;this.resetEvents();this.viewer.destroy();this.enable();
   }
 }
 
