@@ -6,9 +6,14 @@ const finite=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0;
 const stamp=value=>finite(value)?value.toFixed(3)+' s':'—';
 const count=value=>Number.isSafeInteger(value)&&value>=0?String(value):'미확인';
 const ns=value=>typeof value==='string'&&/^\d{1,20}$/.test(value);
-const eventStage=value=>({starting:'시작 준비',approach:'접근',grasp:'집기',transport:'운반',release:'놓기',
+const eventStage=value=>({starting:'시작 준비',preflight:'사전 확인',unused_domain:'통신 영역 확인',
+  initial_settle:'초기 자세 안정화',approach:'접근',close:'그리퍼 닫기',grasp:'집기',verification_lift:'들어 올려 집기 확인',
+  transport:'운반',place:'놓을 위치로 이동',open:'그리퍼 열기',settle:'놓은 뒤 안정화',complete:'작업 종료',release:'놓기',
   retreat:'후퇴',running:'진행 중',succeeded:'성공',completed:'완료',cancelled:'취소',failed:'실패',cleanup:'종료 처리'}[value]||value||'작업');
-const associationReason=value=>({before_native:'첫 3D 관측 전',native_unavailable:'3D 관측 없음',
+const associationReason=value=>({before_native:'첫 3D 관측 전',pre_native:'첫 3D 관측 전',native_unavailable:'3D 관측 없음',
+  native_not_live:'3D 공급원 종료 후',native_cleanup_or_hold:'정지·종료 처리 중',
+  native_not_fresh_and_progressing:'신선하게 진행하는 3D 관측 없음',
+  insufficient_paired_native_and_image_observations:'함께 재생할 3D 자세와 이미지가 충분히 수집되지 않음',
   native_stale:'3D 관측 지연',native_held:'3D 시계 정지',after_exit:'3D 공급원 종료 후',
   outside_media:'보존한 재생 구간 밖',outside_retained_media:'보존한 재생 구간 밖',pose_not_retained:'해당 3D 표본이 보존되지 않음'}[value]||value||'연결 시각 없음');
 
@@ -38,7 +43,7 @@ export class SynchronizedPlayer {
     this.node('sync-events-panel').hidden=true;
   }
   clearEventSelection(message='선택 시각을 확인하고 있습니다.'){
-    for(const {row} of this.eventRows.values()){row.dataset.current='false';row.setAttribute('aria-current','false');}
+    for(const {row} of this.eventRows.values()){row.dataset.syncEventCurrent='false';row.setAttribute('aria-current','false');}
     this.node('sync-events-state').textContent=message;
   }
   acceptEvents(view){
@@ -61,7 +66,7 @@ export class SynchronizedPlayer {
       const node=(tag,text,parent)=>{const value=this.createElement(tag);value.textContent=text;if(parent)parent.append(value);return value;};
       for(const event of view.events){
         const timed=finite(event.time_sec),list=this.node(timed?'sync-events':'sync-untimed-events');
-        const row=node('li','',list);row.dataset.eventId=event.event_id;row.dataset.current='false';row.setAttribute('aria-current','false');
+        const row=node('li','',list);row.dataset.eventId=event.event_id;row.dataset.syncEventCurrent='false';row.setAttribute('aria-current','false');
         const label='#'+event.event_sequence+' · '+eventStage(event.stage)+(event.status?' · '+eventStage(event.status):'');
         let button=null;
         if(timed){
@@ -86,7 +91,7 @@ export class SynchronizedPlayer {
   commitEvents(view){
     if(view.recording_version!==2)return;
     const selected=new Set(view.selection.event_ids);
-    for(const [id,{row}] of this.eventRows){const current=selected.has(id);row.dataset.current=String(current);row.setAttribute('aria-current',String(current));}
+    for(const [id,{row}] of this.eventRows){const current=selected.has(id);row.dataset.syncEventCurrent=String(current);row.setAttribute('aria-current',String(current));}
     this.node('sync-events-state').textContent=this.mediaReady()?
       '표시한 영상·3D 시각의 연결 이벤트 '+selected.size+'개':
       '작업 이벤트 '+view.events.length+'개 · 재생 시각 연결 없음';

@@ -10,7 +10,7 @@
 .sync-events-heading p,.sync-event-help{font-size:12px;color:#526d77}
 .sync-events-list{max-height:310px;overflow:auto;margin:12px 0;padding:0;list-style:none}
 .sync-events-list>li{padding:10px 12px;border:1px solid #d7e2e5;border-radius:6px;margin:7px 0;overflow-wrap:anywhere}
-.sync-events-list>li[data-current=true]{background:#e6f2f5;border-color:#19778c;box-shadow:inset 3px 0 #19778c}
+.sync-events-list>li[data-sync-event-current=true]{background:#e6f2f5;border-color:#19778c;box-shadow:inset 3px 0 #19778c}
 .sync-events-list button{font:inherit;text-align:left;border:0;background:transparent;color:#126478;cursor:pointer;padding:2px 0}
 .sync-events-list button:disabled{color:#526d77;cursor:default}
 .sync-event-source,.sync-event-detail{display:block;margin:4px 0 0;font-size:12px;white-space:pre-line}

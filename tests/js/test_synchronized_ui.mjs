@@ -304,7 +304,7 @@ function graspView({events=taskEvents(),selected=['event-1'],unavailable=false,.
  }
  return value;
 }
-function currentEvents(h){return [...h.player.eventRows].filter(([,entry])=>entry.row.dataset.current==='true').map(([id])=>id);}
+function currentEvents(h){return [...h.player.eventRows].filter(([,entry])=>entry.row.dataset.syncEventCurrent==='true').map(([id])=>id);}
 
 test('v2 event highlights commit with decoded media, preserving equal timestamps and original ns',async()=>{
  const h=harness(),events=taskEvents();events[1].time_sec=0;events[1].native_association.stamp_ns='1000000000';
@@ -484,4 +484,35 @@ test('advanced v2 provenance distinguishes retained queue exclusions and source 
  assert.match(info,/부모가 수용한 최신 IPC 관측/);assert.match(info,/부모 자세 큐 제외 2개/);
  assert.match(info,/원천 자세 순번 건너뜀 4개/);assert.match(info,/이벤트 큐 제외 3개/);assert.match(info,/영상 전송 누락 5개/);
  assert.ok(info.includes('"received":20'));assert.equal(h.post().length,0);
+});
+
+
+test('periodic joint refresh preserves both timed and untimed event rows',async()=>{
+ const app=await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/app.js',import.meta.url),'utf8');
+ const refresh=app.match(/^function updateCurrent\(\).*$/m);assert.ok(refresh);
+ const h=harness();await state(h,graspView());
+ const rows=[...h.player.eventRows.values()].map(item=>item.row);
+ const before=rows.map(eventText),joint=eventElement('span');joint.dataset.current='left_j1';
+ const document={querySelectorAll(selector){
+  assert.equal(selector,'[data-current]');
+  return [joint,...rows].filter(item=>Object.hasOwn(item.dataset,'current'));
+ }};
+ const update=new Function('document','state','displayed','unit',refresh[0]+';updateCurrent();');
+ for(let iteration=0;iteration<3;iteration++)update(document,{positions_rad:{left_j1:0.5}},value=>value,'rad');
+ assert.equal(joint.textContent,'0.5000');assert.deepEqual(rows.map(eventText),before);
+ assert.deepEqual(currentEvents(h),['event-1']);
+ assert.ok(h.player.eventRows.get('event-2').button);
+ assert.match(eventText(rows[2]),/3D 시계 정지/);
+});
+
+
+test('actual worker pre-native and event-only reasons have readable labels',async()=>{
+ const h=harness(),value=graspView({unavailable:true});
+ value.media_reason='insufficient_paired_native_and_image_observations';
+ for(const event of value.events){event.stage='unused_domain';event.native_association.reason='pre_native';}
+ await state(h,value);
+ assert.match(h.element('sync-status').textContent,/함께 재생할 3D 자세와 이미지가 충분히 수집되지 않음/);
+ const text=eventText(h.element('sync-untimed-events'));
+ assert.match(text,/통신 영역 확인/);assert.match(text,/첫 3D 관측 전/);
+ assert.doesNotMatch(text,/pre_native|unused_domain/);
 });
