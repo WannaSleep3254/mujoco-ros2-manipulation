@@ -29,7 +29,7 @@ function harness(fetcher){
  const context=vm.createContext({document,fetch:(path,options)=>{calls.push({path,options});return fetcher(path,options);},AbortController,
   setTimeout:(callback,delay)=>{const id=++timerID;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),
   performance:{now:()=>5000},crypto:{randomUUID:()=> 'c'.repeat(32)},window:{}});
- vm.runInContext(source+`\nglobalThis.uiTest={request,beginTaskCommand,endTaskCommand,poll,readState,replan,groupRequests,summaryOf,renderReview,renderContext,history,detail,renderDetail,loadRequest,requestProgress,requestGuidance,guidanceText,guardPresentation,connectionPresentation,observationProblem,cancelCurrentRequest,render,refreshControls,demoStage,demoOutcomeStatus,
+ vm.runInContext(source+`\nglobalThis.uiTest={notice,clearNotice,request,beginTaskCommand,endTaskCommand,poll,readState,replan,groupRequests,summaryOf,renderReview,renderContext,history,detail,renderDetail,loadRequest,requestProgress,requestGuidance,guidanceText,guardPresentation,connectionPresentation,observationProblem,cancelCurrentRequest,render,refreshControls,demoStage,demoOutcomeStatus,
  set(data,positions={left:.2,right:.1},connected=true){state=data;targets=positions;config={label:'FR5 + UR5e',domain:160,joint_limits:{left:{lower:-1,upper:1},right:{lower:-1,upper:1}}};readConnected=connected;sceneControls=globalThis.scene;},
  get(){return {polling,readConnected,replanning,selected:state?.task?.selected};},taskController(value){taskControls=value;},cache(id,data,age=0){requestCache.set(id,{data,at:Date.now()-age});},age(id,age=2000){requestCache.get(id).at=Date.now()-age;},demos(data){demoCatalog=[{id:'contact_comparison',title:'접촉 비교'}];selectedDemo='contact_comparison';renderDemos(data);}};`,context);
  context.scene=scene;
@@ -399,4 +399,49 @@ test('a late normal request detail cannot overwrite a newly selected grasp or an
   assert.equal(h.element('request-error').textContent,next==='grasp'?'current grasp':'');
   assert.equal(h.element('clearance').textContent,next==='grasp'?'current grasp':'—');
  }
+});
+
+test('scene notices cannot overwrite or dismiss a visible control error', () => {
+ const h=harness(()=>reply({}));
+ h.element('notice').hidden=true;
+ const owner={};
+ assert.equal(h.api.notice('3D 모델을 준비하지 못했습니다.',owner),true);
+ h.api.notice('취소 요청의 전달 결과를 확인하지 못했습니다.');
+ assert.equal(h.api.clearNotice(owner),false);
+ assert.equal(h.api.notice('이전 모델 요청 실패',owner),false);
+ assert.equal(h.element('notice-text').textContent,'취소 요청의 전달 결과를 확인하지 못했습니다.');
+ assert.equal(h.element('notice').hidden,false);
+});
+
+test('only the exact scene notice owner can clear its recovered message', () => {
+ const h=harness(()=>reply({}));
+ h.element('notice').hidden=true;
+ const previous={},current={};
+ h.api.notice('이전 표시 오류',previous);
+ h.api.notice('현재 표시 오류',current);
+ assert.equal(h.api.clearNotice(previous),false);
+ assert.equal(h.element('notice-text').textContent,'현재 표시 오류');
+ assert.equal(h.element('notice').hidden,false);
+ assert.equal(h.api.clearNotice(current),true);
+ assert.equal(h.element('notice').hidden,true);
+ h.api.notice('새 실행 오류');
+ assert.equal(h.api.clearNotice(current),false);
+ assert.equal(h.element('notice').hidden,false);
+});
+
+for(const phase of ['before','during'])test('a state GET started '+phase+' a model selection cannot restore the old view after its acknowledgement',async()=>{
+ let releaseRead,releaseSelect;
+ const h=harness((path,options)=>new Promise(resolve=>{
+  if(options.method==='POST')releaseSelect=resolve;else releaseRead=resolve;
+ }));
+ h.set(state());
+ let old,rejected;
+ if(phase==='before'){old=h.api.readState();rejected=assert.rejects(old,error=>error.code==='state_read_superseded');}
+ const selection=h.api.request('/api/view/select',{mode:'model_preview',source_id:'profile:fr16'});
+ if(phase==='during'){old=h.api.readState();rejected=assert.rejects(old,error=>error.code==='state_read_superseded');}
+ releaseSelect({ok:true,json:async()=>({})});await selection;
+ releaseRead({ok:true,json:async()=>state({simulation_sec:999})});await rejected;
+ assert.equal(h.element('sim-time').textContent,'');
+ assert.equal(h.calls.length,2);
+ assert.equal(h.calls.filter(call=>call.options.method==='POST').length,1);
 });
