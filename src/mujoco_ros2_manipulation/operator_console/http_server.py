@@ -11,6 +11,7 @@ import mimetypes
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
 
+from ..timing import sample_ns
 from ..reporting.data import ReportError, safe_asset
 from .catalog import describe_scenarios
 from ..workcells.motion_request import decode_message, command, validate_command
@@ -230,6 +231,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.respond(dict(error=str(error)), 400)
 
     def do_POST(self):
+        http_received_ns = sample_ns()
         port = self.server.server_address[1]
         if (not self.host_valid() or self.headers.get("Origin") not in (f"http://127.0.0.1:{port}", f"http://localhost:{port}")
                 or not hmac.compare_digest(self.headers.get("X-Operator-Token", ""), self.server.token)):
@@ -290,13 +292,13 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError("추가 인자가 필요하지 않습니다.")
                     result = app.stop_async()
                 elif path == "/api/command":
-                    result = app.submit(payload)
+                    result = app.submit(payload, http_received_ns=http_received_ns)
                 elif path == "/api/plan":
-                    result = app.create_plan(payload)
+                    result = app.create_plan(payload, http_received_ns=http_received_ns)
                 elif path == "/api/pose/plan":
-                    result = app.create_pose_plan(payload)
+                    result = app.create_pose_plan(payload, http_received_ns=http_received_ns)
                 elif path == "/api/plan/execute":
-                    result = app.execute_plan(payload)
+                    result = app.execute_plan(payload, http_received_ns=http_received_ns)
                 elif path == "/api/plan/discard" and set(payload) == {"request_id"}:
                     result = app.discard_plan(payload["request_id"])
                 elif path == "/api/target" and set(payload) == {"text"} and isinstance(payload["text"], str):
@@ -304,7 +306,7 @@ class Handler(BaseHTTPRequestHandler):
                     validate_command(command(target), app.state.config["joint_limits"])
                     result = dict(target_rad=target)
                 elif path == "/api/cancel" and set(payload) == {"request_id"}:
-                    result = app.cancel(payload["request_id"])
+                    result = app.cancel(payload["request_id"], http_received_ns=http_received_ns)
                 elif path == "/api/camera" and set(payload) == {"view"}:
                     result = app.camera(payload["view"])
                 else:

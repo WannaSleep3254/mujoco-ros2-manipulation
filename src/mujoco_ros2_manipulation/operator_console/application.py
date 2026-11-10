@@ -11,6 +11,7 @@ import threading
 import time
 import uuid
 
+from ..timing import capture_clock_context, console_timing, mark_timing, sample_ns
 from ..verification.reports import atomic_json
 from ..verification.runner import stop_process
 from ..workcells.motion_request import request_id, validate_approval
@@ -19,6 +20,9 @@ from .console_views import ConsoleViews
 from .review_summary import summarize_review
 from .synchronized_capture import CaptureLibrary
 from .workspace_tasks import WorkspaceTasks
+
+
+_TIMING_UNSET = object()
 
 
 class ConsoleApplication:
@@ -30,6 +34,8 @@ class ConsoleApplication:
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=False)
         self.session_id = uuid.uuid4().hex
+        self.timing_clock_context = capture_clock_context()
+        self.state.config["console_clock_context"] = deepcopy(self.timing_clock_context)
         self.render_enabled = render
         self.lock = threading.RLock()
         self.cleanup_lock = threading.Lock()
@@ -175,18 +181,19 @@ class ConsoleApplication:
                 self.phase = "stopping"
             self.stop(error=str(error))
 
-    def submit(self, payload):
-        return self._submit(payload, "command")
+    def submit(self, payload, *, http_received_ns=None):
+        return self._submit(payload, "command", http_received_ns=http_received_ns)
 
-    def create_plan(self, payload):
+    def create_plan(self, payload, *, http_received_ns=None):
         """Plan and check only. No approval is implied by a successful plan."""
-        return self._submit(payload, "plan")
+        return self._submit(payload, "plan", http_received_ns=http_received_ns)
 
-    def create_pose_plan(self, payload):
+    def create_pose_plan(self, payload, *, http_received_ns=None):
         """Resolve a registered TCP goal for review; never imply approval."""
-        return self._submit(payload, "pose_plan")
+        return self._submit(payload, "pose_plan", http_received_ns=http_received_ns)
 
-    def execute_plan(self, payload):
+    def execute_plan(self, payload, *, http_received_ns=None):
+        submit_enter_ns = sample_ns()
         with self.lock, self.state.lock:
             self.require_motion_task()
             from ..workcells.motion_request import validate_approval
@@ -195,7 +202,7 @@ class ConsoleApplication:
             if reason:
                 raise RuntimeError(reason)
             self.views.approve_review(payload["plan_request_id"])
-            return self._submit(payload, "approve")
+            return self._submit(payload, "approve", http_received_ns=http_received_ns, submit_enter_ns=submit_enter_ns)
 
     def discard_plan(self, identifier):
         request_id(identifier)
@@ -214,7 +221,9 @@ class ConsoleApplication:
             self.audit("plan_discard_requested", request_id=identifier)
             return dict(request_id=identifier, status="discard_requested")
 
-    def _submit(self, payload, kind):
+    def _submit(self, payload, kind, *, http_received_ns=None, submit_enter_ns=_TIMING_UNSET):
+        if submit_enter_ns is _TIMING_UNSET:
+            submit_enter_ns = sample_ns()
         with self.lock, self.state.lock:
             self.require_motion_task()
             target = getattr(self, "execution_target", None)
@@ -228,8 +237,20 @@ class ConsoleApplication:
                        "pose_plan":self.state.reserve_pose_plan,
                        "approve":self.state.reserve_approval}[kind]
             if reserve(payload):
+                reserved_ns = sample_ns()
+                record = self.state.history[payload["request_id"]]
+                timing = console_timing(getattr(self, "timing_clock_context", None),
+                    session_id=self.session_id, generation=self.generation,
+                    selection_id=getattr(getattr(self, "tasks", None), "selection_id", None),
+                    expected_session_id=(self.state.server or {}).get("session_id"), kind=kind,
+                    plan_request_id=payload.get("plan_request_id"), http_received_ns=http_received_ns,
+                    submit_enter_ns=submit_enter_ns)
+                if timing is not None:
+                    record["console_timing"] = timing
+                mark_timing(record, "reserved_ns", reserved_ns)
                 try:
                     self.bridge.outbox.put_nowait((kind, payload))
+                    mark_timing(record, "enqueued_ns", sample_ns())
                 except queue.Full:
                     with self.state.lock:
                         self.state.history[payload["request_id"]].update(status="rejected", stage="local_queue_full")
@@ -241,22 +262,27 @@ class ConsoleApplication:
                     strategy=payload.get("strategy"), plan_request_id=payload.get("plan_request_id"))
             return dict(request_id=payload["request_id"])
 
-    def cancel(self, identifier):
+    def cancel(self, identifier, *, http_received_ns=None):
         with self.lock:
             self.require_motion_task()
-            return self._cancel_motion(identifier)
+            return self._cancel_motion(identifier, http_received_ns=http_received_ns)
 
-    def _cancel_motion(self, identifier):
+    def _cancel_motion(self, identifier, *, http_received_ns=None):
         if self.demos.busy:
             raise RuntimeError("시연 종료 버튼으로 현재 시연을 종료하세요.")
         request_id(identifier)
         with self.state.lock:
             if identifier != self.state.active:
                 raise RuntimeError("현재 진행 중인 요청만 취소할 수 있습니다.")
-        try:
-            self.bridge.outbox.put_nowait(("cancel", dict(request_id=identifier)))
-        except queue.Full:
-            raise RuntimeError("취소 요청이 이미 대기 중입니다. 완료 상태를 확인하세요.") from None
+            try:
+                self.bridge.outbox.put_nowait(("cancel", dict(request_id=identifier)))
+            except queue.Full:
+                raise RuntimeError("취소 요청이 이미 대기 중입니다. 완료 상태를 확인하세요.") from None
+            # The consumer takes this same lock for its optional publish mark.
+            # It cannot observe publication before this enqueue observation.
+            record = self.state.history.get(identifier, {})
+            mark_timing(record, "cancel_http_handler_enter_ns", http_received_ns)
+            mark_timing(record, "cancel_enqueued_ns", sample_ns())
         self.audit("cancel_requested", request_id=identifier)
         return dict(request_id=identifier, status="cancel_requested")
 

@@ -1,0 +1,717 @@
+{
+  "schema_version": 1,
+  "kind": "fixed-topic-pilot-and-fr16-local-validation",
+  "date": "2026-11-10",
+  "source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+  "report_style_version": "1.9",
+  "fixed_topic_pilot": {
+    "status": "completed_selected_rows",
+    "counts": {
+      "planned": 20,
+      "selected": 6,
+      "completed": 6,
+      "aborted": 0,
+      "not_run": 14,
+      "motion_succeeded": 4,
+      "planning_failed": 0,
+      "expected_invalid_goal": 2
+    },
+    "repeats_per_case_variant": 1,
+    "sample_statistic": "individual_observations",
+    "transport": "same_process_ros_topic",
+    "clock": "time.monotonic_ns in the same recorder process",
+    "origin": "ROS publisher call begin",
+    "first_motion_semantics": "First received joint-state observation with displacement greater than 0.001 rad from its reference.",
+    "preparation": "Fresh simulator and unscored preparation before each selected row.",
+    "metrics_unit": "seconds",
+    "suite_sha256": "869270039e1a4219c59890a4d3c0fe940669f12c411ea5d7c6833e42574896be",
+    "input_suite_sha256": "5e3f0835ad627a4e179260a7bee4b58eb9b8f1f0e372b4d77fcc1ccf60da439c",
+    "policy": {
+      "min_inter_arm_distance_m": 0.02,
+      "tracking_reserve_m": 0.01,
+      "sample_dt_sec": 0.01,
+      "delay_step_sec": 0.1,
+      "max_delay_sec": 4.0
+    },
+    "compute_budget_wall_sec": 5.0,
+    "initial_tolerance_rad": 0.0015,
+    "variants": [
+      {
+        "id": "single",
+        "max_plan_candidates": 1
+      },
+      {
+        "id": "bounded",
+        "max_plan_candidates": 12
+      }
+    ],
+    "case_inputs": [
+      {
+        "case_id": "local_small",
+        "label": "근거리 양팔 목표",
+        "workcell": "fr5_ur5e",
+        "policy_name": "dual_arm_timing",
+        "initial_rad": {
+          "left_j1": 0.0,
+          "left_j2": -1.2,
+          "left_j3": 1.2,
+          "left_j4": -1.5,
+          "left_j5": -1.5,
+          "left_j6": 0.0,
+          "right_shoulder_pan_joint": 0.0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.0
+        },
+        "target_rad": {
+          "left_j1": 0.12,
+          "left_j2": -1.2,
+          "left_j3": 1.2,
+          "left_j4": -1.5,
+          "left_j5": -1.5,
+          "left_j6": 0.0,
+          "right_shoulder_pan_joint": 0.12,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.0
+        },
+        "expectation": "valid_goal",
+        "provenance": {
+          "kind": "defined",
+          "parameters": {
+            "initial": "base_workcell_nominal_home",
+            "first_joint_offsets_rad": {
+              "left_j1": 0.12,
+              "right_shoulder_pan_joint": 0.12
+            }
+          }
+        }
+      },
+      {
+        "case_id": "environment_post",
+        "label": "고정 기둥을 포함한 환경",
+        "workcell": "fr5_ur5e_eval_post",
+        "policy_name": "eval_post_timing",
+        "initial_rad": {
+          "left_j1": 0.0,
+          "left_j2": -1.2,
+          "left_j3": 1.2,
+          "left_j4": -1.5,
+          "left_j5": -1.5,
+          "left_j6": 0.0,
+          "right_shoulder_pan_joint": 0.0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.0
+        },
+        "target_rad": {
+          "left_j1": 2.0,
+          "left_j2": -1.2,
+          "left_j3": 1.2,
+          "left_j4": -1.5,
+          "left_j5": -1.5,
+          "left_j6": 0.0,
+          "right_shoulder_pan_joint": -2.0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.0
+        },
+        "expectation": "valid_goal",
+        "provenance": {
+          "kind": "defined",
+          "parameters": {
+            "initial": "base_workcell_nominal_home",
+            "first_joint_offsets_rad": {
+              "left_j1": 2.0,
+              "right_shoulder_pan_joint": -2.0
+            },
+            "fixed_obstacle": {
+              "name": "evaluation_post",
+              "shape": "box",
+              "size": [
+                0.16,
+                0.16,
+                1.0
+              ],
+              "xyz": [
+                -0.45,
+                0.72,
+                0.5
+              ],
+              "rpy": [
+                0,
+                0,
+                0
+              ],
+              "rgba": [
+                1.0,
+                0.15,
+                0.02,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "case_id": "invalid_goal",
+        "label": "공개 기록의 충돌 목표 거부",
+        "workcell": "fr5_ur5e",
+        "policy_name": "dual_arm_timing",
+        "initial_rad": {
+          "left_j1": 0.0,
+          "left_j2": -1.2,
+          "left_j3": 1.2,
+          "left_j4": -1.5,
+          "left_j5": -1.5,
+          "left_j6": 0.0,
+          "right_shoulder_pan_joint": 0.0,
+          "right_shoulder_lift_joint": -1.5708,
+          "right_elbow_joint": 1.5708,
+          "right_wrist_1_joint": -1.5708,
+          "right_wrist_2_joint": -1.5708,
+          "right_wrist_3_joint": 0.0
+        },
+        "target_rad": {
+          "left_j1": -0.4715699418799669,
+          "left_j2": -0.32525296396731107,
+          "left_j3": 0.6095012592103892,
+          "left_j4": -0.8048651709065434,
+          "left_j5": -2.2402765781713723,
+          "left_j6": 0.3761360288833638,
+          "right_shoulder_pan_joint": 0.2503919582783712,
+          "right_shoulder_lift_joint": -0.8690168190391562,
+          "right_elbow_joint": 1.4828183609557888,
+          "right_wrist_1_joint": -1.9897901876427866,
+          "right_wrist_2_joint": -2.0216255350322716,
+          "right_wrist_3_joint": -0.7779694063425553
+        },
+        "expectation": "invalid_goal",
+        "provenance": {
+          "kind": "public_source",
+          "refs": [
+            {
+              "path": "docs/reports/2026-10-21-request-timing/evidence.json",
+              "sha256": "3eb2adf6464b3af9ac2f774711207ced674a4e8998237371416b0b5018deea90",
+              "selector": "requests[6].command.target_rad"
+            }
+          ]
+        }
+      }
+    ],
+    "rows": [
+      {
+        "case_id": "local_small",
+        "variant": "single",
+        "sample_count": 1,
+        "outcome": "motion_succeeded",
+        "max_plan_candidates": 1,
+        "same_process_clock_join_verified": true,
+        "metrics": {
+          "publish_call": {
+            "value_sec": 1.8529e-05,
+            "unavailable_reason": null
+          },
+          "publish_to_received": {
+            "value_sec": 0.000681319,
+            "unavailable_reason": null
+          },
+          "publish_to_first_motion": {
+            "value_sec": 1.476634505,
+            "unavailable_reason": null
+          },
+          "publish_to_actions_done": {
+            "value_sec": 3.685831227,
+            "unavailable_reason": null
+          },
+          "publish_to_settled": {
+            "value_sec": 3.77970539,
+            "unavailable_reason": null
+          },
+          "publish_to_terminal": {
+            "value_sec": 3.794200041,
+            "unavailable_reason": null
+          }
+        },
+        "native_steps": 11025,
+        "action_results": [
+          {
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "status": 4,
+            "error_code": 0
+          }
+        ],
+        "owned_cleanup_passed": true,
+        "original_sha256": {
+          "fixed_case_result_sha256": "49012b2d6d18c038fd56e7652fe6561ae34cf89e58c133ba35214e06b284055b",
+          "verification_result_sha256": "68f85c3c24f86c29102702da9a1ef7f3d95da90f8838166997b66554de284b9c",
+          "trace_sha256": "00f1e908fa5fd8f10acfbb3f800b2d49e8da64b7007f798d3fd0721b4b303604"
+        }
+      },
+      {
+        "case_id": "local_small",
+        "variant": "bounded",
+        "sample_count": 1,
+        "outcome": "motion_succeeded",
+        "max_plan_candidates": 12,
+        "same_process_clock_join_verified": true,
+        "metrics": {
+          "publish_call": {
+            "value_sec": 1.8996e-05,
+            "unavailable_reason": null
+          },
+          "publish_to_received": {
+            "value_sec": 0.000326973,
+            "unavailable_reason": null
+          },
+          "publish_to_first_motion": {
+            "value_sec": 1.496703112,
+            "unavailable_reason": null
+          },
+          "publish_to_actions_done": {
+            "value_sec": 3.705334422,
+            "unavailable_reason": null
+          },
+          "publish_to_settled": {
+            "value_sec": 3.798899718,
+            "unavailable_reason": null
+          },
+          "publish_to_terminal": {
+            "value_sec": 3.812742502,
+            "unavailable_reason": null
+          }
+        },
+        "native_steps": 11035,
+        "action_results": [
+          {
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "status": 4,
+            "error_code": 0
+          }
+        ],
+        "owned_cleanup_passed": true,
+        "original_sha256": {
+          "fixed_case_result_sha256": "f815c29c09c1025033174b674f9feeb97c046b37e617dd709370ba6712b62ee7",
+          "verification_result_sha256": "fc0345b0aef490654bc38b626872fd7afd054d44e179d12bb8f8d1c47bab6a09",
+          "trace_sha256": "6da95a89d0698fab575b7bdde25d408c9876a763398c1ac57034099d04675336"
+        }
+      },
+      {
+        "case_id": "environment_post",
+        "variant": "single",
+        "sample_count": 1,
+        "outcome": "motion_succeeded",
+        "max_plan_candidates": 1,
+        "same_process_clock_join_verified": true,
+        "metrics": {
+          "publish_call": {
+            "value_sec": 2.2797e-05,
+            "unavailable_reason": null
+          },
+          "publish_to_received": {
+            "value_sec": 0.000317069,
+            "unavailable_reason": null
+          },
+          "publish_to_first_motion": {
+            "value_sec": 3.174452585,
+            "unavailable_reason": null
+          },
+          "publish_to_actions_done": {
+            "value_sec": 19.554443326,
+            "unavailable_reason": null
+          },
+          "publish_to_settled": {
+            "value_sec": 19.643922783,
+            "unavailable_reason": null
+          },
+          "publish_to_terminal": {
+            "value_sec": 19.746903433,
+            "unavailable_reason": null
+          }
+        },
+        "native_steps": 19118,
+        "action_results": [
+          {
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "status": 4,
+            "error_code": 0
+          }
+        ],
+        "owned_cleanup_passed": true,
+        "original_sha256": {
+          "fixed_case_result_sha256": "767259f054ffd1f953149cacc007823e7863c4e940f869d34de02b5548f7cc12",
+          "verification_result_sha256": "1f4da6b474ececd3907ec5aca963967e02f98e78e21d55b18fd37ffe19aa0d26",
+          "trace_sha256": "a5182aeacac5a4f89c59ac406860d8342f4b2b408b41972285dff484e5b04076"
+        }
+      },
+      {
+        "case_id": "environment_post",
+        "variant": "bounded",
+        "sample_count": 1,
+        "outcome": "motion_succeeded",
+        "max_plan_candidates": 12,
+        "same_process_clock_join_verified": true,
+        "metrics": {
+          "publish_call": {
+            "value_sec": 2.1074e-05,
+            "unavailable_reason": null
+          },
+          "publish_to_received": {
+            "value_sec": 0.00027462,
+            "unavailable_reason": null
+          },
+          "publish_to_first_motion": {
+            "value_sec": 4.022569369,
+            "unavailable_reason": null
+          },
+          "publish_to_actions_done": {
+            "value_sec": 27.3323723,
+            "unavailable_reason": null
+          },
+          "publish_to_settled": {
+            "value_sec": 27.422411124,
+            "unavailable_reason": null
+          },
+          "publish_to_terminal": {
+            "value_sec": 27.563417304,
+            "unavailable_reason": null
+          }
+        },
+        "native_steps": 23029,
+        "action_results": [
+          {
+            "status": 4,
+            "error_code": 0
+          },
+          {
+            "status": 4,
+            "error_code": 0
+          }
+        ],
+        "owned_cleanup_passed": true,
+        "original_sha256": {
+          "fixed_case_result_sha256": "0b143d68c9f46991c0491e6eb1d581f57a7bb06050f2c15ba8b530a6f44dacbf",
+          "verification_result_sha256": "6ab057532ad725243f7b667ac1f25cc6ce9ff697f86bed90004ac1730f4581c7",
+          "trace_sha256": "fb7111e8ea483fe25a76374946f2c86020c2e94994e82943171b93120a21f6ee"
+        }
+      },
+      {
+        "case_id": "invalid_goal",
+        "variant": "bounded",
+        "sample_count": 1,
+        "outcome": "expected_invalid_goal",
+        "max_plan_candidates": 12,
+        "same_process_clock_join_verified": true,
+        "metrics": {
+          "publish_call": {
+            "value_sec": 1.9949e-05,
+            "unavailable_reason": null
+          },
+          "publish_to_received": {
+            "value_sec": 0.000278982,
+            "unavailable_reason": null
+          },
+          "publish_to_first_motion": {
+            "value_sec": null,
+            "unavailable_reason": "original_first_motion_stamp_unavailable"
+          },
+          "publish_to_actions_done": {
+            "value_sec": null,
+            "unavailable_reason": "original_actions_done_stamp_unavailable"
+          },
+          "publish_to_settled": {
+            "value_sec": null,
+            "unavailable_reason": "original_settled_stamp_unavailable"
+          },
+          "publish_to_terminal": {
+            "value_sec": 0.094922316,
+            "unavailable_reason": null
+          }
+        },
+        "native_steps": 9190,
+        "action_results": [],
+        "owned_cleanup_passed": true,
+        "original_sha256": {
+          "fixed_case_result_sha256": "ae41dab986f00107daf0f2d84e1a83c2ab6a242c8e3a8e152df32479bad9bda5",
+          "verification_result_sha256": "07b83ac2b381fd191dc24e0a81257586d99be19d66da3a8d6f29e5dd1b53ee0b",
+          "trace_sha256": "f2a2e1a475c2257578881fd5cc56b4415ebee48b3db99f55481acd12aa46bfd2"
+        }
+      },
+      {
+        "case_id": "invalid_goal",
+        "variant": "single",
+        "sample_count": 1,
+        "outcome": "expected_invalid_goal",
+        "max_plan_candidates": 1,
+        "same_process_clock_join_verified": true,
+        "metrics": {
+          "publish_call": {
+            "value_sec": 1.9046e-05,
+            "unavailable_reason": null
+          },
+          "publish_to_received": {
+            "value_sec": 0.00026798,
+            "unavailable_reason": null
+          },
+          "publish_to_first_motion": {
+            "value_sec": null,
+            "unavailable_reason": "original_first_motion_stamp_unavailable"
+          },
+          "publish_to_actions_done": {
+            "value_sec": null,
+            "unavailable_reason": "original_actions_done_stamp_unavailable"
+          },
+          "publish_to_settled": {
+            "value_sec": null,
+            "unavailable_reason": "original_settled_stamp_unavailable"
+          },
+          "publish_to_terminal": {
+            "value_sec": 0.096872302,
+            "unavailable_reason": null
+          }
+        },
+        "native_steps": 9176,
+        "action_results": [],
+        "owned_cleanup_passed": true,
+        "original_sha256": {
+          "fixed_case_result_sha256": "792847fda111783a926ec20f32296b4e07f1db9ebeb23cfa8f7735036e602eca",
+          "verification_result_sha256": "ecfba00bbfe7ecddea7879e7127861af9682f87eabeced77b57d36c9f9a26691",
+          "trace_sha256": "ef382f8bd77d376912e8cc7583eac2efc869156ec2b34462375eb04f44670720"
+        }
+      }
+    ],
+    "not_run": [
+      {
+        "case_id": "random_0001",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0001",
+        "variant": "single",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0002",
+        "variant": "single",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0002",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0003",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0003",
+        "variant": "single",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0004",
+        "variant": "single",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0004",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0005",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "random_0005",
+        "variant": "single",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "crossing",
+        "variant": "single",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "crossing",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "home_return",
+        "variant": "bounded",
+        "reason": "case_not_selected"
+      },
+      {
+        "case_id": "home_return",
+        "variant": "single",
+        "reason": "case_not_selected"
+      }
+    ],
+    "source_sha256": {
+      "benchmark_fixed_motion.py": "76646b564f642411a676625f3509bf0d62d3d469820fbbfa9f375f43bb1d4789",
+      "fixed_execution.py": "ff5dba7f98388b7018ed6d37bc2b6bafbdd121b8151cd8dfb61ed73c37e20b87",
+      "fixed_suite.py": "bc2cfbd7b36bef89e9771d06c7b294b72f2df476e0d5f93a241a330b9dede4b0",
+      "fixed_results.py": "1adde0d84499049b2f9506a7a121e63b38acd2fc6e7ecc062b75aeb86b993d29"
+    },
+    "timing_source_sha256": "2ac56e2edf63cb2db5a4b8972a0ed877a2e50d9eb14e4666e2c445f31fdf37fb",
+    "original_benchmark_sha256": "89bace0b96f915e8d339a76269b942ccc842cfe8163a1c18041f6b614234f8e5",
+    "independent_original_audit_sha256": "37398094f8aa73565934a2319c3180b923b974ff0af3e6e04e367c5280b2d8bf",
+    "scope_limits": [
+      "Each selected case and variant was executed once. These individual observations do not establish distributions or a general performance ranking.",
+      "The measured spans run from same-process ROS topic publication to recorder observations. Browser and HTTP spans were not collected.",
+      "First motion is a thresholded joint-state observation. Exact physical onset was not measured.",
+      "Fourteen unselected case/variant rows remain not_run.",
+      "Native monitoring and static runtime byte pins were checked. Transitive loaded-library mappings were not separately collected."
+    ]
+  },
+  "fr16_experimental_profile": {
+    "profile_id": "fr16",
+    "profile_status": "experimental",
+    "vendor_model": "FAIRINO FR16 V6",
+    "viewer_mode": "read_only_preview",
+    "integrated_execution_workcell": "FR5 + UR5e",
+    "manufacturer_source_commit": "fcf0c7f0d60d949d8a9a4238f929a44d07f60379",
+    "profile_sha256": "5ae8ae0c1b4fa609ec05cf59399a4a9085ccdd7aae60b0c05ecad4fded754f87",
+    "original_lifecycle_summary_sha256": "67c08541ed55fbbe9af592e7e9692ea3b311bd266472757f6006b00f88714dd1",
+    "automatic_retry": false,
+    "source_or_gains_tolerances_efforts_changed_between_cases": false,
+    "cases": [
+      {
+        "case": "normal",
+        "status": "passed",
+        "result_sha256": "36f4761233b6987665b7643077679d50f804700f27732a2589545616bd9dd0fe",
+        "motion_checks_passed": true,
+        "direct_tracking_error_rad": [
+          -6.759498583919221e-07,
+          3.924669821486759e-05,
+          0.0011009056986877042,
+          0.00039981169846625697,
+          3.6810256662800356e-06,
+          -7.327977816235444e-07
+        ],
+        "moveit_tracking_error_rad": [
+          -9.939284475218857e-05,
+          -0.00015844329710978933,
+          0.001100894495478233,
+          0.0003927728991226509,
+          3.648150792123772e-06,
+          -3.6840731339055077e-06
+        ],
+        "moveit_trajectory_points": 17,
+        "joint_state_messages": 492,
+        "clock_messages": 2531,
+        "clock_monotonic": true,
+        "model_manifest_sha256": "7a9d0b1345156a16c47c1b5f5c6573ab73a19772a7babb59c5a4e7edb03681dc",
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "launch_return_code": 0,
+        "native_step_finalizer_executed": false
+      },
+      {
+        "case": "moving_cancel",
+        "status": "passed",
+        "result_sha256": "a727fee48930e279f1596a4783e338c21a22751f8b2944ed856fa7519060e192",
+        "motion_checks_passed": true,
+        "direct_tracking_error_rad": [
+          -6.752244199048629e-07,
+          3.924766251928169e-05,
+          0.001100906207983643,
+          0.00039981185748283465,
+          3.6810259484987284e-06,
+          -7.327993069585097e-07
+        ],
+        "moveit_tracking_error_rad": [
+          1.3867743351797523e-05,
+          -0.00014827529119409988,
+          0.0011010397960240503,
+          0.0003956773577227235,
+          3.2392005515635702e-06,
+          -1.5890684178232473e-06
+        ],
+        "moveit_trajectory_points": 17,
+        "joint_state_messages": 989,
+        "clock_messages": 5029,
+        "clock_monotonic": true,
+        "model_manifest_sha256": "7a9d0b1345156a16c47c1b5f5c6573ab73a19772a7babb59c5a4e7edb03681dc",
+        "shutdown_clean": true,
+        "process_group_gone": true,
+        "launch_return_code": 0,
+        "native_step_finalizer_executed": true,
+        "cancel_response_accepted": true,
+        "action_canceled": true,
+        "physical_stop_observed": true,
+        "home_recovery_succeeded": true,
+        "cancel_lifecycle_monotonic_order_verified": true,
+        "cancel_action_status": 5,
+        "physical_stop": {
+          "fresh": true,
+          "samples": 42,
+          "source_window_sec": 0.41000000000000014,
+          "clock_window_sec": 0.41000000000000014,
+          "max_position_drift_rad": 0.0003152833197361815,
+          "max_velocity_rad_sec": 0.015911585377238174,
+          "requirements": {
+            "minimum_window_sec": 0.4,
+            "minimum_samples": 5,
+            "position_drift_rad": 0.002,
+            "velocity_rad_sec": 0.02,
+            "max_age_sec": 0.5,
+            "max_gap_sec": 0.2
+          }
+        },
+        "home": {
+          "action_status": 4,
+          "error_code": 0,
+          "fresh": true,
+          "home_recovery_observed": true,
+          "max_target_error_rad": 0.0011012925310871502,
+          "tracking_tolerance_rad": 0.01
+        },
+        "physics": {
+          "complete": true,
+          "steps": 5076,
+          "engine_steps": 5076,
+          "simulated_sec": 10.15200000000006,
+          "contact_steps": 0,
+          "contacts": 0,
+          "stop_enabled": true,
+          "stop_latched": false,
+          "invalid_values": 0,
+          "time_discontinuities": 0,
+          "report_sha256": "6caa0967e197f545eb3237b359cd898ae56102c466f9812dc46e6a32d46d91e6",
+          "finalizer_passed": true,
+          "native_checks_passed": true
+        },
+        "cancel_verification_sha256": "2df41c3c179e968e64be31c218d884eb912cc5b636eb49c3f2e8a8b3a948ff72"
+      }
+    ],
+    "scope_limits": [
+      "Normal verifies direct and MoveIt execution, state, clock and owned cleanup. Its standalone verifier does not execute the native-step finalizer.",
+      "The separate moving-cancel case includes the baseline, active own-goal cancellation, fresh stop and home observations, and complete native-step finalization.",
+      "The stop criterion is the declared position/velocity window in simulation. Physical robot stopping and safety were not evaluated.",
+      "The integrated execution workcell remains FR5 + UR5e. FR16 is available as an experimental model profile and read-only viewer preview."
+    ]
+  }
+}

@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.7",
+  "document_version": "1.8",
   "layout_baseline": "1.9",
   "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
-  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open. Adds the retained CI167 native startup SIGSEGV before launch signals, clock/timer callback diagnosis and an isolated pinned rclcpp_action clock-lock overlay. The same final diagnostic binary reproduced the legacy failure and passed with the optimized overlay. Fourteen actual ROS/HTTP cases, 22 sampled owned-process library mappings, full unit/model checks and packaging passed locally. CI165 source b02eb57 verification remains frozen historical evidence. Main promotion and rendered UI QA remain pending. Adds 2026-11-09/10 rendered integrated-UI followup and five presentation fixes, candidate normal/pre-native-cancel/moving-cancel plus ordinary approved execution, and deployed main11b2ce9 normal-grasp/browser smoke. Includes a new timestamped sampled video and canonical screenshot. Main CI174 and Pages28 attempt2 plus independent147-file verification completed. Physical handset and historical shutdown-delay cause remain unverified; historical two raw recordings remain unrecovered. Earlier pending statements describe their preserved source-time evidence. Adds W01 source778658e local evidence: persisted worker-ready cancellation, strict clean-helper/owned MoveGroup readiness, bounded startup drain, 120 focused and1462 full unit tests with1 excluded prototype fixture, eight actual HTTP jobs and13 native launches. Original failure baseline remains; historical45-second cause remains unresolved. Adds verifier-only retention repair b1d8b99, explicit CI174/CI175 missing-original-bundle gap, and new diagnostic v1 capture69d16ca3 with31poses/17JPEGs/one gap. All53 files3851836bytes agree. Focused55/full1476with1excludedfixturepassed locally. New capture is distinct from historical local recordings and excluded CI raw bundles. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. Remote CI and deployment are pending.",
+  "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open. Adds the retained CI167 native startup SIGSEGV before launch signals, clock/timer callback diagnosis and an isolated pinned rclcpp_action clock-lock overlay. The same final diagnostic binary reproduced the legacy failure and passed with the optimized overlay. Fourteen actual ROS/HTTP cases, 22 sampled owned-process library mappings, full unit/model checks and packaging passed locally. CI165 source b02eb57 verification remains frozen historical evidence. Main promotion and rendered UI QA remain pending. Adds 2026-11-09/10 rendered integrated-UI followup and five presentation fixes, candidate normal/pre-native-cancel/moving-cancel plus ordinary approved execution, and deployed main11b2ce9 normal-grasp/browser smoke. Includes a new timestamped sampled video and canonical screenshot. Main CI174 and Pages28 attempt2 plus independent147-file verification completed. Physical handset and historical shutdown-delay cause remain unverified; historical two raw recordings remain unrecovered. Earlier pending statements describe their preserved source-time evidence. Adds W01 source778658e local evidence: persisted worker-ready cancellation, strict clean-helper/owned MoveGroup readiness, bounded startup drain, 120 focused and1462 full unit tests with1 excluded prototype fixture, eight actual HTTP jobs and13 native launches. Original failure baseline remains; historical45-second cause remains unresolved. Adds verifier-only retention repair b1d8b99, explicit CI174/CI175 missing-original-bundle gap, and new diagnostic v1 capture69d16ca3 with31poses/17JPEGs/one gap. All53 files3851836bytes agree. Focused55/full1476with1excludedfixturepassed locally. New capture is distinct from historical local recordings and excluded CI raw bundles. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. The stage4 followup completed through PR89/90 at main90171c8 with six CI182 checks, Pages30 and independent156-file byte verification, plus canonical normal-grasp/capture/replay and owned cleanup. Adds source31c8a28 local six-row ROS-topic observations, experimental FR16 direct/MoveIt and moving-cancel validation, and six80g/120g normal/hold/cancel checks. Individual N1 observations, native time, control/physical state and raw-guard retention scope are explicit.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "a77e7de71ac759d6d28050b5f8beb3fae5242cb69a280f60aa0512b1870c703f",
+    "index.html": "c4989482e8aa03410a83aee4a02b575644ad3c276416b40ae080d24da2891576",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -27,10 +27,16 @@
     "media/viewer-8933-ui-f2daaef.mp4": "74b192df9a3f8c379f575a3d331ee6f5b32c79d3777cf58cc01410691d0d6221",
     "w01-validation-2026-11-10.json": "548e25c40698aaac115bb635052a62e1c831ae28a17ceacca5f18384c6071feb",
     "preservation-validation-2026-11-10.json": "7320e3b940c3323958bcf5ad5d1085ce62256454a6ceba4e850e2720aba12e62",
-    "grasp-recording-validation-2026-11-10.json": "f3f497b5266303a0b01c9456bb1e31f5c579f4ceb91b4f411298c7e35155401a",
+    "grasp-recording-validation-2026-11-10.json": "edca0a7f43e41d0204d6aad369000a50a696d0ced65c4b34be411d821aa8e10e",
     "media/grasp-recording-desktop-normal-2026-11-10.png": "07613dc6cef08cf23472c156a31517c5c8cffd6281980f1fd70402cb512e3e3a",
     "media/grasp-recording-mobile-normal-2026-11-10.png": "5a2eace689cfe0b0ea1e28219fd44daf8f574552fd5fe8c3ca393d6b0360b58c",
-    "media/grasp-recording-mobile-event-only-2026-11-10.png": "073a85dccef0dab0dacd6ae2c620b96ca1d0dc37899d56e639d7f624c96174e7"
+    "media/grasp-recording-mobile-event-only-2026-11-10.png": "073a85dccef0dab0dacd6ae2c620b96ca1d0dc37899d56e639d7f624c96174e7",
+    "fixed-topic-fr16-local-validation-2026-11-10.json": "7242a5713fd9024d7c8e81b19b8f144221f3957362b0e4d28e32fdc39d397069",
+    "block-mass-local-validation-2026-11-10.json": "622b52fae72d06937e7e495c7430fb346f854b51dd8397ba18010075894a8f49",
+    "gui-load-validation-2026-11-10.json": "0133f9de108945e7080a14e51c4a645b799f9661921032bd4956fc6a57848312",
+    "media/fr16-readonly-2026-11-10.png": "907408f5d65f48b5207898fa9115ee9f6325708e42e41d0bbf7f7cef1e6463a0",
+    "media/block80-ui-complete-2026-11-10.png": "155fba164cf014c3388b22da754a8258a79ae9e30116e6504969f49d13d99100",
+    "media/synchronized-v1-mobile-2026-11-10.png": "f8e0a3a97956e4b7e3bf2ed39eb3f7ba88ef0c0842cc79293c7e2e4c438934b1"
   },
   "workspace_integration_update": {
     "date": "2026-10-30",
@@ -505,7 +511,7 @@
     "source_commit": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
     "recording_version": 2,
     "evidence": "grasp-recording-validation-2026-11-10.json",
-    "evidence_sha256": "f3f497b5266303a0b01c9456bb1e31f5c579f4ceb91b4f411298c7e35155401a",
+    "evidence_sha256": "edca0a7f43e41d0204d6aad369000a50a696d0ced65c4b34be411d821aa8e10e",
     "actual_ros_http_cases": [
       "normal",
       "cancel_startup",
@@ -515,8 +521,49 @@
     "clock_association": "declared_same_run",
     "pose_sample_semantics": "parent_accepted_latest_ipc",
     "rendered_browser_qa": "passed desktop 1280x720 and browser override 390x844; physical handset not tested",
-    "release_ci_and_deployment": "pending",
+    "release_ci_and_deployment": "completed PR89/90 main90171c8; CI182 six required jobs, Pages30 and156-file byte verification",
     "frontend_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314",
-    "image_clock_fault_verification": "passed at 9c3a647; recording ended while native completed all six actions"
+    "image_clock_fault_verification": "passed at 9c3a647; recording ended while native completed all six actions",
+    "release_main_commit": "90171c816744387c51ffb114d7d8aabcb21b72b6"
+  },
+  "system_expansion_local_update": {
+    "date": "2026-11-10",
+    "source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+    "fixed_pilot_evidence": "fixed-topic-fr16-local-validation-2026-11-10.json",
+    "fixed_pilot_evidence_sha256": "7242a5713fd9024d7c8e81b19b8f144221f3957362b0e4d28e32fdc39d397069",
+    "mass_evidence": "block-mass-local-validation-2026-11-10.json",
+    "mass_evidence_sha256": "622b52fae72d06937e7e495c7430fb346f854b51dd8397ba18010075894a8f49",
+    "fixed_pilot_counts": {
+      "executed": 6,
+      "motion_succeeded": 4,
+      "expected_invalid_goal": 2,
+      "not_run": 14,
+      "repeats": 1
+    },
+    "fr16_profile": "experimental; read-only preview in integrated viewer",
+    "fr16_actual_cases": [
+      "normal",
+      "moving_cancel"
+    ],
+    "block_fixture_cases": 6,
+    "timing_scope": "same-process ROS-topic individual observations",
+    "prior_local_evidence_preserved": true
+  },
+  "ui_load_followup_20261110": {
+    "source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+    "evidence": "gui-load-validation-2026-11-10.json",
+    "conditions": 3,
+    "windows_per_condition": 1,
+    "samples_per_window": 25,
+    "original_group_aggregation": "unavailable_process_set_changed",
+    "narrowed_process_observations": "console_leader_and_individually_stable_owned_groups",
+    "browser_host_clocks": "separate, independently_proved_host_join_only",
+    "responsive_browser_px": [
+      390,
+      844
+    ],
+    "physical_phone_tested": false,
+    "native_grasp_UI_case": "new80g succeeded;210native poses,0RGB,33events; diagnostic producer setup error preserved",
+    "matched_source_assets_verified": true
   }
 }

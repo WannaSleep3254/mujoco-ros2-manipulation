@@ -212,12 +212,12 @@
       "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
     },
     "index.html": {
-      "bytes": 15563,
-      "sha256": "c7a5b9a0df3831c44827cca9c4e73c4d1b1be5965c8fae865845eb8149b192fa"
+      "bytes": 15545,
+      "sha256": "0bf09c51b1e25e82ba782e5c5de23172af84fcdaad330c167618859af534d82e"
     },
     "operator-demos.json": {
-      "bytes": 5547,
-      "sha256": "82e7900f2abb91495c72ee7705811a6ab7acc43c933b60228dcb43a645dab6bd"
+      "bytes": 5529,
+      "sha256": "c54c8132523d8e4c9416d7d61cfc6d11113c3673871320545595263087acc45f"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -380,12 +380,12 @@
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 89262,
-      "sha256": "5c4c8ab855f7d071000f93a880f3ec94ae72cf865ffa3b94d16777618598b192"
+      "bytes": 92097,
+      "sha256": "1d5907508dd34eb2b978610ca17d4d8c9c735287a59775ca90136ab8cde72374"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 4891,
-      "sha256": "7640ebca572a3f53085cd018832a3022163b7c187459381b65ed8faa0cf859f4"
+      "bytes": 7229,
+      "sha256": "34ac7c9eeb67c24c5eb424564ccea6d3ab6aea752022623f1ce8adcd5a194f64"
     },
     "operator/system-direction-2026-10-27/native-admission-reservation-verification.json": {
       "bytes": 193037,
@@ -559,17 +559,29 @@
       "bytes": 3638,
       "sha256": "21f4b5d2ef62318669bfce236faf0bcfe067d9dc1bd22d332da59b6e9f9773e7"
     },
+    "operator/viewer-status-2026-10-30/block-mass-local-validation-2026-11-10.json": {
+      "bytes": 21686,
+      "sha256": "622b52fae72d06937e7e495c7430fb346f854b51dd8397ba18010075894a8f49"
+    },
     "operator/viewer-status-2026-10-30/capture-evidence.json": {
       "bytes": 13002,
       "sha256": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a"
     },
+    "operator/viewer-status-2026-10-30/fixed-topic-fr16-local-validation-2026-11-10.json": {
+      "bytes": 24378,
+      "sha256": "7242a5713fd9024d7c8e81b19b8f144221f3957362b0e4d28e32fdc39d397069"
+    },
     "operator/viewer-status-2026-10-30/grasp-recording-validation-2026-11-10.json": {
-      "bytes": 10106,
-      "sha256": "f3f497b5266303a0b01c9456bb1e31f5c579f4ceb91b4f411298c7e35155401a"
+      "bytes": 11692,
+      "sha256": "edca0a7f43e41d0204d6aad369000a50a696d0ced65c4b34be411d821aa8e10e"
+    },
+    "operator/viewer-status-2026-10-30/gui-load-validation-2026-11-10.json": {
+      "bytes": 59526,
+      "sha256": "0133f9de108945e7080a14e51c4a645b799f9661921032bd4956fc6a57848312"
     },
     "operator/viewer-status-2026-10-30/index.html": {
-      "bytes": 85329,
-      "sha256": "a77e7de71ac759d6d28050b5f8beb3fae5242cb69a280f60aa0512b1870c703f"
+      "bytes": 102801,
+      "sha256": "c4989482e8aa03410a83aee4a02b575644ad3c276416b40ae080d24da2891576"
     },
     "operator/viewer-status-2026-10-30/integration-verification.json": {
       "bytes": 28191,
@@ -580,8 +592,16 @@
       "sha256": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db"
     },
     "operator/viewer-status-2026-10-30/manifest.json": {
-      "bytes": 29960,
-      "sha256": "8f6692a19c5857cced15eb99a96df741254173f6fd7223758759549ac0b66405"
+      "bytes": 32914,
+      "sha256": "7515b6ae57c3464584c8b5c9d040c251f6a71982a248408c16992d12f23b5ecb"
+    },
+    "operator/viewer-status-2026-10-30/media/block80-ui-complete-2026-11-10.png": {
+      "bytes": 93984,
+      "sha256": "155fba164cf014c3388b22da754a8258a79ae9e30116e6504969f49d13d99100"
+    },
+    "operator/viewer-status-2026-10-30/media/fr16-readonly-2026-11-10.png": {
+      "bytes": 93134,
+      "sha256": "907408f5d65f48b5207898fa9115ee9f6325708e42e41d0bbf7f7cef1e6463a0"
     },
     "operator/viewer-status-2026-10-30/media/grasp-recording-desktop-normal-2026-11-10.png": {
       "bytes": 133547,
@@ -594,6 +614,10 @@
     "operator/viewer-status-2026-10-30/media/grasp-recording-mobile-normal-2026-11-10.png": {
       "bytes": 104498,
       "sha256": "5a2eace689cfe0b0ea1e28219fd44daf8f574552fd5fe8c3ca393d6b0360b58c"
+    },
+    "operator/viewer-status-2026-10-30/media/synchronized-v1-mobile-2026-11-10.png": {
+      "bytes": 32326,
+      "sha256": "f8e0a3a97956e4b7e3bf2ed39eb3f7ba88ef0c0842cc79293c7e2e4c438934b1"
     },
     "operator/viewer-status-2026-10-30/media/viewer-8897.jpg": {
       "bytes": 127089,

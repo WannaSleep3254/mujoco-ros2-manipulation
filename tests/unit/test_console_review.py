@@ -9,7 +9,7 @@ import queue
 import tempfile
 from types import SimpleNamespace as NS
 import unittest
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock
 
 from mujoco_ros2_manipulation.operator_console.application import ConsoleApplication
 from mujoco_ros2_manipulation.operator_console.http_server import Handler
@@ -227,7 +227,7 @@ class ReviewHTTPTests(unittest.TestCase):
         for route,method in (('/api/plan','create_plan'),('/api/plan/execute','execute_plan')):
             value,app=self.request(route,{},token='wrong');self.assertEqual(value.respond.call_args.args[1],403)
             getattr(app,method).assert_not_called()
-            value,app=self.request(route,{});getattr(app,method).assert_called_once_with({})
+            value,app=self.request(route,{});getattr(app,method).assert_called_once_with({}, http_received_ns=ANY)
         for route,method in (('/api/view/review','select_review_plan'),('/api/plan/discard','discard_plan')):
             value,app=self.request(route,dict(request_id=PLAN,extra=1));self.assertEqual(value.respond.call_args.args[1],404)
             target=getattr(app.views,method) if route.endswith('review') else getattr(app,method);target.assert_not_called()

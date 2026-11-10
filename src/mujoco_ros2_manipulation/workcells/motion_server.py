@@ -12,6 +12,8 @@ import uuid
 import hashlib
 import xml.etree.ElementTree as ET
 
+from mujoco_ros2_manipulation.timing import capture_clock_context
+
 import rclpy
 from rcl_interfaces.srv import GetParameters
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
@@ -142,6 +144,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         require(self.directory.is_relative_to(allowed_runtime), "Command traces must be under runtime/")
         self.directory.mkdir(parents=True, exist_ok=False)
         self.session_id = uuid.uuid4().hex
+        self.timing_clock_context = capture_clock_context()
         self.review_store = PlanReviewStore(self.session_id)
         self.review_identity = None
         self.policy_path = policy_path
@@ -174,7 +177,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         self.dispatch_abort = self._dispatch_self_abort
         implementation_root = Path(__file__).resolve().parents[3]
         code_root = implementation_root if (implementation_root / ".git").exists() else cell.root
-        session = dict(schema_version=1, session_id=self.session_id,
+        session = dict(schema_version=1, session_id=self.session_id, clock_context=deepcopy(self.timing_clock_context),
             workcell=cell.id, model_manifest=self.metadata, workcell_contract=describe_workcell(cell, self.metadata), policy=self.policy,
             policy_name=policy_name, policy_sha256=file_sha256(policy_path),
             self_policy=self.self_policy, self_policy_sha256=self.self_policy_sha256,
@@ -372,6 +375,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         if self.initialized and self.active is None and self.pending is None:
             record = dict(schema_version=1, session_id=self.session_id, request_id=None,
                               status="blocked" if self.blocked else "ready", trace_directory=str(self.directory),
+                              clock_context=deepcopy(getattr(self, "timing_clock_context", None)),
                               review=self.review_store.summary())
             record["pose_tools"] = describe_pose_tools(self.cell)
             if getattr(self, "execution_target", None) is not None:
@@ -382,6 +386,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         return self.directory / (trace.data["request_id"] + ".json")
 
     def persist(self, trace):
+        trace.data["session_id"] = getattr(self, "session_id", None)
         if trace is self.active and self._defer_trace_persist:
             # Rewriting large candidate curves at every action event can consume
             # the shared start reservation. Keep small append-only event records
@@ -481,7 +486,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
             data = decode_message(message.data)
             identifier = request_id(data.get("request_id"))
         except (ValueError, TypeError) as error:
-            trace = RequestTrace(identifier, received_ns=received)
+            trace = RequestTrace(identifier, received_ns=received, clock_context=getattr(self, "timing_clock_context", None))
             trace.finish("rejected", dict(type=type(error).__name__, message=str(error)))
             self.persist(trace)
             return
@@ -489,7 +494,7 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
         if identifier in self.replies:
             self.replay_reply(identifier)
             return
-        trace = RequestTrace(identifier, received_ns=received)
+        trace = RequestTrace(identifier, received_ns=received, clock_context=getattr(self, "timing_clock_context", None))
         trace.data["command"] = data
         if plan_only:
             trace.data["mode"] = "plan_only"
@@ -518,14 +523,14 @@ class MotionCommandServer(PosePlanningMixin, WorkcellVerification):
             data = decode_message(message.data)
             identifier = request_id(data.get("request_id"))
         except (ValueError, TypeError) as error:
-            trace = RequestTrace(identifier, received_ns=received)
+            trace = RequestTrace(identifier, received_ns=received, clock_context=getattr(self, "timing_clock_context", None))
             trace.finish("rejected", dict(type=type(error).__name__, message=str(error)))
             self.persist(trace)
             return
         if identifier in self.replies:
             self.replay_reply(identifier)
             return
-        trace = RequestTrace(identifier, received_ns=received)
+        trace = RequestTrace(identifier, received_ns=received, clock_context=getattr(self, "timing_clock_context", None))
         trace.data.update(mode="approved_plan", approval=data)
         try:
             validate_approval(data)

@@ -231,48 +231,52 @@ class ConsoleViewsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'model changed'):
             source.validate()
 
-    def test_fr3_display_profile_preserves_execution_workcell_and_has_no_live_binding(self):
-        output=self.cell.root/'fr3-display';output.mkdir()
-        (output/'source.json').write_text('{"robot_profile_sha256":"fr3-checked"}')
-        profile=SimpleNamespace(output=output,label='FAIRINO FR3',scene_path=output/'fr3.xml',
-            joints=['fr3_joint'+str(i) for i in range(1,7)],home=[0.]*6)
-        checked=[]
-        def load(identifier,**kwargs):
-            if identifier!='fr3':raise ValueError('unavailable')
-            return profile
-        owner=console_class(load_profile=load,check_generated_model=lambda p:checked.append(p))(
-            self.app,host_factory=FakeHost)
-        self.assertIn(dict(id='profile:fr3',label='FAIRINO FR3',available=True),owner.catalog)
-        base=owner.base
-        before=dict(cell=self.app.cell,config=deepcopy(self.app.state.config),
-            positions=deepcopy(self.app.state.positions),server=deepcopy(self.app.state.server),
-            suspended=self.app.state.admission_suspended)
-        selected=owner.select(dict(mode='model_preview',source_id='profile:fr3'))
-        self.assertTrue(selected['preview_active'])
-        self.assertEqual(selected['binding']['source_id'],'profile:fr3')
-        self.assertEqual(selected['binding']['mode'],'model_preview')
-        for name in ('motion_session_id','job_id','run_id','request_id'):
-            self.assertIsNone(selected['binding'][name])
-        self.assertIs(owner.base,base)
-        self.assertIs(self.app.cell,before['cell'])
-        self.assertEqual(self.app.state.config,before['config'])
-        self.assertEqual(self.app.state.positions,before['positions'])
-        self.assertEqual(self.app.state.server,before['server'])
-        self.assertEqual(self.app.state.admission_suspended,before['suspended'])
-        self.assertEqual(owner.registry['profile:fr3'].joint_names,tuple(profile.joints))
-        self.assertGreaterEqual(len(checked),2)
-        binding=selected['binding_id']
-        with self.assertRaisesRegex(ValueError,'실시간 제어'):
-            owner.select(dict(mode='live',source_id='profile:fr3'))
-        self.assertEqual(owner.host.snapshot()['binding_id'],binding)
-        owner.tick()
-        self.assertEqual(owner.host.submissions,[],'A static FR3 preview must not consume FR5/UR5e feedback')
-        restored=owner.select(dict(mode='live',source_id=base.id))
-        self.assertEqual(restored['binding']['source_id'],'workcell:fr5_ur5e')
-        self.assertEqual(restored['binding']['motion_session_id'],before['server']['session_id'])
-        self.assertIs(owner.base,base)
+    def test_experimental_display_profiles_preserve_execution_workcell_and_have_no_live_binding(self):
+        for identifier in ('fr3', 'fr16'):
+            with self.subTest(profile=identifier):
+                output=self.cell.root/(identifier+'-display');output.mkdir()
+                (output/'source.json').write_text('{"robot_profile_sha256":"fr3-checked"}')
+                profile=SimpleNamespace(output=output,label='FAIRINO '+identifier.upper(),scene_path=output/(identifier+'.xml'),
+                    joints=[identifier+'_joint'+str(i) for i in range(1,7)],home=[0.]*6)
+                checked=[]
+                def load(requested,**kwargs):
+                    if requested!=identifier:raise ValueError('unavailable')
+                    return profile
+                owner=console_class(load_profile=load,check_generated_model=lambda p:checked.append(p))(
+                    self.app,host_factory=FakeHost)
+                self.assertIn(dict(id='profile:'+identifier,label='FAIRINO '+identifier.upper(),available=True),owner.catalog)
+                base=owner.base
+                before=dict(cell=self.app.cell,config=deepcopy(self.app.state.config),
+                    positions=deepcopy(self.app.state.positions),server=deepcopy(self.app.state.server),
+                    suspended=self.app.state.admission_suspended)
+                selected=owner.select(dict(mode='model_preview',source_id='profile:'+identifier))
+                self.assertTrue(selected['preview_active'])
+                self.assertEqual(selected['binding']['source_id'],'profile:'+identifier)
+                self.assertEqual(selected['binding']['mode'],'model_preview')
+                for name in ('motion_session_id','job_id','run_id','request_id'):
+                    self.assertIsNone(selected['binding'][name])
+                self.assertIs(owner.base,base)
+                self.assertIs(self.app.cell,before['cell'])
+                self.assertEqual(self.app.state.config,before['config'])
+                self.assertEqual(self.app.state.positions,before['positions'])
+                self.assertEqual(self.app.state.server,before['server'])
+                self.assertEqual(self.app.state.admission_suspended,before['suspended'])
+                self.assertEqual(owner.registry['profile:'+identifier].joint_names,tuple(profile.joints))
+                self.assertGreaterEqual(len(checked),2)
+                binding=selected['binding_id']
+                with self.assertRaisesRegex(ValueError,'실시간 제어'):
+                    owner.select(dict(mode='live',source_id='profile:'+identifier))
+                self.assertEqual(owner.host.snapshot()['binding_id'],binding)
+                owner.tick()
+                self.assertEqual(owner.host.submissions,[],'A static profile preview must not consume FR5/UR5e feedback')
+                restored=owner.select(dict(mode='live',source_id=base.id))
+                self.assertEqual(restored['binding']['source_id'],'workcell:fr5_ur5e')
+                self.assertEqual(restored['binding']['motion_session_id'],before['server']['session_id'])
+                self.assertIs(owner.base,base)
 
     def test_fr3_missing_or_stale_generated_model_stays_unavailable(self):
+        self.assertIn(dict(id='profile:fr16',label='FR16',available=False),self.owner.catalog)
+        self.assertNotIn('profile:fr16',self.owner.registry)
         self.assertIn(dict(id='profile:fr3',label='FR3',available=False),self.owner.catalog)
         self.assertNotIn('profile:fr3',self.owner.registry)
         def load(identifier,**kwargs):

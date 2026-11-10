@@ -1,0 +1,644 @@
+{
+  "schema_version": 1,
+  "kind": "two-block-mass-grasp-local-validation",
+  "date": "2026-11-10",
+  "source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+  "robot": "FR5",
+  "gripper": "validation parallel gripper",
+  "object": "fixed simple block",
+  "protocols": [
+    "normal",
+    "normal_hold",
+    "cancel_transport"
+  ],
+  "repeats_per_fixture_protocol": 1,
+  "completed_cases": 6,
+  "failed_cases": 0,
+  "actual_retries": 0,
+  "reported_suite_wall_sec": 215.972792455,
+  "reported_wall_scope": "Elapsed wall time for the six sequential local cases. It is not an individual command latency statistic.",
+  "original_audit_sha256": "51b8bb17f461b38f746e747499aea9ab78d19a02c1e62704915b5c7807285c38",
+  "hold_phase_original_binding_sha256": "5aed60e4af7e37caae84c9d6decaec3006e811ac1c5fe7481b881d6ac8d18522",
+  "rows": [
+    {
+      "fixture": "block_80g",
+      "mass_kg": 0.08,
+      "case": "normal",
+      "status": "passed",
+      "model_sha256": "66a16a47badaf29c5223107db84a172f545fcbf548eebe57e4cbc5c981c6d09c",
+      "execution_manifest_sha256": "4250f62d04a9baa79cd177358762ed93f5591c51dfc01e3e55fd73f173025fd3",
+      "worker_status": "succeeded",
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "actions": [
+        {
+          "stage": "approach",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "place",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "open",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_frame_count": 427,
+      "receipt_count": 427,
+      "source_sequence_gaps": 0,
+      "evidence_samples_bound_to_raw": 6,
+      "native_steps": 11216,
+      "all_owned_groups_gone": true,
+      "sample_count": 1,
+      "native_stop": {
+        "latched": true,
+        "reason": "grasp_cancel",
+        "phase": "stopped",
+        "controllers": {
+          "right_controller": "inactive",
+          "gripper_controller": "inactive",
+          "joint_state_broadcaster": "active",
+          "left_controller": "inactive"
+        },
+        "deactivation_requests": 1,
+        "error": ""
+      },
+      "readonly_validation_cleanup": {
+        "closed": true,
+        "abandoned": false,
+        "pending": false,
+        "late_completion_ignored": false,
+        "automatic_retry": false,
+        "leader_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "quiescent": true
+      },
+      "original_sha256": {
+        "worker_result": "8a542c39bfc10fff67c0bc115672e26072f367ad5445fa63546f3a6123b064ce",
+        "native_observations": "8fbe57443c513c36285860b2031e236925905810c418694fb793278c21a92725",
+        "physics": "63ab51e8adbc300bfcf85b32f1ac35dc926e3f7dde1e5a0e4bb7826171e52b5a"
+      }
+    },
+    {
+      "fixture": "block_80g",
+      "mass_kg": 0.08,
+      "case": "normal_hold",
+      "status": "passed",
+      "model_sha256": "66a16a47badaf29c5223107db84a172f545fcbf548eebe57e4cbc5c981c6d09c",
+      "execution_manifest_sha256": "4250f62d04a9baa79cd177358762ed93f5591c51dfc01e3e55fd73f173025fd3",
+      "worker_status": "succeeded",
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "actions": [
+        {
+          "stage": "approach",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "place",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "open",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_frame_count": 995,
+      "receipt_count": 995,
+      "source_sequence_gaps": 0,
+      "evidence_samples_bound_to_raw": 570,
+      "native_steps": 26418,
+      "all_owned_groups_gone": true,
+      "sample_count": 1,
+      "native_stop": {
+        "latched": true,
+        "reason": "grasp_cancel",
+        "phase": "stopped",
+        "controllers": {
+          "left_controller": "inactive",
+          "joint_state_broadcaster": "active",
+          "gripper_controller": "inactive",
+          "right_controller": "inactive"
+        },
+        "deactivation_requests": 1,
+        "error": ""
+      },
+      "readonly_validation_cleanup": {
+        "closed": true,
+        "abandoned": false,
+        "pending": false,
+        "late_completion_ignored": false,
+        "automatic_retry": false,
+        "leader_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "quiescent": true
+      },
+      "hold": {
+        "original_native_phase_counts": {
+          "3": 2,
+          "4": 562
+        },
+        "observed_native_simulation_sec": 30.016,
+        "sample_count": 564,
+        "first_original_stamp_ns": "12126000000",
+        "last_original_stamp_ns": "42142000000",
+        "maximum_gap_ns": 60000000,
+        "maximum_relative_position_error_m": 0.0013047045507511407,
+        "maximum_relative_angle_error_rad": 0.0018075624932352612,
+        "bilateral_fraction": 1.0,
+        "original_closed_reference_retained": true
+      },
+      "original_sha256": {
+        "worker_result": "546165f3d98d6b9ccdc2c9b97b5643ace01af5ba47ee2e8de76ab3ababd768bd",
+        "native_observations": "3c11863a296a4d79b1bf9af6f209c4bb1ae4486c8bccc16356842390eb15930d",
+        "physics": "0804cc43cac8950a07aebb7a8a5a5cb1f60ce06534d11aafb21c37d142b1aeb1"
+      }
+    },
+    {
+      "fixture": "block_80g",
+      "mass_kg": 0.08,
+      "case": "cancel_transport",
+      "status": "passed",
+      "model_sha256": "66a16a47badaf29c5223107db84a172f545fcbf548eebe57e4cbc5c981c6d09c",
+      "execution_manifest_sha256": "4250f62d04a9baa79cd177358762ed93f5591c51dfc01e3e55fd73f173025fd3",
+      "worker_status": "cancelled",
+      "physical_grasp": "unconfirmed",
+      "planning_attachment": "attached",
+      "actions": [
+        {
+          "stage": "approach",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 5,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_frame_count": 253,
+      "receipt_count": 253,
+      "source_sequence_gaps": 0,
+      "evidence_samples_bound_to_raw": 6,
+      "native_steps": 6684,
+      "all_owned_groups_gone": true,
+      "sample_count": 1,
+      "native_stop": {
+        "latched": true,
+        "reason": "grasp_cancel",
+        "phase": "stopped",
+        "controllers": {
+          "right_controller": "inactive",
+          "left_controller": "inactive",
+          "gripper_controller": "inactive",
+          "joint_state_broadcaster": "active"
+        },
+        "deactivation_requests": 1,
+        "error": ""
+      },
+      "readonly_validation_cleanup": {
+        "closed": true,
+        "abandoned": false,
+        "pending": false,
+        "late_completion_ignored": false,
+        "automatic_retry": false,
+        "leader_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "quiescent": true
+      },
+      "moving_cancel": {
+        "native_motion_m": 0.005126398825615831,
+        "physical_grasp_before_cancel": "confirmed",
+        "final_physical_grasp": "unconfirmed",
+        "final_planning_attachment": "attached",
+        "current_transport_terminal": 5
+      },
+      "original_sha256": {
+        "worker_result": "fd81db2a4242ef9b3b123472dd79516b017b0b4a7ddff5c10a67ae4d084d9004",
+        "native_observations": "62dba66dbc319bf4a6525e78313497b4f22d040b26bfe991aa2cee43fc975536",
+        "physics": "6ea0c502a40fd71e6c90e04a9f06c4266f06e087611110d9bbdf9d656f30b6aa"
+      }
+    },
+    {
+      "fixture": "block_120g",
+      "mass_kg": 0.12,
+      "case": "normal",
+      "status": "passed",
+      "model_sha256": "900849d873137538662286e8d4abc894a36e5b4f9d833048d6f33e2b1effe2b8",
+      "execution_manifest_sha256": "398bd2fd39b0c6500863c40a05aa88246813a80c8f20a9bf8b26fc65af1c1ff2",
+      "worker_status": "succeeded",
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "actions": [
+        {
+          "stage": "approach",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "place",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "open",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_frame_count": 430,
+      "receipt_count": 430,
+      "source_sequence_gaps": 0,
+      "evidence_samples_bound_to_raw": 6,
+      "native_steps": 11291,
+      "all_owned_groups_gone": true,
+      "sample_count": 1,
+      "native_stop": {
+        "latched": true,
+        "reason": "grasp_cancel",
+        "phase": "stopped",
+        "controllers": {
+          "gripper_controller": "inactive",
+          "right_controller": "inactive",
+          "joint_state_broadcaster": "active",
+          "left_controller": "inactive"
+        },
+        "deactivation_requests": 1,
+        "error": ""
+      },
+      "readonly_validation_cleanup": {
+        "closed": true,
+        "abandoned": false,
+        "pending": false,
+        "late_completion_ignored": false,
+        "automatic_retry": false,
+        "leader_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "quiescent": true
+      },
+      "original_sha256": {
+        "worker_result": "1c38f1fbc0a7c8f7d603b93cbd6acc88e2e807a763771b597266324bae90970b",
+        "native_observations": "689e8950153f69334a95ed9124fd055d07058d4de3a835baaab78775f3cc38b0",
+        "physics": "f6ae03e72ee7884265c62783b3e3693c30a47dc34f965b613124d296530b20ce"
+      }
+    },
+    {
+      "fixture": "block_120g",
+      "mass_kg": 0.12,
+      "case": "normal_hold",
+      "status": "passed",
+      "model_sha256": "900849d873137538662286e8d4abc894a36e5b4f9d833048d6f33e2b1effe2b8",
+      "execution_manifest_sha256": "398bd2fd39b0c6500863c40a05aa88246813a80c8f20a9bf8b26fc65af1c1ff2",
+      "worker_status": "succeeded",
+      "physical_grasp": "released",
+      "planning_attachment": "world",
+      "actions": [
+        {
+          "stage": "approach",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "place",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "open",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_frame_count": 988,
+      "receipt_count": 988,
+      "source_sequence_gaps": 0,
+      "evidence_samples_bound_to_raw": 566,
+      "native_steps": 26391,
+      "all_owned_groups_gone": true,
+      "sample_count": 1,
+      "native_stop": {
+        "latched": true,
+        "reason": "grasp_cancel",
+        "phase": "stopped",
+        "controllers": {
+          "gripper_controller": "inactive",
+          "joint_state_broadcaster": "active",
+          "right_controller": "inactive",
+          "left_controller": "inactive"
+        },
+        "deactivation_requests": 1,
+        "error": ""
+      },
+      "readonly_validation_cleanup": {
+        "closed": true,
+        "abandoned": false,
+        "pending": false,
+        "late_completion_ignored": false,
+        "automatic_retry": false,
+        "leader_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "quiescent": true
+      },
+      "hold": {
+        "original_native_phase_counts": {
+          "3": 2,
+          "4": 558
+        },
+        "observed_native_simulation_sec": 30.032,
+        "sample_count": 560,
+        "first_original_stamp_ns": "12014000000",
+        "last_original_stamp_ns": "42046000000",
+        "maximum_gap_ns": 60000000,
+        "maximum_relative_position_error_m": 0.0016170226598131445,
+        "maximum_relative_angle_error_rad": 0.0017779588921224235,
+        "bilateral_fraction": 1.0,
+        "original_closed_reference_retained": true
+      },
+      "original_sha256": {
+        "worker_result": "d865ee6694621b92442423f303dcb6d7342931a36ac969e864661de24b78c422",
+        "native_observations": "f750d2e66422edae3b6d964e4938773c014e4f57a0bb63aa02a3d3791ad3e738",
+        "physics": "2987413c4240f13482412c41f65e56b50d9ebd14de8c146e6ea43a978ac1a6f2"
+      }
+    },
+    {
+      "fixture": "block_120g",
+      "mass_kg": 0.12,
+      "case": "cancel_transport",
+      "status": "passed",
+      "model_sha256": "900849d873137538662286e8d4abc894a36e5b4f9d833048d6f33e2b1effe2b8",
+      "execution_manifest_sha256": "398bd2fd39b0c6500863c40a05aa88246813a80c8f20a9bf8b26fc65af1c1ff2",
+      "worker_status": "cancelled",
+      "physical_grasp": "unconfirmed",
+      "planning_attachment": "attached",
+      "actions": [
+        {
+          "stage": "approach",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "close",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "verification_lift",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 4,
+          "terminal_error_code": 0
+        },
+        {
+          "stage": "transport",
+          "accepted": true,
+          "terminal_observed": true,
+          "terminal_status": 5,
+          "terminal_error_code": 0
+        }
+      ],
+      "native_frame_count": 252,
+      "receipt_count": 252,
+      "source_sequence_gaps": 0,
+      "evidence_samples_bound_to_raw": 6,
+      "native_steps": 6650,
+      "all_owned_groups_gone": true,
+      "sample_count": 1,
+      "native_stop": {
+        "latched": true,
+        "reason": "grasp_cancel",
+        "phase": "stopped",
+        "controllers": {
+          "gripper_controller": "inactive",
+          "joint_state_broadcaster": "active",
+          "left_controller": "inactive",
+          "right_controller": "inactive"
+        },
+        "deactivation_requests": 1,
+        "error": ""
+      },
+      "readonly_validation_cleanup": {
+        "closed": true,
+        "abandoned": false,
+        "pending": false,
+        "late_completion_ignored": false,
+        "automatic_retry": false,
+        "leader_return_code": 0,
+        "process_group_gone": true,
+        "forced": false,
+        "quiescent": true
+      },
+      "moving_cancel": {
+        "native_motion_m": 0.005186217205619843,
+        "physical_grasp_before_cancel": "confirmed",
+        "final_physical_grasp": "unconfirmed",
+        "final_planning_attachment": "attached",
+        "current_transport_terminal": 5
+      },
+      "original_sha256": {
+        "worker_result": "415b47e58a902efd84b19b5d1749b5e2a39007215f423800c11223fa260b6ebd",
+        "native_observations": "441d97de9606ae1ce96703cce3a91f5d378f87d16ef5ce31edba3f4f2f1838da",
+        "physics": "4181b02968431177d28660b857dc07c0b3ec8f75318300571841e3e9d427e219"
+      }
+    }
+  ],
+  "hold_phase_association": [
+    {
+      "fixture": "block_80g",
+      "physical_confirmation_last_native_stamp_ns": "11676000000",
+      "first_two_phase3_samples": [
+        {
+          "native_sequence": 230,
+          "native_stamp_ns": "12126000000",
+          "after_confirmation_ns": 450000000,
+          "original_line_sha256": "31e883d34166aa4084e419b973932687702c68c59daa22d9510aef5128287360"
+        },
+        {
+          "native_sequence": 231,
+          "native_stamp_ns": "12176000000",
+          "after_confirmation_ns": 500000000,
+          "original_line_sha256": "fe4e1f3b88a8efa3d268f19af0e97f81322cc333804396ff9151bc2f8aa3ba03"
+        }
+      ],
+      "hold_sample_count": 564,
+      "no_frames_discarded_or_timestamps_adjusted": true
+    },
+    {
+      "fixture": "block_120g",
+      "physical_confirmation_last_native_stamp_ns": "11574000000",
+      "first_two_phase3_samples": [
+        {
+          "native_sequence": 227,
+          "native_stamp_ns": "12014000000",
+          "after_confirmation_ns": 440000000,
+          "original_line_sha256": "6fb688f26b200906c81855d7975d14e8a169169087774d425ff69e6b3ae649e9"
+        },
+        {
+          "native_sequence": 228,
+          "native_stamp_ns": "12074000000",
+          "after_confirmation_ns": 500000000,
+          "original_line_sha256": "a0afff940b5c3fed3cfb9b6634a41d3dc12fedbf058a5c352e2a2cfd369f0e8c"
+        }
+      ],
+      "hold_sample_count": 560,
+      "no_frames_discarded_or_timestamps_adjusted": true
+    }
+  ],
+  "physical_observation_guard": {
+    "source_sha256": {
+      "ros_task": "a4283b47591678f18225965aff84bff5a735d273e2d5f577e64c766c0d7c9220",
+      "ros_observation": "8094590a3335492b9fecb3f39e100e0ac308dabbf072a1caad506f3182d3995e"
+    },
+    "production_admission": "Frozen production checks require advancing native clock, capture/receipt/progress age at most 0.5 s, armed and fresh heartbeat in phase 0 through 7, and fresh ready/unlatched guard with three active controllers.",
+    "raw_per_hold_sample_guard_journal_retained": false,
+    "evidence_scope": "The worker enforces live guard checks in source pinned by hashes. Individual raw guard responses were not retained for each hold sample. Receipt age/clock eligibility alone does not establish physical authority.",
+    "phase3_scope": "Both holds include two phase3 native samples after completed physical lift confirmation, followed by phase4 samples. All original samples and timestamps are retained. Phase8 frozen physics contributes no hold duration."
+  },
+  "scope_limits": [
+    "One local case per mass and protocol. Physical robot payload, safety and general success rate require separate evaluation.",
+    "No RGB input or GUI performance was exercised by these six cases.",
+    "Bilateral-contact samples use nominal native-step semantics. Independent force timing was not measured.",
+    "Transport cancellation ends with physical_grasp unconfirmed and planning_attachment attached. Native phase8 freezes the simulation and deactivates three controllers; automatic physical release or logical detach is not claimed."
+  ]
+}

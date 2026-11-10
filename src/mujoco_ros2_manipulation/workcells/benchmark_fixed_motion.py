@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import re
+from statistics import median
 import time
 import uuid
 
@@ -20,6 +21,7 @@ import rclpy
 from std_srvs.srv import Trigger
 
 from mujoco_ros2_manipulation.paths import ROOT
+from mujoco_ros2_manipulation.timing import sample_ns, trace_clock_context
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 from mujoco_ros2_manipulation.verification.diagnostics import diagnostic_environment, finalize_physics
 from mujoco_ros2_manipulation.verification.reports import atomic_json
@@ -36,6 +38,175 @@ from mujoco_ros2_manipulation.workcells.verify_motion_reproduction import requir
 
 
 OUTCOMES = frozenset(("motion_succeeded", "planning_failed", "expected_invalid_goal"))
+
+TIMING_EVENTS = ("received", "first_motion", "actions_done", "settled", "terminal")
+TIMING_METRICS = ("publish_call",) + tuple("publish_to_" + name for name in TIMING_EVENTS)
+
+
+class _ObservedPublisher:
+    """Observe the existing publisher once, without introducing a transport."""
+    def __init__(self, publisher, observation):
+        self.publisher = publisher
+        self.observation = observation
+
+    def get_subscription_count(self):
+        return self.publisher.get_subscription_count()
+
+    def publish(self, message):
+        record = None
+        try:
+            payload = json.loads(message.data)
+            identifier = payload.get("request_id")
+            if isinstance(identifier, str) and re.fullmatch(r"[0-9a-f]{32}", identifier):
+                records = self.observation["publications"]
+                prior = next((item for item in records if item["request_id"] == identifier), None)
+                if prior is not None:
+                    prior["duplicate_calls"] += 1
+                elif len(records) < 32:
+                    record = dict(request_id=identifier,
+                        payload_sha256=hashlib.sha256(message.data.encode()).hexdigest(),
+                        command_sha256=hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+                        publish_begin_ns=sample_ns(), publish_returned_ns=None,
+                        publish_outcome="running", exception_type=None, duplicate_calls=0)
+                    records.append(record)
+                else:
+                    self.observation["dropped_publications"] += 1
+        except Exception:
+            # The underlying publisher remains authoritative for malformed input.
+            pass
+        try:
+            result = self.publisher.publish(message)
+        except BaseException as error:
+            if record is not None:
+                record.update(publish_returned_ns=sample_ns(), publish_outcome="raised",
+                              exception_type=type(error).__name__)
+            raise
+        if record is not None:
+            record.update(publish_returned_ns=sample_ns(), publish_outcome="returned")
+        return result
+
+
+def _observe_publications(node):
+    observation = dict(schema_version=1, transport="same_process_ros_topic",
+        session_id=getattr(node, "session_id", None),
+        clock_context=trace_clock_context(getattr(node, "timing_clock_context", None)),
+        publications=[], dropped_publications=0, scored=None,
+        unavailable_reason=None,
+        http_browser_timing=dict(value_sec=None, unavailable_reason="fixed_suite_uses_ros_topic"))
+    publisher = getattr(node, "command_publisher", None)
+    if publisher is not None and callable(getattr(publisher, "publish", None)):
+        node.command_publisher = _ObservedPublisher(publisher, observation)
+    else:
+        observation["unavailable_reason"] = "local_publisher_unavailable"
+    return observation
+
+
+def _original_ns(value):
+    if type(value) is str and value.isascii() and value.isdecimal() and len(value) <= 19:
+        parsed = int(value)
+        if parsed <= 2**63 - 1:
+            return parsed
+    return None
+
+
+def _timing_interval(begin, end, missing_reason):
+    start, finish = _original_ns(begin), _original_ns(end)
+    if start is None or finish is None:
+        return dict(value_sec=None, unavailable_reason=missing_reason)
+    if finish < start:
+        return dict(value_sec=None, unavailable_reason="clock_order_invalid")
+    return dict(value_sec=(finish - start) / 1e9, unavailable_reason=None)
+
+
+def _scored_timing(observation, result, trace):
+    identifier = (result.get("scored") or {}).get("request_id")
+    publication = next((item for item in observation["publications"]
+                        if item["request_id"] == identifier), None)
+    source = trace.get("clock") or {}
+    context = observation.get("clock_context")
+    reason = None
+    if publication is None:
+        reason = "local_publication_unavailable"
+    elif publication["duplicate_calls"]:
+        reason = "duplicate_publication_identity"
+    elif publication["publish_outcome"] != "returned":
+        reason = "publication_did_not_return"
+    elif publication["command_sha256"] != hashlib.sha256(
+            json.dumps(trace.get("command"), sort_keys=True, separators=(",", ":")).encode()).hexdigest():
+        reason = "published_command_mismatch"
+    elif (not isinstance(context, dict) or context.get("proof_status") != "self_observed"
+          or context.get("clock_source") != "CLOCK_MONOTONIC"
+          or not isinstance(context.get("context_id"), str)
+          or not re.fullmatch(r"[0-9a-f]{64}", context["context_id"])):
+        reason = "local_clock_context_unavailable"
+    elif (source.get("context") != context or source.get("context_id") != context["context_id"]):
+        reason = "source_clock_context_unproven"
+    elif (trace.get("request_id") != identifier or trace.get("session_id") != observation["session_id"]
+          or result.get("session_id") != observation["session_id"] or not observation["session_id"]):
+        reason = "request_session_mismatch"
+    stamps = dict(publish_begin_ns=(publication or {}).get("publish_begin_ns"),
+                  publish_returned_ns=(publication or {}).get("publish_returned_ns"),
+                  received_ns=source.get("origin_monotonic_ns"))
+    for name in TIMING_EVENTS[1:]:
+        stamps[name + "_ns"] = next((event.get("monotonic_ns") for event in trace.get("events", [])
+                                    if isinstance(event, dict) and event.get("name") == name), None)
+    metrics = dict(publish_call=_timing_interval(stamps["publish_begin_ns"], stamps["publish_returned_ns"],
+                                                "local_publication_stamps_unavailable"))
+    received = _original_ns(stamps["received_ns"])
+    begin = _original_ns(stamps["publish_begin_ns"])
+    if reason is None and (received is None or begin is None):
+        reason = "original_receive_stamp_unavailable"
+    if reason is None and (received < begin or str(source.get("origin_ns")) != stamps["received_ns"]):
+        reason = "source_clock_order_invalid"
+    returned = _original_ns(stamps["publish_returned_ns"])
+    if reason is None and (returned is None or returned < begin):
+        reason = "local_publish_return_stamp_invalid"
+    for name in TIMING_EVENTS:
+        end = stamps[name + "_ns"]
+        event_reason = reason
+        if event_reason is None and _original_ns(end) is not None and _original_ns(end) < received:
+            event_reason = "source_clock_order_invalid"
+        metrics["publish_to_" + name] = (dict(value_sec=None, unavailable_reason=event_reason)
+            if event_reason else _timing_interval(stamps["publish_begin_ns"], end, "original_" + name + "_stamp_unavailable"))
+    return dict(request_id=identifier, source_session_id=trace.get("session_id"),
+                source_clock=deepcopy(source), stamps=stamps, metrics=metrics,
+                clock_join=dict(status="same_process" if reason is None else "unavailable", unavailable_reason=reason),
+                first_motion_semantics="first observed joint displacement above the existing threshold")
+
+
+def _retain_timing(row, result):
+    observation = row.get("timing")
+    if observation is None or result is None or row.get("trace_path") is None:
+        return
+    try:
+        observation["scored"] = _scored_timing(observation, result, _read_json(Path(row["trace_path"])))
+    except Exception as error:
+        observation["scored"] = None
+        observation["unavailable_reason"] = "timing_evidence_unavailable"
+        observation["diagnostic_error_type"] = type(error).__name__
+
+
+def _timing_summary(rows):
+    groups = {}
+    for row in rows:
+        if not row["selected"]:
+            continue
+        key = row["case_id"], row["variant"]
+        group = groups.setdefault(key, dict(case_id=key[0], variant=key[1], planned=0,
+            completed=0, aborted=0, not_run=0, metrics={name: [] for name in TIMING_METRICS}))
+        group["planned"] += 1
+        group[row["status"]] = group.get(row["status"], 0) + 1
+        metrics = ((row.get("timing") or {}).get("scored") or {}).get("metrics", {})
+        for name, values in group["metrics"].items():
+            value = metrics.get(name, {}).get("value_sec")
+            if row["status"] == "completed" and value is not None:
+                values.append(value)
+    for group in groups.values():
+        group["metrics"] = {name: dict(count=len(values), median_sec=median(values) if values else None,
+                                      max_sec=max(values) if values else None)
+                            for name, values in group["metrics"].items()}
+    return dict(groups=list(groups.values()), statistics="individual rows, count, median and maximum only",
+                scope="fixed inputs and selected repeats; ROS topic publication, without browser or HTTP timing")
 
 
 def _numeric_host_load():
@@ -95,7 +266,7 @@ def _full_rows(suite, repeats, case_ids, *, domain_start=None):
             outcome=None, actual_request_status=None, fixed_case_result_path=None, fixed_case_result_sha256=None,
             verification_result_path=None, verification_result_sha256=None, trace_path=None, trace_sha256=None,
             unindexed_trace_present=False, unindexed_trace_path=None, unindexed_trace_sha256=None,
-            not_run_reason=None if row["selected"] else "case_not_selected", error=None)
+            not_run_reason=None if row["selected"] else "case_not_selected", error=None, timing=None)
     return rows
 
 
@@ -201,6 +372,7 @@ def run_suite(suite, cells, args, directory):
         compute_budget_wall_sec=suite["compute_budget_wall_sec"], initial_tolerance_rad=suite["initial_tolerance_rad"],
         source_sha256={name: file_sha256(Path(__file__).parent / name)
                        for name in ("benchmark_fixed_motion.py", "fixed_execution.py", "fixed_suite.py", "fixed_results.py")},
+        timing_source_sha256=file_sha256(Path(__file__).parents[1] / "timing.py"),
         rows=rows, counts=_counts(rows), current_row_id=None, error=None,
         note="Raw local suite run. Every selected row gets a fresh simulator; preparation is unscored. Expected planning failures continue; infrastructure/action/physics failures abort remaining rows. No result is automatically published.")
     directory.mkdir(parents=True, exist_ok=False)
@@ -210,6 +382,7 @@ def run_suite(suite, cells, args, directory):
 
     def save():
         raw["counts"] = _counts(rows)
+        raw["timing_summary"] = _timing_summary(rows)
         atomic_json(path, raw)
 
     save()  # Persist the complete catalog before any row preflight or launch.
@@ -268,6 +441,7 @@ def run_suite(suite, cells, args, directory):
                         progress(stage)
                     node = FixedCaseExecution(profile, measured_progress, case, row, output=output, suite_sha256=digest)
                     row["node_created_wall_offset_sec"] = time.perf_counter() - outer_started
+                    row["timing"] = _observe_publications(node)
                     return node
 
                 row_code = run_verification(launch_args, ROOT, rclpy, factory, Trigger,
@@ -280,6 +454,7 @@ def run_suite(suite, cells, args, directory):
                     finalize=finalize_physics, on_launch=on_launch)
                 report_path = capture["report"].path if "report" in capture else alias
                 verification, result = _collect_row(row, case, output, report_path, digest)
+                _retain_timing(row, result)
                 row["verification_exit_code"] = row_code
                 refresh_summary(row, output, report_path)
                 save()  # Preserve any scored request before checking the outer lifecycle.
@@ -297,7 +472,8 @@ def run_suite(suite, cells, args, directory):
                 # callback or node result. The alias is unique to this suite row.
                 report_path = report_path or (capture["report"].path if "report" in capture else alias)
                 try:
-                    _collect_row(row, case, output, report_path, digest)
+                    _, result = _collect_row(row, case, output, report_path, digest)
+                    _retain_timing(row, result)
                 except Exception as evidence_error:
                     row["evidence_error"] = dict(type=type(evidence_error).__name__, message=str(evidence_error))
                 try:

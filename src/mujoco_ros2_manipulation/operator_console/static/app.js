@@ -7,6 +7,99 @@ let config,token,state,targets={},arm=0,unit='deg',polling=false,latestRequest=n
 const requestCache=new Map(),requestLoads=new Map();
 const pendingCancels=new Map();
 const READ_TIMEOUT_MS=3000;
+const browserRequestTimings = [];
+let browserRequestSequence = 0;
+function browserTimingSample() {
+ try {
+  const value = performance.now();
+  return Number.isFinite(value) ? value : null;
+ } catch (_error) { return null; }
+}
+function renderBrowserTimings() {
+ try {
+  const element = $('request-metrics');
+  if (element) element.textContent = JSON.stringify({
+   clock: 'performance.now in this browser page',
+   samples: browserRequestTimings,
+  }, null, 2);
+ } catch (_error) { /* Optional diagnostics cannot alter a command. */ }
+}
+function browserRequestScope(data) {
+ return {
+  console_session_id: data?.lifecycle?.session_id ?? null,
+  workspace_selection_id: data?.task?.selection_id ?? null,
+  motion_session_id: data?.server?.session_id ?? null,
+ };
+}
+function beginBrowserRequestTiming(path, body) {
+ if (body === undefined) return null;
+ try {
+  const scope = browserRequestScope(state);
+  const scopeAvailable = Object.values(scope).every(value => typeof value === 'string' && /^[0-9a-f]{32}$/.test(value));
+  const entry = {
+   sequence: ++browserRequestSequence,
+   scope,
+   state_observation_unavailable_reason: scopeAvailable ? null : 'scope_unavailable',
+   path: path.split('?')[0],
+   request_id: typeof body?.request_id === 'string' && /^[0-9a-f]{32}$/.test(body.request_id) ? body.request_id : null,
+   started_ms: browserTimingSample(),
+   headers_ms: null,
+   json_complete_ms: null,
+   elapsed_ms: null,
+   http_status: null,
+   outcome: 'pending',
+   first_state_observed: false,
+   first_state_observed_ms: null,
+   first_state_status: null,
+   terminal_state_observed: false,
+   terminal_state_observed_ms: null,
+  };
+  browserRequestTimings.push(entry);
+  if (browserRequestTimings.length > 40) browserRequestTimings.shift();
+  renderBrowserTimings();
+  return entry;
+ } catch (_error) { return null; }
+}
+function finishBrowserRequestTiming(entry, response, data, outcome) {
+ if (!entry) return;
+ try {
+  entry.http_status = response?.status ?? entry.http_status;
+  entry.outcome = outcome;
+  if (outcome === 'accepted' || outcome === 'http_error') {
+   entry.json_complete_ms = browserTimingSample();
+   entry.elapsed_ms = entry.started_ms !== null && entry.json_complete_ms !== null && entry.json_complete_ms >= entry.started_ms
+    ? entry.json_complete_ms - entry.started_ms : null;
+   if (entry.request_id === null && typeof data?.request_id === 'string' && /^[0-9a-f]{32}$/.test(data.request_id)) entry.request_id = data.request_id;
+  }
+  renderBrowserTimings();
+ } catch (_error) { /* Optional diagnostics cannot alter a command. */ }
+}
+function observeBrowserRequestTimings(data) {
+ try {
+  const observed = browserTimingSample();
+  const scope = browserRequestScope(data);
+  for (const entry of browserRequestTimings) {
+   if (entry.request_id === null || entry.state_observation_unavailable_reason !== null) continue;
+   if (!Object.keys(scope).every(key => scope[key] === entry.scope[key])) {
+    entry.state_observation_unavailable_reason = 'scope_changed';
+    continue;
+   }
+   const record = data.history?.find(row => row.request_id === entry.request_id && row.session_id === scope.motion_session_id);
+   if (!record) continue;
+   if (!entry.first_state_observed) {
+    entry.first_state_observed = true;
+    entry.first_state_observed_ms = observed;
+    entry.first_state_status = record.status;
+   }
+   if (!entry.terminal_state_observed && terminal.has(record.status)) {
+    entry.terminal_state_observed = true;
+    entry.terminal_state_observed_ms = observed;
+   }
+  }
+  renderBrowserTimings();
+ } catch (_error) { /* Optional diagnostics cannot alter state admission. */ }
+}
+
 let stateReadSerial=0,lastObservedRead=0;
 let replanReadPending=false;
 let historySignature=null;
@@ -111,9 +204,13 @@ async function request(path,body){
  const selection=state?.task?.selection_id,selectionHeader=selection&&!path.startsWith('/api/task/')&&!/^\/api\/sync-recordings\/[^/]+\/control$/.test(path)?{'X-Workspace-Selection':selection}:{};
  const options=read?{signal:controller.signal,cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json','X-Operator-Token':token,...selectionHeader},body:JSON.stringify(body)};
  const timer=read?setTimeout(()=>controller.abort(),READ_TIMEOUT_MS):null;
- try{const response=await fetch(path,options);const data=await response.json();
+ const timing=beginBrowserRequestTiming(path,body);
+ try{const response=await fetch(path,options);
+  if(timing){timing.headers_ms=browserTimingSample();timing.http_status=response.status;}
+  const data=await response.json();
+  finishBrowserRequestTiming(timing,response,data,response.ok?'accepted':'http_error');
   if(!response.ok){const error=Error(data.error||`HTTP ${response.status}`);error.httpStatus=response.status;throw error;}return data;
- }catch(error){if(controller?.signal.aborted){const timeout=Error('상태 조회가 지연되었습니다. 연결을 다시 확인하고 있습니다.');timeout.code='read_timeout';throw timeout;}throw error;}
+ }catch(error){if(timing?.outcome==='pending')finishBrowserRequestTiming(timing,null,null,'transport_or_decode_error');if(controller?.signal.aborted){const timeout=Error('상태 조회가 지연되었습니다. 연결을 다시 확인하고 있습니다.');timeout.code='read_timeout';throw timeout;}throw error;}
  finally{if(timer!==null)clearTimeout(timer);}
 }
 function goalKind(){return $('goal-kind')?.value==='pose'?'pose':'joint';}
@@ -377,7 +474,7 @@ async function readState(){
  const serial=++stateReadSerial;
  try{const data=await request('/api/state');
   if(serial!==stateReadSerial||serial<lastObservedRead){const stale=Error('더 최신 상태 조회가 진행 중입니다. 상태를 확인한 뒤 다시 계획하세요.');stale.code='state_read_superseded';throw stale;}
-  lastObservedRead=serial;readConnected=true;render(data);return data;
+  lastObservedRead=serial;readConnected=true;observeBrowserRequestTimings(data);render(data);return data;
  }
  catch(error){if(serial===stateReadSerial&&serial>=lastObservedRead){lastObservedRead=serial;disconnected();}throw error;}
 }
@@ -490,7 +587,7 @@ async function boot(){
  }
  fields();
  if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('review',{focusTask:true}),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
- const {WorkspaceTaskControls}=await import('./task_controls.mjs');taskControls=new WorkspaceTaskControls({document,request,refresh:readState,notify:notice,showOperate:()=>show('operate',{focusTask:true}),cameraReady:()=>Boolean(sceneControls?.cameraReady()),beforeCommand:beginTaskCommand,afterCommand:endTaskCommand});
+ const {WorkspaceTaskControls}=await import('./task_controls.mjs');taskControls=new WorkspaceTaskControls({document,request,refresh:readState,notify:notice,showOperate:()=>{if(!$('operate').hidden&&$('operate').dataset.workspaceMode==='operate')show('operate',{focusTask:true});},cameraReady:()=>Boolean(sceneControls?.cameraReady()),beforeCommand:beginTaskCommand,afterCommand:endTaskCommand});
  window.addEventListener('pagehide',()=>taskControls?.destroy());
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));
  window.addEventListener('workspace-record',()=>{const record=state?.history.find(row=>row.request_id===state.active_request_id)||state?.history[0];if(record){show('history');detail(record.request_id);}});

@@ -232,8 +232,18 @@ def _xml_layout(mj, base):
     return rows
 
 
-def _compose(base, directory, initial_tcp=None, block_xyz=None, block_quat=None):
+BLOCK_FIXTURE_IDS = ("block_80g", "block_120g")
+
+
+def _block_mass(fixture_id):
+    _require(type(fixture_id) is str and fixture_id in BLOCK_FIXTURE_IDS,
+             "Expected the declared block_80g or block_120g fixture")
+    return {"block_80g": .08, "block_120g": .12}[fixture_id]
+
+
+def _compose(base, directory, initial_tcp=None, block_xyz=None, block_quat=None, *, block_fixture="block_80g"):
     """Static composition; returned model has no free object until FK locates it."""
+    block_mass = _block_mass(block_fixture)
     raw = {name:_read(base.output/name) for name in BASE_OUTPUTS}
     mj, robot, semantic = (ET.fromstring(raw[name]) for name in ("cell.xml","cell.urdf","cell.srdf"))
     option = mj.find("option")
@@ -272,7 +282,7 @@ def _compose(base, directory, initial_tcp=None, block_xyz=None, block_quat=None)
     ET.SubElement(table,"geom",name=TABLE_GEOM,type="box",size=".16 .1 .02",rgba=".3 .35 .4 1",**surface)
     block = ET.SubElement(world,"body",name=BLOCK_BODY,pos=_numbers(block_xyz),quat=_numbers(block_quat))
     ET.SubElement(block,"freejoint",name=FREE_JOINT)
-    ET.SubElement(block,"geom",name=BLOCK_GEOM,type="box",size=".02 .015 .025",mass=".08",rgba=".85 .5 .1 1",**surface)
+    ET.SubElement(block,"geom",name=BLOCK_GEOM,type="box",size=".02 .015 .025",mass=format(block_mass,".2f").lstrip("0"),rgba=".85 .5 .1 1",**surface)
     _tool_urdf(robot,table_position)
     hardware = robot.find("ros2_control/hardware")
     _require(hardware is not None,"Missing checked ROS hardware")
@@ -348,15 +358,16 @@ def _compiled_contract(mj, base):
     return model,layout
 
 
-def build_model(base, destination, *, base_validator=check_workcell):
+def build_model(base, destination, *, base_validator=check_workcell, block_fixture="block_80g"):
     """Publish seven explicit ROS outputs plus grasp.json in a new directory."""
+    block_mass = _block_mass(block_fixture)
     before=_base(base,base_validator)
     destination=Path(destination).absolute()
     _require(not destination.exists() and not destination.is_symlink() and ".." not in destination.parts,
              "ROS grasp output must be a new unlinked directory")
     parent=_checked_directory(destination.parent)
     _require(not destination.is_relative_to(base.output.absolute()),"ROS grasp cannot overwrite the base model")
-    values,geometry=_compose(base,destination)
+    values,geometry=_compose(base,destination,block_fixture=block_fixture)
     model,layout=_compiled_contract(values["cell.xml"],base)
     data=__import__('mujoco').MjData(model)
     # Initial keyframe only. Runtime owners must never use this to carry the block.
@@ -378,14 +389,14 @@ def build_model(base, destination, *, base_validator=check_workcell):
         manifest=dict(schema_version=1,artifact_kind=ARTIFACT,id="fr5_parallel_block_v1",simulation_only=True,
             inputs=dict(base_workcell_id=base.id,base_workcell_sha256=base.fingerprint,
                 base_manifest_sha256=_sha(_read(base.output/"source.json")),base_outputs_sha256=before["outputs"],
-                producer_sha256=_producers()),
+                producer_sha256=_producers(),block_fixture=dict(id=block_fixture,mass_kg=block_mass)),
             arm_joint_names=list(base.joints),arm_joint_limits=deepcopy(before["joint_limits"]),home_rad=geometry["home_rad"],
             finger_joint_names=list(FINGER_JOINTS),finger_joint_limits={name:dict(lower=0.,upper=.034,effort=20.,velocity=.05) for name in FINGER_JOINTS},
             scalar_joint_units={name:"rad" if name in base.joints else "m" for name in scalar},
             qpos_state_contract=dict(nq=21,nv=20,njnt=15,nu=14,layout=layout,
                 free_joint_format="world xyz m followed by quaternion wxyz"),
             tool=_tool_contract(),
-            block=dict(body=BLOCK_BODY,geom=BLOCK_GEOM,free_joint=FREE_JOINT,half_size_m=[.02,.015,.025],mass_kg=.08,
+            block=dict(body=BLOCK_BODY,geom=BLOCK_GEOM,free_joint=FREE_JOINT,half_size_m=[.02,.015,.025],mass_kg=block_mass,
                 initial_xyz_m=geometry["block_xyz_m"],initial_quaternion_wxyz=geometry["block_quaternion_wxyz"],attachment_constraint="none"),
             table=dict(body=TABLE_BODY,geom=TABLE_GEOM,half_size_m=[.16,.1,.02],position_m=geometry["table_position_m"],top_m=geometry["table_top_m"]),
             contact_policy=_contact_contract(),
@@ -419,8 +430,21 @@ def check_model(directory, base, *, expected_sha256=None, base_validator=check_w
     _require(type(value) is dict and set(value)==expected_fields and type(value["schema_version"]) is int
              and value["schema_version"]==1 and value["artifact_kind"]==ARTIFACT and value["id"]==POLICY
              and value["simulation_only"] is True,"Invalid grasp execution artifact")
+    _require(type(value["inputs"]) is dict, "Invalid grasp input identity")
+    fixture = value["inputs"].get("block_fixture")
+    # Earlier fixed-80g artifacts have no selector. They retain the original
+    # fingerprint contract and still pass the same producer/output rechecks.
+    block_fixture = "block_80g"
+    if fixture is not None:
+        _require(type(fixture) is dict, "Invalid grasp block fixture identity")
+        block_fixture = fixture.get("id")
+    block_mass = _block_mass(block_fixture)
+    if fixture is not None:
+        _require(fixture == dict(id=block_fixture,mass_kg=block_mass), "Grasp block fixture identity changed")
     expected_inputs=dict(base_workcell_id=base.id,base_workcell_sha256=base.fingerprint,
         base_manifest_sha256=_sha(_read(base.output/"source.json")),base_outputs_sha256=base_manifest["outputs"],producer_sha256=_producers())
+    if fixture is not None:
+        expected_inputs["block_fixture"] = dict(id=block_fixture,mass_kg=block_mass)
     _require(value["inputs"]==expected_inputs and value["fingerprint"]==_sha(_canonical(expected_inputs)),"Grasp base or producer identity changed")
     _require(value["arm_joint_names"]==list(base.joints) and value["home_rad"]==_home(base)
              and value["arm_joint_limits"]==base_manifest["joint_limits"] and value["finger_joint_names"]==list(FINGER_JOINTS),
@@ -444,7 +468,7 @@ def check_model(directory, base, *, expected_sha256=None, base_validator=check_w
         row=geometry[name]
         _require(type(row) is list and len(row)==size and all(type(x) in (int,float) and math.isfinite(x) and abs(x)<=100 for x in row),"Invalid grasp geometry")
     _require(abs(math.hypot(*geometry["block_quaternion_wxyz"])-1.)<=1e-6,"Grasp block quaternion is not unit")
-    values,expected_geometry=_compose(base,final_directory,geometry["initial_tcp_position_m"],geometry["block_xyz_m"],geometry["block_quaternion_wxyz"])
+    values,expected_geometry=_compose(base,final_directory,geometry["initial_tcp_position_m"],geometry["block_xyz_m"],geometry["block_quaternion_wxyz"],block_fixture=block_fixture)
     _require(geometry["block_xyz_m"]==[geometry["initial_tcp_position_m"][0],geometry["initial_tcp_position_m"][1],geometry["initial_tcp_position_m"][2]-.08],
              "Grasp block no longer matches the declared TCP pickup placement")
     _require(geometry["table_position_m"]==expected_geometry["table_position_m"] and geometry["table_top_m"]==expected_geometry["table_top_m"],"Grasp table location changed")
@@ -463,7 +487,7 @@ def check_model(directory, base, *, expected_sha256=None, base_validator=check_w
         _require(len(numbers)==len(expected) and all(math.isfinite(a) and abs(a-b)<=1e-12 for a,b in zip(numbers,expected)),"Grasp keyframe "+field+" changed")
     _require(value["tool"]==_tool_contract() and value["contact_policy"]==_contact_contract(),"Grasp TCP or contact policy contract changed")
     _require(value["physics_solver"]==_solver_contract(base),"Grasp contact solver contract changed")
-    _require(value["block"]==dict(body=BLOCK_BODY,geom=BLOCK_GEOM,free_joint=FREE_JOINT,half_size_m=[.02,.015,.025],mass_kg=.08,
+    _require(value["block"]==dict(body=BLOCK_BODY,geom=BLOCK_GEOM,free_joint=FREE_JOINT,half_size_m=[.02,.015,.025],mass_kg=block_mass,
         initial_xyz_m=geometry["block_xyz_m"],initial_quaternion_wxyz=geometry["block_quaternion_wxyz"],attachment_constraint="none"),"Grasp free block contract changed")
     _require(value["table"]==dict(body=TABLE_BODY,geom=TABLE_GEOM,half_size_m=[.16,.1,.02],position_m=geometry["table_position_m"],top_m=geometry["table_top_m"]),"Grasp table contract changed")
     validation=value["validation"]

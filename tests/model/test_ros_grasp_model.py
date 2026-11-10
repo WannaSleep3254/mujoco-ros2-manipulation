@@ -40,6 +40,57 @@ class RosGraspModelTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):cls.folder.cleanup()
 
+    def test_declared_120g_fixture_binds_mass_inertia_and_distinct_input_identity(self):
+        output = Path(self.folder.name) / 'block-120g'
+        heavier = build_model(self.base, output, block_fixture='block_120g')
+        model = self.mj.MjModel.from_xml_path(str(output/'cell.xml'))
+        block_id = model.body('fr5_grasp_block').id
+        self.assertEqual(heavier['inputs']['block_fixture'], dict(id='block_120g',mass_kg=.12))
+        self.assertEqual(heavier['block']['mass_kg'], .12)
+        self.assertNotEqual(heavier['fingerprint'], self.manifest['fingerprint'])
+        self.assertAlmostEqual(model.body_mass[block_id], .12)
+        half = [.02,.015,.025]
+        expected = [.12*(half[1]**2+half[2]**2)/3,
+                    .12*(half[0]**2+half[2]**2)/3,
+                    .12*(half[0]**2+half[1]**2)/3]
+        for actual, value in zip(sorted(model.body_inertia[block_id]), sorted(expected)):
+            self.assertAlmostEqual(actual, value, places=12)
+        for index in range(model.nbody):
+            if index != block_id:
+                self.assertAlmostEqual(model.body_mass[index], self.model.body_mass[index], places=12)
+        self.assertEqual(heavier['contact_policy'], self.manifest['contact_policy'])
+        self.assertEqual(heavier['physics_solver'], self.manifest['physics_solver'])
+        self.assertEqual((model.neq, model.nmocap), (0,0))
+        self.assertEqual(check_model(output,self.base), heavier)
+
+    def test_default_and_explicit_80g_keep_the_same_physical_fixture(self):
+        output = Path(self.folder.name) / 'explicit-80g'
+        explicit = build_model(self.base,output,block_fixture='block_80g')
+        self.assertEqual(explicit['inputs'], self.manifest['inputs'])
+        self.assertEqual(explicit['fingerprint'], self.manifest['fingerprint'])
+        self.assertEqual(explicit['block'], self.manifest['block'])
+        self.assertEqual((output/'cell.xml').read_bytes(),(self.output/'cell.xml').read_bytes())
+
+    def test_legacy_fixed_80g_input_contract_retains_its_original_fingerprint_form(self):
+        output = Path(self.folder.name) / 'legacy-input-80g'
+        manifest = build_model(self.base,output)
+        del manifest['inputs']['block_fixture']
+        raw = json.dumps(manifest['inputs'],sort_keys=True,separators=(',',':'),ensure_ascii=True).encode('ascii')
+        manifest['fingerprint'] = hashlib.sha256(raw).hexdigest()
+        (output/'grasp.json').write_text(json.dumps(manifest))
+        self.assertEqual(check_model(output,self.base), manifest)
+
+    def test_declared_fixture_cannot_be_changed_by_rehashing_only_metadata(self):
+        output = Path(self.folder.name) / 'forged-fixture'
+        manifest = build_model(self.base,output)
+        manifest['inputs']['block_fixture'] = dict(id='block_120g',mass_kg=.12)
+        manifest['block']['mass_kg'] = .12
+        raw = json.dumps(manifest['inputs'],sort_keys=True,separators=(',',':'),ensure_ascii=True).encode('ascii')
+        manifest['fingerprint'] = hashlib.sha256(raw).hexdigest()
+        (output/'grasp.json').write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError,'physical geometry'):
+            check_model(output,self.base)
+
     def test_whole_world_has_both_arms_and_metres_fingers_plus_complete_free_block(self):
         m=self.model
         self.assertEqual((m.nu,m.njnt,m.nq,m.nv),(14,15,21,20))
