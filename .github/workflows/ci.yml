@@ -111,7 +111,7 @@ jobs:
           if [[ '${{ matrix.robot }}' == 'workcell' ]]; then
             python3 build_workspace.py --download-debs --workcell '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
             PYTHONPATH=src .venv/bin/python prepare_workcell.py --workcell fr5_ur5e_eval_post
-            python3 build_workspace.py --component models --robots fr10 fr3
+            python3 build_workspace.py --component models --robots fr10 fr3 fr16
           else
             python3 build_workspace.py --download-debs --robots '${{ matrix.robot }}' --scene '${{ matrix.scene }}' 2>&1 | tee runtime/validation/build.log
           fi

@@ -1,9 +1,11 @@
 """ROS-free transport and owned-worker boundaries of the real acceptance tool."""
 from copy import deepcopy
 import json
+import shlex
 from pathlib import Path
 import tempfile
 import unittest
+import yaml
 from unittest.mock import patch
 
 from mujoco_ros2_manipulation.operator_console import verify_views
@@ -23,6 +25,19 @@ def fixture(mode='live'):
 
 
 class VerifyViewsTests(unittest.TestCase):
+    def test_workcell_ci_builds_every_readonly_preview_profile(self):
+        from mujoco_ros2_manipulation.workcells.config import load_workcell
+        workflow = yaml.safe_load((verify_views.ROOT / '.github/workflows/ci.yml').read_text())
+        step = next(item for item in workflow['jobs']['ros']['steps']
+                    if item.get('name') == 'Build locked runtime and selected model')
+        prepared = {instance.profile.id for instance in load_workcell().instances}
+        for line in step['run'].splitlines():
+            arguments = shlex.split(line)
+            if arguments[:5] == ['python3', 'build_workspace.py', '--component', 'models', '--robots']:
+                prepared.update(arguments[5:])
+        missing = set(verify_views.READ_ONLY_PROFILE_IDS) - prepared
+        self.assertFalse(missing, f'CI does not prepare readonly preview profiles: {sorted(missing)}')
+
     def test_fr3_preview_cannot_change_the_execution_context_or_acquire_live_authority(self):
         binding=make_binding('a'*32,2,'profile:fr3','model_preview')
         state=dict(execution_target=None,can_submit=False,can_plan=False,can_pose_plan=False,
