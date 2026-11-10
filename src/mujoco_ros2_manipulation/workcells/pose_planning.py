@@ -79,14 +79,14 @@ class PosePlanningMixin:
             raw = decode_message(message.data)
             identifier = request_id(raw.get("request_id"))
         except (ValueError, TypeError) as error:
-            trace = RequestTrace(identifier, received_ns=received)
+            trace = RequestTrace(identifier, received_ns=received, clock_context=getattr(self, "timing_clock_context", None))
             trace.finish("rejected", dict(type=type(error).__name__, message=str(error)))
             self.persist(trace)
             return
         if identifier in self.replies:
             self.replay_reply(identifier)
             return
-        trace = RequestTrace(identifier, received_ns=received)
+        trace = RequestTrace(identifier, received_ns=received, clock_context=getattr(self, "timing_clock_context", None))
         trace.data.update(mode="plan_only", pose_goal=deepcopy(raw))
         try:
             goal, tool = resolve_pose_tool(self.cell, raw)

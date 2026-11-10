@@ -49,7 +49,7 @@ class RequestJournalTests(unittest.TestCase):
             row = json.loads(path.read_text().splitlines()[-1])
         self.assertEqual(set(row), {"schema_version", "request_id", "event_index", "event", "status",
                                     "scheduled_start_simulation_sec", "compute_budget"})
-        self.assertEqual(row["event"], dict(name="goal_result", wall_sec=0.0, simulation_sec=None,
+        self.assertEqual(row["event"], dict(name="goal_result", wall_sec=0.0, monotonic_ns="1000000000", simulation_sec=None,
                                            arm="ur5e", status=4, error_code=0))
         self.assertNotIn("geometry", row["compute_budget"])
         self.assertIs(event["geometry"], private_geometry)

@@ -17,7 +17,7 @@ from .demo_jobs import matching_process
 
 
 # Checked display profiles never alter the configured execution workcell.
-READ_ONLY_PROFILE_IDS = ('fr5', 'fr10', 'ur5e', 'fr3')
+READ_ONLY_PROFILE_IDS = ('fr5', 'fr10', 'ur5e', 'fr3', 'fr16')
 
 
 def _extra_view_sources(values, cell, *, enabled):

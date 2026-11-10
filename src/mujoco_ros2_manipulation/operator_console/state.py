@@ -6,10 +6,12 @@ import re
 import threading
 import time
 
+from ..timing import mark_timing
 from ..workcells.motion_request import validate_command, validate_approval
 from .catalog import validate_pose_registration
 
 TERMINAL = {"succeeded", "failed", "cancelled", "rejected"}
+_NO_RECEIPT = object()
 
 
 class ConsoleState:
@@ -66,7 +68,7 @@ class ConsoleState:
                 self.clock_advanced_at = self.clock()
             self.simulation_sec, self.clock_at = stamp, self.clock()
 
-    def status(self, record):
+    def status(self, record, *, received_ns=_NO_RECEIPT):
         if not isinstance(record, dict) or not isinstance(record.get("session_id"), str) or record.get("status") not in TERMINAL | {"ready", "blocked", "queued", "running"}:
             return
         identifier = record.get("request_id")
@@ -76,6 +78,9 @@ class ConsoleState:
                 request_id(identifier)
             except ValueError:
                 return
+        # ROS cannot create or replace the console's local timing namespace.
+        record = dict(record)
+        record.pop("console_timing", None)
         with self.lock:
             if self.server and self.server["session_id"] != record["session_id"]:
                 self.pending_plan = None
@@ -104,16 +109,25 @@ class ConsoleState:
             if identifier:
                 old = self.history.get(identifier, {})
                 self.history[identifier] = dict(old, **deepcopy(record))
+                timing = old.get("console_timing")
+                if (received_ns is not _NO_RECEIPT and identifier in self.ui_ids and isinstance(timing, dict)
+                        and timing.get("expected_motion_session_id") == record["session_id"]):
+                    mark_timing(self.history[identifier], "first_status_received_ns", received_ns)
+                    if record["status"] in TERMINAL:
+                        mark_timing(self.history[identifier], "first_terminal_received_ns", received_ns)
                 self.history.move_to_end(identifier)
                 if record["status"] in ("queued", "running"):
                     self.active = identifier
                 elif record["status"] in TERMINAL and self.active == identifier:
                     self.active = None
-                while len(self.history) > 40:
-                    pending_id = (self.pending_plan or {}).get("plan_request_id")
-                    key = next(k for k in self.history if k != self.active and k != pending_id)
-                    self.history.pop(key)
-                    self.ui_ids.discard(key)
+                self._trim_history()
+
+    def _trim_history(self):
+        while len(self.history) > 40:
+            pending_id = (self.pending_plan or {}).get("plan_request_id")
+            key = next(k for k in self.history if k != self.active and k != pending_id)
+            self.history.pop(key)
+            self.ui_ids.discard(key)
 
     def reason(self, *, ignore_request=None):
         now = self.clock()
@@ -229,6 +243,7 @@ class ConsoleState:
                     plan_request_id=payload["plan_request_id"], execution_request_id=identifier)
             if self.pending_plan is not None:
                 self.pending_plan["state"] = "approval_queued" if kind == "approve" else "invalidated"
+            self._trim_history()
             return True
 
     def snapshot(self):

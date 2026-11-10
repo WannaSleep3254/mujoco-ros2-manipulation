@@ -13,6 +13,26 @@ FAIRINO FR3 V6는 실험 프로필로 추가했습니다. 모델 생성·표시�
 | FAIRINO FR10 V6 | [FR10 안내](fr10/README.md) | `fairino10_v6_group` | `wrist3_link` | [이미지 목록](fr10/assets.json) · [검증](../fr10_validation.json) |
 | Universal Robots UR5e | [UR5e 안내](ur5e/README.md) | `ur5e_manipulator` | `tool0` | [이미지 목록](ur5e/assets.json) · [검증](../ur5e_validation.json) |
 | FAIRINO FR3 V6 · 실험 | [FR3 모델 정리](../fr3-model.md) | `fairino3_v6_group` | `wrist3_link` | [프로필](../../config/robots/fr3.yaml) · 대표 실행·취소·복귀 확인 |
+| FAIRINO FR16 V6 · 실험 | [실행·취소 검증](../operator/viewer-status-2026-10-30/index.html#fixed-topic-fr16-20261110) | `fairino16_v6_group` | `wrist3_link` | [프로파일](../../config/robots/fr16.yaml) · 직접 제어·MoveIt·이동 중 취소 확인 |
+
+## FR16 실험 프로파일의 생성과 검증
+
+현재 런타임 빌드를 마친 환경에서 모델을 생성합니다. 사용 중인 모델은 종료한 뒤 생성하며,
+아래 두 검증은 빈 ROS 도메인에서 하나씩 실행합니다.
+
+```bash
+PYTHONPATH=src .venv/bin/python build_workspace.py --component models --robots fr16
+source ./manipulation_env.sh
+python3 verify_robot.py --robot fr16 --domain 212
+python3 verify_robot_cancel.py --robot fr16 --domain 213 \
+  --output runtime/validation/fr16-cancel-01
+```
+
+출력 폴더는 새 경로를 사용합니다. 일반 검증은 직접 제어·MoveIt 실행과 상태·시계·프로세스 정리를
+확인합니다. 별도의 취소 검증은 실행 중인 목표의 취소, 새 관측의 정지·홈 복귀와 native 단계의
+종료 검사까지 확인합니다. 이번 FR16 취소 실행에서는 5,076단계를 보존했습니다.
+통합 뷰어에서는 FR16을 읽기 전용으로 살펴볼 수 있으며, 작업실 실행은 FR5·UR5e를 사용합니다.
+[대표 입력의 결과와 범위](../operator/viewer-status-2026-10-30/index.html#fixed-topic-fr16-20261110)
 
 ## 기존 세 모델의 초기 자세 미리보기
 
@@ -72,7 +92,7 @@ docs/robots/
 | MuJoCo·MoveIt의 바닥·장애물 배치 일치 | 바닥·받침대의 공통 작업 환경 생성 구현. [작업 환경 구성](../architecture.md) |
 | 고정 베이스·FR5/UR5e 공동 작업 환경·공동 충돌 회피 | 공동 물리·공동 계획·출발 조정·최종 검사 구현. [현재 상태](../simulator_status.md)와 [명령 규약](../motion_requests.md) |
 | 도구 TCP와 Pose 목표 | 명시한 TCP·목표 좌표계의 Pose/IK 계획·검토·승인 경로 구현. [사용법과 범위](../verification.md) |
-| 그리퍼와 집기·이동·놓기 | FR5·검증용 평행 그리퍼·블록의 독립 물리 시연 구현. Python MuJoCo 3.14·로컬 DLS로 실행하며, 기존 ROS native 3.12의 그리퍼·MoveIt 부착 연결은 후속 작업. [집기 실험](../grasping.md) |
+| 그리퍼와 집기·이동·놓기 | FR5·검증용 평행 그리퍼·블록의 native ROS 제어·MoveIt 부착과 같은 작업실의 실행·상태·취소를 연결했습니다. 독립 MuJoCo 실험도 보존합니다. [집기 실행](../grasping.md#ros-2moveit-실행) · [현재 검증](../operator/viewer-status-2026-10-30/index.html#block-mass-20261110) |
 | 공통 작업 목표의 모델별 비교 표·영상 | 후속 검증 필요 |
 | 접촉 조립·힘/순응 제어 | 미구현 |
 | 실제 로봇 연결 | 미검증 |

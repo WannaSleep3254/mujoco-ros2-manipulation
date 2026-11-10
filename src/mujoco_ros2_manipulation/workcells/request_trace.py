@@ -5,16 +5,20 @@ from datetime import datetime, timezone
 import json
 import time
 
+from mujoco_ros2_manipulation.timing import decimal_ns, trace_clock_context
 from mujoco_ros2_manipulation.verification.reports import atomic_json
 
 
 class RequestTrace:
-    def __init__(self, identifier, *, clock=time.monotonic_ns, received_ns=None):
+    def __init__(self, identifier, *, clock=time.monotonic_ns, received_ns=None, clock_context=None):
         self.clock = clock
         self.origin = clock() if received_ns is None else received_ns
+        context = trace_clock_context(clock_context)
         self.data = dict(schema_version=1, request_id=identifier, status="received",
             received_utc=datetime.now(timezone.utc).isoformat(),
             clock=dict(wall="time.monotonic_ns in this recorder process", origin_ns=self.origin,
+                       origin_monotonic_ns=decimal_ns(self.origin), context_id=(context or {}).get("context_id"),
+                       context=context,
                        simulation="ROS joint-state /clock seconds; never added to wall durations"),
             events=[], spans=[], metrics={}, error=None, failure_kind=None, dispatched_goals=0)
         self.event("received")
@@ -23,7 +27,9 @@ class RequestTrace:
         return (self.clock() - self.origin) / 1e9
 
     def event(self, name, *, simulation_sec=None, **details):
-        record = dict(name=name, wall_sec=self.elapsed(), simulation_sec=simulation_sec, **details)
+        observed_ns = self.clock()
+        record = dict(name=name, wall_sec=(observed_ns - self.origin) / 1e9, simulation_sec=simulation_sec, **details)
+        record["monotonic_ns"] = decimal_ns(observed_ns)
         if self.data["events"] and record["wall_sec"] < self.data["events"][-1]["wall_sec"]:
             raise ValueError("Recorder monotonic clock moved backwards")
         self.data["events"].append(record)
@@ -81,7 +87,7 @@ class RequestTrace:
             raise ValueError("Event cursor must be an integer within the recorded events")
         if since == count:
             return count
-        event_fields = ("name", "wall_sec", "simulation_sec", "joint_state_stamp_simulation_sec",
+        event_fields = ("name", "wall_sec", "monotonic_ns", "simulation_sec", "joint_state_stamp_simulation_sec",
                         "arm", "status", "error_code", "accepted", "controller", "goal_uuid")
         budget_fields = ("limit_wall_sec", "elapsed_wall_sec", "exceeded", "enforcement")
         budget = self.data.get("compute_budget")
@@ -103,4 +109,6 @@ class RequestTrace:
         return dict(schema_version=1, session_id=session_id, request_id=self.data["request_id"],
             status=self.data["status"], stage=self.data["events"][-1]["name"],
             trace_path=str(path), metrics=deepcopy(self.data["metrics"]), error=self.data["error"],
-            failure_stage=self.data.get("failure_stage"), failure_kind=self.data.get("failure_kind"))
+            failure_stage=self.data.get("failure_stage"), failure_kind=self.data.get("failure_kind"),
+            source_clock=dict(context_id=self.data["clock"].get("context_id"),
+                              origin_monotonic_ns=self.data["clock"].get("origin_monotonic_ns")))

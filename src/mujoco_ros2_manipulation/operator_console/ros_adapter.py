@@ -75,8 +75,10 @@ class ConsoleBridge(Node):
                 self.state.guard = None
 
     def status_message(self, message):
+        from mujoco_ros2_manipulation.timing import sample_ns
+        received_ns = sample_ns()
         try:
-            self.state.status(decode_message(message.data))
+            self.state.status(decode_message(message.data), received_ns=received_ns)
         except ValueError:
             with self.state.lock:
                 self.state.server = None
@@ -140,6 +142,7 @@ class ConsoleBridge(Node):
                     clear_identity()
 
     def send(self):
+        from mujoco_ros2_manipulation.timing import mark_timing, sample_ns
         try:
             kind, payload = self.outbox.get_nowait()
         except queue.Empty:
@@ -176,6 +179,14 @@ class ConsoleBridge(Node):
                     return
                 publisher = (self.commands if kind == "command" else self.plans if kind == "plan"
                              else self.pose_plans if kind == "pose_plan" else self.approvals)
-                publisher.publish(String(data=json.dumps(payload, allow_nan=False)))
+                message = String(data=json.dumps(payload, allow_nan=False))
+                mark_timing(record, "publish_begin_ns", sample_ns())
+                publisher.publish(message)
+                mark_timing(record, "publish_returned_ns", sample_ns())
         elif kind == "cancel":
-            self.cancels.publish(String(data=json.dumps(payload)))
+            message = String(data=json.dumps(payload))
+            with self.state.lock:
+                mark_timing(self.state.history.get(payload["request_id"], {}), "cancel_publish_begin_ns", sample_ns())
+            self.cancels.publish(message)
+            with self.state.lock:
+                mark_timing(self.state.history.get(payload["request_id"], {}), "cancel_publish_returned_ns", sample_ns())

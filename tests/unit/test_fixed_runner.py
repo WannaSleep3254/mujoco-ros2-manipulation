@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+from statistics import median
 import tempfile
 import time
 from types import SimpleNamespace
@@ -22,6 +23,7 @@ from unittest.mock import Mock
 import uuid
 
 from mujoco_ros2_manipulation.paths import ROOT
+from mujoco_ros2_manipulation.timing import capture_clock_context, sample_ns, trace_clock_context
 from mujoco_ros2_manipulation.model_build.integrity import file_sha256
 from mujoco_ros2_manipulation.verification.reports import atomic_json
 from mujoco_ros2_manipulation.workcells.config import load_workcell
@@ -43,11 +45,12 @@ def require(value, message):
 def load_runner_functions(**overrides):
     """Compile current production functions while skipping ROS/GUI imports."""
     source = ast.parse(RUNNER_SOURCE.read_text())
-    nodes = [deepcopy(node) for node in source.body if isinstance(node, (ast.FunctionDef, ast.Assign))]
+    nodes = [deepcopy(node) for node in source.body if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.Assign))]
     parsed = ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[]))
     namespace = dict(__file__=str(RUNNER_SOURCE), ROOT=ROOT, argparse=argparse,
         deepcopy=deepcopy, datetime=datetime, timezone=timezone, hashlib=hashlib,
         json=json, os=os, Path=Path, re=re, time=time, uuid=uuid, require=require,
+        median=median, sample_ns=sample_ns, trace_clock_context=trace_clock_context,
         file_sha256=file_sha256, atomic_json=atomic_json, make_suite=make_suite,
         planned_rows=planned_rows, suite_hash=suite_hash, BASE_ID=BASE_ID, POST_ID=POST_ID)
     namespace.update(overrides)
@@ -177,7 +180,8 @@ class FixedRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Unindexed trace escapes"):
                 functions["_collect_row"](row, self.suite["cases"][0], output, None, suite_hash(self.suite))
 
-    def lifecycle(self, directory, *, preparation_failure=False, malformed_summary=False):
+    def lifecycle(self, directory, *, preparation_failure=False, malformed_summary=False,
+                  cases=None, lifecycle_failure=None, with_timing=False):
         root = Path(directory) / "workspace"
         (root / "runtime/validation").mkdir(parents=True)
         launches, probes = [], []
@@ -195,6 +199,12 @@ class FixedRunnerTests(unittest.TestCase):
             def __init__(child, profile, progress, case, row, *, output, suite_sha256):
                 child.case, child.row, child.output, child.suite_sha256 = case, row, output, suite_sha256
                 output.mkdir(parents=True, exist_ok=False)
+                if with_timing:
+                    child.session_id = uuid.uuid4().hex
+                    child.timing_clock_context = capture_clock_context()
+                    def publish(message):
+                        child.received_ns = time.monotonic_ns()
+                    child.command_publisher = SimpleNamespace(publish=publish)
                 progress("fixed_case_scored_request")
 
         def verification(args, workspace, ros, factory, trigger_type, **kwargs):
@@ -209,21 +219,36 @@ class FixedRunnerTests(unittest.TestCase):
                 status="aborted" if failed else "completed", maintenance=[], scored=None,
                 error=dict(type="SyntheticSetupError", message="Preparation stopped") if failed else None)
             if not failed:
-                planning_failed = len(launches) == 1
+                invalid = child.case["expectation"] == "invalid_goal"
+                planning_failed = len(launches) == 1 and not invalid
                 request = f'{child.row["index"]+1:032x}'
                 trace = dict(schema_version=1, request_id=request,
-                    status="failed" if planning_failed else "succeeded",
+                    status="failed" if planning_failed or invalid else "succeeded",
                     command=dict(strategy="coordinated", target_rad=child.case["target_rad"]))
+                if with_timing:
+                    payload = dict(request_id=request, **trace["command"])
+                    child.command_publisher.publish(SimpleNamespace(data=json.dumps(payload)))
+                    result["session_id"] = child.session_id
+                    trace.update(session_id=child.session_id, command=payload,
+                        clock=dict(origin_ns=child.received_ns, origin_monotonic_ns=str(child.received_ns),
+                                   context_id=child.timing_clock_context["context_id"], context=child.timing_clock_context),
+                        events=[dict(name="terminal", monotonic_ns=str(time.monotonic_ns()))])
                 trace_path = child.output / (request + ".json")
                 atomic_json(trace_path, trace)
                 result["scored"] = dict(request_id=request, status=trace["status"], trace_file=trace_path.name,
-                    trace_sha256=file_sha256(trace_path), outcome="planning_failed" if planning_failed else "motion_succeeded",
+                    trace_sha256=file_sha256(trace_path), outcome="expected_invalid_goal" if invalid else "planning_failed" if planning_failed else "motion_succeeded",
                     failure_kind="budget_exhausted" if planning_failed else None, failure_stage=None)
             atomic_json(child.output / "fixed-case.json", result)
             report = dict(run_id="synthetic-" + str(len(launches)), ros_domain_id=args.domain,
                 status="failed" if failed else "passed", motion_checks_passed=not failed,
                 physics_checks_passed=True, shutdown_clean=True, launch_return_code=0,
                 process_group_gone=True, error=result["error"])
+            if lifecycle_failure == "physics":
+                report["physics_checks_passed"] = False
+            elif lifecycle_failure == "cleanup":
+                report["process_group_gone"] = False
+            elif lifecycle_failure == "action":
+                report["motion_checks_passed"] = False
             atomic_json(report_path, report)
             return 1 if failed else 0
 
@@ -233,7 +258,7 @@ class FixedRunnerTests(unittest.TestCase):
             summarize_row=summarize, aggregate_results=aggregate, FixedCaseExecution=Child,
             rclpy=SimpleNamespace(), Trigger=object(), diagnostic_environment=lambda *args: None,
             finalize_physics=lambda *args: None)
-        args = SimpleNamespace(repeats=1, cases=["local_small"], domain=171,
+        args = SimpleNamespace(repeats=1, cases=cases or ["local_small"], domain=171,
                                suite=CANONICAL_SUITE, suite_file_sha256=file_sha256(CANONICAL_SUITE))
         output = root / "runtime/validation/synthetic-suite"
         with redirect_stdout(io.StringIO()):
@@ -285,6 +310,37 @@ class FixedRunnerTests(unittest.TestCase):
                 self.assertGreaterEqual(row["node_created_wall_offset_sec"], 0)
                 self.assertGreaterEqual(row["unscored_scoring_ready_wall_offset_sec"], 0)
                 self.assertIn("cpu_count", row["numeric_host_load_start"])
+
+    def test_six_row_pilot_preserves_twenty_cells_and_expected_failures_without_retry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            code, raw, launches, probes = self.lifecycle(directory,
+                cases=["local_small", "environment_post", "invalid_goal"], with_timing=True)
+            self.assertEqual((code, launches, probes), (0, list(range(171, 177)), list(range(171, 177))))
+            self.assertEqual(len(raw["rows"]), 20)
+            self.assertEqual(raw["counts"]["completed"], 6)
+            self.assertEqual(raw["counts"]["not_run"], 14)
+            self.assertEqual(raw["counts"]["expected_invalid_goal"], 2)
+            selected = [row for row in raw["rows"] if row["selected"]]
+            for case_id in ("local_small", "environment_post", "invalid_goal"):
+                self.assertEqual(sorted(row["max_plan_candidates"] for row in selected if row["case_id"] == case_id), [1, 12])
+            self.assertEqual(len({row["request_id"] for row in selected}), 6)
+            self.assertEqual(len(raw["timing_summary"]["groups"]), 6)
+            self.assertNotIn("p95", json.dumps(raw["timing_summary"]))
+            for row in selected:
+                self.assertEqual(row["timing"]["scored"]["clock_join"]["status"], "same_process")
+                self.assertIsNotNone(row["timing"]["scored"]["metrics"]["publish_to_received"]["value_sec"])
+                self.assertEqual(row["timing"]["http_browser_timing"]["unavailable_reason"], "fixed_suite_uses_ros_topic")
+
+    def test_unsafe_physics_action_or_cleanup_stops_before_any_next_row(self):
+        for failure in ("physics", "action", "cleanup"):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                code, raw, launches, probes = self.lifecycle(directory,
+                    cases=["local_small", "environment_post", "invalid_goal"], lifecycle_failure=failure)
+                self.assertEqual((code, launches, probes), (1, [171], [171]))
+                self.assertEqual(raw["counts"]["aborted"], 1)
+                self.assertEqual(raw["counts"]["not_run"], 19)
+                self.assertEqual(raw["rows"][0]["actual_request_status"], "failed")
+                self.assertEqual(file_sha256(Path(raw["rows"][0]["trace_path"])), raw["rows"][0]["trace_sha256"])
 
     def test_malformed_independent_summary_aborts_but_preserves_scored_raw_evidence(self):
         with tempfile.TemporaryDirectory() as directory:

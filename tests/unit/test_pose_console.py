@@ -13,7 +13,7 @@ import queue
 import tempfile
 from types import SimpleNamespace as NS
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 from mujoco_ros2_manipulation.operator_console.application import ConsoleApplication
 from mujoco_ros2_manipulation.operator_console.catalog import validate_pose_registration
@@ -238,7 +238,7 @@ class PoseHTTPTests(unittest.TestCase):
 
     def test_pose_route_never_falls_back_to_joint_or_direct_execution(self):
         handler, app, goal = self.request()
-        app.create_pose_plan.assert_called_once_with(goal)
+        app.create_pose_plan.assert_called_once_with(goal, http_received_ns=ANY)
         app.create_plan.assert_not_called(); app.submit.assert_not_called()
         self.assertEqual(handler.respond.call_args.args[1], 202)
 
