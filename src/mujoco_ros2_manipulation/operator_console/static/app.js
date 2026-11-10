@@ -198,9 +198,25 @@ async function cancelCurrentRequest(){
  }catch(error){if(pendingCancels.get(identifier)===entry)entry.phase='unconfirmed';notice('취소 요청의 전달 결과를 확인하지 못했습니다. 현재 상태와 로그를 확인하세요. 자동으로 다시 보내지 않습니다. '+error.message);}
  finally{publishCancellation(identifier);await poll();refreshControls();}
 }
-function notice(text){$('notice-text').textContent=text;$('notice').hidden=false;}
+let noticeOwner = null;
+function notice(text, owner = null) {
+ // Keep command errors visible while a scene request settles in the background.
+ if (owner && !$('notice').hidden && noticeOwner === null) return false;
+ noticeOwner = owner;
+ $('notice-text').textContent = text;
+ $('notice').hidden = false;
+ return true;
+}
+function clearNotice(owner) {
+ if (owner === null || owner !== noticeOwner) return false;
+ noticeOwner = null;
+ $('notice').hidden = true;
+ return true;
+}
 async function request(path,body){
  const read=body===undefined,controller=read?new AbortController():null;
+ const selectsView = !read && path === '/api/view/select';
+ if (selectsView) ++stateReadSerial;
  const selection=state?.task?.selection_id,selectionHeader=selection&&!path.startsWith('/api/task/')&&!/^\/api\/sync-recordings\/[^/]+\/control$/.test(path)?{'X-Workspace-Selection':selection}:{};
  const options=read?{signal:controller.signal,cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json','X-Operator-Token':token,...selectionHeader},body:JSON.stringify(body)};
  const timer=read?setTimeout(()=>controller.abort(),READ_TIMEOUT_MS):null;
@@ -211,7 +227,10 @@ async function request(path,body){
   finishBrowserRequestTiming(timing,response,data,response.ok?'accepted':'http_error');
   if(!response.ok){const error=Error(data.error||`HTTP ${response.status}`);error.httpStatus=response.status;throw error;}return data;
  }catch(error){if(timing?.outcome==='pending')finishBrowserRequestTiming(timing,null,null,'transport_or_decode_error');if(controller?.signal.aborted){const timeout=Error('상태 조회가 지연되었습니다. 연결을 다시 확인하고 있습니다.');timeout.code='read_timeout';throw timeout;}throw error;}
- finally{if(timer!==null)clearTimeout(timer);}
+ finally {
+  if (selectsView) ++stateReadSerial;
+  if (timer!==null) clearTimeout(timer);
+ }
 }
 function goalKind(){return $('goal-kind')?.value==='pose'?'pose':'joint';}
 function poseToolRow(){return config?.pose_tools?.find(row=>row.arm_id===$('pose-arm')?.value)||null;}
@@ -586,7 +605,7 @@ async function boot(){
   }catch(_error){/* An unavailable navigation target never changes control admission. */}
  }
  fields();
- if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,showOperate:()=>show('review',{focusTask:true}),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
+ if(config.render_enabled&&config.scene_view_version===1){try{const {SceneControls}=await import('./scene_app.js');sceneControls=new SceneControls({request,notify:notice,clearNotice,showOperate:()=>show('review',{focusTask:true}),onAvailabilityChange:()=>{if(state)refreshControls();}});}catch(error){notice('로컬 3D 화면을 시작하지 못했습니다: '+error.message);}}else{document.querySelectorAll('.scene-toolbar,.viewer-measurements,.view-mode-line,.scene-slot').forEach(el=>el.hidden=true);$('view-method').textContent=config.render_enabled?'ROS 관절 상태 → 서버 이미지':'3D·이미지 표시 비활성화';}
  const {WorkspaceTaskControls}=await import('./task_controls.mjs');taskControls=new WorkspaceTaskControls({document,request,refresh:readState,notify:notice,showOperate:()=>{if(!$('operate').hidden&&$('operate').dataset.workspaceMode==='operate')show('operate',{focusTask:true});},cameraReady:()=>Boolean(sceneControls?.cameraReady()),beforeCommand:beginTaskCommand,afterCommand:endTaskCommand});
  window.addEventListener('pagehide',()=>taskControls?.destroy());
  document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>show(el.dataset.view)));

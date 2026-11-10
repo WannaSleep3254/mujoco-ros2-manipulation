@@ -9,6 +9,10 @@ const source = (await readFile(new URL('../../src/mujoco_ros2_manipulation/opera
 
 const inspectorSource = await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/inspector.js', import.meta.url), 'utf8');
 
+const appNoticeSource = (await readFile(new URL('../../src/mujoco_ros2_manipulation/operator_console/static/app.js', import.meta.url), 'utf8'))
+  .replace(/boot\(\)\.catch\(error=>\{notice\('조작 화면을 불러오지 못했습니다: '\+error\.message\);\}\);\s*$/, '');
+const noticeFactory = new Function('document', appNoticeSource + '\nreturn {notice,clearNotice:typeof clearNotice === "function" ? clearNotice : () => false};');
+
 function deferred() {
   let resolve, reject;
   const promise = new Promise((yes, no) => {resolve = yes; reject = no;});
@@ -58,6 +62,7 @@ function harness({manifest, poseResult = false, submitFrame = true, collision = 
   };
   element('demos').hidden = true;
   element('scene-collision').checked = collision;
+  element('notice').hidden = true;
   const cameraNodes=[];
   for(const scope of ['operate','demo']) {
     const add=(name,dataset)=>{const node=element(scope+'-'+name);Object.assign(node.dataset,dataset);cameraNodes.push(node);};
@@ -113,12 +118,13 @@ function harness({manifest, poseResult = false, submitFrame = true, collision = 
     new Function('document','window','CustomEvent','fetch','AbortController',inspectorSource)(document,window,CustomEvent,inspectorFetch,AbortController);
   }
   let availabilityChanges=0;
+  const banner = noticeFactory(document);
   const controls = new SceneControls({onAvailabilityChange:()=>{availabilityChanges++;},request: (path, payload) => {
     const request = {...deferred(), path, payload}; requests.push(request);
     active++; maximumActive = Math.max(maximumActive, active);
     return request.promise.finally(() => active--);
-  }, notify: message => notices.push(message), showOperate: () => {controls.shown = (controls.shown || 0)+1;}});
-  return {controls, element, requests, notices, timers,document, events, windowListeners, inspectorReads,
+  }, notify: (message, owner) => {notices.push(message);return banner.notice(message, owner);}, clearNotice: banner.clearNotice, showOperate: () => {controls.shown = (controls.shown || 0)+1;}});
+  return {controls, element, requests, notices, banner, timers,document, events, windowListeners, inspectorReads,
     observe(value) {window.dispatchEvent(new CustomEvent('console-observation', {detail:value}));controls.update(value);},
     lost() {window.dispatchEvent(new CustomEvent('console-observation-lost'));},
     replyHierarchy(value) {inspectorReads.at(-1).resolve({status:200,ok:true,json:async()=>value});},
@@ -331,6 +337,82 @@ test('manifest failures obey backoff and a finite attempt limit, notifying once'
   assert.equal(h.notices.length, 2);
 });
 
+test('a successful current manifest retry clears its own visible scene error', async () => {
+  let loads = 0;
+  const h = harness({manifest: () => ++loads === 1
+    ? Promise.reject(new Error('Scene resource request failed (400)')) : Promise.resolve({})});
+  h.controls.update(state()); await drain();
+  assert.equal(h.element('notice').hidden, false);
+  assert.match(h.element('notice-text').textContent, /3D 모델 로드 실패/);
+  h.advance(1000); h.controls.update(state()); await drain();
+  assert.equal(h.controls.loadedBinding, 'a'.repeat(64));
+  assert.equal(h.element('notice').hidden, true);
+});
+
+test('a new scene binding clears only its previous scene error', async () => {
+  let loads = 0;
+  const h = harness({manifest: () => ++loads === 1
+    ? Promise.reject(new Error('Scene resource request failed (400)')) : Promise.resolve({})});
+  h.controls.update(state()); await drain();
+  h.controls.update(state('b', 2)); await drain();
+  assert.equal(h.element('notice').hidden, true);
+  assert.equal(h.controls.loadedBinding, 'b'.repeat(64));
+});
+
+test('scene recovery cannot dismiss a newer control error', async () => {
+  let loads = 0;
+  const h = harness({manifest: () => ++loads === 1
+    ? Promise.reject(new Error('Scene resource request failed (400)')) : Promise.resolve({})});
+  h.controls.update(state()); await drain();
+  h.banner.notice('취소 요청의 전달 결과를 확인하지 못했습니다.');
+  h.advance(1000); h.controls.update(state()); await drain();
+  assert.equal(h.element('notice').hidden, false);
+  assert.equal(h.element('notice-text').textContent, '취소 요청의 전달 결과를 확인하지 못했습니다.');
+  h.controls.invalidateTask(); await drain();
+  assert.equal(h.element('notice').hidden, false);
+});
+
+test('a pending scene error cannot overwrite a newer control error', async () => {
+  const load = deferred(), h = harness({manifest: () => load.promise});
+  h.controls.update(state());
+  h.banner.notice('실행 요청을 확인하지 못했습니다.');
+  load.reject(new Error('Scene resource request failed (400)')); await drain();
+  assert.equal(h.element('notice-text').textContent, '실행 요청을 확인하지 못했습니다.');
+  assert.equal(h.element('notice').hidden, false);
+});
+
+test('model selection invalidates before POST and ignores old state and failures while pending', async () => {
+  const loads = [], h = harness({manifest: () => {const load = deferred();loads.push(load);return load.promise;}});
+  h.controls.update(state());
+  const selection = h.controls.select('model_preview', 'profile:fr16');
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.requests[0].path, '/api/view/select');
+  assert.equal(h.controls.expected, null);
+  assert.equal(h.controls.viewer.aborts, 1);
+  h.controls.update(state());
+  assert.equal(loads.length, 1, 'A state read during POST cannot reload the previous binding');
+  loads[0].reject(new Error('Scene resource request failed (400)')); await drain();
+  assert.equal(h.element('notice').hidden, true);
+  h.reply(0); await selection;
+  h.controls.update(state('b', 2)); loads[1].resolve({}); await drain();
+  assert.equal(h.controls.loadedBinding, 'b'.repeat(64));
+  assert.equal(h.requests.length, 1, 'Only the explicit view selection is posted');
+});
+
+test('a failed model selection can reload the prior binding without hiding its command error', async () => {
+  const loads = [], h = harness({manifest: () => {const load = deferred();loads.push(load);return load.promise;}});
+  h.controls.update(state()); loads[0].resolve({}); await drain();
+  const selection = h.controls.select('model_preview', 'profile:fr16');
+  h.fail(0, '표시 선택을 변경하지 못했습니다.'); await selection;
+  assert.equal(h.controls.selecting, false);
+  assert.equal(h.element('notice').hidden, false);
+  h.controls.update(state()); loads[1].resolve({}); await drain();
+  assert.equal(h.controls.loadedBinding, 'a'.repeat(64));
+  assert.equal(h.element('notice-text').textContent, '표시 선택을 변경하지 못했습니다.');
+  assert.equal(h.element('notice').hidden, false);
+  assert.equal(h.requests.length, 1);
+});
+
 test('null binding clears and aborts a pending manifest and rejects its late success', async () => {
   const load = deferred(), h = harness({manifest: () => load.promise});
   h.controls.update(state());
@@ -372,6 +454,7 @@ test('selection is serialized and destroy discards pending playback work', async
   assert.equal(h.requests.length, 1);
   assert.equal(h.requests[0].path, '/api/view/select');
   h.reply(0); await selection;
+  h.controls.update(state('b', 2)); await drain();
   h.controls.play(); const pending = h.controls.seek(7);
   h.controls.destroy(); assert.equal(await pending, false);
   h.reply(1); await drain();
