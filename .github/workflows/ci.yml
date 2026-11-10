@@ -72,7 +72,8 @@ jobs:
     runs-on: ubuntu-22.04
     container: ros:humble-ros-base-jammy
     # The workcell includes native task ownership and all three shared-UI cases.
-    timeout-minutes: ${{ matrix.robot == 'workcell' && 50 || 40 }}
+    # Include dependency setup and final evidence preservation in the job budget.
+    timeout-minutes: ${{ matrix.robot == 'workcell' && 60 || 40 }}
     strategy:
       fail-fast: false
       matrix:
