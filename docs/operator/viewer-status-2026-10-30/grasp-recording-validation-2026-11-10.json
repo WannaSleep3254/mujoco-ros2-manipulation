@@ -210,8 +210,7 @@
     "Native poses are accepted latest-IPC samples, not every native physics step.",
     "Native cancellation and owned cleanup are separate from recording completion.",
     "Historical intermittent approximately 45-second cleanup delay remains unresolved.",
-    "Two historical original synchronized recordings remain unrecovered.",
-    "New release CI, main promotion and deployment remain pending."
+    "Two historical original synchronized recordings remain unrecovered."
   ],
   "image_fault_followup": {
     "status": "passed",
@@ -253,5 +252,50 @@
     "installed_entrypoint": "manipulation-operator --help",
     "installed_entrypoint_status": "passed",
     "installed_import": "passed outside checkout"
+  },
+  "release_followup": {
+    "date": "2026-11-10",
+    "source_main_commit": "90171c816744387c51ffb114d7d8aabcb21b72b6",
+    "pull_requests": [
+      89,
+      90
+    ],
+    "required_verification": {
+      "run_number": 182,
+      "run_id": 42711306994,
+      "head_sha": "90171c816744387c51ffb114d7d8aabcb21b72b6",
+      "status": "success",
+      "required_jobs_passed": 6
+    },
+    "pages": {
+      "run_number": 30,
+      "run_id": 42711306952,
+      "attempt": 1,
+      "head_sha": "90171c816744387c51ffb114d7d8aabcb21b72b6",
+      "status": "success"
+    },
+    "published_bytes": {
+      "files_expected": 156,
+      "files_passed": 156,
+      "mismatches": 0,
+      "total_bytes": 39752503,
+      "verification_result_sha256": "0ce10cbf224483575567ed7eb81e34698244432c05b6e16b54bcd1de0dcbf091"
+    },
+    "canonical_acceptance": {
+      "source_commit": "90171c816744387c51ffb114d7d8aabcb21b72b6",
+      "normal_grasp_capture_replay_passed": true,
+      "owned_cleanup_passed": true,
+      "result_sha256": "22048abe266f7afa7d39c028df556e1230b600c89ce7bca545a85be5cc03fe56"
+    },
+    "preserved_local_provenance": {
+      "three_case_source_commit": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
+      "browser_followup_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314"
+    },
+    "references": [
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/89",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/90",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/42711306994",
+      "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/42711306952"
+    ]
   }
 }

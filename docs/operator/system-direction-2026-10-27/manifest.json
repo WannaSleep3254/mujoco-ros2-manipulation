@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.14",
+  "document_version": "1.15",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
-  "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. Remote CI and deployment are pending.",
+  "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. The stage4 followup completed through PR89/90 at main90171c8 with six CI182 checks, Pages30 and independent156-file byte verification, plus canonical normal-grasp/capture/replay and owned cleanup. Adds source31c8a28 local six-row ROS-topic observations, experimental FR16 direct/MoveIt and moving-cancel validation, and six80g/120g normal/hold/cancel checks. Individual N1 observations, native time, control/physical state and raw-guard retention scope are explicit.",
   "assets": {
-    "index.html": "5c4c8ab855f7d071000f93a880f3ec94ae72cf865ffa3b94d16777618598b192",
+    "index.html": "1d5907508dd34eb2b978610ca17d4d8c9c735287a59775ca90136ab8cde72374",
     "review-data.json": "350fcd6106eaa2e222b93996788e3dacc6b74a7fcc20c066ea64e807f033f477",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
@@ -46,7 +46,7 @@
     "source_commit": "ec21566344a0c73511bc7245a6a0a3e8d3fbcb38",
     "recording_version": 2,
     "evidence": "../viewer-status-2026-10-30/grasp-recording-validation-2026-11-10.json",
-    "evidence_sha256": "f3f497b5266303a0b01c9456bb1e31f5c579f4ceb91b4f411298c7e35155401a",
+    "evidence_sha256": "edca0a7f43e41d0204d6aad369000a50a696d0ced65c4b34be411d821aa8e10e",
     "actual_ros_http_cases": [
       "normal",
       "cancel_startup",
@@ -56,8 +56,49 @@
     "clock_association": "declared_same_run",
     "pose_sample_semantics": "parent_accepted_latest_ipc",
     "rendered_browser_qa": "passed desktop 1280x720 and browser override 390x844; physical handset not tested",
-    "release_ci_and_deployment": "pending",
+    "release_ci_and_deployment": "completed PR89/90 main90171c8; CI182 six required jobs, Pages30 and156-file byte verification",
     "frontend_commit": "9c3a6470ea057146396d5a7d095caff22e4d9314",
-    "image_clock_fault_verification": "passed at 9c3a647; recording ended while native completed all six actions"
+    "image_clock_fault_verification": "passed at 9c3a647; recording ended while native completed all six actions",
+    "release_main_commit": "90171c816744387c51ffb114d7d8aabcb21b72b6"
+  },
+  "system_expansion_local_update": {
+    "date": "2026-11-10",
+    "source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+    "fixed_pilot_evidence": "../viewer-status-2026-10-30/fixed-topic-fr16-local-validation-2026-11-10.json",
+    "fixed_pilot_evidence_sha256": "7242a5713fd9024d7c8e81b19b8f144221f3957362b0e4d28e32fdc39d397069",
+    "mass_evidence": "../viewer-status-2026-10-30/block-mass-local-validation-2026-11-10.json",
+    "mass_evidence_sha256": "622b52fae72d06937e7e495c7430fb346f854b51dd8397ba18010075894a8f49",
+    "fixed_pilot_counts": {
+      "executed": 6,
+      "motion_succeeded": 4,
+      "expected_invalid_goal": 2,
+      "not_run": 14,
+      "repeats": 1
+    },
+    "fr16_profile": "experimental; read-only preview in integrated viewer",
+    "fr16_actual_cases": [
+      "normal",
+      "moving_cancel"
+    ],
+    "block_fixture_cases": 6,
+    "timing_scope": "same-process ROS-topic individual observations",
+    "prior_local_evidence_preserved": true
+  },
+  "ui_load_followup_20261110": {
+    "source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+    "evidence": "../viewer-status-2026-10-30/gui-load-validation-2026-11-10.json",
+    "conditions": 3,
+    "windows_per_condition": 1,
+    "samples_per_window": 25,
+    "original_group_aggregation": "unavailable_process_set_changed",
+    "narrowed_process_observations": "console_leader_and_individually_stable_owned_groups",
+    "browser_host_clocks": "separate, independently_proved_host_join_only",
+    "responsive_browser_px": [
+      390,
+      844
+    ],
+    "physical_phone_tested": false,
+    "native_grasp_UI_case": "new80g succeeded;210native poses,0RGB,33events; diagnostic producer setup error preserved",
+    "matched_source_assets_verified": true
   }
 }
