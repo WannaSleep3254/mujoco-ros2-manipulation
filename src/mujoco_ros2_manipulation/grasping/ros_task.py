@@ -47,6 +47,8 @@ MAX_TASK_WALL_SEC = 240
 MAX_FRAME_BYTES = 64 * 1024 * 1024
 MAX_RECEIPT_BYTES = 2 * 1024 * 1024
 MAX_STARTUP_LOG_BYTES = 4 * 1024 * 1024
+OBSERVATION_INTAKE_SEC = .01
+STALE_OBSERVATION_REASONS = frozenset(("clock_stale", "receipt_stale", "capture_stale", "guard_stale"))
 
 
 class RosGraspTaskError(RuntimeError):
@@ -401,6 +403,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                   automatic_retry=False, physical_grasp="unconfirmed", planning_attachment="uninitialized",
                   action_terminal=None, cleanup=dict(status="not_started", clean=False),
                   checks=[], actions=[], cleanup_errors=[], simulation_only=True)
+    record["observation_intake"] = dict(budget_sec=OBSERVATION_INTAKE_SEC, maximum_rows=32, dropped_rows=0, rows=[])
     record["diagnostic_hold"] = dict(requested_simulation_sec=diagnostic_hold_sec,
         enabled=diagnostic_hold_sec > 0, production_default_sec=0., gui_option=False,
         reference_policy="original closed-grasp reference is retained; no tolerance or contact gate change")
@@ -515,19 +518,71 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
         phase[0] = value
         publish_phase()
 
-    def current(*, physical=True):
-        _require(store is not None, "native observation store is not ready")
-        return store.snapshot(now_sec=time.monotonic(), require_physical=physical)
-
-    def abort():
+    def check_control():
         if cancel_event.is_set():
             change_phase(8)
             raise RosGraspCancelled("operator requested cancellation; no automatic release or resume")
         _require(time.monotonic()-start_wall <= MAX_TASK_WALL_SEC, "grasp task wall-time budget exceeded")
         _require(process is not None and process.poll() is None, "owned ROS launch exited unexpectedly")
         _require(latest["error"] is None, "invalid native ROS input: "+str(latest["error"]))
+        guard = latest["guard"]
+        if ready and guard is not None:
+            if guard["latched"] or guard["phase"] != "ready" or guard.get("error"):
+                raise ObservationUnavailable("contact guard is latched or not ready", reason="guard_stopped")
+            if any(guard["controllers"][name] != "active" for name in CONTROLLERS):
+                raise ObservationUnavailable("grasp requires three active controllers", reason="guard_inactive")
+
+    def current(*, physical=True, intake_deadline=None):
+        _require(store is not None, "native observation store is not ready")
+        if physical:
+            check_control()
+        try:
+            return store.snapshot(now_sec=time.monotonic(), require_physical=physical)
+        except ObservationUnavailable as error:
+            if not physical or not ready or error.reason not in STALE_OBSERVATION_REASONS:
+                raise
+            initial_error = error
+        started = time.monotonic()
+        deadline = started + OBSERVATION_INTAKE_SEC
+        if intake_deadline is not None:
+            deadline = min(deadline, intake_deadline)
+        row = dict(before=admission_context(), initial_reason=initial_error.reason,
+                   spin_once_calls=0, recovered=False)
+        try:
+            while time.monotonic() < deadline:
+                check_control()
+                executor.spin_once(timeout_sec=0)
+                row["spin_once_calls"] += 1
+                check_control()
+                try:
+                    value = store.snapshot(now_sec=time.monotonic(), require_physical=True)
+                except ObservationUnavailable as error:
+                    row["last_unavailable_reason"] = error.reason
+                    if error.reason not in STALE_OBSERVATION_REASONS:
+                        raise
+                else:
+                    if time.monotonic() >= deadline:
+                        break
+                    row["recovered"] = True
+                    return value
+            row["budget_exhausted"] = True
+            raise initial_error
+        except BaseException as error:
+            row["failure"] = dict(type=type(error).__name__, message=str(error)[:512],
+                                  reason=getattr(error, "reason", None))
+            raise
+        finally:
+            row.update(after=admission_context(), elapsed_sec=time.monotonic()-started)
+            trace = record["observation_intake"]
+            if len(trace["rows"]) < trace["maximum_rows"]:
+                trace["rows"].append(row)
+            else:
+                trace["dropped_rows"] += 1
+
+    def abort(*, intake_deadline=None):
+        check_control()
         if ready:
-            value = current().payload
+            value = current(intake_deadline=intake_deadline).payload
             if baseline_right is not None:
                 _require(max(abs(value["arm_positions_rad"][name]-position) for name, position in baseline_right.items()) <= .015,
                          "non-selected UR5e arm moved beyond its hold tolerance")
@@ -537,8 +592,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                          and evidence["relative_angle_error_rad"] <= .15, "physical grasp slipped or lost bilateral contact")
 
     def spin(*, health=True):
+        deadline = time.monotonic() + OBSERVATION_INTAKE_SEC
         if health:
-            abort()
+            check_control()
         elif record["cleanup"]["status"] == "not_started":
             # Startup waits have no ready guard yet, but cancellation and a
             # dead owned launcher must still be handled promptly.
@@ -547,9 +603,9 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                 raise RosGraspCancelled("operator cancelled during native startup")
             if process is not None:
                 _require(process.poll() is None, "owned ROS launch exited during startup")
-        executor.spin_once(timeout_sec=.01)
+        executor.spin_once(timeout_sec=max(0., deadline-time.monotonic()))
         if health:
-            abort()
+            abort(intake_deadline=deadline)
 
     def until(predicate, seconds, label, *, health=True):
         deadline = time.monotonic()+seconds
