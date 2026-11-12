@@ -92,7 +92,7 @@
       "published_date": "2026-11-12",
       "document_type": "design_review",
       "overview": "CI193에서 확인한 복구 예산 선택 오류와 후속 교정, 최종 코드의 실제 집기·통합 HTTP 재검증을 정리합니다. 기존 코드의 고정 입력 14조건과 실패·진단 원본을 분리해 보존합니다.",
-      "manifest_sha256": "c9c11e4686d24be84e5739bebff95c2a340aef58206731b41fb92485e1e868f4"
+      "manifest_sha256": "4274f4b58f61a4710090596ac986d7637e700aefa536bac20c37a71572d87bb8"
     }
   ]
 }

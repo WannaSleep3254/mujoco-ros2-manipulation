@@ -237,7 +237,7 @@
     },
     "operator-demos.json": {
       "bytes": 6095,
-      "sha256": "73359d051c0e495a8603b890887dd20dabc4b578b0d1bbfbc22431e24d925d45"
+      "sha256": "a0b8791d407e69b32f47064bbac170e70d2c40bc5088e032ac857e7ceda74483"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -388,12 +388,12 @@
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
     "operator/reliability-followup-2026-11-12/index.html": {
-      "bytes": 26379,
-      "sha256": "8700cd556509f1984503c10be404509d51617d5e7b89937a1786522c0d075642"
+      "bytes": 26394,
+      "sha256": "598d40bfe6ff0da93923365e63ff7f5cb92f770337f2e35fa8ca42d559035472"
     },
     "operator/reliability-followup-2026-11-12/manifest.json": {
       "bytes": 1023,
-      "sha256": "c9c11e4686d24be84e5739bebff95c2a340aef58206731b41fb92485e1e868f4"
+      "sha256": "4274f4b58f61a4710090596ac986d7637e700aefa536bac20c37a71572d87bb8"
     },
     "operator/reliability-followup-2026-11-12/observer-v04-v06.patch": {
       "bytes": 7984,
