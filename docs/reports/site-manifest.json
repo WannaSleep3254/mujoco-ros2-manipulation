@@ -207,17 +207,37 @@
       "bytes": 56884,
       "sha256": "5376532150cb10e90cf6ee26a975eda28a52c9ff2ad4f93df349841f670e01e5"
     },
+    "2026-11-12-fixed-motion-remaining14/evidence.json.gz": {
+      "bytes": 15602,
+      "sha256": "5b85b6a65179b50a9b4eaf84493aa9cf5dcd2e436c95739cdb05174a9831bdf8"
+    },
+    "2026-11-12-fixed-motion-remaining14/index.html": {
+      "bytes": 111533,
+      "sha256": "7bb8edeb3564af2dd01a64a6b82cb72223d8a9ef99bdd3dd4ec58b5d772ae1d5"
+    },
+    "2026-11-12-fixed-motion-remaining14/metrics.csv": {
+      "bytes": 68289,
+      "sha256": "6c35d734bbf7f5b5d4fbed4b8c7e33ebc452a515073903cd3746faa37fb3b7cf"
+    },
+    "2026-11-12-fixed-motion-remaining14/report-manifest.json": {
+      "bytes": 2144,
+      "sha256": "74e079922f2dfb01bf10c65fd051970b3ba033cc573a1fa1898472319b520d4a"
+    },
+    "2026-11-12-fixed-motion-remaining14/report.json": {
+      "bytes": 48889,
+      "sha256": "b539879e4f1d9b09c51123d0cd8b6bccbd1277876e375f7b0c4a6e1a17b5185b"
+    },
     "catalog.json": {
-      "bytes": 4324,
-      "sha256": "b1efb6e8398bcfba9f254cf9fd705e645447ae553424d1da5654256f2985553a"
+      "bytes": 5072,
+      "sha256": "524f89186a66ef78c06f1dbf3755b7e1807140c11ccd6c7fa6a01f9a174032cd"
     },
     "index.html": {
-      "bytes": 15545,
-      "sha256": "0bf09c51b1e25e82ba782e5c5de23172af84fcdaad330c167618859af534d82e"
+      "bytes": 16728,
+      "sha256": "bb559630a7594e2120a5bc14124a9323001dea010f3943789465947bc3f117d2"
     },
     "operator-demos.json": {
-      "bytes": 5529,
-      "sha256": "c54c8132523d8e4c9416d7d61cfc6d11113c3673871320545595263087acc45f"
+      "bytes": 6090,
+      "sha256": "b6818aa1d6f30ed2bb1a5f6d566883d7b3be79a3d82619f75de95906797f246a"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -367,6 +387,22 @@
       "bytes": 42589,
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
+    "operator/reliability-followup-2026-11-12/index.html": {
+      "bytes": 22724,
+      "sha256": "86080ae8eb06257186e65843037c7cc1f208edc512da6fb62e16f24bc0a10ef0"
+    },
+    "operator/reliability-followup-2026-11-12/manifest.json": {
+      "bytes": 1231,
+      "sha256": "159a336b83f1d4d656e4b0ad77892d442bce71b6a9799e5493086a536d55e25d"
+    },
+    "operator/reliability-followup-2026-11-12/observer-v04-v06.patch": {
+      "bytes": 7984,
+      "sha256": "77fb04936cee743f0c15ef64e179eac5191b1ac782f627342fb0c8360cfee406"
+    },
+    "operator/reliability-followup-2026-11-12/sanitized-evidence.json": {
+      "bytes": 29089,
+      "sha256": "8b8457e3d164c1e55b6bb4854c3c73f32e6c9f60d089739733b59fe5100eeb17"
+    },
     "operator/system-direction-2026-10-27/grasp-admission-verification.json": {
       "bytes": 42342,
       "sha256": "2f64bff5567d31cca36b106b3baff195b177fdd21b0f3746f41c2d0f958a5b25"
@@ -380,12 +416,12 @@
       "sha256": "de23cfcaa871da2acebb1b5cf07a262b45060d8ffb1cfb2596e578834d7bb275"
     },
     "operator/system-direction-2026-10-27/index.html": {
-      "bytes": 92097,
-      "sha256": "1d5907508dd34eb2b978610ca17d4d8c9c735287a59775ca90136ab8cde72374"
+      "bytes": 92360,
+      "sha256": "0b7656579b09559490ae5ad47a448f75c1e715aafdccc75437a23c5e37ebffee"
     },
     "operator/system-direction-2026-10-27/manifest.json": {
-      "bytes": 7229,
-      "sha256": "34ac7c9eeb67c24c5eb424564ccea6d3ab6aea752022623f1ce8adcd5a194f64"
+      "bytes": 7525,
+      "sha256": "b6a6319b1489a4ec381113d9c74ee2217eedbbd4735d9eecc065c4d4872d7250"
     },
     "operator/system-direction-2026-10-27/native-admission-reservation-verification.json": {
       "bytes": 193037,
@@ -580,8 +616,8 @@
       "sha256": "0133f9de108945e7080a14e51c4a645b799f9661921032bd4956fc6a57848312"
     },
     "operator/viewer-status-2026-10-30/index.html": {
-      "bytes": 102801,
-      "sha256": "c4989482e8aa03410a83aee4a02b575644ad3c276416b40ae080d24da2891576"
+      "bytes": 103064,
+      "sha256": "501adcbbdf9303ec8f6fbef581584eb03c41f166b3bd577d5059ad0a30e3f2fa"
     },
     "operator/viewer-status-2026-10-30/integration-verification.json": {
       "bytes": 28191,
@@ -592,8 +628,8 @@
       "sha256": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db"
     },
     "operator/viewer-status-2026-10-30/manifest.json": {
-      "bytes": 32914,
-      "sha256": "7515b6ae57c3464584c8b5c9d040c251f6a71982a248408c16992d12f23b5ecb"
+      "bytes": 33210,
+      "sha256": "b0b86533d73535949c33318b319420c8217ed3671427dca167b5f4663becdeba"
     },
     "operator/viewer-status-2026-10-30/media/block80-ui-complete-2026-11-10.png": {
       "bytes": 93984,

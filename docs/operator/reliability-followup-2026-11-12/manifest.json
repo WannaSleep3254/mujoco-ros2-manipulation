@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "document_type": "design_review",
+  "document_version": "1.0",
+  "layout_baseline": "1.9",
+  "baseline_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+  "scope": "Preserves original CI185/191 failures and historical45s uncertainty. Documents reproduced shutdown and observation ordering fixes, strict500ms freshness and original10ms intake budget, four native cases at207d05e and observerv06 actual UI cancellation at canonicalc6c0d49. Fourteen selected fixed conditions completed at207d05e with11 motion successes and3 scored planning failures, eachN1. All14 verifier/physics/owned-cleanup checks passed. A fourth owned-pause diagnostic recovered within the original10ms budget and500ms limit, then completed six actions and clean shutdown; the first three attempts remain separately retained. The original CI185 single blocking call remains unrecorded. Earlier six conditions remain separate.",
+  "assets": {
+    "index.html": "86080ae8eb06257186e65843037c7cc1f208edc512da6fb62e16f24bc0a10ef0",
+    "sanitized-evidence.json": "8b8457e3d164c1e55b6bb4854c3c73f32e6c9f60d089739733b59fe5100eeb17",
+    "observer-v04-v06.patch": "77fb04936cee743f0c15ef64e179eac5191b1ac782f627342fb0c8360cfee406"
+  }
+}
