@@ -1,0 +1,117 @@
+--- a/canonical_get_watcher.py
++++ b/canonical_get_watcher.py
+@@ -77,7 +77,7 @@
+ def process(pid):
+     raw = Path(f'/proc/{pid}/stat').read_text()
+     fields = raw[raw.rfind(')') + 2:].split()
+-    return dict(pid=pid, ppid=int(fields[1]), group=int(fields[2]), session=int(fields[3]),
++    return dict(pid=pid, state=fields[0], ppid=int(fields[1]), group=int(fields[2]), session=int(fields[3]),
+                 start_ticks=fields[19], command=Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0')[:-1])
+ 
+ 
+@@ -545,27 +545,69 @@
+         require(process(console['console_pid'])['start_ticks'] == console['console_start_ticks'],
+                 'Terminal wait console PID was reused')
+         observations = {}
+-        for role, saved in (('native_leader', leader), ('task_worker', worker)):
+-            try:
+-                current = process(saved['pid'])
+-                require(all(current[key] == saved[key] for key in ('pid', 'ppid', 'group', 'session', 'start_ticks'))
+-                        and [value.decode(errors='replace') for value in current['command']] == saved['command'],
+-                        'Terminal wait owned process identity changed')
+-                if role == 'task_worker':
+-                    require(current['ppid'] == console['console_pid']
+-                            and Path(os.readlink(f'/proc/{current["pid"]}/cwd')).resolve() == CANONICAL,
+-                            'Terminal wait worker left the proven console')
+-                require(process(saved['pid'])['start_ticks'] == saved['start_ticks'],
+-                        'Terminal wait PID was reused during proof')
+-                observations[role] = 'same_instance_alive'
+-            except (FileNotFoundError, ProcessLookupError):
+-                observations[role] = 'gone'
+-        self.receipt['terminal_pending'] = dict(
++        evidence = {}
++        pending = dict(
+             job_id=job['job_id'], generation=job['generation'], status=task['status'],
+             cleanup_status=task['cleanup']['status'], native_group=leader['pid'],
+-            process_observations=observations,
++            process_observations=observations, process_evidence=evidence,
+             native_freshness='unavailable_during_owned_terminal_cleanup',
+             scope='Bounded final-result waiting only. No new publisher, mapping, native admission or physical freshness inference.')
++        self.receipt['terminal_pending'] = pending
++        for role, saved in (('native_leader', leader), ('task_worker', worker)):
++            details = dict(expected=saved)
++            evidence[role] = details
++            read_stage = 'first_process_snapshot'
++            try:
++                first = process(saved['pid'])
++                details['first'] = dict(first, command=[
++                    value.decode(errors='replace') for value in first['command']])
++                fixed_keys = ('pid', 'group', 'session', 'start_ticks')
++                details['changed_fields'] = {'first': [
++                    key for key in ('pid', 'ppid', 'group', 'session', 'start_ticks', 'command')
++                    if details['first'][key] != saved[key]]}
++                require(all(first[key] == saved[key] for key in fixed_keys),
++                        'Terminal wait owned process identity changed')
++                require(details['first']['command'] in ([], saved['command']),
++                        'Terminal wait bound command changed')
++                cwd = None
++                if role == 'task_worker' and first['state'] != 'Z' and first['command']:
++                    read_stage = 'worker_cwd'
++                    cwd = str(Path(os.readlink(f'/proc/{first["pid"]}/cwd')).resolve())
++                    details['cwd'] = cwd
++                read_stage = 'final_process_snapshot'
++                last = process(saved['pid'])
++                details['last'] = dict(last, command=[
++                    value.decode(errors='replace') for value in last['command']])
++                details['changed_fields'] = {
++                    label: [key for key in ('pid', 'ppid', 'group', 'session', 'start_ticks', 'command')
++                            if sample[key] != saved[key]]
++                    for label, sample in (('first', details['first']), ('last', details['last']))}
++                require(all(sample[key] == saved[key] for sample in (first, last)
++                            for key in fixed_keys), 'Terminal wait owned process identity changed')
++                commands = (details['first']['command'], details['last']['command'])
++                if last['state'] == 'Z':
++                    require(all(command in ([], saved['command']) for command in commands),
++                            'Terminal wait zombie command differs from the bound instance')
++                    observations[role] = 'same_instance_zombie'
++                    details['meaning'] = 'Kernel state Z on the same bound PID/start/group/session; parent and empty command are recorded exit observations.'
++                else:
++                    require(first['state'] != 'Z'
++                            and all(sample['ppid'] == saved['ppid'] for sample in (first, last))
++                            and all(command == saved['command'] for command in commands),
++                            'Terminal wait owned process identity changed')
++                    if role == 'task_worker':
++                        require(last['ppid'] == console['console_pid'] and cwd == str(CANONICAL),
++                                'Terminal wait worker left the proven console')
++                    observations[role] = 'same_instance_alive'
++            except (FileNotFoundError, ProcessLookupError) as error:
++                observations[role] = 'gone'
++                details['unavailable_at'] = read_stage
++                details['error'] = dict(type=type(error).__name__, message=str(error))
++                details['meaning'] = 'A required proc entry disappeared during terminal cleanup; final cleanup proof is still required.'
++            except RuntimeError as error:
++                details['error'] = dict(type=type(error).__name__, message=str(error))
++                pending['failed_role'] = role
++                raise
+         return True
+ 
+     def start_producer(self, job, directory, owner, leader, worker):
+@@ -752,11 +794,15 @@
+                 raw=read_regular(directory/'run/result.json')
+                 result=json.loads(raw)
+                 require(job['worker_result_sha256']==digest(raw) and result['run_id']==job['job_id']
++                        and result['model_sha256']==self.model_sha
+                         and result['execution_manifest_sha256']==self.args.target_sha,'Final HTTP/native result binding differs')
++                cleanup = result['cleanup']
+                 require(job['owner_cleanup_clean'] is True and job['process_group_gone'] is True
+-                        and result['cleanup']['clean'] is True and result['cleanup']['native_process_clean'] is True
+-                        and result['cleanup']['process_group_gone'] is True,'Final native owner cleanup is not clean')
+-                require(job['status']==self.args.expected_status,'Unexpected task outcome')
++                        and cleanup['status']=='complete' and cleanup['clean'] is True
++                        and cleanup['native_process_clean'] is True and cleanup['process_group_gone'] is True
++                        and cleanup['forced'] is False and type(cleanup['launcher_return_code']) is int
++                        and cleanup['launcher_return_code']==0,'Final native owner cleanup is not clean')
++                require(job['status']==result['status']==self.args.expected_status,'Unexpected task outcome')
+                 self.receipt.update(status='passed_owned_ui_observation',final_job=job,
+                     worker_result_sha256=digest(raw),actual_task_status=result['status'])
+                 self.flush();return

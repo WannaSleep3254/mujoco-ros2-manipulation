@@ -53,6 +53,29 @@ CI에서는 사용하지 않습니다. 새 write 차단과 즉시 물리 정지�
 성공한 안전 실행으로 집계하지 않으며, CI는 `fixed`만 검사합니다.
 원인·실패 원본과 검증 범위는 [네이티브 종료 기록](../../docs/native_shutdown.md)에 있습니다.
 
+## ROS launch의 종료 완료와 SIGINT
+
+`run_scene.sh`와 `run_sim.sh`는 기존 ROS CLI 인수를 프로젝트 진입점에 전달합니다.
+기본 SIGINT 처리기가 asyncio 작업을 중단해, 이미 종료한 자식의 완료 처리가 남는
+Humble 경로를 방지합니다. 기존 사용자 정의 SIGINT 처리기는 유지합니다.
+
+```bash
+source ./manipulation_env.sh
+for task_signal_boundary in clean_exit before_signal_manager before_signal_manager_chain after_signal_manager_fd_removed; do
+  python3 tests/integration/verify_launch_signal_boundary.py \
+    --boundary "$task_signal_boundary" \
+    --output "runtime/validation/launch-signal-new-$task_signal_boundary"
+done
+```
+
+자체 소유 ROS launch와 Python 자식 두 개를 사용하며 로봇 목표는 전송하지 않습니다.
+진단용으로 신호 처리 경계를 100 ms 늘리고 외부 SIGINT를 보냅니다. 정상 종료 코드,
+자식 완료 future, 강제 종료 여부와 소유 프로세스 정리를 확인합니다.
+시작 시 wakeup FD 설치와 manager 등록 사이에 신호를 받으면 ROS에 두 번 전달될 수
+있습니다. 해당 경로에서는 Shutdown 이벤트 한 번과 두 번째 신호 무시를 확인합니다.
+종료 경계 검사는 두 자식이 이미 끝난 후의 신호를 검사합니다.
+실제 로봇 동작 중 취소는 아래 ROS 연동 검사에서 별도로 확인합니다.
+
 ## FR3 이동 중 취소와 신선한 정지 관측
 
 ```bash

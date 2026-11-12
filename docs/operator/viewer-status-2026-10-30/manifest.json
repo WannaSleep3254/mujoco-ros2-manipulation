@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.8",
+  "document_version": "1.9",
   "layout_baseline": "1.9",
   "baseline_commit": "54d0557dcf95c0f9f4590d9fcf81b1cd30ca1886",
   "scope": "Original six-viewer inventory, capture evidence and six video/poster pairs preserved byte-for-byte. Adds 8933 same-workspace task ownership, shared native 3D, fixed ROS grasp execution/state/cancel and imported read-only synchronized analysis; three actual HTTP cases and explicit unverified browser/sensor/performance scope. Adds the retained CI157 synchronized-start refusal and verifier-only live-owner/capture-readiness followup with separate local ROS diagnostic evidence. Adds retained CI159 unclean startup-helper cancellation evidence and the prepared active-approach verifier followup; arbitrary initialization-time comparison cancellation remains unresolved. Adds the 2026-11-09 recovery follow-up for browser timer/task-navigation fixes, project-local persistent logs and checker receipts, user-login viewer operation, historical local checks and outstanding validation. The two missing original synchronized records remain explicitly unrecovered. Adds the retained CI165 MoveGroup constructor cancellation failure and the bounded owned-initialization drain fix. Four direct actual ROS cases and three same-workspace HTTP cases passed separately from the retained first input-identity rejection caused by concurrent model checking. Full unit/model/package checks are recorded; full rendered PC/mobile QA remains open. Adds the retained CI167 native startup SIGSEGV before launch signals, clock/timer callback diagnosis and an isolated pinned rclcpp_action clock-lock overlay. The same final diagnostic binary reproduced the legacy failure and passed with the optimized overlay. Fourteen actual ROS/HTTP cases, 22 sampled owned-process library mappings, full unit/model checks and packaging passed locally. CI165 source b02eb57 verification remains frozen historical evidence. Main promotion and rendered UI QA remain pending. Adds 2026-11-09/10 rendered integrated-UI followup and five presentation fixes, candidate normal/pre-native-cancel/moving-cancel plus ordinary approved execution, and deployed main11b2ce9 normal-grasp/browser smoke. Includes a new timestamped sampled video and canonical screenshot. Main CI174 and Pages28 attempt2 plus independent147-file verification completed. Physical handset and historical shutdown-delay cause remain unverified; historical two raw recordings remain unrecovered. Earlier pending statements describe their preserved source-time evidence. Adds W01 source778658e local evidence: persisted worker-ready cancellation, strict clean-helper/owned MoveGroup readiness, bounded startup drain, 120 focused and1462 full unit tests with1 excluded prototype fixture, eight actual HTTP jobs and13 native launches. Original failure baseline remains; historical45-second cause remains unresolved. Adds verifier-only retention repair b1d8b99, explicit CI174/CI175 missing-original-bundle gap, and new diagnostic v1 capture69d16ca3 with31poses/17JPEGs/one gap. All53 files3851836bytes agree. Focused55/full1476with1excludedfixturepassed locally. New capture is distinct from historical local recordings and excluded CI raw bundles. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. The stage4 followup completed through PR89/90 at main90171c8 with six CI182 checks, Pages30 and independent156-file byte verification, plus canonical normal-grasp/capture/replay and owned cleanup. Adds source31c8a28 local six-row ROS-topic observations, experimental FR16 direct/MoveIt and moving-cancel validation, and six80g/120g normal/hold/cancel checks. Individual N1 observations, native time, control/physical state and raw-guard retention scope are explicit.",
   "assets": {
     "capture-evidence.json": "be8731c87e39a54210551f144cf4559af6856258c47634c079386995ccd1ce0a",
-    "index.html": "c4989482e8aa03410a83aee4a02b575644ad3c276416b40ae080d24da2891576",
+    "index.html": "501adcbbdf9303ec8f6fbef581584eb03c41f166b3bd577d5059ad0a30e3f2fa",
     "inventory.json": "a2ed8330bdb2757f58fee7a9fa9d83dd5541c34e9fa172373a926123626235db",
     "media/viewer-8897.jpg": "9343df025f22ddd4081ad11a02738d6464b6f8a7f8ba9e9eaf1a2c0736d9e30c",
     "media/viewer-8897.mp4": "c76593d37104593669f11826649f863ee3be8cc3b4d99c1dcafccdf341cd9207",
@@ -565,5 +565,11 @@
     "physical_phone_tested": false,
     "native_grasp_UI_case": "new80g succeeded;210native poses,0RGB,33events; diagnostic producer setup error preserved",
     "matched_source_assets_verified": true
+  },
+  "reliability_followup_20261112": {
+    "date": "2026-11-12",
+    "report": "../reliability-followup-2026-11-12/index.html",
+    "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+    "scope": "Follow-up navigation only. Earlier evidence, results and media remain byte-for-byte."
   }
 }

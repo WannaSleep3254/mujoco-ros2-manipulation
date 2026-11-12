@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "document_type": "design_review",
-  "document_version": "1.15",
+  "document_version": "1.16",
   "layout_baseline": "1.9",
   "baseline_commit": "61e55ba7040910bb25758b6310e353f35ed92b6f",
   "scope": "v1.9 original self-clearance, ordered FIFO, physical, synchronized-replay and performance evidence/images preserved byte-for-byte. v1.10 adds reduced CI143 capture-age rejection, exact-delay uncertainty, reproduced synchronous-validation risk and owned-process mitigation. Focused47/full1352-unit89-model checks, source15/four formal/four GUI outcomes and validator quiescence are separate from old results and future exact-head remote CI. Physical model, solver, original grasp reference and 500ms/150ms/30s gates remain unchanged. Layout baseline1.9; new desktop photo, no new mobile or performance claim. Adds the 2026-11-10 v2 grasp recording follow-up at source ec21566344a0c73511bc7245a6a0a3e8d3fbcb38. Three actual ROS/HTTP cases preserve native poses, diagnostic RGB8 input, task events and original byte/size/hash evidence. Native rounded time, integer ROS acquisition time and monotonic event clocks remain distinct. Event-only startup cancellation is retained without invented media time. Source-specific local checks remain pinned to ec21566. Rendered desktop/narrow-browser follow-up and diagnostic single-image-header-fault verification passed at 9c3a647. Three visually reviewed synthetic diagnostic screenshots are published. The stage4 followup completed through PR89/90 at main90171c8 with six CI182 checks, Pages30 and independent156-file byte verification, plus canonical normal-grasp/capture/replay and owned cleanup. Adds source31c8a28 local six-row ROS-topic observations, experimental FR16 direct/MoveIt and moving-cancel validation, and six80g/120g normal/hold/cancel checks. Individual N1 observations, native time, control/physical state and raw-guard retention scope are explicit.",
   "assets": {
-    "index.html": "1d5907508dd34eb2b978610ca17d4d8c9c735287a59775ca90136ab8cde72374",
+    "index.html": "0b7656579b09559490ae5ad47a448f75c1e715aafdccc75437a23c5e37ebffee",
     "review-data.json": "350fcd6106eaa2e222b93996788e3dacc6b74a7fcc20c066ea64e807f033f477",
     "synchronized-replay.png": "4fa0d813ce9d149a7480dacbca5b91b2ca4f6824168d0d759bd1de75144b74fc",
     "synchronized-verification.json": "593c08f2b6e1822dc73cc8683842c4504a6adffe9bd337f5968408c2579dd8a5",
@@ -100,5 +100,11 @@
     "physical_phone_tested": false,
     "native_grasp_UI_case": "new80g succeeded;210native poses,0RGB,33events; diagnostic producer setup error preserved",
     "matched_source_assets_verified": true
+  },
+  "reliability_followup_20261112": {
+    "date": "2026-11-12",
+    "report": "../reliability-followup-2026-11-12/index.html",
+    "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+    "scope": "Follow-up navigation only. Earlier evidence, results and media remain byte-for-byte."
   }
 }

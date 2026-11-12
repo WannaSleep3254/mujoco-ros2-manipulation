@@ -1,0 +1,972 @@
+{
+  "schema_version": 1,
+  "document_type": "engineering_review",
+  "title": "종료·관측 지연 수정과 고정 입력 추가 검증",
+  "date": "2026-11-12",
+  "draft_version": "1.1",
+  "template_version": "1.9",
+  "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+  "publication_status": "source_validation_complete",
+  "implementation": {
+    "launch_cli": "implemented_and_local_checked",
+    "observation_intake": "implemented_and_local_checked",
+    "observer_v06": "offline_checked_and_canonical_actual_passed",
+    "freshness_limit_ms": 500,
+    "launcher_sigint_wait_sec": 12,
+    "automatic_command_retry": false,
+    "observation_recovery_budget_ms": 50,
+    "normal_executor_wait_timeout_ms": 10,
+    "single_pre_post_deadline": true,
+    "synchronous_callback_preemption": false,
+    "physical_checks_before_dispatch_restored": true
+  },
+  "reproduced_mechanisms": {
+    "launch_sigint": {
+      "status": "reproduced_with_original_framework_and_non_ros_children",
+      "mechanism": "KeyboardInterrupt interrupts post-exit cleanup and leaves an incomplete action future.",
+      "external_original_cli": "expected_failure_observed",
+      "final_project_cli_cases_passed": 4,
+      "local_focused_unit_tests_passed": 10,
+      "historical_internal_task_state": "unrecorded"
+    },
+    "observation_order": {
+      "status": "post_ci193_budget_correction",
+      "related_unit_tests_passed": 178,
+      "source_timestamps": "preserved",
+      "recovery_budget": "explicit50ms_distinct_from_normal10ms_wait",
+      "historical_ci185_single_stall_call": "unresolved",
+      "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00"
+    },
+    "observer_terminal_identity": {
+      "status": "v06_offline_and_canonical_actual_passed",
+      "synthetic_empty_command_zombie_case": "reproduced",
+      "offline_tests_passed": 76,
+      "historical_process_snapshot": "unrecorded",
+      "actual_zombie_state_observed": false,
+      "actual_terminal_observations": {
+        "native_leader": "gone",
+        "task_worker": "same_instance_alive"
+      },
+      "patch": {
+        "file": "observer-v04-v06.patch",
+        "sha256": "77fb04936cee743f0c15ef64e179eac5191b1ac782f627342fb0c8360cfee406",
+        "before_version": "v04",
+        "before_sha256": "e39774be242a61d3d2faa29ae6df596bbb4f656ae41869750a233b17e2d7c3f3",
+        "after_version": "v06",
+        "after_sha256": "082be971f0fb8aed8ba9a2704b7c9641a93dd407af0bb3070a0ae6733d02c87d",
+        "changed_functions": [
+          "process",
+          "run",
+          "terminal_pending"
+        ],
+        "applied_copy_matches_after_bytes": true
+      }
+    }
+  },
+  "native_verification": {
+    "status": "passed_four_cases",
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "case_count": 4,
+    "cases": [
+      {
+        "case": "normal",
+        "label": "집기·운반·놓기",
+        "status": "passed",
+        "task_status": "succeeded",
+        "actions": 6,
+        "all_owned_groups_gone": true,
+        "native_stop_observed": true,
+        "native_exit_observed": true,
+        "forced_cleanup": false,
+        "launcher_return_code": 0,
+        "three_controllers_inactive": true,
+        "transport_cancel_acknowledged": null,
+        "transport_terminal_status": null,
+        "requested_simulation_hold_sec": 0.0,
+        "verifier_receipt_sha256": "24c9d94d2f79d58acd56d198a88bdc2e434e587e6293aee4fe800e412fda2611",
+        "worker_receipt_sha256": "38ae9baac7c2b46ffd6e855ac4b9ff41328df02343d2775871c4e813e8ae6b88"
+      },
+      {
+        "case": "normal_hold",
+        "label": "파지 후 30 s 유지",
+        "status": "passed",
+        "task_status": "succeeded",
+        "actions": 6,
+        "all_owned_groups_gone": true,
+        "native_stop_observed": true,
+        "native_exit_observed": true,
+        "forced_cleanup": false,
+        "launcher_return_code": 0,
+        "three_controllers_inactive": true,
+        "transport_cancel_acknowledged": null,
+        "transport_terminal_status": null,
+        "requested_simulation_hold_sec": 30.0,
+        "verifier_receipt_sha256": "61ccd8fe992188c5c17e3d9a438ee79e9fbdc9e74aaa77314c3e386755e6e921",
+        "worker_receipt_sha256": "d557d71a5988b9f92c1f708525321f788e551607dd6e04da1fe3be3f9de4a0ab"
+      },
+      {
+        "case": "cancel_transport",
+        "label": "운반 중 취소",
+        "status": "passed",
+        "task_status": "cancelled",
+        "actions": 4,
+        "all_owned_groups_gone": true,
+        "native_stop_observed": true,
+        "native_exit_observed": true,
+        "forced_cleanup": false,
+        "launcher_return_code": 0,
+        "three_controllers_inactive": true,
+        "transport_cancel_acknowledged": true,
+        "transport_terminal_status": 5,
+        "requested_simulation_hold_sec": 0.0,
+        "verifier_receipt_sha256": "e8f5ceaace328c070ffdba560a258ed6b0581e9a75da818c9ecb9122eca88667",
+        "worker_receipt_sha256": "eaf3270743ab759ebccf773dbb58b67cf9b9d8158444a0a95e1665df6d31b1a6"
+      },
+      {
+        "case": "cancel_startup",
+        "label": "시작 중 취소",
+        "status": "passed",
+        "task_status": "cancelled",
+        "actions": 0,
+        "all_owned_groups_gone": true,
+        "native_stop_observed": true,
+        "native_exit_observed": true,
+        "forced_cleanup": false,
+        "launcher_return_code": 0,
+        "three_controllers_inactive": true,
+        "transport_cancel_acknowledged": null,
+        "transport_terminal_status": null,
+        "requested_simulation_hold_sec": 0.0,
+        "verifier_receipt_sha256": "772ae0a4a367b1da832a6e47c20785abbd35421900c8329b5a466b74ed0ebefd",
+        "worker_receipt_sha256": "ce00f7674eeca62a51fee4c89edf15b1dd09d002d522475e9be143b5f68c99ba"
+      }
+    ]
+  },
+  "historical_shutdown": {
+    "configured_worker_wait_sec": 45,
+    "measured_actual_wait_sec": null,
+    "identified_blocking_call": null,
+    "status": "open"
+  },
+  "fixed_motion_extension": {
+    "status": "completed",
+    "declared_total_conditions": 20,
+    "previous_completed_conditions": 6,
+    "previous_source_commit": "31c8a2857b0335249f0154dee3f7a7ab079ba5c2",
+    "selected_conditions": 14,
+    "completed_conditions": 14,
+    "case_variant_repeats": 1,
+    "suite_sha256": "869270039e1a4219c59890a4d3c0fe940669f12c411ea5d7c6833e42574896be",
+    "rows": [
+      {
+        "case": "random_0001",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.730487871,
+        "publish_to_terminal_wall_sec": 6.818358675,
+        "received_to_terminal_wall_sec": 6.818001324,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "f8241728a635182220a97a9d3f49bbdd63026ff12974b912ab317a5753b56e7a",
+          "verification": "bcc7e869021e8e7bd0149db4ce6889467da4c7bec8fd29228abd1f3513faefa6",
+          "trace": "badeeeb2e9055323a1ce6747fb00beb83416b91f3e7a5449bf7ac9adff32f956"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0001",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.691689768,
+        "publish_to_terminal_wall_sec": 6.776926467,
+        "received_to_terminal_wall_sec": 6.776213303,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "aac132e7d5e31f3caf817eb84bfdfebd49b141c1e47d3aae8f66580046858db2",
+          "verification": "4d452b4b73bdddc85066169ab33dfbb6a1dcf3c9e702301e4cb75ca4602b1b5a",
+          "trace": "8f5069a6726332f9c9f43711e2c100f0a38da8a75765bbdcc80569f5aa824128"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0002",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.681468364,
+        "publish_to_terminal_wall_sec": 6.721648124,
+        "received_to_terminal_wall_sec": 6.721279253,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "5b7b6b5c7d37fdd55d87b6b1d2d0c5d1ae1ff77f358a9919a7b17a47e5fac3b4",
+          "verification": "e2119b73cf2be55eb81d5e0409bae5b1188fc4642e0e8b8318d296305011a3e9",
+          "trace": "76a1f89a0ee711c6aa8217ace29d87f2fb2b533f2db8c8e4c25cfade6f0a2a90"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0002",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.701436275,
+        "publish_to_terminal_wall_sec": 6.687306908,
+        "received_to_terminal_wall_sec": 6.686932382,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "a5ad9b938fcfc1a61fd9bab8688b4902cfa216f99d5e264eaa83c5b023b449cd",
+          "verification": "f2747e2fb4dab9f899e2aa25386cab1ddefc8d7e33516fb3ec70585293d2d3fd",
+          "trace": "cfcd77b76043f1444bfea22f6a3e24de2f03bc114af33710feb817bf256aba29"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0003",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.720564204,
+        "publish_to_terminal_wall_sec": 6.810191028,
+        "received_to_terminal_wall_sec": 6.809822201,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "eadff3f7fa5471229b2a3be9cf852fdceac6689b739376fc975fa179aa1c7e4a",
+          "verification": "e727a3ef47bbe8deba6c5cd8ad440673b3cd1e2834811937838ba0873841e009",
+          "trace": "5254fe632e856940d7db77ae40e5e9f3da7e1e572151babca227686d8a0b899b"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0003",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.731713421,
+        "publish_to_terminal_wall_sec": 6.820489468,
+        "received_to_terminal_wall_sec": 6.820149139,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "82c6d194274c7668df5a1d37ee31f25c2a242abdf7fcb238401e916c36d9c395",
+          "verification": "2882a1e657f0e28afa67fe55689e78a277fa83494761a5bbdbec1350498e10bf",
+          "trace": "a9d6bddb7389b29e1dd892cb1420943d3e28e58682784f6eead2b450bce58674"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0004",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.701268107,
+        "publish_to_terminal_wall_sec": 6.789891813,
+        "received_to_terminal_wall_sec": 6.789208374,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "77489253a638445dc01208a4bc6aa64fd43e9f5be1929b2b4e201c3847593cc4",
+          "verification": "edd83b537be83554923da5f881b5f3a2ba2343ef09023c69e8813ac0f4a40bf3",
+          "trace": "11a851358e559113d112069b674f5d99e254243a48591e1ce784130d66324023"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0004",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.699468453,
+        "publish_to_terminal_wall_sec": 6.789883967,
+        "received_to_terminal_wall_sec": 6.78955995,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "aab9afddcdb6148abe44b549e5b8fcf28de68f571a77402cc802e5e7b15fd8d4",
+          "verification": "661c96e34c01e0f95bd4da722393d9e60935cd5f8ac30b8de66f1ce138c69e6b",
+          "trace": "847245865072ff262dc8d7554ed0d02aa44dbc9dafd0a6a5f8c951f3d077e4fa"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0005",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.699933842,
+        "publish_to_terminal_wall_sec": 6.69676021,
+        "received_to_terminal_wall_sec": 6.69648551,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "b1e5f899049c730699ae4d5d6653f6f5e93ebf9346573eb4efac34044d33c06d",
+          "verification": "16dd5d597cc91c0705481f2ff2bdefd37ea320d5069309d9504b9c4f9b599f54",
+          "trace": "2b507b2920db2a0b9f11b62a8cd3eb33c48bc5bb63b746be938325fdb5529f55"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "random_0005",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 0.662030148,
+        "publish_to_terminal_wall_sec": 6.648199544,
+        "received_to_terminal_wall_sec": 6.64788437,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "46364e7d3e135d4d8a6076660f58285e9b61885cdd3b05930f29b8de08b9d6d3",
+          "verification": "1670b4853424a0b8ec48c07947c0e91ca8d10318e79490773cf06e245fb705d4",
+          "trace": "1fe5b38049a3f5f7fc36c22b5fb72a9c19c6bba28b1b5b2ef1525370bab66203"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "crossing",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "planning_failed",
+        "compute_wall_sec": 0.195683147,
+        "publish_to_terminal_wall_sec": 0.289914486,
+        "received_to_terminal_wall_sec": 0.289646306,
+        "scored_dispatched_goals": 0,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "d01c60a27d35af629fbb43f0667a906e98e265a0a03f8953ca0b534ce87e21a5",
+          "verification": "90ed3e337b0c1bc8cf8ca51da80cba4f875463d8b20f00a5213d130fdc0364d2",
+          "trace": "1f1acf478811e591474a3154db499bd5ffe929fae0d292c1fcbb9a762c1a4c55"
+        },
+        "candidate_count": 1,
+        "selected_attempt": null,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "crossing",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "motion_succeeded",
+        "compute_wall_sec": 1.5408458,
+        "publish_to_terminal_wall_sec": 14.586479865,
+        "received_to_terminal_wall_sec": 14.586195857,
+        "scored_dispatched_goals": 2,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "674a27932b9f7a9d626037b65beebeda9f97114b9c420bc9221dba0ef2d12f8b",
+          "verification": "8b56f0d838118d780606cc8c1268f2368e4431a01e4f09af535ca9e580fbce36",
+          "trace": "dcbe3ff1ee7c7e229c3c4498f0ed09aada43b6c7b94a8211e52e0992fbaf53f1"
+        },
+        "candidate_count": 1,
+        "selected_attempt": 1,
+        "planned_candidate_attempt": 1
+      },
+      {
+        "case": "home_return",
+        "candidate_cap": 12,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "planning_failed",
+        "compute_wall_sec": 4.42114497,
+        "publish_to_terminal_wall_sec": 4.513241887,
+        "received_to_terminal_wall_sec": 4.512973581,
+        "scored_dispatched_goals": 0,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "91cd2694c71e758f3727cf465d8ee41976820730035f0f311121a400d134ca4f",
+          "verification": "1258470d4330be3c47dc0a641738085ea504b27432a57aeb4afafaee34c4e1b8",
+          "trace": "a29c06252efcbe73353a1313a6c97601c249d1966f90755cb7dceaf31042aed5"
+        },
+        "candidate_count": 12,
+        "selected_attempt": null,
+        "planned_candidate_attempt": 12
+      },
+      {
+        "case": "home_return",
+        "candidate_cap": 1,
+        "repeat": 1,
+        "status": "completed",
+        "outcome": "planning_failed",
+        "compute_wall_sec": 0.191553202,
+        "publish_to_terminal_wall_sec": 0.28514593,
+        "received_to_terminal_wall_sec": 0.284831891,
+        "scored_dispatched_goals": 0,
+        "verification_passed": true,
+        "physics_checks_passed": true,
+        "shutdown_clean": true,
+        "owned_group_gone": true,
+        "raw_sha256": {
+          "fixed_case": "4e38556b0f0c2be500d138221c6bd4e453569251ddd8dc3a4bab770b2397c0dd",
+          "verification": "8c581bf7590131c106075ec8388b6b7ffefc5f5911baeac0454a98563da741ec",
+          "trace": "ab1d4ff479cb57983a0e0c13554f804e5e14a191f4f1075591ea5467b45d85c5"
+        },
+        "candidate_count": 1,
+        "selected_attempt": null,
+        "planned_candidate_attempt": 1
+      }
+    ],
+    "aggregate_metrics": null,
+    "public_report_id": "2026-11-12-fixed-motion-remaining14",
+    "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+    "unselected_conditions": 6,
+    "counts": {
+      "planned": 20,
+      "selected": 14,
+      "completed": 14,
+      "aborted": 0,
+      "not_run": 6,
+      "motion_succeeded": 11,
+      "planning_failed": 3,
+      "expected_invalid_goal": 0
+    },
+    "input_suite_file_sha256": "5e3f0835ad627a4e179260a7bee4b58eb9b8f1f0e372b4d77fcc1ccf60da439c",
+    "instantiated_suite_sha256": "869270039e1a4219c59890a4d3c0fe940669f12c411ea5d7c6833e42574896be",
+    "instantiated_suite_file_sha256": "c23eed3d54b811a5954fced7755c09c574314f33f0f536c66d13b67d91e77ceb",
+    "raw_benchmark_sha256": "d417d36fe983ff487ba12f26c31916043bc920fff7d9906572497b78e36c63e7",
+    "timing_scope": "Same-process ROS-topic publication and request termination on the same verified monotonic clock context.",
+    "preparation_scope": "Each row starts a fresh simulator and performs unscored preparation. Zero scored goals does not describe the preceding preparation movement.",
+    "suite_sha256_semantics": "Canonical content SHA256 of the instantiated suite.json. input_suite_file_sha256 hashes the original repository input file.",
+    "unselected_rows": [
+      {
+        "case": "local_small",
+        "candidate_cap": 1,
+        "status": "not_run",
+        "reason": "case_not_selected_in_this_run"
+      },
+      {
+        "case": "local_small",
+        "candidate_cap": 12,
+        "status": "not_run",
+        "reason": "case_not_selected_in_this_run"
+      },
+      {
+        "case": "environment_post",
+        "candidate_cap": 1,
+        "status": "not_run",
+        "reason": "case_not_selected_in_this_run"
+      },
+      {
+        "case": "environment_post",
+        "candidate_cap": 12,
+        "status": "not_run",
+        "reason": "case_not_selected_in_this_run"
+      },
+      {
+        "case": "invalid_goal",
+        "candidate_cap": 12,
+        "status": "not_run",
+        "reason": "case_not_selected_in_this_run"
+      },
+      {
+        "case": "invalid_goal",
+        "candidate_cap": 1,
+        "status": "not_run",
+        "reason": "case_not_selected_in_this_run"
+      }
+    ],
+    "crossing_comparison_scope": "Both scored requests evaluated one candidate. The successful path in the cap12 row was separately generated and selected on its first attempt."
+  },
+  "limits": [
+    "Historical CI191 bytecode interruption position and historical CI185 host stall call remain unrecorded.",
+    "The tested Humble manager lifecycle marker is a private library detail.",
+    "At wakeup-FD installation before manager registration, an extra ignored SIGINT notice is possible. The tested cases process one Shutdown.",
+    "The teardown fixture sends its signal after idle shutdown and completed child actions.",
+    "After native stop, current physical grasp is a further validation item.",
+    "The observer actual check used canonical c6c0d49. The initial four native cases used207d05e; the final four native cases used6f34cb1.",
+    "Each selected fixed condition has one observation. Three scored requests failed planning and dispatched zero goals; unscored preparation occurred before those requests.",
+    "The first 10ms recovery budget was an implementation choice and incorrectly reused the earlier executor waiting timeout. Source6f34cb1 explicitly separates a50ms recovery decision budget from10ms normal waiting. Synchronous callbacks are not preempted."
+  ],
+  "links": {
+    "source": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "launch_cli": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/207d05e87e6c0294ebb6da2e7a051a78385be168/src/mujoco_ros2_manipulation/launch_cli.py",
+    "observation": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/6f34cb1e324742f36f9775bab01ebba8e6dc4d00/src/mujoco_ros2_manipulation/grasping/ros_task.py",
+    "suite": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/207d05e87e6c0294ebb6da2e7a051a78385be168/config/evaluations/fixed_motion_v1.json",
+    "ci191_original": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/42800062993/attempts/1",
+    "ci185_original": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/42757645294/attempts/1",
+    "viewer_status": "https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/viewer-status-2026-10-30/index.html",
+    "system_direction": "https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/system-direction-2026-10-27/index.html#roadmap",
+    "viewer_direction": "https://wannasleep3254.github.io/mujoco-ros2-manipulation/operator/viewer-direction-2026-10-22/index.html",
+    "official_launch": "https://github.com/ros2/launch/blob/8820c0d1e12f6f1672c59ee47132198649ae846c/launch/launch/actions/execute_local.py",
+    "observer_patch": "observer-v04-v06.patch",
+    "fixed_motion_report": "../../2026-11-12-fixed-motion-remaining14/index.html",
+    "implementation_pull_request": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/96",
+    "pages_workflow": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/workflows/report-pages.yml",
+    "historical_ci192": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/43142974507",
+    "ci193_failure": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/43176920240"
+  },
+  "observer_actual_verification": {
+    "status": "passed_owned_ui_observation",
+    "source_commit": "c6c0d49c054a9d5e21fea152a27639110c86b2b3",
+    "case": "ui_cancel_transport_with_rgb",
+    "task_status": "cancelled",
+    "transport_cancel_acknowledged": true,
+    "transport_terminal_status": 5,
+    "transport_terminal_error_code": 0,
+    "three_controllers_inactive": true,
+    "native_stop_observed": true,
+    "native_exit_observed": true,
+    "forced_cleanup": false,
+    "launcher_return_code": 0,
+    "all_owned_groups_gone": true,
+    "producer_exit_code": 0,
+    "producer_group_gone": true,
+    "rgb_frame_verified": true,
+    "observer_receipt_sha256": "295ef84bc24ce8476fa1d5a3ebe670ff642fc2e3232be2f10da96b3a6e8456ac",
+    "worker_receipt_sha256": "c6a837945b6fefe6559b926111a8cd49d47c5410bb091e9e6858b9d7b83b37ad",
+    "actual_zombie_state_observed": false,
+    "rgb_observation_scope": "diagnostic_RGB8_topic_reception_and_JPEG_validation",
+    "synchronized_recording_verification": "not_checked"
+  },
+  "regression_tests": {
+    "unit_total": 1627,
+    "unit_passed": 1626,
+    "unit_skipped": 1,
+    "skip_scope": "existing_prototype_c_test",
+    "related_observation_tests_passed": 178,
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "prior_model_test_cohort": {
+      "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "passed": 100
+    }
+  },
+  "actual_queued_observation": {
+    "status": "passed_fifth_diagnostic",
+    "diagnostic_only": true,
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "receipt_sha256": "c3ce075659280154219531e30d27422881ea6cdb5148aaf9a5fe0432f2f07d04",
+    "worker_receipt_sha256": "6d5ce06bab18b6715ef6b16ede6dd4f5a9b78190cacf73da059360bdc9773d47",
+    "pause_wall_sec": 0.498134382,
+    "capture_age_before_sec": 0.522395174,
+    "capture_age_after_sec": 0.496575988,
+    "guard_age_after_sec": 0.00029783,
+    "recovery_elapsed_sec": 0.024064627999905497,
+    "nonblocking_spin_once_calls": 3,
+    "recovery_budget_ms": 50,
+    "normal_executor_wait_timeout_ms": 10,
+    "freshness_limit_ms": 500,
+    "injected_extra_delay_sec": 0.018063438,
+    "original_first_spin_call_sec": 0.000367157,
+    "delay_location": "after first spin_once(timeout_sec=0) returned",
+    "native_callback_body_duration_measured": false,
+    "source_timestamps": "preserved",
+    "actions": 6,
+    "all_action_status": 4,
+    "all_action_error_code": 0,
+    "cleanup_clean": true,
+    "forced_cleanup": false,
+    "launcher_return_code": 0,
+    "independent_review_receipt_sha256": "5f228d55805b7fb24b85bf21d3d616a0f77259e05ce0c52291bd3c168456ae2a"
+  },
+  "framework_reference": {
+    "reproduction_installed_package_version": "1.0.15",
+    "official_reference_commit": "8820c0d1e12f6f1672c59ee47132198649ae846c",
+    "comparison_scope": "execute_local.py only",
+    "installed_file_bytes": 29339,
+    "official_file_bytes": 29339,
+    "installed_and_reference_sha256": "8ca7bca6414c37db0639d662fb7661c38844c71adc5e25935165447eb6ff77d4",
+    "bytes_equal": true,
+    "whole_package_version_equivalence_claimed": false
+  },
+  "source_time_evidence": {
+    "initial_207d05e": {
+      "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "implementation": {
+        "launch_cli": "implemented_and_local_checked",
+        "observation_intake": "implemented_and_local_checked",
+        "observer_v06": "offline_checked_and_canonical_actual_passed",
+        "freshness_limit_ms": 500,
+        "existing_spin_budget_ms": 10,
+        "launcher_sigint_wait_sec": 12,
+        "automatic_command_retry": false
+      },
+      "native_verification": {
+        "status": "passed_four_cases",
+        "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+        "case_count": 4,
+        "cases": [
+          {
+            "case": "normal",
+            "label": "집기·운반·놓기",
+            "status": "passed",
+            "task_status": "succeeded",
+            "actions": 6,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": null,
+            "transport_terminal_status": null,
+            "requested_simulation_hold_sec": 0.0,
+            "verifier_receipt_sha256": "ac157447bc20be8df570bef761f33ef008a5160e774bbb56bd13792bc8e0abef",
+            "worker_receipt_sha256": "c6167314e2cd2360bea742dcd2353d19096dc0d7caf0439835d40c9219573ac9"
+          },
+          {
+            "case": "normal_hold",
+            "label": "파지 후 30 s 유지",
+            "status": "passed",
+            "task_status": "succeeded",
+            "actions": 6,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": null,
+            "transport_terminal_status": null,
+            "requested_simulation_hold_sec": 30.0,
+            "verifier_receipt_sha256": "d5b90ca58a1867e6028bd3757061da2a4536f46eb8393a8b69fd5243dd459041",
+            "worker_receipt_sha256": "03001e80e36d2f549915e53e6ce9278891524d6d4b07b4e6520cab7f9d1e741e"
+          },
+          {
+            "case": "cancel_transport",
+            "label": "운반 중 취소",
+            "status": "passed",
+            "task_status": "cancelled",
+            "actions": 4,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": true,
+            "transport_terminal_status": 5,
+            "requested_simulation_hold_sec": 0.0,
+            "verifier_receipt_sha256": "334c853c590921b1f2faee326b035211da4a660be6c8e89ef070d11735f13105",
+            "worker_receipt_sha256": "8f0dd63757223610c0ac294a68b05c84c0d9afe9333008d77b1546f5840d8f4b"
+          },
+          {
+            "case": "cancel_startup",
+            "label": "시작 중 취소",
+            "status": "passed",
+            "task_status": "cancelled",
+            "actions": 0,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": null,
+            "transport_terminal_status": null,
+            "requested_simulation_hold_sec": 0.0,
+            "verifier_receipt_sha256": "e96607bccc41b0974f75b27e98a029f3a2228d990d8728d3664a5b163fdd7238",
+            "worker_receipt_sha256": "bb4ea244d48e71e94b5418de3ef9a279d7b49edee26aa0519e0476a45df0dd7b"
+          }
+        ]
+      },
+      "actual_queued_observation": {
+        "status": "passed_fourth_diagnostic",
+        "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+        "attempts": [
+          {
+            "attempt": 1,
+            "diagnostic_status": "not_exercised",
+            "injected": false,
+            "task_status": "failed",
+            "recovered": false,
+            "budget_exhausted": true,
+            "cleanup_clean": true,
+            "receipt_sha256": "f9626b0e1decebd688813ce859549c986acc5fabb1130499ace76503e690faa0",
+            "diagnostic_setup_error": "condition_check_error_prevented_injection",
+            "task_stop_reason": "guard_stale"
+          },
+          {
+            "attempt": 2,
+            "diagnostic_status": "failed",
+            "injected": true,
+            "task_status": "failed",
+            "recovered": false,
+            "budget_exhausted": true,
+            "cleanup_clean": true,
+            "receipt_sha256": "dbd6436d7b8b31349d62c22a4106ee6448e50d4cab5b3f577ac2ba096294c5e6"
+          },
+          {
+            "attempt": 3,
+            "diagnostic_status": "not_exercised",
+            "injected": false,
+            "task_status": "succeeded",
+            "recovered": false,
+            "budget_exhausted": false,
+            "cleanup_clean": true,
+            "receipt_sha256": "20d7c3b87510f0a40a4e55b515651489c7db113eba53768d5debbfefa1e0f316"
+          },
+          {
+            "attempt": 4,
+            "diagnostic_status": "passed",
+            "injected": true,
+            "task_status": "succeeded",
+            "recovered": true,
+            "budget_exhausted": false,
+            "cleanup_clean": true,
+            "receipt_sha256": "58ab1b8079cef94b0a2668ded62869ac90c3acea76b2e5db1356798bb0f5820a"
+          }
+        ],
+        "recovery_success_claimed": true,
+        "pause_wall_sec": 0.499666571,
+        "capture_age_before_sec": 0.521927291,
+        "capture_age_after_sec": 0.465826489,
+        "recovery_elapsed_sec": 0.004125000035855919,
+        "nonblocking_spin_once_calls": 3,
+        "exact_callbacks_executed": "unmeasured",
+        "source_timestamps": "preserved",
+        "freshness_limit_ms": 500,
+        "shared_existing_budget_ms": 10,
+        "action_count": 6,
+        "all_actions_terminal_status": 4,
+        "all_actions_error_code": 0,
+        "three_controllers_inactive": true,
+        "native_stop_observed": true,
+        "native_exit_observed": true,
+        "launcher_return_code": 0,
+        "forced_cleanup": false,
+        "all_owned_groups_gone": true,
+        "worker_receipt_sha256": "077651d627328e5b096336af1b533f0f48ef139cdfc33e665168b10df439cc91",
+        "historical_ci185_exact_host_stall_call": "unresolved",
+        "independent_review_receipt_sha256": "af8567064998fe1294129c3d32eb9a9580dcf9f41d4e70862196d1f3c5f797a1",
+        "diagnostic_only": true
+      },
+      "regression_tests": {
+        "unit_total": 1618,
+        "unit_passed": 1617,
+        "unit_skipped": 1,
+        "skip_scope": "existing_prototype_c_test",
+        "model_tests_passed": 100
+      },
+      "source_ci": {
+        "run_number": 192,
+        "run_id": 43142974507,
+        "head_sha": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "required_jobs": [
+          {
+            "name": "Python package and unit tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (fr10, default)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (workcell, fr5_ur5e)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (fr5, pedestal)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (ur5e, default)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (fr5, default)",
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    "initial_observation_mechanism": {
+      "status": "deterministic_ordering_regression_fixed",
+      "related_unit_tests_passed": 169,
+      "source_timestamps": "preserved",
+      "recovery_budget": "shares_existing10ms",
+      "historical_ci185_single_stall_call": "unresolved"
+    },
+    "initial_budget_interpretation_correction": "The original10ms value was an executor waiting timeout. Reusing it as the first revision recovery-decision deadline was an implementation error; original207 evidence is retained verbatim."
+  },
+  "workspace_verification": {
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "status": "passed_three_http_cases",
+    "browser_gui_acceptance_claimed": false,
+    "cases": [
+      {
+        "case": "normal",
+        "status": "passed",
+        "task_status": "succeeded",
+        "pose_count": 201,
+        "image_count": 82,
+        "event_count": 33,
+        "media_state": "ready",
+        "readonly_replay_control_commands": 0,
+        "recording_sha256": "3847c1d8b800dab39c777c2dd2b432399cf6c663819a40d2470350f8005c8453",
+        "native_launch_started": true,
+        "native_exit_observed": true,
+        "verifier_receipt_sha256": "b1905ef60ae70d6f7ececc9093879ddffab174e4b0ed1431f267c2616c06ab9c",
+        "worker_receipt_sha256": "fd748772413e65e4ae3c8ff20b8036536ae0ceb02e41c247d413a85c144fb394"
+      },
+      {
+        "case": "cancel_startup",
+        "status": "passed",
+        "task_status": "cancelled",
+        "pose_count": 0,
+        "image_count": 0,
+        "event_count": 5,
+        "media_state": "unavailable",
+        "readonly_replay_control_commands": 0,
+        "recording_sha256": "34320dad4a8b31bd71c88f2378b15bc0dccdaef31482f3e1c43c1df9d49652d6",
+        "native_launch_started": false,
+        "native_exit_observed": false,
+        "verifier_receipt_sha256": "b8b823802319df4cd9a2a88e0a439072cf4da540cfd7e11acaebde0e0d1a379c",
+        "worker_receipt_sha256": "b523cf4a4812277d23c4ccc331f0dea7faa81711b36dfc2b87677669f2ea065b"
+      },
+      {
+        "case": "cancel_transport",
+        "status": "passed",
+        "task_status": "cancelled",
+        "pose_count": 120,
+        "image_count": 45,
+        "event_count": 23,
+        "media_state": "ready",
+        "readonly_replay_control_commands": 0,
+        "recording_sha256": "7b79b2cccc6bd57b8b4ed37ad7218d1583a8dde540edf845261f25fd20f3e79b",
+        "native_launch_started": true,
+        "native_exit_observed": true,
+        "verifier_receipt_sha256": "0f87aceb5947e44594910351b5275790b047632136d2193682d3e1ec9efdac80",
+        "worker_receipt_sha256": "3a69075e0404c13531d1b13da1cadfb607d46c1c24c4e67efdd80870451cda7e"
+      }
+    ]
+  },
+  "historical_ci_runs": [
+    {
+      "run_number": 192,
+      "run_id": 43142974507,
+      "head_sha": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "required_jobs": [
+        {
+          "name": "Python package and unit tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (fr10, default)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (workcell, fr5_ur5e)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (fr5, pedestal)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (ur5e, default)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (fr5, default)",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "run_number": 193,
+      "run_id": 43176920240,
+      "head_sha": "fa58c4db9241d0dbb57b32c076d0a4810d5cde8d",
+      "attempt": 1,
+      "conclusion": "failure",
+      "case": "workspace normal",
+      "stage": "initial_settle",
+      "error_reason": "guard_stale",
+      "actions": 0,
+      "first_revision_recovery_budget_ms": 10,
+      "spin_once_calls": 1,
+      "intake_elapsed_sec": 0.017971675999888248,
+      "native_capture_age_after_sec": 0.214779072,
+      "native_receipt_age_after_sec": 0.017560872,
+      "budget_exhausted": true,
+      "cleanup_clean": true,
+      "forced_cleanup": false,
+      "launcher_return_code": 0,
+      "worker_receipt_sha256": "95217e5b990174f94605d869d553ec211826d485a576645770aeb3a55c5039b4",
+      "historical_guard_message_already_queued": "unrecorded",
+      "confirmed_scope": "The first spin_once exceeded the first-revision recovery deadline; no additional dispatch was attempted before guard-stale failure. The original producer or queue state was not recorded."
+    }
+  ],
+  "performance_source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+  "document_version": "1.1"
+}

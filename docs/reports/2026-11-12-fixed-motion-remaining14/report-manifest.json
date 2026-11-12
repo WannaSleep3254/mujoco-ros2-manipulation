@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "report_id": "2026-11-12-fixed-motion-remaining14",
+  "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+  "generator": {
+    "version": "1.2",
+    "fingerprint": "a52e2d818b16f9b69a6db4a9d2162c29f5df7cb3811f4a69e029bc6aae545d99",
+    "files": {
+      "__init__.py": {
+        "bytes": 125,
+        "sha256": "176bdb654c5c454e7973f058bdc67922cdba168fd272f2a7f0d15c4761d0163a"
+      },
+      "data.py": {
+        "bytes": 6045,
+        "sha256": "1b9b920865d37251ef484b8fe606cf8b0f2ba1e31e1976bbd505aa68cf70e154"
+      },
+      "render.py": {
+        "bytes": 13551,
+        "sha256": "560ae4e6134219b01b892a587fe0ea6fe6e52343896b4f1b6c93b95174eb06c0"
+      },
+      "publish.py": {
+        "bytes": 7522,
+        "sha256": "924cc7538b553da49af4ba471aed812bff137996abd10f0bbea5d5d02f1f065e"
+      },
+      "report.schema.json": {
+        "bytes": 5126,
+        "sha256": "26a6d91d79d65c2a7838db9636b15297f3441bd4fa9f5e859ecb0ed0a9eb94f2"
+      },
+      "operator_demos.py": {
+        "bytes": 4612,
+        "sha256": "8b770dd5936bb4089964a8509113b70f3c1c3ebc484a889f5880a3603e7cb9eb"
+      },
+      "operator-demos.schema.json": {
+        "bytes": 2330,
+        "sha256": "7566b7422d8ac62b0fd6f106286cd3525eba154ad4d28de6a019e8b4b1a65143"
+      },
+      "templates/page.html": {
+        "bytes": 518,
+        "sha256": "3f4c20747e7656c059754449fb570f98a98fceb2ddb53f5a5b045306a2afc26a"
+      },
+      "templates/style.css": {
+        "bytes": 4538,
+        "sha256": "549f64751aea2d0abdd460fec3af39ff3aaa99b63dd152e80d35a4c713b054c8"
+      }
+    }
+  },
+  "files": {
+    "evidence.json.gz": {
+      "bytes": 15602,
+      "sha256": "5b85b6a65179b50a9b4eaf84493aa9cf5dcd2e436c95739cdb05174a9831bdf8"
+    },
+    "index.html": {
+      "bytes": 111533,
+      "sha256": "7bb8edeb3564af2dd01a64a6b82cb72223d8a9ef99bdd3dd4ec58b5d772ae1d5"
+    },
+    "metrics.csv": {
+      "bytes": 68289,
+      "sha256": "6c35d734bbf7f5b5d4fbed4b8c7e33ebc452a515073903cd3746faa37fb3b7cf"
+    },
+    "report.json": {
+      "bytes": 48889,
+      "sha256": "b539879e4f1d9b09c51123d0cd8b6bccbd1277876e375f7b0c4a6e1a17b5185b"
+    }
+  }
+}

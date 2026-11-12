@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "document_type": "design_review",
+  "document_version": "1.1",
+  "layout_baseline": "1.9",
+  "baseline_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+  "scope": "Version1.1 corrects the first revision10ms recovery-budget choice after CI193 guard-stale failure. Source6f34cb1 separates50ms recovery decisions from10ms executor waits and restores pre-dispatch physical checks;500ms source freshness and task/Action deadlines remain. Final four native cases, three synchronized HTTP cases and actual diagnostic05 passed. Initial207d05e native4/diagnostic04 evidence and its fixed14 measurements remain separately pinned and unchanged. Original CI185/191 and45s uncertainties are retained.",
+  "assets": {
+    "index.html": "598d40bfe6ff0da93923365e63ff7f5cb92f770337f2e35fa8ca42d559035472",
+    "sanitized-evidence.json": "24bde9f7390e5a81b21f81f4bed9f28b0f93fe295e08a192c3befd5e7c142348",
+    "observer-v04-v06.patch": "77fb04936cee743f0c15ef64e179eac5191b1ac782f627342fb0c8360cfee406"
+  }
+}

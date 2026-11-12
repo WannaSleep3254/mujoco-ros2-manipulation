@@ -25,6 +25,10 @@ _ARMS = tuple("left_j" + str(i) for i in range(1, 7)) + (
 class ObservationUnavailable(ValueError):
     """No checked observation is eligible for the requested use."""
 
+    def __init__(self, *args, reason=None):
+        super().__init__(*args)
+        self.reason = reason
+
 
 @dataclass(frozen=True)
 class IngestResult:
@@ -385,30 +389,37 @@ class GraspObservationStore:
             raise ValueError("require_physical must be boolean")
         with self._lock:
             if self._fault or self._error or self._latest is None:
-                raise ObservationUnavailable(self._fault or self._error or "no native observation")
+                reason = "missing_native" if self._latest is None else "invalid_native"
+                raise ObservationUnavailable(self._fault or self._error or "no native observation", reason=reason)
             latest = self._latest
-            if now < latest.receipt_sec or now < latest.clock_progress_receipt_sec:
-                raise ObservationUnavailable("snapshot receipt clock moved backwards")
-            if now - latest.clock_progress_receipt_sec > max_age:
-                raise ObservationUnavailable("native grasp clock is stale or held")
-            if now - latest.receipt_sec > max_age:
-                raise ObservationUnavailable("native grasp observation is stale")
-            capture_age_ns = round(now * 1e9) - latest.capture_monotonic_ns
-            if capture_age_ns < 0 or capture_age_ns > min(round(max_age * 1e9), 500_000_000):
-                raise ObservationUnavailable("native source capture is stale or in the future")
             if require_physical:
                 value = latest.payload
                 if not latest.clock_has_advanced:
-                    raise ObservationUnavailable("native grasp clock has not advanced")
+                    raise ObservationUnavailable("native grasp clock has not advanced", reason="clock_not_advanced")
                 if not value["armed"] or not value["heartbeat_fresh"] or value["phase"] not in range(8):
-                    raise ObservationUnavailable("native grasp phase heartbeat is not eligible")
+                    reason = "native_held" if value["phase"] == 8 else "native_phase_ineligible"
+                    raise ObservationUnavailable("native grasp phase heartbeat is not eligible", reason=reason)
                 if self._guard_error or self._guard is None or self._guard_receipt is None:
-                    raise ObservationUnavailable(self._guard_error or "no contact guard")
-                if now < self._guard_receipt or now - self._guard_receipt > max_age:
-                    raise ObservationUnavailable("contact guard observation is stale")
+                    reason = "invalid_guard" if self._guard is not None else "missing_guard"
+                    raise ObservationUnavailable(self._guard_error or "no contact guard", reason=reason)
                 guard = json.loads(self._guard)
                 if guard["latched"] or guard["phase"] != "ready" or guard.get("error"):
-                    raise ObservationUnavailable("contact guard is latched or not ready")
+                    raise ObservationUnavailable("contact guard is latched or not ready", reason="guard_stopped")
                 if any(guard["controllers"][name] != "active" for name in _CONTROLLERS):
-                    raise ObservationUnavailable("grasp requires three active controllers")
+                    raise ObservationUnavailable("grasp requires three active controllers", reason="guard_inactive")
+            if now < latest.receipt_sec or now < latest.clock_progress_receipt_sec:
+                raise ObservationUnavailable("snapshot receipt clock moved backwards", reason="future_receipt")
+            capture_age_ns = round(now * 1e9) - latest.capture_monotonic_ns
+            if capture_age_ns < 0:
+                raise ObservationUnavailable("native source capture is stale or in the future", reason="future_capture")
+            if require_physical and now < self._guard_receipt:
+                raise ObservationUnavailable("contact guard observation is stale", reason="future_guard")
+            if now - latest.clock_progress_receipt_sec > max_age:
+                raise ObservationUnavailable("native grasp clock is stale or held", reason="clock_stale")
+            if now - latest.receipt_sec > max_age:
+                raise ObservationUnavailable("native grasp observation is stale", reason="receipt_stale")
+            if capture_age_ns > min(round(max_age * 1e9), 500_000_000):
+                raise ObservationUnavailable("native source capture is stale or in the future", reason="capture_stale")
+            if require_physical and now - self._guard_receipt > max_age:
+                raise ObservationUnavailable("contact guard observation is stale", reason="guard_stale")
             return latest

@@ -2,6 +2,21 @@
   "schema_version": 1,
   "reports": [
     {
+      "report_id": "2026-11-12-fixed-motion-remaining14",
+      "title": "고정 목표·동일 계산 예산의 공간 재계획 예비 평가",
+      "published_date": "2026-11-12",
+      "status": "preliminary",
+      "commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "workcell": "fr5_ur5e, fr5_ur5e_eval_post",
+      "models": [
+        "Fairino FR5",
+        "Universal Robots UR5e"
+      ],
+      "overview": "FR5·UR5e의 고정 초기·목표 상태에서 공간 후보 상한 1과 12를 공통 5wall초 예산으로 비교했습니다. 정상 목표의 동작·계획 실패와 의도한 무효 목표 거부를 분리합니다.",
+      "url": "2026-11-12-fixed-motion-remaining14/index.html",
+      "resources": []
+    },
+    {
       "report_id": "2026-10-26-viewer-display",
       "title": "JPEG·WebGL 뷰어 표시와 자원 사용 예비 비교",
       "published_date": "2026-10-26",
