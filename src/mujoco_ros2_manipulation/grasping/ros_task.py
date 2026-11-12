@@ -47,7 +47,8 @@ MAX_TASK_WALL_SEC = 240
 MAX_FRAME_BYTES = 64 * 1024 * 1024
 MAX_RECEIPT_BYTES = 2 * 1024 * 1024
 MAX_STARTUP_LOG_BYTES = 4 * 1024 * 1024
-OBSERVATION_INTAKE_SEC = .01
+OBSERVATION_INTAKE_SEC = .05
+EXECUTOR_WAIT_SEC = .01
 STALE_OBSERVATION_REASONS = frozenset(("clock_stale", "receipt_stale", "capture_stale", "guard_stale"))
 
 
@@ -403,7 +404,8 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                   automatic_retry=False, physical_grasp="unconfirmed", planning_attachment="uninitialized",
                   action_terminal=None, cleanup=dict(status="not_started", clean=False),
                   checks=[], actions=[], cleanup_errors=[], simulation_only=True)
-    record["observation_intake"] = dict(budget_sec=OBSERVATION_INTAKE_SEC, maximum_rows=32, dropped_rows=0, rows=[])
+    record["observation_intake"] = dict(budget_sec=OBSERVATION_INTAKE_SEC, executor_wait_sec=EXECUTOR_WAIT_SEC,
+                                        maximum_rows=32, dropped_rows=0, rows=[])
     record["diagnostic_hold"] = dict(requested_simulation_sec=diagnostic_hold_sec,
         enabled=diagnostic_hold_sec > 0, production_default_sec=0., gui_option=False,
         reference_policy="original closed-grasp reference is retained; no tolerance or contact gate change")
@@ -488,9 +490,16 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
     def admission_context():
         now = time.monotonic_ns()
         observed = latest["accepted_context"]
+        guard = latest["guard"]
+        guard_received = latest["guard_observed_monotonic_ns"]
+        context = dict(now_monotonic_ns=now,
+            guard_observed_monotonic_ns=guard_received,
+            guard_age_sec=(now-guard_received)/1e9 if guard_received is not None else None,
+            guard_phase=guard.get("phase") if guard is not None else None,
+            guard_latched=guard.get("latched") if guard is not None else None)
         if observed is None:
-            return dict(now_monotonic_ns=now, native_sequence=None)
-        return dict(now_monotonic_ns=now, **observed,
+            return dict(context, native_sequence=None)
+        return dict(context, **observed,
             capture_age_sec=(now-observed["capture_monotonic_ns"])/1e9,
             receipt_age_sec=(now-observed["received_monotonic_ns"])/1e9)
 
@@ -594,7 +603,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
     def spin(*, health=True):
         deadline = time.monotonic() + OBSERVATION_INTAKE_SEC
         if health:
-            check_control()
+            abort(intake_deadline=deadline)
         elif record["cleanup"]["status"] == "not_started":
             # Startup waits have no ready guard yet, but cancellation and a
             # dead owned launcher must still be handled promptly.
@@ -603,7 +612,7 @@ def run_ros_grasp(target_directory, manifest_sha256, output, *, domain, cancel_e
                 raise RosGraspCancelled("operator cancelled during native startup")
             if process is not None:
                 _require(process.poll() is None, "owned ROS launch exited during startup")
-        executor.spin_once(timeout_sec=max(0., deadline-time.monotonic()))
+        executor.spin_once(timeout_sec=min(EXECUTOR_WAIT_SEC, max(0., deadline-time.monotonic())))
         if health:
             abort(intake_deadline=deadline)
 
