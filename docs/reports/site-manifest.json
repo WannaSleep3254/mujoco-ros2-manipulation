@@ -232,12 +232,12 @@
       "sha256": "524f89186a66ef78c06f1dbf3755b7e1807140c11ccd6c7fa6a01f9a174032cd"
     },
     "index.html": {
-      "bytes": 16728,
-      "sha256": "bb559630a7594e2120a5bc14124a9323001dea010f3943789465947bc3f117d2"
+      "bytes": 16733,
+      "sha256": "04c31f27bdf02cade0d93f135fc5bf862310d1365388867a466ab1d4f1b88dff"
     },
     "operator-demos.json": {
-      "bytes": 6090,
-      "sha256": "b6818aa1d6f30ed2bb1a5f6d566883d7b3be79a3d82619f75de95906797f246a"
+      "bytes": 6095,
+      "sha256": "73359d051c0e495a8603b890887dd20dabc4b578b0d1bbfbc22431e24d925d45"
     },
     "operator/motion-planning-direction-2026-10-22/evidence/random-motion-metrics.csv": {
       "bytes": 16427,
@@ -388,20 +388,20 @@
       "sha256": "a1fcdd650b3d83603c07ac5cfd4c97f08f9b19a79595885ab7457d3fc73ea213"
     },
     "operator/reliability-followup-2026-11-12/index.html": {
-      "bytes": 22724,
-      "sha256": "86080ae8eb06257186e65843037c7cc1f208edc512da6fb62e16f24bc0a10ef0"
+      "bytes": 26379,
+      "sha256": "8700cd556509f1984503c10be404509d51617d5e7b89937a1786522c0d075642"
     },
     "operator/reliability-followup-2026-11-12/manifest.json": {
-      "bytes": 1231,
-      "sha256": "159a336b83f1d4d656e4b0ad77892d442bce71b6a9799e5493086a536d55e25d"
+      "bytes": 1023,
+      "sha256": "c9c11e4686d24be84e5739bebff95c2a340aef58206731b41fb92485e1e868f4"
     },
     "operator/reliability-followup-2026-11-12/observer-v04-v06.patch": {
       "bytes": 7984,
       "sha256": "77fb04936cee743f0c15ef64e179eac5191b1ac782f627342fb0c8360cfee406"
     },
     "operator/reliability-followup-2026-11-12/sanitized-evidence.json": {
-      "bytes": 29089,
-      "sha256": "8b8457e3d164c1e55b6bb4854c3c73f32e6c9f60d089739733b59fe5100eeb17"
+      "bytes": 40357,
+      "sha256": "24bde9f7390e5a81b21f81f4bed9f28b0f93fe295e08a192c3befd5e7c142348"
     },
     "operator/system-direction-2026-10-27/grasp-admission-verification.json": {
       "bytes": 42342,

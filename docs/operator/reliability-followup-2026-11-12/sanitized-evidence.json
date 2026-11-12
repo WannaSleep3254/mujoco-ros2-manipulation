@@ -3,18 +3,22 @@
   "document_type": "engineering_review",
   "title": "종료·관측 지연 수정과 고정 입력 추가 검증",
   "date": "2026-11-12",
-  "draft_version": "1.0",
+  "draft_version": "1.1",
   "template_version": "1.9",
-  "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+  "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
   "publication_status": "source_validation_complete",
   "implementation": {
     "launch_cli": "implemented_and_local_checked",
     "observation_intake": "implemented_and_local_checked",
     "observer_v06": "offline_checked_and_canonical_actual_passed",
     "freshness_limit_ms": 500,
-    "existing_spin_budget_ms": 10,
     "launcher_sigint_wait_sec": 12,
-    "automatic_command_retry": false
+    "automatic_command_retry": false,
+    "observation_recovery_budget_ms": 50,
+    "normal_executor_wait_timeout_ms": 10,
+    "single_pre_post_deadline": true,
+    "synchronous_callback_preemption": false,
+    "physical_checks_before_dispatch_restored": true
   },
   "reproduced_mechanisms": {
     "launch_sigint": {
@@ -26,11 +30,12 @@
       "historical_internal_task_state": "unrecorded"
     },
     "observation_order": {
-      "status": "deterministic_ordering_regression_fixed",
-      "related_unit_tests_passed": 169,
+      "status": "post_ci193_budget_correction",
+      "related_unit_tests_passed": 178,
       "source_timestamps": "preserved",
-      "recovery_budget": "shares_existing10ms",
-      "historical_ci185_single_stall_call": "unresolved"
+      "recovery_budget": "explicit50ms_distinct_from_normal10ms_wait",
+      "historical_ci185_single_stall_call": "unresolved",
+      "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00"
     },
     "observer_terminal_identity": {
       "status": "v06_offline_and_canonical_actual_passed",
@@ -60,7 +65,7 @@
   },
   "native_verification": {
     "status": "passed_four_cases",
-    "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
     "case_count": 4,
     "cases": [
       {
@@ -78,8 +83,8 @@
         "transport_cancel_acknowledged": null,
         "transport_terminal_status": null,
         "requested_simulation_hold_sec": 0.0,
-        "verifier_receipt_sha256": "ac157447bc20be8df570bef761f33ef008a5160e774bbb56bd13792bc8e0abef",
-        "worker_receipt_sha256": "c6167314e2cd2360bea742dcd2353d19096dc0d7caf0439835d40c9219573ac9"
+        "verifier_receipt_sha256": "24c9d94d2f79d58acd56d198a88bdc2e434e587e6293aee4fe800e412fda2611",
+        "worker_receipt_sha256": "38ae9baac7c2b46ffd6e855ac4b9ff41328df02343d2775871c4e813e8ae6b88"
       },
       {
         "case": "normal_hold",
@@ -96,8 +101,8 @@
         "transport_cancel_acknowledged": null,
         "transport_terminal_status": null,
         "requested_simulation_hold_sec": 30.0,
-        "verifier_receipt_sha256": "d5b90ca58a1867e6028bd3757061da2a4536f46eb8393a8b69fd5243dd459041",
-        "worker_receipt_sha256": "03001e80e36d2f549915e53e6ce9278891524d6d4b07b4e6520cab7f9d1e741e"
+        "verifier_receipt_sha256": "61ccd8fe992188c5c17e3d9a438ee79e9fbdc9e74aaa77314c3e386755e6e921",
+        "worker_receipt_sha256": "d557d71a5988b9f92c1f708525321f788e551607dd6e04da1fe3be3f9de4a0ab"
       },
       {
         "case": "cancel_transport",
@@ -114,8 +119,8 @@
         "transport_cancel_acknowledged": true,
         "transport_terminal_status": 5,
         "requested_simulation_hold_sec": 0.0,
-        "verifier_receipt_sha256": "334c853c590921b1f2faee326b035211da4a660be6c8e89ef070d11735f13105",
-        "worker_receipt_sha256": "8f0dd63757223610c0ac294a68b05c84c0d9afe9333008d77b1546f5840d8f4b"
+        "verifier_receipt_sha256": "e8f5ceaace328c070ffdba560a258ed6b0581e9a75da818c9ecb9122eca88667",
+        "worker_receipt_sha256": "eaf3270743ab759ebccf773dbb58b67cf9b9d8158444a0a95e1665df6d31b1a6"
       },
       {
         "case": "cancel_startup",
@@ -132,8 +137,8 @@
         "transport_cancel_acknowledged": null,
         "transport_terminal_status": null,
         "requested_simulation_hold_sec": 0.0,
-        "verifier_receipt_sha256": "e96607bccc41b0974f75b27e98a029f3a2228d990d8728d3664a5b163fdd7238",
-        "worker_receipt_sha256": "bb4ea244d48e71e94b5418de3ef9a279d7b49edee26aa0519e0476a45df0dd7b"
+        "verifier_receipt_sha256": "772ae0a4a367b1da832a6e47c20785abbd35421900c8329b5a466b74ed0ebefd",
+        "worker_receipt_sha256": "ce00f7674eeca62a51fee4c89edf15b1dd09d002d522475e9be143b5f68c99ba"
       }
     ]
   },
@@ -543,14 +548,14 @@
     "At wakeup-FD installation before manager registration, an extra ignored SIGINT notice is possible. The tested cases process one Shutdown.",
     "The teardown fixture sends its signal after idle shutdown and completed child actions.",
     "After native stop, current physical grasp is a further validation item.",
-    "The observer actual check used canonical c6c0d49. The four native cases used development 207d05e.",
+    "The observer actual check used canonical c6c0d49. The initial four native cases used207d05e; the final four native cases used6f34cb1.",
     "Each selected fixed condition has one observation. Three scored requests failed planning and dispatched zero goals; unscored preparation occurred before those requests.",
-    "The fourth actual queued-observation diagnostic recovered within the original budget. It does not identify the unrecorded historical CI185 blocking call."
+    "The first 10ms recovery budget was an implementation choice and incorrectly reused the earlier executor waiting timeout. Source6f34cb1 explicitly separates a50ms recovery decision budget from10ms normal waiting. Synchronous callbacks are not preempted."
   ],
   "links": {
-    "source": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/207d05e87e6c0294ebb6da2e7a051a78385be168",
+    "source": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/commit/6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
     "launch_cli": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/207d05e87e6c0294ebb6da2e7a051a78385be168/src/mujoco_ros2_manipulation/launch_cli.py",
-    "observation": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/207d05e87e6c0294ebb6da2e7a051a78385be168/src/mujoco_ros2_manipulation/grasping/ros_task.py",
+    "observation": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/6f34cb1e324742f36f9775bab01ebba8e6dc4d00/src/mujoco_ros2_manipulation/grasping/ros_task.py",
     "suite": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/blob/207d05e87e6c0294ebb6da2e7a051a78385be168/config/evaluations/fixed_motion_v1.json",
     "ci191_original": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/42800062993/attempts/1",
     "ci185_original": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/42757645294/attempts/1",
@@ -560,9 +565,10 @@
     "official_launch": "https://github.com/ros2/launch/blob/8820c0d1e12f6f1672c59ee47132198649ae846c/launch/launch/actions/execute_local.py",
     "observer_patch": "observer-v04-v06.patch",
     "fixed_motion_report": "../../2026-11-12-fixed-motion-remaining14/index.html",
-    "source_ci": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/43142974507",
     "implementation_pull_request": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/pull/96",
-    "pages_workflow": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/workflows/report-pages.yml"
+    "pages_workflow": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/workflows/report-pages.yml",
+    "historical_ci192": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/43142974507",
+    "ci193_failure": "https://github.com/WannaSleep3254/mujoco-ros2-manipulation/actions/runs/43176920240"
   },
   "observer_actual_verification": {
     "status": "passed_owned_ui_observation",
@@ -588,82 +594,44 @@
     "synchronized_recording_verification": "not_checked"
   },
   "regression_tests": {
-    "unit_total": 1618,
-    "unit_passed": 1617,
+    "unit_total": 1627,
+    "unit_passed": 1626,
     "unit_skipped": 1,
     "skip_scope": "existing_prototype_c_test",
-    "model_tests_passed": 100
+    "related_observation_tests_passed": 178,
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "prior_model_test_cohort": {
+      "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "passed": 100
+    }
   },
   "actual_queued_observation": {
-    "status": "passed_fourth_diagnostic",
-    "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
-    "attempts": [
-      {
-        "attempt": 1,
-        "diagnostic_status": "not_exercised",
-        "injected": false,
-        "task_status": "failed",
-        "recovered": false,
-        "budget_exhausted": true,
-        "cleanup_clean": true,
-        "receipt_sha256": "f9626b0e1decebd688813ce859549c986acc5fabb1130499ace76503e690faa0",
-        "diagnostic_setup_error": "condition_check_error_prevented_injection",
-        "task_stop_reason": "guard_stale"
-      },
-      {
-        "attempt": 2,
-        "diagnostic_status": "failed",
-        "injected": true,
-        "task_status": "failed",
-        "recovered": false,
-        "budget_exhausted": true,
-        "cleanup_clean": true,
-        "receipt_sha256": "dbd6436d7b8b31349d62c22a4106ee6448e50d4cab5b3f577ac2ba096294c5e6"
-      },
-      {
-        "attempt": 3,
-        "diagnostic_status": "not_exercised",
-        "injected": false,
-        "task_status": "succeeded",
-        "recovered": false,
-        "budget_exhausted": false,
-        "cleanup_clean": true,
-        "receipt_sha256": "20d7c3b87510f0a40a4e55b515651489c7db113eba53768d5debbfefa1e0f316"
-      },
-      {
-        "attempt": 4,
-        "diagnostic_status": "passed",
-        "injected": true,
-        "task_status": "succeeded",
-        "recovered": true,
-        "budget_exhausted": false,
-        "cleanup_clean": true,
-        "receipt_sha256": "58ab1b8079cef94b0a2668ded62869ac90c3acea76b2e5db1356798bb0f5820a"
-      }
-    ],
-    "recovery_success_claimed": true,
-    "pause_wall_sec": 0.499666571,
-    "capture_age_before_sec": 0.521927291,
-    "capture_age_after_sec": 0.465826489,
-    "recovery_elapsed_sec": 0.004125000035855919,
+    "status": "passed_fifth_diagnostic",
+    "diagnostic_only": true,
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "receipt_sha256": "c3ce075659280154219531e30d27422881ea6cdb5148aaf9a5fe0432f2f07d04",
+    "worker_receipt_sha256": "6d5ce06bab18b6715ef6b16ede6dd4f5a9b78190cacf73da059360bdc9773d47",
+    "pause_wall_sec": 0.498134382,
+    "capture_age_before_sec": 0.522395174,
+    "capture_age_after_sec": 0.496575988,
+    "guard_age_after_sec": 0.00029783,
+    "recovery_elapsed_sec": 0.024064627999905497,
     "nonblocking_spin_once_calls": 3,
-    "exact_callbacks_executed": "unmeasured",
-    "source_timestamps": "preserved",
+    "recovery_budget_ms": 50,
+    "normal_executor_wait_timeout_ms": 10,
     "freshness_limit_ms": 500,
-    "shared_existing_budget_ms": 10,
-    "action_count": 6,
-    "all_actions_terminal_status": 4,
-    "all_actions_error_code": 0,
-    "three_controllers_inactive": true,
-    "native_stop_observed": true,
-    "native_exit_observed": true,
-    "launcher_return_code": 0,
+    "injected_extra_delay_sec": 0.018063438,
+    "original_first_spin_call_sec": 0.000367157,
+    "delay_location": "after first spin_once(timeout_sec=0) returned",
+    "native_callback_body_duration_measured": false,
+    "source_timestamps": "preserved",
+    "actions": 6,
+    "all_action_status": 4,
+    "all_action_error_code": 0,
+    "cleanup_clean": true,
     "forced_cleanup": false,
-    "all_owned_groups_gone": true,
-    "worker_receipt_sha256": "077651d627328e5b096336af1b533f0f48ef139cdfc33e665168b10df439cc91",
-    "historical_ci185_exact_host_stall_call": "unresolved",
-    "independent_review_receipt_sha256": "af8567064998fe1294129c3d32eb9a9580dcf9f41d4e70862196d1f3c5f797a1",
-    "diagnostic_only": true
+    "launcher_return_code": 0,
+    "independent_review_receipt_sha256": "5f228d55805b7fb24b85bf21d3d616a0f77259e05ce0c52291bd3c168456ae2a"
   },
   "framework_reference": {
     "reproduction_installed_package_version": "1.0.15",
@@ -675,38 +643,330 @@
     "bytes_equal": true,
     "whole_package_version_equivalence_claimed": false
   },
-  "source_ci": {
-    "run_number": 192,
-    "run_id": 43142974507,
-    "head_sha": "207d05e87e6c0294ebb6da2e7a051a78385be168",
-    "attempt": 1,
-    "status": "completed",
-    "conclusion": "success",
-    "required_jobs": [
+  "source_time_evidence": {
+    "initial_207d05e": {
+      "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "implementation": {
+        "launch_cli": "implemented_and_local_checked",
+        "observation_intake": "implemented_and_local_checked",
+        "observer_v06": "offline_checked_and_canonical_actual_passed",
+        "freshness_limit_ms": 500,
+        "existing_spin_budget_ms": 10,
+        "launcher_sigint_wait_sec": 12,
+        "automatic_command_retry": false
+      },
+      "native_verification": {
+        "status": "passed_four_cases",
+        "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+        "case_count": 4,
+        "cases": [
+          {
+            "case": "normal",
+            "label": "집기·운반·놓기",
+            "status": "passed",
+            "task_status": "succeeded",
+            "actions": 6,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": null,
+            "transport_terminal_status": null,
+            "requested_simulation_hold_sec": 0.0,
+            "verifier_receipt_sha256": "ac157447bc20be8df570bef761f33ef008a5160e774bbb56bd13792bc8e0abef",
+            "worker_receipt_sha256": "c6167314e2cd2360bea742dcd2353d19096dc0d7caf0439835d40c9219573ac9"
+          },
+          {
+            "case": "normal_hold",
+            "label": "파지 후 30 s 유지",
+            "status": "passed",
+            "task_status": "succeeded",
+            "actions": 6,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": null,
+            "transport_terminal_status": null,
+            "requested_simulation_hold_sec": 30.0,
+            "verifier_receipt_sha256": "d5b90ca58a1867e6028bd3757061da2a4536f46eb8393a8b69fd5243dd459041",
+            "worker_receipt_sha256": "03001e80e36d2f549915e53e6ce9278891524d6d4b07b4e6520cab7f9d1e741e"
+          },
+          {
+            "case": "cancel_transport",
+            "label": "운반 중 취소",
+            "status": "passed",
+            "task_status": "cancelled",
+            "actions": 4,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": true,
+            "transport_terminal_status": 5,
+            "requested_simulation_hold_sec": 0.0,
+            "verifier_receipt_sha256": "334c853c590921b1f2faee326b035211da4a660be6c8e89ef070d11735f13105",
+            "worker_receipt_sha256": "8f0dd63757223610c0ac294a68b05c84c0d9afe9333008d77b1546f5840d8f4b"
+          },
+          {
+            "case": "cancel_startup",
+            "label": "시작 중 취소",
+            "status": "passed",
+            "task_status": "cancelled",
+            "actions": 0,
+            "all_owned_groups_gone": true,
+            "native_stop_observed": true,
+            "native_exit_observed": true,
+            "forced_cleanup": false,
+            "launcher_return_code": 0,
+            "three_controllers_inactive": true,
+            "transport_cancel_acknowledged": null,
+            "transport_terminal_status": null,
+            "requested_simulation_hold_sec": 0.0,
+            "verifier_receipt_sha256": "e96607bccc41b0974f75b27e98a029f3a2228d990d8728d3664a5b163fdd7238",
+            "worker_receipt_sha256": "bb4ea244d48e71e94b5418de3ef9a279d7b49edee26aa0519e0476a45df0dd7b"
+          }
+        ]
+      },
+      "actual_queued_observation": {
+        "status": "passed_fourth_diagnostic",
+        "source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+        "attempts": [
+          {
+            "attempt": 1,
+            "diagnostic_status": "not_exercised",
+            "injected": false,
+            "task_status": "failed",
+            "recovered": false,
+            "budget_exhausted": true,
+            "cleanup_clean": true,
+            "receipt_sha256": "f9626b0e1decebd688813ce859549c986acc5fabb1130499ace76503e690faa0",
+            "diagnostic_setup_error": "condition_check_error_prevented_injection",
+            "task_stop_reason": "guard_stale"
+          },
+          {
+            "attempt": 2,
+            "diagnostic_status": "failed",
+            "injected": true,
+            "task_status": "failed",
+            "recovered": false,
+            "budget_exhausted": true,
+            "cleanup_clean": true,
+            "receipt_sha256": "dbd6436d7b8b31349d62c22a4106ee6448e50d4cab5b3f577ac2ba096294c5e6"
+          },
+          {
+            "attempt": 3,
+            "diagnostic_status": "not_exercised",
+            "injected": false,
+            "task_status": "succeeded",
+            "recovered": false,
+            "budget_exhausted": false,
+            "cleanup_clean": true,
+            "receipt_sha256": "20d7c3b87510f0a40a4e55b515651489c7db113eba53768d5debbfefa1e0f316"
+          },
+          {
+            "attempt": 4,
+            "diagnostic_status": "passed",
+            "injected": true,
+            "task_status": "succeeded",
+            "recovered": true,
+            "budget_exhausted": false,
+            "cleanup_clean": true,
+            "receipt_sha256": "58ab1b8079cef94b0a2668ded62869ac90c3acea76b2e5db1356798bb0f5820a"
+          }
+        ],
+        "recovery_success_claimed": true,
+        "pause_wall_sec": 0.499666571,
+        "capture_age_before_sec": 0.521927291,
+        "capture_age_after_sec": 0.465826489,
+        "recovery_elapsed_sec": 0.004125000035855919,
+        "nonblocking_spin_once_calls": 3,
+        "exact_callbacks_executed": "unmeasured",
+        "source_timestamps": "preserved",
+        "freshness_limit_ms": 500,
+        "shared_existing_budget_ms": 10,
+        "action_count": 6,
+        "all_actions_terminal_status": 4,
+        "all_actions_error_code": 0,
+        "three_controllers_inactive": true,
+        "native_stop_observed": true,
+        "native_exit_observed": true,
+        "launcher_return_code": 0,
+        "forced_cleanup": false,
+        "all_owned_groups_gone": true,
+        "worker_receipt_sha256": "077651d627328e5b096336af1b533f0f48ef139cdfc33e665168b10df439cc91",
+        "historical_ci185_exact_host_stall_call": "unresolved",
+        "independent_review_receipt_sha256": "af8567064998fe1294129c3d32eb9a9580dcf9f41d4e70862196d1f3c5f797a1",
+        "diagnostic_only": true
+      },
+      "regression_tests": {
+        "unit_total": 1618,
+        "unit_passed": 1617,
+        "unit_skipped": 1,
+        "skip_scope": "existing_prototype_c_test",
+        "model_tests_passed": 100
+      },
+      "source_ci": {
+        "run_number": 192,
+        "run_id": 43142974507,
+        "head_sha": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "required_jobs": [
+          {
+            "name": "Python package and unit tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (fr10, default)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (workcell, fr5_ur5e)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (fr5, pedestal)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (ur5e, default)",
+            "conclusion": "success"
+          },
+          {
+            "name": "ROS Humble (fr5, default)",
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    "initial_observation_mechanism": {
+      "status": "deterministic_ordering_regression_fixed",
+      "related_unit_tests_passed": 169,
+      "source_timestamps": "preserved",
+      "recovery_budget": "shares_existing10ms",
+      "historical_ci185_single_stall_call": "unresolved"
+    },
+    "initial_budget_interpretation_correction": "The original10ms value was an executor waiting timeout. Reusing it as the first revision recovery-decision deadline was an implementation error; original207 evidence is retained verbatim."
+  },
+  "workspace_verification": {
+    "source_commit": "6f34cb1e324742f36f9775bab01ebba8e6dc4d00",
+    "status": "passed_three_http_cases",
+    "browser_gui_acceptance_claimed": false,
+    "cases": [
       {
-        "name": "Python package and unit tests",
-        "conclusion": "success"
+        "case": "normal",
+        "status": "passed",
+        "task_status": "succeeded",
+        "pose_count": 201,
+        "image_count": 82,
+        "event_count": 33,
+        "media_state": "ready",
+        "readonly_replay_control_commands": 0,
+        "recording_sha256": "3847c1d8b800dab39c777c2dd2b432399cf6c663819a40d2470350f8005c8453",
+        "native_launch_started": true,
+        "native_exit_observed": true,
+        "verifier_receipt_sha256": "b1905ef60ae70d6f7ececc9093879ddffab174e4b0ed1431f267c2616c06ab9c",
+        "worker_receipt_sha256": "fd748772413e65e4ae3c8ff20b8036536ae0ceb02e41c247d413a85c144fb394"
       },
       {
-        "name": "ROS Humble (fr10, default)",
-        "conclusion": "success"
+        "case": "cancel_startup",
+        "status": "passed",
+        "task_status": "cancelled",
+        "pose_count": 0,
+        "image_count": 0,
+        "event_count": 5,
+        "media_state": "unavailable",
+        "readonly_replay_control_commands": 0,
+        "recording_sha256": "34320dad4a8b31bd71c88f2378b15bc0dccdaef31482f3e1c43c1df9d49652d6",
+        "native_launch_started": false,
+        "native_exit_observed": false,
+        "verifier_receipt_sha256": "b8b823802319df4cd9a2a88e0a439072cf4da540cfd7e11acaebde0e0d1a379c",
+        "worker_receipt_sha256": "b523cf4a4812277d23c4ccc331f0dea7faa81711b36dfc2b87677669f2ea065b"
       },
       {
-        "name": "ROS Humble (workcell, fr5_ur5e)",
-        "conclusion": "success"
-      },
-      {
-        "name": "ROS Humble (fr5, pedestal)",
-        "conclusion": "success"
-      },
-      {
-        "name": "ROS Humble (ur5e, default)",
-        "conclusion": "success"
-      },
-      {
-        "name": "ROS Humble (fr5, default)",
-        "conclusion": "success"
+        "case": "cancel_transport",
+        "status": "passed",
+        "task_status": "cancelled",
+        "pose_count": 120,
+        "image_count": 45,
+        "event_count": 23,
+        "media_state": "ready",
+        "readonly_replay_control_commands": 0,
+        "recording_sha256": "7b79b2cccc6bd57b8b4ed37ad7218d1583a8dde540edf845261f25fd20f3e79b",
+        "native_launch_started": true,
+        "native_exit_observed": true,
+        "verifier_receipt_sha256": "0f87aceb5947e44594910351b5275790b047632136d2193682d3e1ec9efdac80",
+        "worker_receipt_sha256": "3a69075e0404c13531d1b13da1cadfb607d46c1c24c4e67efdd80870451cda7e"
       }
     ]
-  }
+  },
+  "historical_ci_runs": [
+    {
+      "run_number": 192,
+      "run_id": 43142974507,
+      "head_sha": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "required_jobs": [
+        {
+          "name": "Python package and unit tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (fr10, default)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (workcell, fr5_ur5e)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (fr5, pedestal)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (ur5e, default)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ROS Humble (fr5, default)",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "run_number": 193,
+      "run_id": 43176920240,
+      "head_sha": "fa58c4db9241d0dbb57b32c076d0a4810d5cde8d",
+      "attempt": 1,
+      "conclusion": "failure",
+      "case": "workspace normal",
+      "stage": "initial_settle",
+      "error_reason": "guard_stale",
+      "actions": 0,
+      "first_revision_recovery_budget_ms": 10,
+      "spin_once_calls": 1,
+      "intake_elapsed_sec": 0.017971675999888248,
+      "native_capture_age_after_sec": 0.214779072,
+      "native_receipt_age_after_sec": 0.017560872,
+      "budget_exhausted": true,
+      "cleanup_clean": true,
+      "forced_cleanup": false,
+      "launcher_return_code": 0,
+      "worker_receipt_sha256": "95217e5b990174f94605d869d553ec211826d485a576645770aeb3a55c5039b4",
+      "historical_guard_message_already_queued": "unrecorded",
+      "confirmed_scope": "The first spin_once exceeded the first-revision recovery deadline; no additional dispatch was attempted before guard-stale failure. The original producer or queue state was not recorded."
+    }
+  ],
+  "performance_source_commit": "207d05e87e6c0294ebb6da2e7a051a78385be168",
+  "document_version": "1.1"
 }
